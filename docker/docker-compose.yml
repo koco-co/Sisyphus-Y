@@ -57,8 +57,13 @@ services:
       timeout: 5s
       retries: 10
 
+# Fixed volume names so data persists across runs even when using a new compose project name
 volumes:
   postgres_data:
+    name: sisyphus_postgres_data
   redis_data:
+    name: sisyphus_redis_data
   qdrant_data:
+    name: sisyphus_qdrant_data
   minio_data:
+    name: sisyphus_minio_data
