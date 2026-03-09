@@ -20,6 +20,117 @@ COMPOSE_PROJECT_FILE="$PROJECT_DIR/.compose-project-name"
 # ─── PATH: include common install locations for uv and bun ────────────────────
 export PATH="$HOME/.bun/bin:$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
 
+# ─── Docker helper functions ──────────────────────────────────────────────────
+
+# Check if Docker daemon is responsive
+is_docker_ready() {
+  docker info >/dev/null 2>&1
+}
+
+# Wait for Docker daemon to be ready (with retries)
+wait_for_docker() {
+  local max_retries=${1:-60}
+  local retry_interval=${2:-1}
+
+  if is_docker_ready; then
+    return 0
+  fi
+
+  warn "Docker daemon not responding — waiting..."
+  local count=0
+  until is_docker_ready; do
+    count=$((count + 1))
+    if [ $count -ge $max_retries ]; then
+      return 1
+    fi
+    printf '.'
+    sleep $retry_interval
+  done
+  echo ""
+  return 0
+}
+
+# Ensure Docker daemon is running (start if needed on macOS)
+ensure_docker_running() {
+  if is_docker_ready; then
+    return 0
+  fi
+
+  warn "Docker daemon not running — attempting to start Docker Desktop..."
+
+  # Try to start Docker Desktop on macOS
+  if [[ "$(uname)" == "Darwin" ]]; then
+    if open -a Docker 2>/dev/null; then
+      info "Waiting for Docker daemon to be ready (up to 90s)..."
+      if wait_for_docker 90 1; then
+        success "Docker daemon is ready"
+        return 0
+      fi
+    fi
+  fi
+
+  # Try to start Docker service on Linux
+  if [[ "$(uname)" == "Linux" ]]; then
+    if command -v systemctl >/dev/null 2>&1; then
+      sudo systemctl start docker 2>/dev/null || true
+      if wait_for_docker 30 1; then
+        success "Docker daemon is ready"
+        return 0
+      fi
+    fi
+  fi
+
+  error "Docker daemon is not running. Please start Docker Desktop manually and retry."
+}
+
+# Pull Docker image with retry
+pull_docker_image() {
+  local image=$1
+  local max_retries=${2:-3}
+  local retry=0
+
+  while [ $retry -lt $max_retries ]; do
+    if docker pull "$image" 2>/dev/null; then
+      return 0
+    fi
+    retry=$((retry + 1))
+    if [ $retry -lt $max_retries ]; then
+      warn "Failed to pull $image, retrying ($retry/$max_retries)..."
+      sleep 2
+    fi
+  done
+  return 1
+}
+
+# Docker compose up with retry
+docker_compose_up() {
+  local project_name=$1
+  local compose_file=$2
+  local max_retries=${3:-3}
+  local retry=0
+
+  while [ $retry -lt $max_retries ]; do
+    # Verify Docker is still responsive before each attempt
+    if ! is_docker_ready; then
+      warn "Docker daemon became unresponsive, waiting..."
+      if ! wait_for_docker 30 1; then
+        error "Docker daemon is not responding. Please check Docker Desktop."
+      fi
+    fi
+
+    if docker compose -p "$project_name" -f "$compose_file" up -d 2>&1; then
+      return 0
+    fi
+
+    retry=$((retry + 1))
+    if [ $retry -lt $max_retries ]; then
+      warn "docker compose up failed, retrying ($retry/$max_retries) in 3 seconds..."
+      sleep 3
+    fi
+  done
+  return 1
+}
+
 # ─── Section 1: Auto-install uv and bun ───────────────────────────────────────
 section "1. Checking & installing dependencies"
 
@@ -27,10 +138,8 @@ section "1. Checking & installing dependencies"
 if ! command -v uv >/dev/null 2>&1; then
   warn "uv not found — installing..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
-  # uv installs to ~/.local/bin or ~/.cargo/bin
   export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
   if ! command -v uv >/dev/null 2>&1; then
-    # Try sourcing the env script if it exists
     [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
     [ -f "$HOME/.cargo/env" ]     && source "$HOME/.cargo/env"
   fi
@@ -53,33 +162,20 @@ fi
 
 # ── docker ──
 command -v docker >/dev/null 2>&1 || error "docker not found. Install Docker Desktop: https://docker.com/get-started"
-docker compose version >/dev/null 2>&1  || error "docker compose not found. Upgrade Docker Desktop to v2+."
-# Check if Docker daemon is running; if not, try to start Docker Desktop (macOS)
-if ! docker info >/dev/null 2>&1; then
-  warn "Docker daemon not running — attempting to start Docker Desktop..."
-  if [[ "$(uname)" == "Darwin" ]] && open -a Docker 2>/dev/null; then
-    info "Waiting for Docker daemon to be ready (up to 60s)..."
-    DOCKER_RETRIES=60
-    until docker info >/dev/null 2>&1; do
-      DOCKER_RETRIES=$((DOCKER_RETRIES - 1))
-      [ $DOCKER_RETRIES -eq 0 ] && error "Docker daemon did not start in time. Please start Docker Desktop manually."
-      printf '.'
-      sleep 1
-    done
-    echo ""
-    success "Docker daemon is ready"
-  else
-    error "Docker daemon is not running. Please start Docker Desktop and retry."
-  fi
-fi
+docker compose version >/dev/null 2>&1 || error "docker compose not found. Upgrade Docker Desktop to v2+."
+
+# Initial Docker check
+ensure_docker_running
 success "docker: $(docker --version | awk '{print $3}' | tr -d ',')"
 
 # ─── Section 2: Clear ports ────────────────────────────────────────────────────
 section "2. Clearing ports"
 
-# Stop previous run's compose project (if any) so ports are free. Ignore errors so
-# "No such container" from stale compose state never fails the script.
-if docker info >/dev/null 2>&1 && [ -f "$COMPOSE_PROJECT_FILE" ]; then
+# Ensure Docker is still responsive before operations
+ensure_docker_running
+
+# Stop previous run's compose project (if any)
+if [ -f "$COMPOSE_PROJECT_FILE" ]; then
   OLD_PROJECT=$(cat "$COMPOSE_PROJECT_FILE" 2>/dev/null)
   if [ -n "$OLD_PROJECT" ]; then
     info "Stopping previous Docker Compose project..."
@@ -136,12 +232,35 @@ success "Frontend dependencies installed"
 # ─── Section 5: Start Docker infrastructure ───────────────────────────────────
 section "5. Starting Docker infrastructure"
 
-# Use a new project name every run so Docker Compose never hits "No such container"
-# from stale state. Volumes use fixed names in docker-compose.yml so data persists.
+# Re-verify Docker is responsive before starting containers
+ensure_docker_running
+
+# Pre-pull images to avoid timeout during compose up
+info "Pre-pulling Docker images (this may take a moment on first run)..."
+IMAGES=("postgres:16-alpine" "redis:7-alpine" "qdrant/qdrant:latest" "minio/minio:latest")
+for img in "${IMAGES[@]}"; do
+  if ! docker image inspect "$img" >/dev/null 2>&1; then
+    info "Pulling $img..."
+    if ! pull_docker_image "$img" 3; then
+      warn "Failed to pull $img, will retry during compose up"
+    fi
+  else
+    success "$img already exists locally"
+  fi
+done
+
+# Use a new project name every run
 COMPOSE_PROJECT_NAME="sisyphus_$(date +%s)_$$"
 echo "$COMPOSE_PROJECT_NAME" > "$COMPOSE_PROJECT_FILE"
+
 info "Starting postgres, redis, qdrant, minio (project: $COMPOSE_PROJECT_NAME)..."
-docker compose -p "$COMPOSE_PROJECT_NAME" -f "$PROJECT_DIR/docker/docker-compose.yml" up -d
+
+# Docker compose up with retry mechanism
+if ! docker_compose_up "$COMPOSE_PROJECT_NAME" "$PROJECT_DIR/docker/docker-compose.yml" 3; then
+  error "Failed to start Docker containers after 3 attempts. Check Docker logs for details."
+fi
+
+success "Docker containers started"
 
 # ── Wait for PostgreSQL ──
 info "Waiting for PostgreSQL..."
@@ -149,7 +268,12 @@ RETRIES=60
 until docker compose -p "$COMPOSE_PROJECT_NAME" -f "$PROJECT_DIR/docker/docker-compose.yml" exec -T postgres \
     pg_isready -U postgres >/dev/null 2>&1; do
   RETRIES=$((RETRIES - 1))
-  [ $RETRIES -eq 0 ] && error "PostgreSQL did not become ready in time"
+  if [ $RETRIES -eq 0 ]; then
+    # Show container logs for debugging
+    warn "PostgreSQL container logs:"
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f "$PROJECT_DIR/docker/docker-compose.yml" logs postgres --tail=20 2>&1 | sed 's/^/  /'
+    error "PostgreSQL did not become ready in time"
+  fi
   printf '.'
   sleep 1
 done
@@ -162,7 +286,11 @@ RETRIES=30
 until docker compose -p "$COMPOSE_PROJECT_NAME" -f "$PROJECT_DIR/docker/docker-compose.yml" exec -T redis \
     redis-cli ping >/dev/null 2>&1; do
   RETRIES=$((RETRIES - 1))
-  [ $RETRIES -eq 0 ] && error "Redis did not become ready in time"
+  if [ $RETRIES -eq 0 ]; then
+    warn "Redis container logs:"
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f "$PROJECT_DIR/docker/docker-compose.yml" logs redis --tail=10 2>&1 | sed 's/^/  /'
+    error "Redis did not become ready in time"
+  fi
   printf '.'
   sleep 1
 done
@@ -173,7 +301,6 @@ success "Redis is ready"
 section "6. Database initialization"
 
 info "Running Alembic migrations..."
-# Auto-generate initial migration if versions/ is empty
 VERSIONS_DIR="$PROJECT_DIR/backend/alembic/versions"
 if [ -d "$VERSIONS_DIR" ] && [ -z "$(ls -A "$VERSIONS_DIR" 2>/dev/null)" ]; then
   info "No migration files found — generating initial schema..."
