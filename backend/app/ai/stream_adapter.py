@@ -4,20 +4,33 @@ SSE 事件格式：
   event: thinking\ndata: {"delta": "..."}\n\n
   event: content\ndata: {"delta": "..."}\n\n
   event: done\ndata: {"usage": {...}}\n\n
+
+性能优化：
+  - 心跳机制：每 15s 发送 :keepalive 注释行
+  - 超时保护：5 分钟无输出自动关闭
 """
 
 import asyncio
 import json
 import logging
+import time
 from collections.abc import AsyncIterator
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# 心跳间隔 (秒) 和超时时间 (秒)
+_HEARTBEAT_INTERVAL = 15
+_STREAM_TIMEOUT = 300  # 5 分钟
+
 
 def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+def _keepalive() -> str:
+    return ": keepalive\n\n"
 
 
 async def openai_thinking_stream(
@@ -181,16 +194,47 @@ _PROVIDER_FUNCS = {
 }
 
 
+async def _with_heartbeat_and_timeout(
+    source: AsyncIterator[str],
+) -> AsyncIterator[str]:
+    """为任意 SSE 流添加心跳 (15s) 和超时保护 (5min)。"""
+    last_activity = time.monotonic()
+
+    async def _next_chunk():
+        return await source.__anext__()
+
+    while True:
+        remaining = _STREAM_TIMEOUT - (time.monotonic() - last_activity)
+        if remaining <= 0:
+            logger.warning("SSE 流超时 (%ds 无输出)，自动关闭", _STREAM_TIMEOUT)
+            yield _sse("content", {"delta": "\n\n⚠️ 流式输出超时，已自动关闭。"})
+            yield _sse("done", {"usage": {}})
+            return
+
+        try:
+            chunk = await asyncio.wait_for(
+                _next_chunk(),
+                timeout=min(_HEARTBEAT_INTERVAL, remaining),
+            )
+            last_activity = time.monotonic()
+            yield chunk
+        except TimeoutError:
+            yield _keepalive()
+        except StopAsyncIteration:
+            return
+
+
 async def get_thinking_stream_with_fallback(
     messages: list[dict],
     system: str = "",
     max_retries: int = 2,
 ) -> AsyncIterator[str]:
-    """带重试和降级的流式输出。
+    """带重试、降级、心跳和超时保护的流式输出。
 
     1. 尝试主模型 (settings.llm_provider)
     2. 重试 max_retries 次（指数退避 1s, 2s）
     3. 降级到备用模型 (settings.llm_fallback_provider)
+    4. 每 15s 发送 :keepalive，5min 无输出自动关闭
     """
     primary = settings.llm_provider.lower()
     fallback = getattr(settings, "llm_fallback_provider", "zhipu").lower()
@@ -206,9 +250,10 @@ async def get_thinking_stream_with_fallback(
                 continue
             for attempt in range(max_retries + 1):
                 try:
-                    stream = func(messages, system)
+                    raw_stream = func(messages, system)
+                    guarded = _with_heartbeat_and_timeout(raw_stream)
                     has_content = False
-                    async for chunk in stream:
+                    async for chunk in guarded:
                         has_content = True
                         yield chunk
                     if has_content:
