@@ -41,9 +41,7 @@ def upgrade() -> None:
         sa.Column("storage_path", sa.String(1000), nullable=True),
         sa.Column("content_text", sa.Text, nullable=True),
         sa.Column("content_ast", sa.dialects.postgresql.JSONB, nullable=True),
-        sa.Column(
-            "parse_status", sa.String(20), server_default="pending", nullable=False
-        ),
+        sa.Column("parse_status", sa.String(20), server_default="pending", nullable=False),
         sa.Column("error_message", sa.Text, nullable=True),
         sa.Column(
             "created_at",
@@ -66,9 +64,7 @@ def upgrade() -> None:
             sa.dialects.postgresql.UUID(as_uuid=True),
             primary_key=True,
         ),
-        sa.Column(
-            "scope", sa.String(20), server_default="global", nullable=False
-        ),
+        sa.Column("scope", sa.String(20), server_default="global", nullable=False),
         sa.Column(
             "scope_id",
             sa.dialects.postgresql.UUID(as_uuid=True),
@@ -83,16 +79,10 @@ def upgrade() -> None:
         ),
         sa.Column("team_standard_prompt", sa.Text, nullable=True),
         sa.Column("module_rules", sa.dialects.postgresql.JSONB, nullable=True),
-        sa.Column(
-            "output_preference", sa.dialects.postgresql.JSONB, nullable=True
-        ),
-        sa.Column(
-            "scope_preference", sa.dialects.postgresql.JSONB, nullable=True
-        ),
+        sa.Column("output_preference", sa.dialects.postgresql.JSONB, nullable=True),
+        sa.Column("scope_preference", sa.dialects.postgresql.JSONB, nullable=True),
         sa.Column("rag_config", sa.dialects.postgresql.JSONB, nullable=True),
-        sa.Column(
-            "custom_checklist", sa.dialects.postgresql.JSONB, nullable=True
-        ),
+        sa.Column("custom_checklist", sa.dialects.postgresql.JSONB, nullable=True),
         sa.Column("llm_model", sa.String(50), nullable=True),
         sa.Column("llm_temperature", sa.Float, nullable=True),
         sa.Column(
