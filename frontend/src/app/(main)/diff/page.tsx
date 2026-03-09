@@ -1,5 +1,7 @@
 "use client";
 
+import { PenLine, Bot, Lightbulb, CheckCircle2, Undo2 } from "lucide-react";
+
 const diffLines: { type: "add" | "del" | "ctx"; text: string }[] = [
   { type: "ctx", text: "  3.2 数据保存" },
   { type: "ctx", text: "  用户在编辑器中修改内容后，系统应提供保存功能。" },
@@ -19,10 +21,10 @@ const diffLines: { type: "add" | "del" | "ctx"; text: string }[] = [
 ];
 
 const impactItems = [
-  { level: "high" as const, icon: "🔴", title: "新增自动保存机制", desc: "原需求仅支持手动保存，现新增 30s 定时自动保存，涉及前端定时器、后端草稿接口、并发冲突处理" },
-  { level: "high" as const, icon: "🔴", title: "版本模型变更", desc: "版本号语义从递增整数改为 draft/formal 双轨制，影响版本回退和对比逻辑" },
-  { level: "med" as const, icon: "🟡", title: "UI 状态栏新增", desc: "需新增自动保存状态指示器，影响编辑器顶部布局" },
-  { level: "med" as const, icon: "🟡", title: "草稿清理策略", desc: "草稿版本仅保留最近 10 个，需增加定时清理任务" },
+  { level: "high" as const, title: "新增自动保存机制", desc: "原需求仅支持手动保存，现新增 30s 定时自动保存，涉及前端定时器、后端草稿接口、并发冲突处理" },
+  { level: "high" as const, title: "版本模型变更", desc: "版本号语义从递增整数改为 draft/formal 双轨制，影响版本回退和对比逻辑" },
+  { level: "med" as const, title: "UI 状态栏新增", desc: "需新增自动保存状态指示器，影响编辑器顶部布局" },
+  { level: "med" as const, title: "草稿清理策略", desc: "草稿版本仅保留最近 10 个，需增加定时清理任务" },
 ];
 
 const mustRewriteCases = [
@@ -61,8 +63,8 @@ export default function DiffPage() {
         <span className="pill pill-red">−4 行删除</span>
         <span className="pill pill-green">+7 行新增</span>
         <span className="pill pill-amber">8 条用例受影响</span>
-        <button type="button" className="btn">↩ 返回需求</button>
-        <button type="button" className="btn btn-primary">✅ 确认变更</button>
+        <button type="button" className="btn"><Undo2 size={12} /> 返回需求</button>
+        <button type="button" className="btn btn-primary"><CheckCircle2 size={14} /> 确认变更</button>
       </div>
 
       {/* 2-column layout */}
@@ -73,7 +75,7 @@ export default function DiffPage() {
           {/* Text Diff Card */}
           <div className="card">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <span style={{ fontSize: 15 }}>📝</span>
+              <PenLine size={15} />
               <span className="sec-title">文本级 Diff (Myers)</span>
               <span className="spacer" />
               <span className="pill pill-red">−4</span>
@@ -98,7 +100,7 @@ export default function DiffPage() {
           {/* AI Semantic Impact Card */}
           <div className="card">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-              <span style={{ fontSize: 15 }}>🤖</span>
+              <Bot size={15} />
               <span className="sec-title">AI 语义影响评估</span>
               <span className="spacer" />
               <span className="pill pill-green">置信度 92%</span>
@@ -106,7 +108,7 @@ export default function DiffPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {impactItems.map((item, i) => (
                 <div key={i} className={`risk-item ${item.level}`}>
-                  <span style={{ fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
+                  <span className="sb-dot" style={{ background: item.level === "high" ? "var(--red)" : "var(--amber)", width: 10, height: 10, flexShrink: 0 }} />
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 12.5, color: "var(--text)", marginBottom: 2 }}>{item.title}</div>
                     <div style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.5 }}>{item.desc}</div>
@@ -138,7 +140,7 @@ export default function DiffPage() {
           {/* Must Rewrite */}
           <div>
             <div className="sec-header">
-              <span style={{ fontSize: 14 }}>🔴</span>
+              <span className="sb-dot" style={{ background: "var(--red)", width: 10, height: 10 }} />
               <span className="sec-title">必须重写</span>
               <span className="pill pill-red" style={{ marginLeft: 4 }}>3</span>
             </div>
@@ -157,7 +159,7 @@ export default function DiffPage() {
           {/* Can Keep */}
           <div>
             <div className="sec-header">
-              <span style={{ fontSize: 14 }}>🟢</span>
+              <span className="sb-dot" style={{ background: "var(--accent)", width: 10, height: 10 }} />
               <span className="sec-title">可保留用例</span>
               <span className="pill pill-green" style={{ marginLeft: 4 }}>5</span>
             </div>
@@ -174,7 +176,7 @@ export default function DiffPage() {
           {/* Suggested New Test Points */}
           <div>
             <div className="sec-header">
-              <span style={{ fontSize: 14 }}>💡</span>
+              <Lightbulb size={14} />
               <span className="sec-title">新增测试点建议</span>
               <span className="pill pill-green" style={{ marginLeft: 4 }}>3</span>
             </div>

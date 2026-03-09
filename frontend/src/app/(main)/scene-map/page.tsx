@@ -1,5 +1,7 @@
 "use client";
 
+import { Target, ClipboardList, Map, List, TreePine, Undo2 } from "lucide-react";
+
 const steps = [
   { label: "需求录入", done: true },
   { label: "健康诊断", done: true },
@@ -50,7 +52,7 @@ export default function SceneMapPage() {
         ))}
         <div className="spacer" />
         <span className="pill pill-green">8/10 已确认</span>
-        <button className="btn btn-sm">↩ 返回诊断</button>
+        <button className="btn btn-sm"><Undo2 size={12} /> 返回诊断</button>
         <button className="btn btn-sm btn-primary">确认，进入用例生成 →</button>
       </div>
 
@@ -72,7 +74,7 @@ export default function SceneMapPage() {
           {/* Left: Test Point Tree */}
           <div className="col-left">
             <div className="col-header">
-              🎯 测试点列表
+              <Target size={14} /> 测试点列表
               <span className="mono" style={{ marginLeft: "auto", fontSize: 10, color: "var(--text3)" }}>10 个测试点</span>
             </div>
             <div style={{ padding: 10 }}>
@@ -97,7 +99,7 @@ export default function SceneMapPage() {
           {/* Middle: Detail */}
           <div className="col-mid">
             <div className="col-header" style={{ background: "var(--bg)" }}>
-              📋 测试点详情
+              <ClipboardList size={14} /> 测试点详情
               <span className="mono" style={{ marginLeft: "auto", fontSize: 10, color: "var(--accent)" }}>TP-004</span>
             </div>
             <div style={{ padding: 16 }}>
@@ -177,10 +179,10 @@ export default function SceneMapPage() {
           {/* Right: Scene Map */}
           <div className="col-right">
             <div className="col-header">
-              🗺 场景地图
+              <Map size={14} /> 场景地图
               <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
-                <button className="btn btn-ghost btn-sm" style={{ fontSize: 10 }}>📋 列表</button>
-                <button className="btn btn-sm btn-primary" style={{ fontSize: 10 }}>🌳 图形</button>
+                <button className="btn btn-ghost btn-sm" style={{ fontSize: 10 }}><List size={12} /> 列表</button>
+                <button className="btn btn-sm btn-primary" style={{ fontSize: 10 }}><TreePine size={12} /> 图形</button>
               </div>
             </div>
             <div style={{ padding: 10 }}>

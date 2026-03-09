@@ -1,5 +1,7 @@
 "use client";
 
+import { Zap, FolderOpen, Calendar, Search, Target, ClipboardList, FileText, Plus } from 'lucide-react';
+
 const requirements = [
   { id: "REQ-001", title: "用户数据源接入管理", status: "draft", priority: "P1", testPoints: 5, cases: 12 },
   { id: "REQ-002", title: "数据同步调度引擎", status: "reviewed", priority: "P0", testPoints: 8, cases: 24 },
@@ -27,13 +29,13 @@ export default function RequirementsPage() {
         <div className="sb-section">
           <div className="sb-label">子产品</div>
           <div className="sb-item active">
-            <span className="icon">⚡</span>离线开发平台<span className="sb-count">25</span>
+            <Zap size={14} />离线开发平台<span className="sb-count">25</span>
           </div>
           <div className="sb-item">
-            <span className="icon">🔴</span>实时开发平台<span className="sb-count">18</span>
+            <span className="sb-dot" style={{ background: 'var(--red)' }} />实时开发平台<span className="sb-count">18</span>
           </div>
           <div className="sb-item">
-            <span className="icon">🗂</span>数据资产管理<span className="sb-count">12</span>
+            <FolderOpen size={14} />数据资产管理<span className="sb-count">12</span>
           </div>
         </div>
         <hr className="divider" style={{ margin: "4px 0" }} />
@@ -41,7 +43,7 @@ export default function RequirementsPage() {
           <div className="sb-label">迭代</div>
           {iterations.map((it) => (
             <div key={it.name} className={`sb-item${it.active ? " active" : ""}`}>
-              <span className="icon">📅</span>{it.name}<span className="sb-count">{it.count}</span>
+              <Calendar size={14} />{it.name}<span className="sb-count">{it.count}</span>
             </div>
           ))}
         </div>
@@ -76,8 +78,8 @@ export default function RequirementsPage() {
             <div className="sub">{requirements.length} 条需求 · 选择左侧需求查看详情</div>
           </div>
           <div className="spacer" />
-          <input className="input" placeholder="🔍  搜索需求..." style={{ width: 220 }} />
-          <button className="btn btn-primary">＋ 新建需求</button>
+          <input className="input" placeholder="搜索需求..." style={{ width: 220 }} />
+          <button className="btn btn-primary"><Plus size={14} /> 新建需求</button>
         </div>
 
         <div className="grid-3">
@@ -91,8 +93,8 @@ export default function RequirementsPage() {
                 </div>
                 <div style={{ fontWeight: 600, fontSize: 13.5, marginBottom: 8 }}>{r.title}</div>
                 <div style={{ display: "flex", gap: 12, fontSize: 11.5, color: "var(--text3)" }}>
-                  <span>🎯 {r.testPoints} 个测试点</span>
-                  <span>📋 {r.cases} 条用例</span>
+                  <span><Target size={12} /> {r.testPoints} 个测试点</span>
+                  <span><ClipboardList size={12} /> {r.cases} 条用例</span>
                   <span
                     className={`pill ${r.priority === "P0" ? "pill-red" : r.priority === "P1" ? "pill-amber" : "pill-gray"}`}
                     style={{ fontSize: 10 }}
@@ -118,7 +120,7 @@ export default function RequirementsPage() {
             style={{ minHeight: 300, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)" }}
           >
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>📄</div>
+              <div style={{ fontSize: 36, marginBottom: 8 }}><FileText size={36} /></div>
               <div>点击左侧需求查看详情</div>
               <div style={{ fontSize: 11.5, marginTop: 4 }}>
                 支持富文本编辑、前置条件标注、验收标准管理

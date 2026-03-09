@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { Bot, Link2, Users, ClipboardList, FileText, BookOpen, Lock, type LucideIcon } from 'lucide-react';
 
 /* ── sidebar items ── */
-const sidebarItems = [
-  { icon: '🤖', label: 'AI模型配置' },
-  { icon: '🔗', label: '外部系统集成' },
-  { icon: '👥', label: '团队权限' },
-  { icon: '📋', label: '必问清单' },
-  { icon: '📄', label: '模板库' },
-  { icon: '📚', label: '知识库' },
-  { icon: '🔒', label: '安全审计' },
+const sidebarItems: { icon: LucideIcon; label: string }[] = [
+  { icon: Bot, label: 'AI模型配置' },
+  { icon: Link2, label: '外部系统集成' },
+  { icon: Users, label: '团队权限' },
+  { icon: ClipboardList, label: '必问清单' },
+  { icon: FileText, label: '模板库' },
+  { icon: BookOpen, label: '知识库' },
+  { icon: Lock, label: '安全审计' },
 ];
 
 /* ── model cards ── */
@@ -180,17 +181,20 @@ export default function SettingsPage() {
       <aside className="sidebar-panel">
         <div className="sb-section">
           <div className="sb-label">设置</div>
-          {sidebarItems.map((item) => (
-            <button
-              type="button"
-              key={item.label}
-              className={`sb-item${activeTab === item.label ? ' active' : ''}`}
-              onClick={() => setActiveTab(item.label)}
-            >
-              <span className="icon">{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
+          {sidebarItems.map((item) => {
+            const SideIcon = item.icon;
+            return (
+              <button
+                type="button"
+                key={item.label}
+                className={`sb-item${activeTab === item.label ? ' active' : ''}`}
+                onClick={() => setActiveTab(item.label)}
+              >
+                <SideIcon size={14} />
+                {item.label}
+              </button>
+            );
+          })}
         </div>
       </aside>
 

@@ -3,6 +3,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { StatusPill, StatCard } from '@/components/ui';
+import { Stethoscope, TreePine, Zap } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 
 interface Requirement {
@@ -61,7 +62,7 @@ export default function RequirementDetailPage() {
         </div>
         <Link href={`/diagnosis/${id}`}>
           <button type="button" className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-accent text-black hover:bg-accent2 transition-colors">
-            🩺 开始健康诊断
+            <Stethoscope size={14} /> 开始健康诊断
           </button>
         </Link>
       </div>
@@ -113,17 +114,17 @@ export default function RequirementDetailPage() {
             <div className="space-y-2">
               <Link href={`/diagnosis/${id}`} className="block">
                 <button type="button" className="w-full text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
-                  🩺 健康诊断
+                  <Stethoscope size={12} /> 健康诊断
                 </button>
               </Link>
               <Link href={`/scene-map/${id}`} className="block">
                 <button type="button" className="w-full text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
-                  🌳 测试点确认
+                  <TreePine size={12} /> 测试点确认
                 </button>
               </Link>
               <Link href={`/workbench/${id}`} className="block">
                 <button type="button" className="w-full text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
-                  ⚡ 生成工作台
+                  <Zap size={12} /> 生成工作台
                 </button>
               </Link>
             </div>

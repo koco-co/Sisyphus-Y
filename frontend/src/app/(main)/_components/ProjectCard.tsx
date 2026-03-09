@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Users } from 'lucide-react';
 import { StatusPill, ProgressBar } from '@/components/ui';
 
 interface ProjectCardProps {
@@ -43,7 +44,7 @@ export function ProjectCard({ id, name, iteration, status, totalCases, coverage,
           ))}
         </div>
         <ProgressBar value={coverage} />
-        <div className="mt-2.5 text-[11.5px] text-text3">👥 {members.slice(0, 3).join('  ')}</div>
+        <div className="mt-2.5 text-[11.5px] text-text3 flex items-center gap-1"><Users size={12} /> {members.slice(0, 3).join('  ')}</div>
       </div>
     </Link>
   );

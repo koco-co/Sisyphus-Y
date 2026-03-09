@@ -1,5 +1,17 @@
 'use client';
 
+import {
+  Target,
+  FileText,
+  MessageSquare,
+  ClipboardList,
+  Upload,
+  ChevronLeft,
+  Clock,
+  Settings,
+  SendHorizontal,
+} from 'lucide-react';
+
 /* ── Static demo data ── */
 
 const treeData = [
@@ -173,10 +185,10 @@ const generatedCases = [
 
 const quickCommands = ['/生成全部', '/优化', '/换一种思路', '/调整粒度'];
 const modeButtons = [
-  { key: 'tp', label: '🎯 测试点驱动', active: false },
-  { key: 'doc', label: '📄 文档驱动', active: true },
-  { key: 'chat', label: '💬 对话引导', active: false },
-  { key: 'tpl', label: '📋 模板填充', active: false },
+  { key: 'tp', label: '测试点驱动', icon: Target, active: false },
+  { key: 'doc', label: '文档驱动', icon: FileText, active: true },
+  { key: 'chat', label: '对话引导', icon: MessageSquare, active: false },
+  { key: 'tpl', label: '模板填充', icon: ClipboardList, active: false },
 ];
 const caseFilters = ['全部', '正常', '异常', '边界'];
 
@@ -194,18 +206,22 @@ export default function Page() {
         </span>
         <div className="spacer" />
         <div style={{ display: 'flex', gap: 4 }}>
-          {modeButtons.map((m) => (
-            <button
-              type="button"
-              key={m.key}
-              className={m.active ? 'btn btn-primary btn-sm' : 'btn btn-sm'}
-            >
-              {m.label}
-            </button>
-          ))}
+          {modeButtons.map((m) => {
+            const ModeIcon = m.icon;
+            return (
+              <button
+                type="button"
+                key={m.key}
+                className={m.active ? 'btn btn-primary btn-sm' : 'btn btn-sm'}
+              >
+                <ModeIcon size={12} />
+                {m.label}
+              </button>
+            );
+          })}
         </div>
         <button type="button" className="btn" style={{ marginLeft: 8 }}>
-          📤 导出
+          <Upload size={12} /> 导出
         </button>
         <button type="button" className="btn btn-primary">
           提交到用例库
@@ -217,10 +233,10 @@ export default function Page() {
         {/* ── Left: Requirement navigation ── */}
         <div className="col-left">
           <div className="col-header">
-            <span>📄 需求文档</span>
+            <span><FileText size={14} /> 需求文档</span>
             <div className="spacer" />
             <button type="button" className="btn btn-ghost btn-sm">
-              ⏴
+              <ChevronLeft size={14} />
             </button>
           </div>
           <div style={{ padding: '8px 10px' }}>
@@ -263,13 +279,13 @@ export default function Page() {
         {/* ── Middle: AI chat ── */}
         <div className="col-mid" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="col-header" style={{ background: 'var(--bg)' }}>
-            <span>💬 AI 生成对话</span>
+            <span><MessageSquare size={14} /> AI 生成对话</span>
             <span className="pill pill-blue" style={{ fontSize: 10 }}>
               TP-004
             </span>
             <div className="spacer" />
             <span className="pill pill-amber" style={{ fontSize: 10 }}>
-              ⏳ 生成中...
+              <Clock size={10} /> 生成中...
             </span>
           </div>
 
@@ -288,7 +304,7 @@ export default function Page() {
                       fontFamily: 'var(--font-mono)',
                     }}
                   >
-                    ⚙ {msg.content}
+                    <Settings size={12} /> {msg.content}
                   </div>
                 );
               }
@@ -402,7 +418,7 @@ export default function Page() {
               style={{ flex: 1, resize: 'none' }}
             />
             <button type="button" className="btn btn-primary" style={{ alignSelf: 'flex-end' }}>
-              发送 ↵
+              <SendHorizontal size={12} /> 发送
             </button>
           </div>
         </div>
@@ -410,7 +426,7 @@ export default function Page() {
         {/* ── Right: Generated cases ── */}
         <div className="col-right" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="col-header">
-            <span>📋 已生成用例</span>
+            <span><ClipboardList size={14} /> 已生成用例</span>
             <div className="spacer" />
             <span className="mono" style={{ fontSize: 11, color: 'var(--text3)' }}>
               12/38

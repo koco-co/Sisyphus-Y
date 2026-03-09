@@ -5,6 +5,8 @@ import { useState, useRef, useEffect } from 'react';
 import { ChatBubble, ThinkingStream, StatusPill } from '@/components/ui';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import { useStreamStore } from '@/stores/stream-store';
+import { Target, FileText, MessageSquare, Zap } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { CasePreviewCard } from './_components/CasePreviewCard';
 
@@ -23,10 +25,10 @@ interface GeneratedCase {
   status: string;
 }
 
-const modes = [
-  { key: 'test_point_driven', label: '🎯 测试点驱动', desc: '基于确认的测试点逐个生成' },
-  { key: 'document', label: '📄 文档驱动', desc: '直接从需求文档生成' },
-  { key: 'dialogue', label: '💬 对话式', desc: '通过对话逐步细化生成' },
+const modes: { key: string; label: string; icon: LucideIcon; desc: string }[] = [
+  { key: 'test_point_driven', label: '测试点驱动', icon: Target, desc: '基于确认的测试点逐个生成' },
+  { key: 'document', label: '文档驱动', icon: FileText, desc: '直接从需求文档生成' },
+  { key: 'dialogue', label: '对话式', icon: MessageSquare, desc: '通过对话逐步细化生成' },
 ];
 
 export default function WorkbenchPage() {
@@ -79,20 +81,23 @@ export default function WorkbenchPage() {
     <div className="flex flex-col h-[calc(100vh-0px)] overflow-hidden">
       {/* Toolbar */}
       <div className="flex items-center gap-3 p-3 border-b border-border bg-bg1">
-        <div className="font-display font-bold text-[14px] text-accent">⚡ 生成工作台</div>
+        <div className="font-display font-bold text-[14px] text-accent flex items-center gap-1"><Zap size={14} /> 生成工作台</div>
         <div className="w-px h-5 bg-border mx-1" />
-        {modes.map((m) => (
-          <button
-            type="button"
-            key={m.key}
-            onClick={() => setMode(m.key)}
-            className={`px-3 py-1 rounded-md text-[11.5px] border transition-colors ${
-              mode === m.key ? 'bg-accent-d text-accent border-[rgba(0,217,163,0.2)]' : 'text-text3 border-border hover:text-text hover:border-border2'
-            }`}
-          >
-            {m.label}
-          </button>
-        ))}
+        {modes.map((m) => {
+          const ModeIcon = m.icon;
+          return (
+            <button
+              type="button"
+              key={m.key}
+              onClick={() => setMode(m.key)}
+              className={`px-3 py-1 rounded-md text-[11.5px] border transition-colors flex items-center gap-1 ${
+                mode === m.key ? 'bg-accent-d text-accent border-[rgba(0,217,163,0.2)]' : 'text-text3 border-border hover:text-text hover:border-border2'
+              }`}
+            >
+              <ModeIcon size={12} /> {m.label}
+            </button>
+          );
+        })}
         <div className="flex-1" />
         <span className="text-[11px] text-text3 font-mono">需求: {id?.toString().slice(0, 8)}...</span>
       </div>
@@ -107,12 +112,15 @@ export default function WorkbenchPage() {
             <div className="text-[11px] text-text3 mt-0.5 font-mono">{id?.toString().slice(0, 12)}...</div>
           </div>
           <div className="text-[11px] font-semibold text-text3 uppercase tracking-wide mb-2 mt-4">生成模式</div>
-          {modes.map((m) => (
-            <div key={m.key} className={`p-2 rounded-md mb-1 text-[11px] ${mode === m.key ? 'bg-accent-d text-accent border border-[rgba(0,217,163,0.2)]' : 'text-text3'}`}>
-              <div className="font-medium">{m.label}</div>
-              <div className="text-[10px] mt-0.5 opacity-70">{m.desc}</div>
-            </div>
-          ))}
+          {modes.map((m) => {
+            const ModeIcon = m.icon;
+            return (
+              <div key={m.key} className={`p-2 rounded-md mb-1 text-[11px] ${mode === m.key ? 'bg-accent-d text-accent border border-[rgba(0,217,163,0.2)]' : 'text-text3'}`}>
+                <div className="font-medium flex items-center gap-1"><ModeIcon size={11} /> {m.label}</div>
+                <div className="text-[10px] mt-0.5 opacity-70">{m.desc}</div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Center: AI chat */}
@@ -120,7 +128,7 @@ export default function WorkbenchPage() {
           <div ref={chatRef} className="flex-1 overflow-y-auto p-4">
             {messages.length === 0 && !thinkingText && !contentText && (
               <div className="text-center py-16">
-                <div className="text-[24px] mb-2">⚡</div>
+                <div className="text-[24px] mb-2"><Zap size={24} /></div>
                 <div className="text-text2 text-[14px] font-medium">AI 用例生成工作台</div>
                 <div className="text-text3 text-[12px] mt-1">输入指令开始生成测试用例</div>
               </div>

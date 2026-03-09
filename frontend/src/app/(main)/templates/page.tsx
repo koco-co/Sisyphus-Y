@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { FlaskConical, Plug, Zap, ShieldCheck, BarChart3, RefreshCw, Star, type LucideIcon } from 'lucide-react';
 
 /* ── categories ── */
 const tabs = ['全部', '功能测试', '接口测试', '性能测试', '安全测试'] as const;
 
 /* ── demo templates ── */
 interface Template {
-  icon: string;
+  icon: LucideIcon;
   name: string;
   desc: string;
   category: string;
@@ -18,7 +19,7 @@ interface Template {
 
 const templates: Template[] = [
   {
-    icon: '🧪',
+    icon: FlaskConical,
     name: '标准功能测试模板',
     desc: '覆盖正常流程、异常流程和边界值的通用功能测试模板，适用于大多数业务场景。',
     category: '功能测试',
@@ -27,7 +28,7 @@ const templates: Template[] = [
     tags: ['功能', '通用', '推荐'],
   },
   {
-    icon: '🔌',
+    icon: Plug,
     name: 'RESTful API 测试模板',
     desc: '针对 REST 接口的参数校验、状态码、幂等性、限流等维度的标准化测试模板。',
     category: '接口测试',
@@ -36,7 +37,7 @@ const templates: Template[] = [
     tags: ['API', 'REST', '接口'],
   },
   {
-    icon: '⚡',
+    icon: Zap,
     name: '性能基线测试模板',
     desc: '包含并发、吞吐量、响应时间、资源占用等性能指标的基线测试用例模板。',
     category: '性能测试',
@@ -45,7 +46,7 @@ const templates: Template[] = [
     tags: ['性能', '基线', '并发'],
   },
   {
-    icon: '🔐',
+    icon: ShieldCheck,
     name: 'OWASP Top 10 安全模板',
     desc: '基于 OWASP Top 10 安全风险清单的安全测试用例模板，覆盖注入、XSS、CSRF 等。',
     category: '安全测试',
@@ -54,7 +55,7 @@ const templates: Template[] = [
     tags: ['安全', 'OWASP', '渗透'],
   },
   {
-    icon: '📊',
+    icon: BarChart3,
     name: '数据迁移验证模板',
     desc: '数据迁移场景的完整性、一致性、回滚验证测试模板，含字段映射校验。',
     category: '功能测试',
@@ -63,7 +64,7 @@ const templates: Template[] = [
     tags: ['数据', '迁移', 'ETL'],
   },
   {
-    icon: '🔄',
+    icon: RefreshCw,
     name: '消息队列集成测试模板',
     desc: 'Kafka / RabbitMQ 消息投递、消费、重试、死信队列等场景的集成测试模板。',
     category: '接口测试',
@@ -88,7 +89,7 @@ export default function TemplatesPage() {
       <div className="topbar">
         <h1>模板库</h1>
         <div className="spacer" />
-        <input className="input" placeholder="🔍  搜索模板..." style={{ width: 220 }} />
+        <input className="input" placeholder="搜索模板..." style={{ width: 220 }} />
         <button type="button" className="btn btn-primary">
           ＋ 新建模板
         </button>
@@ -110,7 +111,9 @@ export default function TemplatesPage() {
 
       {/* Template grid */}
       <div className="grid-3">
-        {filtered.map((t) => (
+        {filtered.map((t) => {
+          const TplIcon = t.icon;
+          return (
           <div className="card card-hover" key={t.name}>
             {/* Header */}
             <div
@@ -123,7 +126,6 @@ export default function TemplatesPage() {
             >
               <span
                 style={{
-                  fontSize: 24,
                   width: 40,
                   height: 40,
                   display: 'flex',
@@ -134,7 +136,7 @@ export default function TemplatesPage() {
                   border: '1px solid var(--border)',
                 }}
               >
-                {t.icon}
+                <TplIcon size={20} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div
@@ -182,15 +184,15 @@ export default function TemplatesPage() {
                 color: 'var(--text3)',
               }}
             >
-              <span>
-                📊 使用{' '}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <BarChart3 size={12} /> 使用{' '}
                 <span className="mono" style={{ color: 'var(--text2)' }}>
                   {t.uses}
                 </span>{' '}
                 次
               </span>
-              <span>
-                ⭐{' '}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <Star size={12} />{' '}
                 <span className="mono" style={{ color: 'var(--accent)' }}>
                   {t.rating}
                 </span>
@@ -217,7 +219,8 @@ export default function TemplatesPage() {
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -1,14 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { Folder, Ruler, Compass, PenLine, Wrench, Search, Upload, Check, Clock, type LucideIcon } from 'lucide-react';
 
 /* ── sidebar categories ── */
-const categories = [
-  { icon: '📁', label: '全部文档', count: 48 },
-  { icon: '📏', label: '测试规范', count: 12 },
-  { icon: '📐', label: '行业标准', count: 8 },
-  { icon: '📝', label: '历史用例', count: 18 },
-  { icon: '🔧', label: '自定义', count: 10 },
+const categories: { icon: LucideIcon; label: string; count: number }[] = [
+  { icon: Folder, label: '全部文档', count: 48 },
+  { icon: Ruler, label: '测试规范', count: 12 },
+  { icon: Compass, label: '行业标准', count: 8 },
+  { icon: PenLine, label: '历史用例', count: 18 },
+  { icon: Wrench, label: '自定义', count: 10 },
 ];
 
 /* ── stats ── */
@@ -106,18 +107,21 @@ export default function KnowledgePage() {
       <aside className="sidebar-panel">
         <div className="sb-section">
           <div className="sb-label">分类</div>
-          {categories.map((c) => (
-            <button
-              type="button"
-              key={c.label}
-              className={`sb-item${activeCategory === c.label ? ' active' : ''}`}
-              onClick={() => setActiveCategory(c.label)}
-            >
-              <span className="icon">{c.icon}</span>
-              {c.label}
-              <span className="sb-count">{c.count}</span>
-            </button>
-          ))}
+          {categories.map((c) => {
+            const CatIcon = c.icon;
+            return (
+              <button
+                type="button"
+                key={c.label}
+                className={`sb-item${activeCategory === c.label ? ' active' : ''}`}
+                onClick={() => setActiveCategory(c.label)}
+              >
+                <CatIcon size={14} />
+                {c.label}
+                <span className="sb-count">{c.count}</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="sb-section" style={{ marginTop: 16 }}>
@@ -153,9 +157,9 @@ export default function KnowledgePage() {
         <div className="topbar">
           <h1>知识库管理</h1>
           <div className="spacer" />
-          <input className="input" placeholder="🔍  搜索文档..." style={{ width: 220 }} />
+          <input className="input" placeholder="搜索文档..." style={{ width: 220 }} />
           <button type="button" className="btn btn-primary">
-            📤 上传文档
+            <Upload size={12} /> 上传文档
           </button>
         </div>
 
@@ -191,7 +195,7 @@ export default function KnowledgePage() {
                   </td>
                   <td>
                     <span className={`pill ${d.vectorized ? 'pill-green' : 'pill-amber'}`}>
-                      {d.vectorized ? '✓ 已完成' : '⏳ 处理中'}
+                      {d.vectorized ? <><Check size={10} /> 已完成</> : <><Clock size={10} /> 处理中</>}
                     </span>
                   </td>
                   <td>

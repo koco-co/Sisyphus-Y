@@ -1,5 +1,7 @@
 "use client";
 
+import { Play, Package, ClipboardList, HelpCircle, Bot, PenLine, AlertTriangle, Search, SlidersHorizontal, Plus, Pencil, Eye } from "lucide-react";
+
 interface TestCaseRow {
   id: string;
   caseId: string;
@@ -49,13 +51,13 @@ export default function TestCasesPage() {
         <div className="sb-section">
           <div className="sb-label">迭代</div>
           <div className="sb-item active">
-            <span className="icon">🏃</span>Sprint 2025-Q2-3
+            <Play size={14} />Sprint 2025-Q2-3
           </div>
           <div className="sb-item">
-            <span className="icon">📦</span>Sprint 2025-Q2-2
+            <Package size={14} />Sprint 2025-Q2-2
           </div>
           <div className="sb-item">
-            <span className="icon">📦</span>Sprint 2025-Q2-1
+            <Package size={14} />Sprint 2025-Q2-1
           </div>
         </div>
 
@@ -64,19 +66,19 @@ export default function TestCasesPage() {
         <div className="sb-section">
           <div className="sb-label">快速筛选</div>
           <div className="sb-item active">
-            <span className="icon">📋</span>全部用例<span className="sb-count">312</span>
+            <ClipboardList size={14} />全部用例<span className="sb-count">312</span>
           </div>
           <div className="sb-item">
-            <span className="icon">❓</span>待确认<span className="sb-count">24</span>
+            <HelpCircle size={14} />待确认<span className="sb-count">24</span>
           </div>
           <div className="sb-item">
-            <span className="icon">🤖</span>AI生成<span className="sb-count">198</span>
+            <Bot size={14} />AI生成<span className="sb-count">198</span>
           </div>
           <div className="sb-item">
-            <span className="icon">✏️</span>手动创建<span className="sb-count">114</span>
+            <PenLine size={14} />手动创建<span className="sb-count">114</span>
           </div>
           <div className="sb-item">
-            <span className="icon">⚠️</span>需要重写
+            <AlertTriangle size={14} />需要重写
             <span className="sb-count" style={{ color: "var(--red)" }}>8</span>
           </div>
         </div>
@@ -88,7 +90,7 @@ export default function TestCasesPage() {
 
         {/* Alert Banner */}
         <div className="alert-banner">
-          ⚠ 检测到 3 条需求已更新（Diff），8 条用例可能需要重写
+          <AlertTriangle size={14} /> 检测到 3 条需求已更新（Diff），8 条用例可能需要重写
           <span className="spacer" />
           <a href="/diff" style={{ color: "var(--amber)", fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
             查看 Diff →
@@ -103,10 +105,10 @@ export default function TestCasesPage() {
             <div className="sub">312 条用例</div>
           </div>
           <span className="spacer" />
-          <input className="input" placeholder="🔍  搜索用例ID / 标题..." style={{ width: 220 }} />
-          <button type="button" className="btn">🔽 筛选</button>
+          <input className="input" placeholder="搜索用例ID / 标题..." style={{ width: 220 }} />
+          <button type="button" className="btn"><SlidersHorizontal size={12} /> 筛选</button>
           <button type="button" className="btn">批量操作</button>
-          <button type="button" className="btn btn-primary">＋ 新建用例</button>
+          <button type="button" className="btn btn-primary"><Plus size={14} /> 新建用例</button>
         </div>
 
         {/* Table */}
@@ -138,8 +140,8 @@ export default function TestCasesPage() {
                   <td><span className={`pill ${row.statusPill}`}>{row.status}</span></td>
                   <td>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button type="button" className="btn btn-ghost btn-sm">✏️ 编辑</button>
-                      <button type="button" className="btn btn-ghost btn-sm">👁 查看</button>
+                      <button type="button" className="btn btn-ghost btn-sm"><Pencil size={12} /> 编辑</button>
+                      <button type="button" className="btn btn-ghost btn-sm"><Eye size={12} /> 查看</button>
                     </div>
                   </td>
                 </tr>

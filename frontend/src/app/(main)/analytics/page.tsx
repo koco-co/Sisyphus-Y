@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { TrendingUp } from 'lucide-react';
 
 /* ── static demo data ── */
 const ranges = ['7天', '30天', '季度'] as const;
 
 const stats = [
   { label: '用例总数', value: '1,596', delta: '' },
-  { label: '本月新增', value: '247', delta: '↑ 18%' },
+  { label: '本月新增', value: '247', delta: '18%' },
   { label: 'AI 生成率', value: '78.3%', delta: '' },
   { label: '平均生成耗时', value: '4.2s', delta: '' },
 ];
@@ -86,7 +87,7 @@ export default function AnalyticsPage() {
           <div className="card" key={s.label}>
             <div className="stat-val">{s.value}</div>
             <div className="stat-label">{s.label}</div>
-            {s.delta && <div className="stat-delta">{s.delta}</div>}
+            {s.delta && <div className="stat-delta" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><TrendingUp size={12} /> {s.delta}</div>}
           </div>
         ))}
       </div>

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { StatusPill, ThinkingStream, ProgressBar } from '@/components/ui';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import { useStreamStore } from '@/stores/stream-store';
+import { CheckCircle2, AlertTriangle, Square, Lock, Pin, Clock, Bot, PenLine, type LucideIcon } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 
 interface TestPoint {
@@ -27,7 +28,8 @@ interface SceneMapData {
 }
 
 const groupOrder = ['正常流程', '异常场景', '边界值', '权限安全'];
-const groupIcons: Record<string, string> = { '正常流程': '✅', '异常场景': '⚠️', '边界值': '🔲', '权限安全': '🔒' };
+const groupIcons: Record<string, LucideIcon> = { '正常流程': CheckCircle2, '异常场景': AlertTriangle, '边界值': Square, '权限安全': Lock };
+const defaultGroupIcon = Pin;
 
 export default function SceneMapPage() {
   const { id } = useParams<{ id: string }>();
@@ -67,7 +69,7 @@ export default function SceneMapPage() {
           <div className="text-text3 text-[12px] mt-1">需求 ID: {id}</div>
         </div>
         <button type="button" onClick={generateTestPoints} disabled={isStreaming} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[12.5px] font-semibold bg-accent text-black disabled:opacity-50">
-          {isStreaming ? '⏳ 生成中...' : '🤖 AI 生成测试点'}
+          {isStreaming ? <><Clock size={12} /> 生成中...</> : <><Bot size={12} /> AI 生成测试点</>}
         </button>
       </div>
 
@@ -78,7 +80,7 @@ export default function SceneMapPage() {
           {allGroups.map((group) => (
             <div key={group} className="mb-3">
               <div className="flex items-center gap-1.5 text-[11px] font-semibold text-text3 uppercase tracking-wide mb-1.5 px-1">
-                <span>{groupIcons[group] ?? '📌'}</span>
+                {(() => { const GIcon = groupIcons[group] ?? defaultGroupIcon; return <GIcon size={12} />; })()}
                 <span>{group}</span>
                 <span className="font-mono ml-auto">{testPoints.filter((tp) => tp.group_name === group).length}</span>
               </div>
@@ -112,7 +114,7 @@ export default function SceneMapPage() {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <StatusPill variant={selectedTP.priority === 'P0' ? 'red' : selectedTP.priority === 'P1' ? 'amber' : 'gray'}>{selectedTP.priority}</StatusPill>
-                <StatusPill variant={selectedTP.source === 'ai' ? 'blue' : 'green'}>{selectedTP.source === 'ai' ? '🤖 AI' : '✏️ 手动'}</StatusPill>
+                <StatusPill variant={selectedTP.source === 'ai' ? 'blue' : 'green'}>{selectedTP.source === 'ai' ? <><Bot size={10} /> AI</> : <><PenLine size={10} /> 手动</>}</StatusPill>
                 <StatusPill variant={selectedTP.status === 'confirmed' ? 'green' : 'gray'}>{selectedTP.status}</StatusPill>
               </div>
               <h2 className="text-[16px] font-semibold mb-2">{selectedTP.title}</h2>
@@ -157,7 +159,7 @@ export default function SceneMapPage() {
           <div className="space-y-1">
             {allGroups.map((group) => (
               <div key={group} className="mb-2">
-                <div className="text-[11px] font-semibold text-text2 mb-1">{groupIcons[group] ?? '📌'} {group}</div>
+                <div className="text-[11px] font-semibold text-text2 mb-1 flex items-center gap-1">{(() => { const GIcon = groupIcons[group] ?? defaultGroupIcon; return <GIcon size={11} />; })()} {group}</div>
                 {testPoints.filter((tp) => tp.group_name === group).map((tp, i, arr) => (
                   <div key={tp.id} className="flex items-center gap-1.5 ml-3 text-[11px]">
                     <span className="text-border2">{i === arr.length - 1 ? '└' : '├'}</span>

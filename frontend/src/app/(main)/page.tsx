@@ -1,12 +1,26 @@
 "use client";
 
+import { Package, Zap, FolderOpen, Shield, Search, TrendingUp, Plus } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
 /* ── Demo data ── */
 
-const projects = [
+const projects: Array<{
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  iteration: string;
+  status: "active" | "paused";
+  cases: number;
+  coverage: number;
+  pending: number;
+  members: string[];
+  alert: string | null;
+}> = [
   {
     id: "p1",
     name: "离线开发平台",
-    icon: "📦",
+    icon: Package,
     iteration: "Sprint 24-W03",
     status: "active" as const,
     cases: 324,
@@ -18,7 +32,7 @@ const projects = [
   {
     id: "p2",
     name: "实时计算引擎",
-    icon: "⚡",
+    icon: Zap,
     iteration: "Sprint 24-W02",
     status: "active" as const,
     cases: 218,
@@ -30,7 +44,7 @@ const projects = [
   {
     id: "p3",
     name: "数据资产中心",
-    icon: "🗂️",
+    icon: FolderOpen,
     iteration: "Sprint 24-W03",
     status: "active" as const,
     cases: 156,
@@ -42,7 +56,7 @@ const projects = [
   {
     id: "p4",
     name: "数据治理平台",
-    icon: "🛡️",
+    icon: Shield,
     iteration: "Sprint 24-W01",
     status: "paused" as const,
     cases: 149,
@@ -77,9 +91,12 @@ export default function ProjectListPage() {
             <div className="sub">6 个子产品 · 12 个活跃迭代</div>
           </div>
           <div className="spacer" />
-          <input className="input" placeholder="🔍  搜索项目..." style={{ width: 220 }} />
+          <div style={{ position: "relative" }}>
+            <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text3)" }} />
+            <input className="input" placeholder="搜索项目..." style={{ width: 220, paddingLeft: 32 }} />
+          </div>
           <button className="btn">筛选</button>
-          <button className="btn btn-primary">＋ 新建项目</button>
+          <button className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Plus size={14} /> 新建项目</button>
         </div>
 
         {/* ── Stat row ── */}
@@ -87,7 +104,7 @@ export default function ProjectListPage() {
           <div className="card" style={{ borderLeft: "3px solid var(--accent)" }}>
             <div className="stat-val">847</div>
             <div className="stat-label">本周生成用例</div>
-            <div className="stat-delta">↑ 23% 较上周</div>
+            <div className="stat-delta" style={{ display: "flex", alignItems: "center", gap: 4 }}><TrendingUp size={12} /> 23% 较上周</div>
           </div>
           <div className="card">
             <div className="stat-val">12</div>
@@ -139,7 +156,7 @@ export default function ProjectListPage() {
                     background: "linear-gradient(135deg, var(--bg3), var(--bg2))",
                   }}
                 >
-                  {p.icon}
+                  {(() => { const Icon = p.icon; return <Icon size={18} />; })()}
                 </span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{p.name}</div>
@@ -226,7 +243,7 @@ export default function ProjectListPage() {
               transition: "border-color 0.15s, color 0.15s",
             }}
           >
-            <span style={{ fontSize: 28 }}>＋</span>
+            <Plus size={28} />
             <span style={{ fontSize: 12.5 }}>新建项目</span>
           </div>
         </div>

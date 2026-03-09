@@ -1,5 +1,7 @@
 'use client';
 
+import { Search, MessageSquare, Map, Zap } from 'lucide-react';
+
 /* ── 静态 Demo 数据 ── */
 
 const highRisks = [
@@ -166,16 +168,16 @@ export default function Page() {
         <div className="sb-section">
           <div className="sb-label">诊断进度</div>
           <div className="sb-item active">
-            <span className="icon">🔍</span>需求健康报告
+            <Search size={14} />需求健康报告
           </div>
           <div className="sb-item">
-            <span className="icon">💬</span>场景补全对话
+            <MessageSquare size={14} />场景补全对话
           </div>
           <div className="sb-item" style={{ opacity: 0.4 }}>
-            <span className="icon">🗺</span>测试点确认
+            <Map size={14} />测试点确认
           </div>
           <div className="sb-item" style={{ opacity: 0.4 }}>
-            <span className="icon">⚡</span>生成用例
+            <Zap size={14} />生成用例
           </div>
         </div>
 
@@ -279,7 +281,7 @@ export default function Page() {
           {/* ── 左列: 健康报告 ── */}
           <div className="col-left">
             <div className="col-header">
-              <span>🔍 需求健康报告</span>
+              <><Search size={14} /> 需求健康报告</>
               <span className="pill pill-red" style={{ marginLeft: 'auto' }}>
                 8 处遗漏
               </span>
@@ -287,7 +289,7 @@ export default function Page() {
             <div style={{ padding: 10 }}>
               {/* 高风险 */}
               <div className="sb-label" style={{ marginBottom: 6, marginTop: 4 }}>
-                🔴 高风险 · 3
+                <><span className="sb-dot" style={{ background: 'var(--red)' }} /> 高风险 · 3</>
               </div>
               {highRisks.map((r) => (
                 <div key={r.id} className="risk-item high">
@@ -315,7 +317,7 @@ export default function Page() {
 
               {/* 中风险 */}
               <div className="sb-label" style={{ marginBottom: 6, marginTop: 14 }}>
-                🟡 中风险 · 3
+                <><span className="sb-dot" style={{ background: 'var(--amber)' }} /> 中风险 · 3</>
               </div>
               {medRisks.map((r) => (
                 <div key={r.id} className="risk-item med">
@@ -343,7 +345,7 @@ export default function Page() {
 
               {/* 行业清单 */}
               <div className="sb-label" style={{ marginBottom: 6, marginTop: 14 }}>
-                🔵 行业清单 · 2
+                <><span className="sb-dot" style={{ background: 'var(--blue)' }} /> 行业清单 · 2</>
               </div>
               {industryItems.map((r) => (
                 <div key={r.id} className="risk-item done">
@@ -374,7 +376,7 @@ export default function Page() {
           {/* ── 中列: 对话 ── */}
           <div className="col-mid">
             <div className="col-header">
-              <span>💬 场景补全对话</span>
+              <><MessageSquare size={14} /> 场景补全对话</>
               <span className="pill pill-blue">第2轮 · 深度聚焦</span>
               <span
                 className="mono"
@@ -457,7 +459,7 @@ export default function Page() {
           {/* ── 右列: 场景地图预览 ── */}
           <div className="col-right">
             <div className="col-header">
-              <span>🗺 场景地图实时预览</span>
+              <><Map size={14} /> 场景地图实时预览</>
               <div
                 style={{
                   marginLeft: 'auto',
