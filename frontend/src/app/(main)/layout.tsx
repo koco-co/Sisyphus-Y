@@ -1,40 +1,53 @@
 'use client';
+import {
+  BarChart3,
+  BookOpen,
+  ClipboardList,
+  FileText,
+  GitBranch,
+  GitCompareArrows,
+  Grid3x3,
+  HeartPulse,
+  LayoutGrid,
+  LayoutTemplate,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+  User,
+  Wand2,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import ProgressDashboard from '@/components/ui/ProgressDashboard';
-import {
-  LayoutGrid,
-  FileText,
-  HeartPulse,
-  GitBranch,
-  Wand2,
-  ClipboardList,
-  GitCompareArrows,
-  BarChart3,
-  Settings,
-  BookOpen,
-  LayoutTemplate,
-  Grid3x3,
-  Sun,
-  Moon,
-  Monitor,
-} from 'lucide-react';
 
-const navTabs = [
-  { href: '/', label: '项目列表', icon: LayoutGrid },
-  { href: '/requirements', label: '需求卡片', icon: FileText },
-  { href: '/diagnosis', label: '健康诊断', icon: HeartPulse },
-  { href: '/scene-map', label: '测试点确认', icon: GitBranch },
-  { href: '/workbench', label: '生成工作台', icon: Wand2 },
-  { href: '/testcases', label: '用例管理', icon: ClipboardList },
-  { href: '/diff', label: 'Diff 视图', icon: GitCompareArrows },
-  { href: '/coverage', label: '覆盖矩阵', icon: Grid3x3 },
-  { href: '/analytics', label: '质量看板', icon: BarChart3 },
-  { href: '/knowledge', label: '知识库', icon: BookOpen },
-  { href: '/templates', label: '模板库', icon: LayoutTemplate },
-  { href: '/settings', label: '系统设置', icon: Settings },
+const navGroups = [
+  {
+    items: [
+      { href: '/', label: '项目列表', icon: LayoutGrid },
+      { href: '/requirements', label: '需求', icon: FileText },
+      { href: '/diagnosis', label: '诊断', icon: HeartPulse },
+      { href: '/scene-map', label: '测试点', icon: GitBranch },
+      { href: '/workbench', label: '工作台', icon: Wand2 },
+      { href: '/testcases', label: '用例', icon: ClipboardList },
+    ],
+  },
+  {
+    items: [
+      { href: '/diff', label: 'Diff', icon: GitCompareArrows },
+      { href: '/coverage', label: '覆盖', icon: Grid3x3 },
+      { href: '/analytics', label: '看板', icon: BarChart3 },
+    ],
+  },
+  {
+    items: [
+      { href: '/knowledge', label: '知识库', icon: BookOpen },
+      { href: '/templates', label: '模板', icon: LayoutTemplate },
+      { href: '/settings', label: '设置', icon: Settings },
+    ],
+  },
 ];
 
 function ThemeToggle() {
@@ -51,7 +64,12 @@ function ThemeToggle() {
   };
 
   return (
-    <button className="theme-toggle" onClick={cycleTheme} title={`当前: ${theme === 'system' ? '跟随系统' : theme === 'dark' ? '深色' : '浅色'}`}>
+    <button
+      type="button"
+      className="theme-toggle"
+      onClick={cycleTheme}
+      title={`当前: ${theme === 'system' ? '跟随系统' : theme === 'dark' ? '深色' : '浅色'}`}
+    >
       {resolvedTheme === 'dark' ? <Moon /> : theme === 'system' ? <Monitor /> : <Sun />}
     </button>
   );
@@ -64,21 +82,47 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <>
       <nav className="top-nav">
         <span className="nav-title">Sisyphus</span>
-        {navTabs.map((t) => {
-          const Icon = t.icon;
-          const isActive =
-            t.href === '/'
-              ? pathname === '/'
-              : pathname === t.href || pathname.startsWith(t.href + '/');
-          return (
-            <Link key={t.href} href={t.href} className={`tab${isActive ? ' active' : ''}`}>
-              <Icon />
-              {t.label}
-            </Link>
-          );
+        <span className="pill pill-green" style={{ marginRight: 8, fontSize: 10 }}>
+          v0.2
+        </span>
+
+        {navGroups.map((group, gi) => {
+          const groupKey = group.items[0].href;
+          const items = group.items.map((t) => {
+            const Icon = t.icon;
+            const isActive =
+              t.href === '/'
+                ? pathname === '/'
+                : pathname === t.href || pathname.startsWith(`${t.href}/`);
+            return (
+              <Link key={t.href} href={t.href} className={`tab${isActive ? ' active' : ''}`}>
+                <Icon />
+                {t.label}
+              </Link>
+            );
+          });
+
+          if (gi === 0) return items;
+          return [
+            <span
+              key={`divider-${groupKey}`}
+              style={{
+                width: 1,
+                height: 20,
+                background: 'var(--border)',
+                margin: '0 4px',
+                flexShrink: 0,
+              }}
+            />,
+            ...items,
+          ];
         })}
+
         <div className="nav-actions">
           <ThemeToggle />
+          <div className="theme-toggle" title="用户">
+            <User />
+          </div>
         </div>
       </nav>
       {children}
