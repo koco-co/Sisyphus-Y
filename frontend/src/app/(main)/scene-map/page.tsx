@@ -73,14 +73,14 @@ export default function SceneMapPage() {
     setExpandedProducts(next);
   };
 
-  const toggleIteration = async (iterationId: string) => {
+  const toggleIteration = async (productId: string, iterationId: string) => {
     const next = new Set(expandedIterations);
     if (next.has(iterationId)) {
       next.delete(iterationId);
     } else {
       next.add(iterationId);
       if (!requirements[iterationId]) {
-        const res = await fetch(`${API}/products/iterations/${iterationId}/requirements`);
+        const res = await fetch(`${API}/products/${productId}/iterations/${iterationId}/requirements`);
         const data = await res.json();
         setRequirements((prev) => ({ ...prev, [iterationId]: Array.isArray(data) ? data : data.items || [] }));
       }
@@ -237,7 +237,7 @@ export default function SceneMapPage() {
               </div>
               {expandedProducts.has(product.id) && (iterations[product.id] || []).map((iter) => (
                 <div key={iter.id} style={{ paddingLeft: 20 }}>
-                  <div onClick={() => toggleIteration(iter.id)} className="card-hover" style={{ padding: "6px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, borderRadius: 6, fontSize: 12, color: "var(--text-secondary)" }}>
+                  <div onClick={() => toggleIteration(product.id, iter.id)} className="card-hover" style={{ padding: "6px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, borderRadius: 6, fontSize: 12, color: "var(--text-secondary)" }}>
                     {expandedIterations.has(iter.id) ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                     <IterationCw size={12} />
                     {iter.name}

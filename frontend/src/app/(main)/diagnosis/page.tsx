@@ -112,7 +112,7 @@ export default function DiagnosisPage() {
   };
 
   // Load requirements when iteration expanded
-  const toggleIteration = async (iterationId: string) => {
+  const toggleIteration = async (productId: string, iterationId: string) => {
     const next = new Set(expandedIterations);
     if (next.has(iterationId)) {
       next.delete(iterationId);
@@ -120,7 +120,7 @@ export default function DiagnosisPage() {
       next.add(iterationId);
       if (!requirements[iterationId]) {
         try {
-          const res = await fetch(`${API}/products/iterations/${iterationId}/requirements`);
+          const res = await fetch(`${API}/products/${productId}/iterations/${iterationId}/requirements`);
           const data = await res.json();
           setRequirements((prev) => ({
             ...prev,
@@ -342,7 +342,7 @@ export default function DiagnosisPage() {
                   <div key={iter.id} style={{ paddingLeft: 20 }}>
                     <button
                       type="button"
-                      onClick={() => toggleIteration(iter.id)}
+                      onClick={() => toggleIteration(product.id, iter.id)}
                       className="card-hover"
                       style={{
                         all: 'unset',

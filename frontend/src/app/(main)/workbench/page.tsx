@@ -110,14 +110,14 @@ export default function WorkbenchPage() {
     setExpandedProducts(next);
   };
 
-  const toggleIteration = async (iid: string) => {
+  const toggleIteration = async (productId: string, iid: string) => {
     const next = new Set(expandedIterations);
     if (next.has(iid)) {
       next.delete(iid);
     } else {
       next.add(iid);
       if (!requirements[iid]) {
-        const res = await fetch(`${API}/products/iterations/${iid}/requirements`);
+        const res = await fetch(`${API}/products/${productId}/iterations/${iid}/requirements`);
         const data = await res.json();
         setRequirements((p) => ({
           ...p,
@@ -349,7 +349,7 @@ export default function WorkbenchPage() {
                   <div key={it.id} style={{ paddingLeft: 20 }}>
                     <button
                       type="button"
-                      onClick={() => toggleIteration(it.id)}
+                      onClick={() => toggleIteration(p.id, it.id)}
                       className="card-hover"
                       style={{
                         padding: '6px 12px',
