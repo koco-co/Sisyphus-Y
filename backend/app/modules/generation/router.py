@@ -1,64 +1,75 @@
 import uuid
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 
 from app.core.dependencies import AsyncSessionDep
-from app.modules.generation.schemas import ChatRequest, SessionCreate, SessionResponse
 from app.modules.generation.service import GenerationService
-from app.modules.testcases.schemas import TestCaseResponse
 
 router = APIRouter(prefix="/generation", tags=["generation"])
 
 
-@router.post("/sessions", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
-async def create_session(data: SessionCreate, session: AsyncSessionDep) -> SessionResponse:
-    svc = GenerationService(session)
-    gs = await svc.create_session(data)
-    return SessionResponse.model_validate(gs)
+class CreateSessionRequest(BaseModel):
+    requirement_id: uuid.UUID
+    mode: str = "test_point_driven"
 
 
-@router.get("/sessions/{session_id}", response_model=SessionResponse)
-async def get_session(session_id: uuid.UUID, session: AsyncSessionDep) -> SessionResponse:
+class ChatRequest(BaseModel):
+    message: str
+
+
+@router.post("/sessions")
+async def create_session(data: CreateSessionRequest, session: AsyncSessionDep) -> dict:
     svc = GenerationService(session)
-    gs = await svc.get_session(session_id)
-    if not gs:
-        raise HTTPException(status_code=404, detail="GenerationSession not found")
-    return SessionResponse.model_validate(gs)
+    gen_session = await svc.create_session(data.requirement_id, data.mode)
+    return {
+        "id": str(gen_session.id),
+        "requirement_id": str(gen_session.requirement_id),
+        "mode": gen_session.mode,
+        "status": gen_session.status,
+    }
+
+
+@router.get("/sessions/by-requirement/{requirement_id}")
+async def list_sessions(requirement_id: uuid.UUID, session: AsyncSessionDep) -> list[dict]:
+    svc = GenerationService(session)
+    sessions = await svc.list_sessions(requirement_id)
+    return [
+        {
+            "id": str(s.id),
+            "requirement_id": str(s.requirement_id),
+            "mode": s.mode,
+            "status": s.status,
+            "created_at": s.created_at.isoformat() if s.created_at else "",
+        }
+        for s in sessions
+    ]
+
+
+@router.get("/sessions/{session_id}/messages")
+async def list_messages(session_id: uuid.UUID, session: AsyncSessionDep) -> list[dict]:
+    svc = GenerationService(session)
+    messages = await svc.list_messages(session_id)
+    return [
+        {
+            "id": str(m.id),
+            "role": m.role,
+            "content": m.content,
+            "thinking_content": m.thinking_content,
+            "created_at": m.created_at.isoformat() if m.created_at else "",
+        }
+        for m in messages
+    ]
 
 
 @router.post("/sessions/{session_id}/chat")
-async def chat(
-    session_id: uuid.UUID,
-    data: ChatRequest,
-    session: AsyncSessionDep,
-) -> StreamingResponse:
+async def chat(session_id: uuid.UUID, data: ChatRequest, session: AsyncSessionDep) -> StreamingResponse:
     svc = GenerationService(session)
-    gs = await svc.get_session(session_id)
-    if not gs:
-        raise HTTPException(status_code=404, detail="GenerationSession not found")
+    gen_session = await svc.get_session(session_id)
+    if not gen_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    # Save user message
+    await svc.save_message(session_id, "user", data.message)
     stream = await svc.chat_stream(session_id, data.message)
     return StreamingResponse(stream, media_type="text/event-stream")
-
-
-@router.get("/sessions/{session_id}/cases", response_model=list[TestCaseResponse])
-async def list_cases(session_id: uuid.UUID, session: AsyncSessionDep) -> list[TestCaseResponse]:
-    svc = GenerationService(session)
-    gs = await svc.get_session(session_id)
-    if not gs:
-        raise HTTPException(status_code=404, detail="GenerationSession not found")
-    cases = await svc.list_cases(gs.requirement_id)
-    return [TestCaseResponse.model_validate(c) for c in cases]
-
-
-@router.post("/sessions/{session_id}/cases/{case_id}/accept", response_model=TestCaseResponse)
-async def accept_case(
-    session_id: uuid.UUID,
-    case_id: uuid.UUID,
-    session: AsyncSessionDep,
-) -> TestCaseResponse:
-    svc = GenerationService(session)
-    tc = await svc.accept_case(case_id)
-    if not tc:
-        raise HTTPException(status_code=404, detail="TestCase not found")
-    return TestCaseResponse.model_validate(tc)
