@@ -113,13 +113,10 @@ class GenerationService:
         for msg in messages:
             history.append({"role": msg.role, "content": msg.content})
 
-        # Inject context on first conversation turn (only 1 message = the one just saved)
+        # On first turn, inject context into the user message
         if len(messages) <= 1 and context_parts:
             context = "\n\n".join(context_parts)
-            user_message = f"{context}\n\n用户请求：{user_message}"
-            # Replace the last history entry with context-enriched version
+            enriched = f"{context}\n\n用户请求：{user_message}"
             if history:
-                history[-1]["content"] = user_message
-        else:
-            history.append({"role": "user", "content": user_message})
+                history[-1]["content"] = enriched
         return await get_thinking_stream(history, system=GENERATION_SYSTEM)

@@ -8,9 +8,12 @@ SSE 事件格式：
 
 import asyncio
 import json
+import logging
 from collections.abc import AsyncIterator
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def _sse(event: str, data: dict) -> str:
@@ -168,3 +171,60 @@ async def get_thinking_stream(
     if provider == "dashscope":
         return dashscope_thinking_stream(messages, system)
     return openai_thinking_stream(messages, system)
+
+
+_PROVIDER_FUNCS = {
+    "openai": openai_thinking_stream,
+    "anthropic": anthropic_thinking_stream,
+    "zhipu": zhipu_thinking_stream,
+    "dashscope": dashscope_thinking_stream,
+}
+
+
+async def get_thinking_stream_with_fallback(
+    messages: list[dict],
+    system: str = "",
+    max_retries: int = 2,
+) -> AsyncIterator[str]:
+    """带重试和降级的流式输出。
+
+    1. 尝试主模型 (settings.llm_provider)
+    2. 重试 max_retries 次（指数退避 1s, 2s）
+    3. 降级到备用模型 (settings.llm_fallback_provider)
+    """
+    primary = settings.llm_provider.lower()
+    fallback = getattr(settings, "llm_fallback_provider", "zhipu").lower()
+
+    providers_to_try = [primary]
+    if fallback and fallback != primary:
+        providers_to_try.append(fallback)
+
+    async def _stream_with_fallback() -> AsyncIterator[str]:
+        for provider_name in providers_to_try:
+            func = _PROVIDER_FUNCS.get(provider_name)
+            if not func:
+                continue
+            for attempt in range(max_retries + 1):
+                try:
+                    stream = func(messages, system)
+                    has_content = False
+                    async for chunk in stream:
+                        has_content = True
+                        yield chunk
+                    if has_content:
+                        return
+                except Exception as e:
+                    logger.warning(
+                        "LLM %s attempt %d failed: %s",
+                        provider_name,
+                        attempt + 1,
+                        e,
+                    )
+                    if attempt < max_retries:
+                        await asyncio.sleep(2**attempt)
+
+        # All providers failed
+        yield _sse("content", {"delta": "⚠️ AI 服务暂时不可用，请稍后重试。"})
+        yield _sse("done", {"usage": {}})
+
+    return _stream_with_fallback()

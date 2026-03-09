@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from app.ai.sse_collector import SSECollector
 from app.core.dependencies import AsyncSessionDep
 from app.modules.generation.service import GenerationService
 
@@ -72,4 +73,15 @@ async def chat(session_id: uuid.UUID, data: ChatRequest, session: AsyncSessionDe
     # Save user message
     await svc.save_message(session_id, "user", data.message)
     stream = await svc.chat_stream(session_id, data.message)
-    return StreamingResponse(stream, media_type="text/event-stream")
+
+    sid = session_id  # capture for closure
+
+    async def on_complete(full_text: str) -> None:
+        from app.core.database import get_async_session_context
+
+        async with get_async_session_context() as new_session:
+            new_svc = GenerationService(new_session)
+            await new_svc.save_message(sid, "assistant", full_text)
+
+    collector = SSECollector(stream, on_complete=on_complete)
+    return StreamingResponse(collector, media_type="text/event-stream")

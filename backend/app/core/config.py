@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     dashscope_api_key: str = ""
     dashscope_model: str = "qwen-plus"
     dashscope_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    llm_fallback_provider: str = "zhipu"
 
 
 settings = Settings()

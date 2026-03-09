@@ -131,3 +131,72 @@ docker compose -f docker/docker-compose.yml logs -f  # 查看日志
 3. **软删除统一**：所有业务表通过 `SoftDeleteMixin` 支持 `deleted_at`，不硬删除数据
 4. **测试点先于用例**：核心流程先确认「测什么」（M04），再生成「怎么测」（M05）
 5. **两阶段 Diff**：文本级（Myers）+ 语义级（LLM），防止业务影响被误判
+
+## UI 设计规范（来自原型图）
+
+### 设计令牌 (CSS Variables)
+
+```css
+/* 深色主题（默认） */
+--bg: #0d0f12;        --bg1: #131619;     --bg2: #1a1e24;     --bg3: #212730;
+--accent: #00d9a3;    --accent2: #00b386; --accent-d: rgba(0, 217, 163, .1);
+--text: #e2e8f0;      --text2: #94a3b8;   --text3: #566577;
+--border: #2a313d;    --border2: #353d4a;
+--red: #f43f5e;       --amber: #f59e0b;   --yellow: #eab308;
+--blue: #3b82f6;      --purple: #a855f7;
+--sans: 'DM Sans';    --display: 'Syne';  --mono: 'JetBrains Mono';
+```
+
+### 布局架构
+
+- **三栏布局**: `col-left`（需求导航树） + `col-mid`（AI 工作台） + `col-right`（辅助信息栏）
+- **全局侧边栏**: `sidebar` 导航 + `topbar` 顶栏
+- **组件类**: `.card` / `.card-hover` / `.btn` / `.btn-primary` / `.btn-ghost` / `.pill` / `.tag`
+- **场景点颜色编码**: `.dot-green`(已覆盖) / `.dot-yellow`(AI补充) / `.dot-red`(待处理) / `.dot-gray`(待确认)
+- **进度步骤**: `.prog-steps` > `.prog-step.done` / `.prog-step.active`
+- **对话气泡**: `.chat-bubble` / `.chat-bubble.ai-bubble` + `.chat-avatar`
+
+### 微交互要求
+
+- SSE 流式输出动画（打字机效果 + 思考过程折叠）
+- 按钮 Loading 状态（Spinner + 文字变化）
+- 暗黑模式下毛玻璃效果 (`backdrop-filter: blur`)
+- 卡片 hover 效果 (`.card-hover` 微上浮 + 阴影)
+
+## 数据持久化要求（关键）
+
+### 核心原则：所有 AI 生成结果必须持久化到 PostgreSQL
+
+1. **诊断结果持久化**: AI 诊断响应 → `DiagnosisChatMessage` 表（role=assistant）+ 自动解析风险 → `DiagnosisRisk` 表
+2. **测试点持久化**: AI 生成的测试点 → 自动解析 → `TestPoint` 表（关联 SceneMap）
+3. **用例生成持久化**: AI 生成的用例 → `GenerationMessage` 表 + 自动解析 → `TestCase` 表
+4. **Session 管理**: 每次 AI 交互必须关联 `session_id`，支持历史回溯（最近 100 条）
+
+### 禁止"刷新即消失"
+
+- 前端页面刷新后，必须能从 API 重新加载完整的历史对话和生成结果
+- 所有 SSE 流式输出完成后，后端必须自动保存完整响应到数据库
+
+## AI 多模型策略
+
+### 模型分工
+
+| 模型 | 用途 | 特点 |
+|---|---|---|
+| **智谱 GLM-4-Flash** | 需求诊断 + 苏格拉底追问 | 中文理解强，速度快 |
+| **阿里百炼 Qwen-Max** | 复杂测试用例 CoT 生成 | 推理能力强，适合结构化输出 |
+
+### 容错降级
+
+- 主模型调用失败 → 自动重试 2 次（指数退避）
+- 重试失败 → 降级到备用模型（如 Qwen 失败降级 GLM）
+- 所有 LLM 调用使用 `trust_env=False` 绕过系统代理
+
+### API 密钥配置
+
+```env
+LLM_PROVIDER=zhipu                    # 默认提供商
+ZHIPU_API_KEY=<zhipu-key>             # 智谱 API Key
+DASHSCOPE_API_KEY=<dashscope-key>     # 阿里百炼 API Key
+DASHSCOPE_MODEL=qwen-max              # 阿里百炼模型
+```

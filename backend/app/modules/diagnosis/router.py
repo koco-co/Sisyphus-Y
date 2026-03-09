@@ -3,6 +3,8 @@ import uuid
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
+from app.ai.sse_collector import SSECollector
+from app.core.database import get_async_session_context
 from app.core.dependencies import AsyncSessionDep
 from app.modules.diagnosis.schemas import (
     ChatRequest,
@@ -30,8 +32,18 @@ async def get_diagnosis(requirement_id: uuid.UUID, session: AsyncSessionDep) -> 
 @router.post("/{requirement_id}/run")
 async def run_diagnosis(requirement_id: uuid.UUID, session: AsyncSessionDep) -> StreamingResponse:
     svc = DiagnosisService(session)
+    report = await svc.create_or_get_report(requirement_id)
+    report_id = report.id
+
     stream = await svc.run_stream(requirement_id)
-    return StreamingResponse(stream, media_type="text/event-stream")
+
+    async def on_complete(full_text: str) -> None:
+        async with get_async_session_context() as new_session:
+            new_svc = DiagnosisService(new_session)
+            await new_svc.complete_report(report_id, summary=full_text)
+
+    collector = SSECollector(stream, on_complete=on_complete)
+    return StreamingResponse(collector, media_type="text/event-stream")
 
 
 @router.post("/{requirement_id}/chat")
@@ -41,8 +53,22 @@ async def chat_diagnosis(
     session: AsyncSessionDep,
 ) -> StreamingResponse:
     svc = DiagnosisService(session)
-    stream = await svc.chat_stream(requirement_id, data.message)
-    return StreamingResponse(stream, media_type="text/event-stream")
+    report = await svc.create_or_get_report(requirement_id)
+    report_id = report.id
+    user_message = data.message
+
+    stream = await svc.chat_stream(requirement_id, user_message)
+
+    async def on_complete(full_text: str) -> None:
+        async with get_async_session_context() as new_session:
+            new_svc = DiagnosisService(new_session)
+            msgs = await new_svc.list_messages(report_id)
+            round_num = len(msgs) // 2 + 1
+            await new_svc.save_message(report_id, "user", user_message, round_num=round_num)
+            await new_svc.save_message(report_id, "assistant", full_text, round_num=round_num)
+
+    collector = SSECollector(stream, on_complete=on_complete)
+    return StreamingResponse(collector, media_type="text/event-stream")
 
 
 @router.post("/{requirement_id}/create", response_model=DiagnosisReportResponse)

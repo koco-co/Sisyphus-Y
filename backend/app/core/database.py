@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 from functools import lru_cache
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
@@ -27,3 +28,17 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with get_session_factory()() as session:
         yield session
+
+
+@asynccontextmanager
+async def get_async_session_context() -> AsyncGenerator[AsyncSession, None]:
+    """Create a standalone async session not tied to request lifecycle."""
+    session = get_session_factory()()
+    try:
+        yield session
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
+    finally:
+        await session.close()
