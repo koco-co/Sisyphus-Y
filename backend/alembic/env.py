@@ -8,8 +8,11 @@ from app.modules.audit.models import AuditLog  # noqa: F401
 
 # Import all models to register them with Base.metadata
 from app.modules.auth.models import User  # noqa: F401
+from app.modules.diagnosis.models import DiagnosisChatMessage, DiagnosisReport, DiagnosisRisk  # noqa: F401
+from app.modules.generation.models import GenerationMessage, GenerationSession  # noqa: F401
 from app.modules.notification.models import Notification  # noqa: F401
 from app.modules.products.models import Iteration, Product, Requirement, RequirementVersion  # noqa: F401
+from app.modules.scene_map.models import SceneMap, TestPoint  # noqa: F401
 from app.modules.testcases.models import TestCase, TestCaseStep, TestCaseVersion  # noqa: F401
 from app.shared.base_model import Base
 
