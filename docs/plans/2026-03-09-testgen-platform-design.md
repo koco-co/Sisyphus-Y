@@ -1,4 +1,4 @@
-# TestGen Pro — 阶段一开发设计文档
+# Sisyphus-case-platform — 阶段一开发设计文档
 
 **日期**：2026-03-09
 **作者**：AI 辅助设计
@@ -16,14 +16,14 @@
 
 ## 2. 交付范围
 
-| 页面 | 路由 | 后端模块 | 当前状态 |
-|------|------|---------|---------|
-| ① 项目列表 | `/` | `products`（已完整） | 需重写前端 |
-| ② 需求卡片 | `/requirements/[id]` | `products`（已完整） | 需重写前端 |
-| ③ 健康诊断 | `/diagnosis/[id]` | `diagnosis`（空） | 前后端新建 |
-| ④ 测试点确认 | `/scene-map/[id]` | `scene_map`（空） | 前后端新建 |
-| ⑤ 生成工作台 | `/workbench/[id]` | `generation`（空） | 前后端新建 |
-| ⑥ 用例管理 | `/testcases` | `testcases`（空） | 前后端新建 |
+| 页面         | 路由                 | 后端模块             | 当前状态   |
+| ------------ | -------------------- | -------------------- | ---------- |
+| ① 项目列表   | `/`                  | `products`（已完整） | 需重写前端 |
+| ② 需求卡片   | `/requirements/[id]` | `products`（已完整） | 需重写前端 |
+| ③ 健康诊断   | `/diagnosis/[id]`    | `diagnosis`（空）    | 前后端新建 |
+| ④ 测试点确认 | `/scene-map/[id]`    | `scene_map`（空）    | 前后端新建 |
+| ⑤ 生成工作台 | `/workbench/[id]`    | `generation`（空）   | 前后端新建 |
+| ⑥ 用例管理   | `/testcases`         | `testcases`（空）    | 前后端新建 |
 
 ---
 
@@ -32,21 +32,21 @@
 ### 配色 Token（来自原型）
 
 ```css
---bg:       #0d0f12;
---bg1:      #131619;
---bg2:      #1a1e24;
---bg3:      #212730;
---border:   #2a313d;
---border2:  #353d4a;
---text:     #e2e8f0;
---text2:    #94a3b8;
---text3:    #566577;
---accent:   #00d9a3;
---accent2:  #00b386;
---amber:    #f59e0b;
---red:      #f43f5e;
---blue:     #3b82f6;
---purple:   #a855f7;
+--bg: #0d0f12;
+--bg1: #131619;
+--bg2: #1a1e24;
+--bg3: #212730;
+--border: #2a313d;
+--border2: #353d4a;
+--text: #e2e8f0;
+--text2: #94a3b8;
+--text3: #566577;
+--accent: #00d9a3;
+--accent2: #00b386;
+--amber: #f59e0b;
+--red: #f43f5e;
+--blue: #3b82f6;
+--purple: #a855f7;
 ```
 
 ### 字体
@@ -63,15 +63,15 @@
 
 ### 通用 UI 组件 `src/components/ui/`
 
-| 组件 | 描述 |
-|------|------|
-| `StatusPill` | 状态徽章（green/amber/red/blue/gray） |
-| `StatCard` | 统计卡片（数值 + 标签 + delta + 进度条） |
-| `SidebarNav` | 左侧导航（section/item/count/active 状态） |
-| `DataTable` | 通用表格（列定义 + 分页 + hover 行状态） |
-| `ThinkingStream` | 思考过程面板（可折叠，逐字流入，灰色） |
-| `ChatBubble` | 对话气泡（AI 绿色 / 用户暗灰，含时间戳） |
-| `ProgressSteps` | 流程步骤条（需求→诊断→测试点→生成） |
+| 组件             | 描述                                       |
+| ---------------- | ------------------------------------------ |
+| `StatusPill`     | 状态徽章（green/amber/red/blue/gray）      |
+| `StatCard`       | 统计卡片（数值 + 标签 + delta + 进度条）   |
+| `SidebarNav`     | 左侧导航（section/item/count/active 状态） |
+| `DataTable`      | 通用表格（列定义 + 分页 + hover 行状态）   |
+| `ThinkingStream` | 思考过程面板（可折叠，逐字流入，灰色）     |
+| `ChatBubble`     | 对话气泡（AI 绿色 / 用户暗灰，含时间戳）   |
+| `ProgressSteps`  | 流程步骤条（需求→诊断→测试点→生成）        |
 
 ---
 
@@ -106,11 +106,11 @@ data: {"usage": {"input_tokens": 1200, "output_tokens": 340}}
 
 ### 模型适配（ThinkingStreamAdapter）
 
-| Provider | 思考流来源 |
-|----------|-----------|
+| Provider          | 思考流来源                                         |
+| ----------------- | -------------------------------------------------- |
 | `openai` (gpt-4o) | LangChain `on_llm_new_token` callback 模拟思考步骤 |
-| `anthropic` | Claude 扩展思考 `thinking` block 原生支持 |
-| `deepseek` | DeepSeek R1 `reasoning_content` 字段 |
+| `anthropic`       | Claude 扩展思考 `thinking` block 原生支持          |
+| `deepseek`        | DeepSeek R1 `reasoning_content` 字段               |
 
 后端统一通过 `ThinkingStreamAdapter` 抽象，前端无感知模型差异。
 
@@ -275,12 +275,12 @@ TestCasesPage
 
 ## 8. 状态管理策略
 
-| 数据类型 | 方案 |
-|---------|------|
-| 服务端数据（列表/详情） | React Query（缓存 + 自动刷新） |
-| 流式 AI 状态 | Zustand（`thinkingText`/`contentText`/`isStreaming`） |
-| 全局 UI 状态（当前产品/迭代） | Zustand |
-| 表单状态 | React 本地 `useState` |
+| 数据类型                      | 方案                                                  |
+| ----------------------------- | ----------------------------------------------------- |
+| 服务端数据（列表/详情）       | React Query（缓存 + 自动刷新）                        |
+| 流式 AI 状态                  | Zustand（`thinkingText`/`contentText`/`isStreaming`） |
+| 全局 UI 状态（当前产品/迭代） | Zustand                                               |
+| 表单状态                      | React 本地 `useState`                                 |
 
 ---
 
@@ -311,10 +311,10 @@ Week 3  P5 生成工作台    ← 最复杂，三列 + 流式 + 用例预览
 
 ## 10. 关键技术决策
 
-| 决策点 | 选择 | 理由 |
-|--------|------|------|
-| AI 流式协议 | SSE（`text/event-stream`） | 原生浏览器支持，无需 WebSocket 握手 |
-| 思考流分离 | `event: thinking` / `event: content` | 前端独立渲染，互不阻塞 |
-| LangChain 版本 | LangChain 0.3 + LangGraph 0.2 | pyproject.toml 已有依赖 |
-| 前端主题 | CSS 变量 + Tailwind + Antd ConfigProvider | 三者统一 token，零损失还原原型 |
-| 测试策略 | 后端优先单测 service 层；前端 E2E 暂缓 | 快速交付阶段，service 是最高风险点 |
+| 决策点         | 选择                                      | 理由                                |
+| -------------- | ----------------------------------------- | ----------------------------------- |
+| AI 流式协议    | SSE（`text/event-stream`）                | 原生浏览器支持，无需 WebSocket 握手 |
+| 思考流分离     | `event: thinking` / `event: content`      | 前端独立渲染，互不阻塞              |
+| LangChain 版本 | LangChain 0.3 + LangGraph 0.2             | pyproject.toml 已有依赖             |
+| 前端主题       | CSS 变量 + Tailwind + Antd ConfigProvider | 三者统一 token，零损失还原原型      |
+| 测试策略       | 后端优先单测 service 层；前端 E2E 暂缓    | 快速交付阶段，service 是最高风险点  |

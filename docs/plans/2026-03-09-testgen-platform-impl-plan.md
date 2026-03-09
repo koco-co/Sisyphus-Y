@@ -1,8 +1,8 @@
-# TestGen Pro 阶段一实施计划
+# Sisyphus-case-platform 阶段一实施计划
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** 实现 TestGen Pro 核心主流程——项目列表、需求卡片、健康诊断、测试点确认、生成工作台、用例管理共 6 个页面，打通「需求→诊断→测试点→用例生成」完整链路。
+**Goal:** 实现 Sisyphus-case-platform 核心主流程——项目列表、需求卡片、健康诊断、测试点确认、生成工作台、用例管理共 6 个页面，打通「需求→诊断→测试点→用例生成」完整链路。
 
 **Architecture:** 后端 FastAPI + SQLAlchemy async DDD 模块化，新增 M03/M04/M05/M06 四个模块；前端 Next.js 16 App Router + React Query + Zustand，深色主题设计系统；AI 流式输出通过 SSE 实现，思考过程与内容分事件类型传输。
 
@@ -26,6 +26,7 @@
 ## Task 1: 设计系统 — CSS 变量与全局主题
 
 **Files:**
+
 - Modify: `frontend/src/app/globals.css`
 - Modify: `frontend/src/app/layout.tsx`
 
@@ -34,49 +35,51 @@
 ```css
 /* frontend/src/app/globals.css */
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap");
 
 @layer base {
   :root {
-    --bg:       #0d0f12;
-    --bg1:      #131619;
-    --bg2:      #1a1e24;
-    --bg3:      #212730;
-    --border:   #2a313d;
-    --border2:  #353d4a;
-    --text:     #e2e8f0;
-    --text2:    #94a3b8;
-    --text3:    #566577;
-    --accent:   #00d9a3;
-    --accent2:  #00b386;
+    --bg: #0d0f12;
+    --bg1: #131619;
+    --bg2: #1a1e24;
+    --bg3: #212730;
+    --border: #2a313d;
+    --border2: #353d4a;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #566577;
+    --accent: #00d9a3;
+    --accent2: #00b386;
     --accent-d: rgba(0, 217, 163, 0.1);
-    --amber:    #f59e0b;
-    --red:      #f43f5e;
-    --blue:     #3b82f6;
-    --purple:   #a855f7;
+    --amber: #f59e0b;
+    --red: #f43f5e;
+    --blue: #3b82f6;
+    --purple: #a855f7;
   }
 }
 
 @theme inline {
-  --color-bg:      var(--bg);
-  --color-bg1:     var(--bg1);
-  --color-bg2:     var(--bg2);
-  --color-bg3:     var(--bg3);
-  --color-accent:  var(--accent);
+  --color-bg: var(--bg);
+  --color-bg1: var(--bg1);
+  --color-bg2: var(--bg2);
+  --color-bg3: var(--bg3);
+  --color-accent: var(--accent);
   --color-accent2: var(--accent2);
-  --color-text:    var(--text);
-  --color-text2:   var(--text2);
-  --color-text3:   var(--text3);
-  --color-amber:   var(--amber);
-  --color-red:     var(--red);
-  --color-blue:    var(--blue);
-  --color-border:  var(--border);
-  --font-sans:     'DM Sans', sans-serif;
-  --font-mono:     'JetBrains Mono', monospace;
-  --font-display:  'Syne', sans-serif;
+  --color-text: var(--text);
+  --color-text2: var(--text2);
+  --color-text3: var(--text3);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+  --color-blue: var(--blue);
+  --color-border: var(--border);
+  --font-sans: "DM Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-display: "Syne", sans-serif;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   background: var(--bg);
@@ -87,24 +90,36 @@ body {
 }
 
 /* 滚动条样式 */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg2); }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 3px;
+}
 ```
 
 **Step 2: 更新 layout.tsx，移除 Geist 字体，加入 AntD ConfigProvider**
 
 ```tsx
 // frontend/src/app/layout.tsx
-import type { Metadata } from 'next';
-import './globals.css';
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'TestGen Pro',
-  description: 'AI-driven test case generation platform',
+  title: "Sisyphus-case-platform",
+  description: "AI-driven test case generation platform",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="zh-CN">
       <body>{children}</body>
@@ -117,25 +132,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ```tsx
 // frontend/src/components/providers/AntdProvider.tsx
-'use client';
-import { ConfigProvider, App } from 'antd';
-import zhCN from 'antd/locale/zh_CN';
+"use client";
+import { ConfigProvider, App } from "antd";
+import zhCN from "antd/locale/zh_CN";
 
 const theme = {
   token: {
-    colorPrimary: '#00d9a3',
-    colorBgBase: '#0d0f12',
-    colorTextBase: '#e2e8f0',
-    colorBorder: '#2a313d',
-    colorBgContainer: '#131619',
-    colorBgElevated: '#1a1e24',
+    colorPrimary: "#00d9a3",
+    colorBgBase: "#0d0f12",
+    colorTextBase: "#e2e8f0",
+    colorBorder: "#2a313d",
+    colorBgContainer: "#131619",
+    colorBgElevated: "#1a1e24",
     borderRadius: 6,
     fontFamily: "'DM Sans', sans-serif",
   },
   components: {
-    Table: { colorBgContainer: '#131619' },
-    Modal: { contentBg: '#131619' },
-    Drawer: { colorBgElevated: '#131619' },
+    Table: { colorBgContainer: "#131619" },
+    Modal: { contentBg: "#131619" },
+    Drawer: { colorBgElevated: "#131619" },
   },
 };
 
@@ -152,14 +167,17 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
 
 ```tsx
 // frontend/src/components/providers/QueryProvider.tsx
-'use client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+"use client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
-  const [client] = useState(() => new QueryClient({
-    defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
-  }));
+  const [client] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
+      }),
+  );
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
 ```
@@ -168,14 +186,18 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
 
 ```tsx
 // frontend/src/app/layout.tsx (最终版)
-import type { Metadata } from 'next';
-import { AntdProvider } from '@/components/providers/AntdProvider';
-import { QueryProvider } from '@/components/providers/QueryProvider';
-import './globals.css';
+import type { Metadata } from "next";
+import { AntdProvider } from "@/components/providers/AntdProvider";
+import { QueryProvider } from "@/components/providers/QueryProvider";
+import "./globals.css";
 
-export const metadata: Metadata = { title: 'TestGen Pro' };
+export const metadata: Metadata = { title: "Sisyphus-case-platform" };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="zh-CN">
       <body>
@@ -207,6 +229,7 @@ git commit -m "feat(frontend): add dark theme design system and providers"
 ## Task 2: UI 基础组件库
 
 **Files:**
+
 - Create: `frontend/src/components/ui/StatusPill.tsx`
 - Create: `frontend/src/components/ui/StatCard.tsx`
 - Create: `frontend/src/components/ui/SidebarNav.tsx`
@@ -218,15 +241,18 @@ git commit -m "feat(frontend): add dark theme design system and providers"
 
 ```tsx
 // frontend/src/components/ui/StatusPill.tsx
-type PillVariant = 'green' | 'amber' | 'red' | 'blue' | 'purple' | 'gray';
+type PillVariant = "green" | "amber" | "red" | "blue" | "purple" | "gray";
 
 const variantStyles: Record<PillVariant, string> = {
-  green:  'bg-[rgba(0,217,163,0.12)] text-accent border border-[rgba(0,217,163,0.25)]',
-  amber:  'bg-[rgba(245,158,11,0.1)] text-amber border border-[rgba(245,158,11,0.25)]',
-  red:    'bg-[rgba(244,63,94,0.1)] text-red border border-[rgba(244,63,94,0.25)]',
-  blue:   'bg-[rgba(59,130,246,0.1)] text-blue border border-[rgba(59,130,246,0.25)]',
-  purple: 'bg-[rgba(168,85,247,0.1)] text-purple border border-[rgba(168,85,247,0.25)]',
-  gray:   'bg-bg3 text-text3 border border-border',
+  green:
+    "bg-[rgba(0,217,163,0.12)] text-accent border border-[rgba(0,217,163,0.25)]",
+  amber:
+    "bg-[rgba(245,158,11,0.1)] text-amber border border-[rgba(245,158,11,0.25)]",
+  red: "bg-[rgba(244,63,94,0.1)] text-red border border-[rgba(244,63,94,0.25)]",
+  blue: "bg-[rgba(59,130,246,0.1)] text-blue border border-[rgba(59,130,246,0.25)]",
+  purple:
+    "bg-[rgba(168,85,247,0.1)] text-purple border border-[rgba(168,85,247,0.25)]",
+  gray: "bg-bg3 text-text3 border border-border",
 };
 
 interface StatusPillProps {
@@ -236,7 +262,9 @@ interface StatusPillProps {
 
 export function StatusPill({ variant, children }: StatusPillProps) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium font-mono ${variantStyles[variant]}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium font-mono ${variantStyles[variant]}`}
+    >
       {children}
     </span>
   );
@@ -256,17 +284,35 @@ interface StatCardProps {
   highlighted?: boolean;
 }
 
-export function StatCard({ value, label, delta, deltaColor = 'text-accent', progress, highlighted }: StatCardProps) {
+export function StatCard({
+  value,
+  label,
+  delta,
+  deltaColor = "text-accent",
+  progress,
+  highlighted,
+}: StatCardProps) {
   return (
-    <div className={`bg-bg1 border border-border rounded-[10px] p-4 ${highlighted ? 'border-[rgba(0,217,163,0.25)] bg-[rgba(0,217,163,0.04)]' : ''}`}>
-      <div className={`font-mono text-[26px] font-semibold leading-none ${highlighted ? 'text-accent' : 'text-text'}`}>
+    <div
+      className={`bg-bg1 border border-border rounded-[10px] p-4 ${highlighted ? "border-[rgba(0,217,163,0.25)] bg-[rgba(0,217,163,0.04)]" : ""}`}
+    >
+      <div
+        className={`font-mono text-[26px] font-semibold leading-none ${highlighted ? "text-accent" : "text-text"}`}
+      >
         {value}
       </div>
       <div className="text-[11.5px] text-text3 mt-1">{label}</div>
-      {delta && <div className={`font-mono text-[11px] mt-2 ${deltaColor}`}>{delta}</div>}
+      {delta && (
+        <div className={`font-mono text-[11px] mt-2 ${deltaColor}`}>
+          {delta}
+        </div>
+      )}
       {progress !== undefined && (
         <div className="h-[3px] bg-bg3 rounded-sm overflow-hidden mt-1.5">
-          <div className="h-full bg-accent rounded-sm" style={{ width: `${progress}%` }} />
+          <div
+            className="h-full bg-accent rounded-sm"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       )}
     </div>
@@ -286,17 +332,27 @@ interface SidebarItemProps {
   onClick?: () => void;
 }
 
-export function SidebarItem({ icon, label, count, active, onClick }: SidebarItemProps) {
+export function SidebarItem({
+  icon,
+  label,
+  count,
+  active,
+  onClick,
+}: SidebarItemProps) {
   return (
     <div
       onClick={onClick}
       className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-[12.5px] transition-all border ${
         active
-          ? 'bg-accent-d text-accent border-[rgba(0,217,163,0.2)]'
-          : 'text-text2 border-transparent hover:bg-bg2 hover:text-text'
+          ? "bg-accent-d text-accent border-[rgba(0,217,163,0.2)]"
+          : "text-text2 border-transparent hover:bg-bg2 hover:text-text"
       }`}
     >
-      {icon && <span className="text-[14px] w-[18px] text-center opacity-80">{icon}</span>}
+      {icon && (
+        <span className="text-[14px] w-[18px] text-center opacity-80">
+          {icon}
+        </span>
+      )}
       <span className="flex-1">{label}</span>
       {count !== undefined && (
         <span className="font-mono text-[10px] text-text3">{count}</span>
@@ -313,7 +369,9 @@ interface SidebarSectionProps {
 export function SidebarSection({ label, children }: SidebarSectionProps) {
   return (
     <div className="px-3 pb-2">
-      <div className="text-[10px] font-semibold text-text3 uppercase tracking-[1.2px] px-1 mb-1.5">{label}</div>
+      <div className="text-[10px] font-semibold text-text3 uppercase tracking-[1.2px] px-1 mb-1.5">
+        {label}
+      </div>
       {children}
     </div>
   );
@@ -326,15 +384,22 @@ export function SidebarSection({ label, children }: SidebarSectionProps) {
 // frontend/src/components/ui/ProgressBar.tsx
 interface ProgressBarProps {
   value: number; // 0-100
-  variant?: 'accent' | 'amber' | 'red';
+  variant?: "accent" | "amber" | "red";
   height?: number;
 }
 
-export function ProgressBar({ value, variant = 'accent', height = 3 }: ProgressBarProps) {
-  const colorMap = { accent: 'bg-accent', amber: 'bg-amber', red: 'bg-red' };
+export function ProgressBar({
+  value,
+  variant = "accent",
+  height = 3,
+}: ProgressBarProps) {
+  const colorMap = { accent: "bg-accent", amber: "bg-amber", red: "bg-red" };
   return (
     <div className="bg-bg3 rounded-sm overflow-hidden" style={{ height }}>
-      <div className={`h-full rounded-sm transition-all ${colorMap[variant]}`} style={{ width: `${value}%` }} />
+      <div
+        className={`h-full rounded-sm transition-all ${colorMap[variant]}`}
+        style={{ width: `${value}%` }}
+      />
     </div>
   );
 }
@@ -342,21 +407,31 @@ export function ProgressBar({ value, variant = 'accent', height = 3 }: ProgressB
 
 ```tsx
 // frontend/src/components/ui/ProgressSteps.tsx
-interface Step { label: string; status: 'done' | 'active' | 'pending'; }
+interface Step {
+  label: string;
+  status: "done" | "active" | "pending";
+}
 
 export function ProgressSteps({ steps }: { steps: Step[] }) {
   return (
     <div className="flex items-center mb-5">
       {steps.map((step, i) => (
         <div key={i} className="flex items-center">
-          <div className={`flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-medium rounded-md ${
-            step.status === 'done' ? 'text-accent' :
-            step.status === 'active' ? 'text-text bg-bg2' : 'text-text3'
-          }`}>
-            {step.status === 'done' && <span>✓</span>}
+          <div
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-medium rounded-md ${
+              step.status === "done"
+                ? "text-accent"
+                : step.status === "active"
+                  ? "text-text bg-bg2"
+                  : "text-text3"
+            }`}
+          >
+            {step.status === "done" && <span>✓</span>}
             {step.label}
           </div>
-          {i < steps.length - 1 && <span className="text-border2 text-[12px] mx-1">›</span>}
+          {i < steps.length - 1 && (
+            <span className="text-border2 text-[12px] mx-1">›</span>
+          )}
         </div>
       ))}
     </div>
@@ -368,11 +443,11 @@ export function ProgressSteps({ steps }: { steps: Step[] }) {
 
 ```ts
 // frontend/src/components/ui/index.ts
-export { StatusPill } from './StatusPill';
-export { StatCard } from './StatCard';
-export { SidebarItem, SidebarSection } from './SidebarNav';
-export { ProgressBar } from './ProgressBar';
-export { ProgressSteps } from './ProgressSteps';
+export { StatusPill } from "./StatusPill";
+export { StatCard } from "./StatCard";
+export { SidebarItem, SidebarSection } from "./SidebarNav";
+export { ProgressBar } from "./ProgressBar";
+export { ProgressSteps } from "./ProgressSteps";
 ```
 
 **Step 6: Lint 检查**
@@ -393,6 +468,7 @@ git commit -m "feat(frontend): add base UI component library"
 ## Task 3: 流式输出组件与 SSE Hook
 
 **Files:**
+
 - Create: `frontend/src/components/ui/ThinkingStream.tsx`
 - Create: `frontend/src/components/ui/ChatBubble.tsx`
 - Create: `frontend/src/hooks/useSSEStream.ts`
@@ -402,7 +478,7 @@ git commit -m "feat(frontend): add base UI component library"
 
 ```ts
 // frontend/src/stores/stream-store.ts
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface StreamState {
   thinkingText: string;
@@ -416,13 +492,21 @@ interface StreamState {
 }
 
 export const useStreamStore = create<StreamState>((set) => ({
-  thinkingText: '',
-  contentText: '',
+  thinkingText: "",
+  contentText: "",
   isStreaming: false,
   isThinkingDone: false,
-  reset: () => set({ thinkingText: '', contentText: '', isStreaming: false, isThinkingDone: false }),
-  appendThinking: (delta) => set((s) => ({ thinkingText: s.thinkingText + delta, isStreaming: true })),
-  appendContent: (delta) => set((s) => ({ contentText: s.contentText + delta, isThinkingDone: true })),
+  reset: () =>
+    set({
+      thinkingText: "",
+      contentText: "",
+      isStreaming: false,
+      isThinkingDone: false,
+    }),
+  appendThinking: (delta) =>
+    set((s) => ({ thinkingText: s.thinkingText + delta, isStreaming: true })),
+  appendContent: (delta) =>
+    set((s) => ({ contentText: s.contentText + delta, isThinkingDone: true })),
   setDone: () => set({ isStreaming: false }),
 }));
 ```
@@ -431,9 +515,9 @@ export const useStreamStore = create<StreamState>((set) => ({
 
 ```ts
 // frontend/src/hooks/useSSEStream.ts
-import { useStreamStore } from '@/stores/stream-store';
+import { useStreamStore } from "@/stores/stream-store";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
 export function useSSEStream() {
   const { reset, appendThinking, appendContent, setDone } = useStreamStore();
@@ -441,27 +525,27 @@ export function useSSEStream() {
   async function startStream(path: string, body: object) {
     reset();
     const response = await fetch(`${API_BASE}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
 
     if (!response.body) return;
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let buffer = '';
+    let buffer = "";
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() ?? '';
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
 
       for (const line of lines) {
-        if (line.startsWith('event: ')) {
+        if (line.startsWith("event: ")) {
           // 下一行是 data
-        } else if (line.startsWith('data: ')) {
+        } else if (line.startsWith("data: ")) {
           // 需要知道当前 event 类型
         }
       }
@@ -473,24 +557,27 @@ export function useSSEStream() {
   async function streamSSE(path: string, body: object) {
     reset();
     const response = await fetch(`${API_BASE}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
 
     if (!response.body) return;
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let buffer = '';
+    let buffer = "";
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) { setDone(); break; }
+      if (done) {
+        setDone();
+        break;
+      }
       buffer += decoder.decode(value, { stream: true });
 
       // 按双换行分割 SSE 消息块
-      const messages = buffer.split('\n\n');
-      buffer = messages.pop() ?? '';
+      const messages = buffer.split("\n\n");
+      buffer = messages.pop() ?? "";
 
       for (const msg of messages) {
         const eventMatch = msg.match(/^event: (\w+)/m);
@@ -500,10 +587,12 @@ export function useSSEStream() {
         const eventType = eventMatch[1];
         try {
           const payload = JSON.parse(dataMatch[1]);
-          if (eventType === 'thinking') appendThinking(payload.delta ?? '');
-          else if (eventType === 'content') appendContent(payload.delta ?? '');
-          else if (eventType === 'done') setDone();
-        } catch { /* ignore parse errors */ }
+          if (eventType === "thinking") appendThinking(payload.delta ?? "");
+          else if (eventType === "content") appendContent(payload.delta ?? "");
+          else if (eventType === "done") setDone();
+        } catch {
+          /* ignore parse errors */
+        }
       }
     }
   }
@@ -516,8 +605,8 @@ export function useSSEStream() {
 
 ```tsx
 // frontend/src/components/ui/ThinkingStream.tsx
-'use client';
-import { useState } from 'react';
+"use client";
+import { useState } from "react";
 
 interface ThinkingStreamProps {
   text: string;
@@ -536,13 +625,17 @@ export function ThinkingStream({ text, isStreaming }: ThinkingStreamProps) {
       >
         <span>🧠</span>
         <span>思考过程</span>
-        {isStreaming && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse ml-1" />}
-        <span className="ml-auto">{collapsed ? '▼' : '▲'}</span>
+        {isStreaming && (
+          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse ml-1" />
+        )}
+        <span className="ml-auto">{collapsed ? "▼" : "▲"}</span>
       </button>
       {!collapsed && (
         <div className="px-3 py-2 bg-bg text-text3 text-[12px] font-mono leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto">
           {text}
-          {isStreaming && <span className="inline-block w-[2px] h-[13px] bg-text3 ml-0.5 animate-[blink_1s_infinite]" />}
+          {isStreaming && (
+            <span className="inline-block w-[2px] h-[13px] bg-text3 ml-0.5 animate-[blink_1s_infinite]" />
+          )}
         </div>
       )}
     </div>
@@ -555,33 +648,46 @@ export function ThinkingStream({ text, isStreaming }: ThinkingStreamProps) {
 ```tsx
 // frontend/src/components/ui/ChatBubble.tsx
 interface ChatBubbleProps {
-  role: 'ai' | 'user';
+  role: "ai" | "user";
   content: string;
   time?: string;
   isStreaming?: boolean;
 }
 
-export function ChatBubble({ role, content, time, isStreaming }: ChatBubbleProps) {
-  const isAI = role === 'ai';
+export function ChatBubble({
+  role,
+  content,
+  time,
+  isStreaming,
+}: ChatBubbleProps) {
+  const isAI = role === "ai";
   return (
-    <div className={`flex gap-2.5 mb-3.5 ${isAI ? '' : 'flex-row-reverse'}`}>
-      <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold ${
-        isAI
-          ? 'bg-[linear-gradient(135deg,rgba(0,217,163,0.1),rgba(59,130,246,0.15))] border border-[rgba(0,217,163,0.3)] text-accent'
-          : 'bg-bg3 border border-border text-text2'
-      }`}>
-        {isAI ? 'AI' : 'U'}
+    <div className={`flex gap-2.5 mb-3.5 ${isAI ? "" : "flex-row-reverse"}`}>
+      <div
+        className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold ${
+          isAI
+            ? "bg-[linear-gradient(135deg,rgba(0,217,163,0.1),rgba(59,130,246,0.15))] border border-[rgba(0,217,163,0.3)] text-accent"
+            : "bg-bg3 border border-border text-text2"
+        }`}
+      >
+        {isAI ? "AI" : "U"}
       </div>
       <div>
-        <div className={`rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed ${
-          isAI
-            ? 'bg-[rgba(0,217,163,0.04)] border border-[rgba(0,217,163,0.2)] text-text'
-            : 'bg-bg2 border border-border text-text'
-        }`}>
+        <div
+          className={`rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed ${
+            isAI
+              ? "bg-[rgba(0,217,163,0.04)] border border-[rgba(0,217,163,0.2)] text-text"
+              : "bg-bg2 border border-border text-text"
+          }`}
+        >
           {content}
-          {isStreaming && <span className="inline-block w-[2px] h-3 bg-accent ml-0.5 animate-[blink_1s_infinite]" />}
+          {isStreaming && (
+            <span className="inline-block w-[2px] h-3 bg-accent ml-0.5 animate-[blink_1s_infinite]" />
+          )}
         </div>
-        {time && <div className="text-[10px] text-text3 mt-1 font-mono">{time}</div>}
+        {time && (
+          <div className="text-[10px] text-text3 mt-1 font-mono">{time}</div>
+        )}
       </div>
     </div>
   );
@@ -591,8 +697,8 @@ export function ChatBubble({ role, content, time, isStreaming }: ChatBubbleProps
 **Step 5: 更新 ui/index.ts**
 
 ```ts
-export { ThinkingStream } from './ThinkingStream';
-export { ChatBubble } from './ChatBubble';
+export { ThinkingStream } from "./ThinkingStream";
+export { ChatBubble } from "./ChatBubble";
 ```
 
 **Step 6: Lint + Commit**
@@ -608,6 +714,7 @@ git commit -m "feat(frontend): add SSE streaming hook and ThinkingStream/ChatBub
 ## Task 4: 后端 M06 testcases — 数据模型与迁移
 
 **Files:**
+
 - Create: `backend/app/modules/testcases/models.py`
 - Modify: `backend/alembic/versions/` (生成新迁移)
 
@@ -701,6 +808,7 @@ git commit -m "feat(testcases): add ORM models and db migration"
 ## Task 5: 后端 M06 testcases — Schemas、Service、Router
 
 **Files:**
+
 - Create: `backend/app/modules/testcases/schemas.py`
 - Create: `backend/app/modules/testcases/service.py`
 - Modify: `backend/app/modules/testcases/router.py`
@@ -959,6 +1067,7 @@ git commit -m "feat(testcases): implement M06 CRUD API"
 ## Task 6: 后端 SSE 基础设施 — ThinkingStreamAdapter
 
 **Files:**
+
 - Create: `backend/app/ai/__init__.py`
 - Create: `backend/app/ai/stream_adapter.py`
 - Create: `backend/app/ai/prompts.py`
@@ -1104,6 +1213,7 @@ git commit -m "feat(ai): add ThinkingStreamAdapter and prompt templates"
 ## Task 7: 后端 M04 scene_map — 数据模型与 API
 
 **Files:**
+
 - Create: `backend/app/modules/scene_map/models.py`
 - Create: `backend/app/modules/scene_map/schemas.py`
 - Create: `backend/app/modules/scene_map/service.py`
@@ -1360,6 +1470,7 @@ git commit -m "feat(scene-map): implement M04 scene map and test points API with
 ## Task 8: 后端 M03 diagnosis — 诊断模块
 
 **Files:**
+
 - Create: `backend/app/modules/diagnosis/models.py`
 - Create: `backend/app/modules/diagnosis/schemas.py`
 - Create: `backend/app/modules/diagnosis/service.py`
@@ -1607,6 +1718,7 @@ git commit -m "feat(diagnosis): implement M03 diagnosis API with SSE streaming"
 ## Task 9: 后端 M05 generation — 用例生成会话
 
 **Files:**
+
 - Create: `backend/app/modules/generation/models.py`
 - Create: `backend/app/modules/generation/schemas.py`
 - Create: `backend/app/modules/generation/service.py`
@@ -1644,6 +1756,7 @@ class GenerationMessage(BaseModel):
 **Step 2: schemas.py + service.py + router.py**
 
 参照 Task 8 的 diagnosis 模式实现，关键差异：
+
 - `POST /api/generation/sessions` 创建会话，返回 `session_id`
 - `POST /api/generation/sessions/{session_id}/chat` 返回 SSE 流，消息包含生成的用例 JSON
 - `GET  /api/generation/sessions/{session_id}/cases` 查询已接受的用例（从 testcases 表）
@@ -1667,31 +1780,36 @@ git commit -m "feat(generation): implement M05 generation session API"
 ## Task 10: 更新 (main) layout — 侧边栏导航
 
 **Files:**
+
 - Modify: `frontend/src/app/(main)/layout.tsx`
 
 **Step 1: 实现带导航的主布局**
 
 ```tsx
 // frontend/src/app/(main)/layout.tsx
-'use client';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { SidebarItem, SidebarSection } from '@/components/ui';
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { SidebarItem, SidebarSection } from "@/components/ui";
 
 const navItems = [
-  { href: '/', icon: '🏠', label: '项目总览' },
-  { section: '测试流程' },
-  { href: '/requirements', icon: '📄', label: '需求管理' },
-  { href: '/diagnosis', icon: '🩺', label: '健康诊断' },
-  { href: '/scene-map', icon: '🌳', label: '测试点确认' },
-  { href: '/workbench', icon: '⚡', label: '生成工作台' },
-  { href: '/testcases', icon: '📋', label: '用例管理' },
-  { section: '分析' },
-  { href: '/analytics', icon: '📊', label: '质量看板' },
-  { href: '/knowledge', icon: '🧠', label: '知识库' },
+  { href: "/", icon: "🏠", label: "项目总览" },
+  { section: "测试流程" },
+  { href: "/requirements", icon: "📄", label: "需求管理" },
+  { href: "/diagnosis", icon: "🩺", label: "健康诊断" },
+  { href: "/scene-map", icon: "🌳", label: "测试点确认" },
+  { href: "/workbench", icon: "⚡", label: "生成工作台" },
+  { href: "/testcases", icon: "📋", label: "用例管理" },
+  { section: "分析" },
+  { href: "/analytics", icon: "📊", label: "质量看板" },
+  { href: "/knowledge", icon: "🧠", label: "知识库" },
 ];
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export default function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
 
   return (
@@ -1699,30 +1817,35 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       {/* Sidebar */}
       <aside className="w-[220px] bg-bg1 border-r border-border min-h-screen fixed top-0 left-0 flex flex-col">
         <div className="p-4 border-b border-border">
-          <div className="font-display font-bold text-[15px] text-accent tracking-wide">TestGen Pro</div>
+          <div className="font-display font-bold text-[15px] text-accent tracking-wide">
+            Sisyphus-case-platform
+          </div>
         </div>
         <nav className="flex-1 py-4 overflow-y-auto">
           {navItems.map((item, i) =>
-            'section' in item ? (
-              <SidebarSection key={i} label={item.section}>{null}</SidebarSection>
+            "section" in item ? (
+              <SidebarSection key={i} label={item.section}>
+                {null}
+              </SidebarSection>
             ) : (
               <div key={item.href} className="px-3">
                 <Link href={item.href}>
                   <SidebarItem
                     icon={item.icon}
                     label={item.label}
-                    active={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
+                    active={
+                      pathname === item.href ||
+                      (item.href !== "/" && pathname.startsWith(item.href))
+                    }
                   />
                 </Link>
               </div>
-            )
+            ),
           )}
         </nav>
       </aside>
       {/* Main content */}
-      <main className="ml-[220px] flex-1 min-h-screen bg-bg">
-        {children}
-      </main>
+      <main className="ml-[220px] flex-1 min-h-screen bg-bg">{children}</main>
     </div>
   );
 }
@@ -1740,6 +1863,7 @@ git commit -m "feat(frontend): implement main layout with sidebar navigation"
 ## Task 11: 前端 P1 项目列表 `/`
 
 **Files:**
+
 - Modify: `frontend/src/app/(main)/page.tsx`
 - Create: `frontend/src/app/(main)/_components/ProjectCard.tsx`
 
@@ -1747,14 +1871,14 @@ git commit -m "feat(frontend): implement main layout with sidebar navigation"
 
 ```tsx
 // frontend/src/app/(main)/_components/ProjectCard.tsx
-import Link from 'next/link';
-import { StatusPill, ProgressBar } from '@/components/ui';
+import Link from "next/link";
+import { StatusPill, ProgressBar } from "@/components/ui";
 
 interface ProjectCardProps {
   id: string;
   name: string;
   iteration: string;
-  status: 'active' | 'completed' | 'paused';
+  status: "active" | "completed" | "paused";
   totalCases: number;
   coverage: number;
   pending: number;
@@ -1762,12 +1886,21 @@ interface ProjectCardProps {
 }
 
 const statusMap = {
-  active: { variant: 'green' as const, label: '进行中' },
-  completed: { variant: 'gray' as const, label: '已完成' },
-  paused: { variant: 'amber' as const, label: '暂停' },
+  active: { variant: "green" as const, label: "进行中" },
+  completed: { variant: "gray" as const, label: "已完成" },
+  paused: { variant: "amber" as const, label: "暂停" },
 };
 
-export function ProjectCard({ id, name, iteration, status, totalCases, coverage, pending, members }: ProjectCardProps) {
+export function ProjectCard({
+  id,
+  name,
+  iteration,
+  status,
+  totalCases,
+  coverage,
+  pending,
+  members,
+}: ProjectCardProps) {
   const s = statusMap[status];
   return (
     <Link href={`/requirements?product=${id}`}>
@@ -1781,18 +1914,28 @@ export function ProjectCard({ id, name, iteration, status, totalCases, coverage,
         </div>
         <div className="grid grid-cols-3 gap-2 mb-3">
           {[
-            { val: totalCases, label: '用例总数' },
-            { val: `${coverage}%`, label: '覆盖率', color: 'text-accent' },
-            { val: pending, label: '待处理', color: pending > 0 ? 'text-amber' : undefined },
+            { val: totalCases, label: "用例总数" },
+            { val: `${coverage}%`, label: "覆盖率", color: "text-accent" },
+            {
+              val: pending,
+              label: "待处理",
+              color: pending > 0 ? "text-amber" : undefined,
+            },
           ].map((stat, i) => (
             <div key={i} className="text-center p-2 bg-bg2 rounded-md">
-              <div className={`font-mono text-[18px] font-semibold ${stat.color ?? 'text-text'}`}>{stat.val}</div>
+              <div
+                className={`font-mono text-[18px] font-semibold ${stat.color ?? "text-text"}`}
+              >
+                {stat.val}
+              </div>
               <div className="text-[10.5px] text-text3">{stat.label}</div>
             </div>
           ))}
         </div>
         <ProgressBar value={coverage} />
-        <div className="mt-2.5 text-[11.5px] text-text3">👥 {members.slice(0, 3).join('  ')}</div>
+        <div className="mt-2.5 text-[11.5px] text-text3">
+          👥 {members.slice(0, 3).join("  ")}
+        </div>
       </div>
     </Link>
   );
@@ -1803,16 +1946,17 @@ export function ProjectCard({ id, name, iteration, status, totalCases, coverage,
 
 ```tsx
 // frontend/src/app/(main)/page.tsx
-'use client';
-import { useQuery } from '@tanstack/react-query';
-import { StatCard } from '@/components/ui';
-import { ProjectCard } from './_components/ProjectCard';
-import { apiClient } from '@/lib/api-client';
+"use client";
+import { useQuery } from "@tanstack/react-query";
+import { StatCard } from "@/components/ui";
+import { ProjectCard } from "./_components/ProjectCard";
+import { apiClient } from "@/lib/api-client";
 
 export default function ProjectListPage() {
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => apiClient<{ id: string; name: string; slug: string }[]>('/products'),
+    queryKey: ["products"],
+    queryFn: () =>
+      apiClient<{ id: string; name: string; slug: string }[]>("/products"),
   });
 
   return (
@@ -1820,12 +1964,19 @@ export default function ProjectListPage() {
       {/* Topbar */}
       <div className="flex items-center gap-3 mb-6">
         <div>
-          <div className="font-mono text-[10px] text-text3 uppercase tracking-wide">TESTGEN PRO · 项目列表</div>
+          <div className="font-mono text-[10px] text-text3 uppercase tracking-wide">
+            Sisyphus-case-platform · 项目列表
+          </div>
           <h1 className="font-display font-bold text-[20px]">全部项目</h1>
-          <div className="text-text3 text-[12px]">{products.length} 个子产品</div>
+          <div className="text-text3 text-[12px]">
+            {products.length} 个子产品
+          </div>
         </div>
         <div className="flex-1" />
-        <input className="bg-bg2 border border-border rounded-md px-3 py-1.5 text-[13px] text-text outline-none focus:border-accent w-[220px] placeholder:text-text3" placeholder="🔍  搜索项目..." />
+        <input
+          className="bg-bg2 border border-border rounded-md px-3 py-1.5 text-[13px] text-text outline-none focus:border-accent w-[220px] placeholder:text-text3"
+          placeholder="🔍  搜索项目..."
+        />
         <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[12.5px] font-semibold bg-accent text-black border border-accent hover:bg-accent2 transition-colors">
           ＋ 新建项目
         </button>
@@ -1833,10 +1984,25 @@ export default function ProjectListPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-3 mb-6">
-        <StatCard value="847" label="本周生成用例" delta="↑ 23% 较上周" highlighted />
-        <StatCard value="12" label="进行中迭代" delta="3 个 Sprint 本周截止" deltaColor="text-amber" />
+        <StatCard
+          value="847"
+          label="本周生成用例"
+          delta="↑ 23% 较上周"
+          highlighted
+        />
+        <StatCard
+          value="12"
+          label="进行中迭代"
+          delta="3 个 Sprint 本周截止"
+          deltaColor="text-amber"
+        />
         <StatCard value="94%" label="平均用例覆盖率" progress={94} />
-        <StatCard value="18" label="待处理健康诊断" delta="需要补充场景" deltaColor="text-red" />
+        <StatCard
+          value="18"
+          label="待处理健康诊断"
+          delta="需要补充场景"
+          deltaColor="text-red"
+        />
       </div>
 
       {/* Project grid */}
@@ -1878,52 +2044,118 @@ git commit -m "feat(frontend): implement P1 project list page"
 ## Task 12: 前端 P6 用例管理 `/testcases`
 
 **Files:**
+
 - Modify: `frontend/src/app/(main)/testcases/page.tsx`
 
 **Step 1: 页面实现**
 
 ```tsx
 // frontend/src/app/(main)/testcases/page.tsx
-'use client';
-import { useQuery } from '@tanstack/react-query';
-import { Table } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { StatusPill } from '@/components/ui';
-import { apiClient } from '@/lib/api-client';
+"use client";
+import { useQuery } from "@tanstack/react-query";
+import { Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { StatusPill } from "@/components/ui";
+import { apiClient } from "@/lib/api-client";
 
 interface TestCase {
   id: string;
   case_id: string;
   title: string;
-  priority: 'P0' | 'P1' | 'P2';
+  priority: "P0" | "P1" | "P2";
   case_type: string;
   status: string;
   source: string;
 }
 
-const priorityVariant = { P0: 'red', P1: 'amber', P2: 'gray' } as const;
-const statusVariant = { draft: 'gray', reviewed: 'green', pending_review: 'amber' } as const;
-const statusLabel = { draft: '草稿', reviewed: '已评审', pending_review: '待复核' };
+const priorityVariant = { P0: "red", P1: "amber", P2: "gray" } as const;
+const statusVariant = {
+  draft: "gray",
+  reviewed: "green",
+  pending_review: "amber",
+} as const;
+const statusLabel = {
+  draft: "草稿",
+  reviewed: "已评审",
+  pending_review: "待复核",
+};
 
 export default function TestCasesPage() {
   const { data: cases = [], isLoading } = useQuery({
-    queryKey: ['testcases'],
-    queryFn: () => apiClient<TestCase[]>('/testcases?page_size=50'),
+    queryKey: ["testcases"],
+    queryFn: () => apiClient<TestCase[]>("/testcases?page_size=50"),
   });
 
   const columns: ColumnsType<TestCase> = [
-    { title: '用例 ID', dataIndex: 'case_id', key: 'case_id', width: 120, render: (v) => <span className="font-mono text-[11px] text-text3">{v}</span> },
-    { title: '标题', dataIndex: 'title', key: 'title', ellipsis: true },
-    { title: '优先级', dataIndex: 'priority', key: 'priority', width: 80, render: (v) => <StatusPill variant={priorityVariant[v as keyof typeof priorityVariant] ?? 'gray'}>{v}</StatusPill> },
-    { title: '类型', dataIndex: 'case_type', key: 'case_type', width: 80, render: (v) => <span className="text-text3 text-[12px]">{v}</span> },
-    { title: '状态', dataIndex: 'status', key: 'status', width: 90, render: (v) => <StatusPill variant={statusVariant[v as keyof typeof statusVariant] ?? 'gray'}>{statusLabel[v as keyof typeof statusLabel] ?? v}</StatusPill> },
-    { title: '来源', dataIndex: 'source', key: 'source', width: 70, render: (v) => <span className="text-text3 text-[12px]">{v === 'ai' ? '🤖 AI' : '✏️ 手动'}</span> },
-    { title: '操作', key: 'action', width: 120, render: () => (
-      <div className="flex gap-2">
-        <button className="text-[11.5px] text-text3 hover:text-accent transition-colors">✏️ 编辑</button>
-        <button className="text-[11.5px] text-text3 hover:text-text transition-colors">👁 查看</button>
-      </div>
-    )},
+    {
+      title: "用例 ID",
+      dataIndex: "case_id",
+      key: "case_id",
+      width: 120,
+      render: (v) => (
+        <span className="font-mono text-[11px] text-text3">{v}</span>
+      ),
+    },
+    { title: "标题", dataIndex: "title", key: "title", ellipsis: true },
+    {
+      title: "优先级",
+      dataIndex: "priority",
+      key: "priority",
+      width: 80,
+      render: (v) => (
+        <StatusPill
+          variant={priorityVariant[v as keyof typeof priorityVariant] ?? "gray"}
+        >
+          {v}
+        </StatusPill>
+      ),
+    },
+    {
+      title: "类型",
+      dataIndex: "case_type",
+      key: "case_type",
+      width: 80,
+      render: (v) => <span className="text-text3 text-[12px]">{v}</span>,
+    },
+    {
+      title: "状态",
+      dataIndex: "status",
+      key: "status",
+      width: 90,
+      render: (v) => (
+        <StatusPill
+          variant={statusVariant[v as keyof typeof statusVariant] ?? "gray"}
+        >
+          {statusLabel[v as keyof typeof statusLabel] ?? v}
+        </StatusPill>
+      ),
+    },
+    {
+      title: "来源",
+      dataIndex: "source",
+      key: "source",
+      width: 70,
+      render: (v) => (
+        <span className="text-text3 text-[12px]">
+          {v === "ai" ? "🤖 AI" : "✏️ 手动"}
+        </span>
+      ),
+    },
+    {
+      title: "操作",
+      key: "action",
+      width: 120,
+      render: () => (
+        <div className="flex gap-2">
+          <button className="text-[11.5px] text-text3 hover:text-accent transition-colors">
+            ✏️ 编辑
+          </button>
+          <button className="text-[11.5px] text-text3 hover:text-text transition-colors">
+            👁 查看
+          </button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -1934,7 +2166,10 @@ export default function TestCasesPage() {
           <div className="text-text3 text-[12px]">{cases.length} 条用例</div>
         </div>
         <div className="flex-1" />
-        <input className="bg-bg2 border border-border rounded-md px-3 py-1.5 text-[13px] text-text outline-none focus:border-accent w-[200px] placeholder:text-text3" placeholder="🔍  搜索用例..." />
+        <input
+          className="bg-bg2 border border-border rounded-md px-3 py-1.5 text-[13px] text-text outline-none focus:border-accent w-[200px] placeholder:text-text3"
+          placeholder="🔍  搜索用例..."
+        />
         <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[12.5px] font-semibold bg-accent text-black border border-accent hover:bg-accent2 transition-colors">
           ＋ 手动添加
         </button>
@@ -1942,12 +2177,22 @@ export default function TestCasesPage() {
 
       {/* Filter bar */}
       <div className="flex gap-2 mb-4 flex-wrap">
-        {['全部', 'P0', 'P1', 'P2'].map((f) => (
-          <button key={f} className="px-3 py-1 rounded-md text-[11.5px] border border-border text-text3 hover:border-border2 hover:text-text transition-colors">{f}</button>
+        {["全部", "P0", "P1", "P2"].map((f) => (
+          <button
+            key={f}
+            className="px-3 py-1 rounded-md text-[11.5px] border border-border text-text3 hover:border-border2 hover:text-text transition-colors"
+          >
+            {f}
+          </button>
         ))}
         <div className="w-px bg-border mx-1" />
-        {['正常', '异常', '边界', '并发'].map((f) => (
-          <button key={f} className="px-3 py-1 rounded-md text-[11.5px] border border-border text-text3 hover:border-border2 hover:text-text transition-colors">{f}</button>
+        {["正常", "异常", "边界", "并发"].map((f) => (
+          <button
+            key={f}
+            className="px-3 py-1 rounded-md text-[11.5px] border border-border text-text3 hover:border-border2 hover:text-text transition-colors"
+          >
+            {f}
+          </button>
         ))}
       </div>
 
@@ -1957,7 +2202,7 @@ export default function TestCasesPage() {
           columns={columns}
           rowKey="id"
           loading={isLoading}
-          pagination={{ pageSize: 20, size: 'small' }}
+          pagination={{ pageSize: 20, size: "small" }}
           size="small"
         />
       </div>
@@ -1979,6 +2224,7 @@ git commit -m "feat(frontend): implement P6 test case management page"
 ## Task 13: 前端 P3 健康诊断 `/diagnosis/[id]`
 
 **Files:**
+
 - Create: `frontend/src/app/(main)/diagnosis/[id]/page.tsx`
 
 **Step 1: 三列诊断页面**
@@ -1990,6 +2236,7 @@ git commit -m "feat(frontend): implement P6 test case management page"
 - **右列**：场景地图预览（调用 `GET /api/scene-map/{id}`，显示测试点统计和列表）
 
 关键实现：
+
 ```tsx
 const { streamSSE } = useSSEStream();
 const { thinkingText, contentText, isStreaming } = useStreamStore();
@@ -2012,6 +2259,7 @@ git commit -m "feat(frontend): implement P3 health diagnosis page with SSE strea
 ## Task 14: 前端 P4 测试点确认 `/scene-map/[id]`
 
 **Files:**
+
 - Create: `frontend/src/app/(main)/scene-map/[id]/page.tsx`
 
 **Step 1: 三列测试点页面**
@@ -2034,6 +2282,7 @@ git commit -m "feat(frontend): implement P4 scene map test point confirmation pa
 ## Task 15: 前端 P5 生成工作台 `/workbench/[id]`
 
 **Files:**
+
 - Create: `frontend/src/app/(main)/workbench/[id]/page.tsx`
 - Create: `frontend/src/app/(main)/workbench/[id]/_components/CasePreviewCard.tsx`
 
@@ -2054,9 +2303,17 @@ git commit -m "feat(frontend): implement P4 scene map test point confirmation pa
     {/* 中列：AI 对话 */}
     <div className="flex flex-col bg-bg overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4">
-        {messages.map((m) => <ChatBubble key={m.id} role={m.role} content={m.content} />)}
+        {messages.map((m) => (
+          <ChatBubble key={m.id} role={m.role} content={m.content} />
+        ))}
         <ThinkingStream text={thinkingText} isStreaming={isStreaming} />
-        {contentText && <ChatBubble role="ai" content={contentText} isStreaming={isStreaming} />}
+        {contentText && (
+          <ChatBubble
+            role="ai"
+            content={contentText}
+            isStreaming={isStreaming}
+          />
+        )}
       </div>
       <ChatInput onSend={handleSend} />
     </div>
@@ -2083,6 +2340,7 @@ git commit -m "feat(frontend): implement P5 generation workbench with three-col 
 ## Task 16: 前端 P2 需求卡片 `/requirements/[id]`
 
 **Files:**
+
 - Create: `frontend/src/app/(main)/requirements/[id]/page.tsx`
 
 **Step 1: 需求详情页面**
@@ -2090,6 +2348,7 @@ git commit -m "feat(frontend): implement P5 generation workbench with three-col 
 两列布局：左侧边栏（子产品/迭代/需求列表三级导航）+ 主内容区
 
 主内容：
+
 - `RequirementMeta`：优先级（`frontmatter.priority`）/ 状态 / 负责人
 - `RichEditor`：`content_ast.content` 字段的文本展示（阶段一用 `<textarea>`，不引入复杂富文本编辑器）
 - 右侧 `LinkedPanel`：关联测试点数量（调用 `GET /api/scene-map/{id}`）+ 关联用例数（调用 `GET /api/testcases?requirement_id={id}`）
@@ -2143,12 +2402,12 @@ git commit -m "feat: complete phase-1 core workflow implementation"
 
 ## 快速参考
 
-| 命令 | 用途 |
-|------|------|
-| `cd backend && uv run uvicorn app.main:app --reload` | 启动后端 |
-| `cd frontend && bun dev` | 启动前端 |
-| `uv run alembic upgrade head` | 执行数据库迁移 |
-| `uv run ruff check . && uv run ruff format .` | 后端 lint |
-| `bunx biome check --write .` | 前端 lint |
-| `bunx tsc --noEmit` | 前端类型检查 |
-| `http://localhost:8000/docs` | FastAPI Swagger UI |
+| 命令                                                 | 用途               |
+| ---------------------------------------------------- | ------------------ |
+| `cd backend && uv run uvicorn app.main:app --reload` | 启动后端           |
+| `cd frontend && bun dev`                             | 启动前端           |
+| `uv run alembic upgrade head`                        | 执行数据库迁移     |
+| `uv run ruff check . && uv run ruff format .`        | 后端 lint          |
+| `bunx biome check --write .`                         | 前端 lint          |
+| `bunx tsc --noEmit`                                  | 前端类型检查       |
+| `http://localhost:8000/docs`                         | FastAPI Swagger UI |
