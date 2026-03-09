@@ -1,582 +1,704 @@
 'use client';
 
-import { Search, MessageSquare, Map, Zap } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  ChevronDown,
+  ChevronRight,
+  Database,
+  FileText,
+  FolderOpen,
+  Globe,
+  IterationCw,
+  Loader2,
+  Lock,
+  Send,
+  Shield,
+  Zap,
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-/* ── 静态 Demo 数据 ── */
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-const highRisks = [
-  {
-    id: 'H-1',
-    title: '网络中断恢复策略缺失',
-    tags: ['异常流程', '网络'],
-    status: '待补全',
-  },
-  {
-    id: 'H-2',
-    title: '并发编辑冲突未说明',
-    tags: ['并发', '数据一致性'],
-    status: '对话中',
-  },
-  {
-    id: 'H-3',
-    title: '草稿存储上限未定义',
-    tags: ['边界值', '存储'],
-    status: '待补全',
-  },
-];
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+}
 
-const medRisks = [
-  {
-    id: 'M-1',
-    title: '权限边界未说明',
-    tags: ['权限', '安全'],
-    status: '待补全',
-  },
-  {
-    id: 'M-2',
-    title: '保存间隔最小值',
-    tags: ['性能', '边界值'],
-    status: '已处理',
-  },
-  {
-    id: 'M-3',
-    title: '草稿恢复入口位置',
-    tags: ['交互', 'UI'],
-    status: '待补全',
-  },
-];
+interface Iteration {
+  id: string;
+  name: string;
+  status: string;
+}
 
-const industryItems = [
-  {
-    id: 'I-1',
-    title: '幂等性保障',
-    tags: ['行业规范', '接口'],
-    status: '已采纳',
-  },
-  {
-    id: 'I-2',
-    title: '断网期间本地存储策略',
-    tags: ['行业规范', '离线'],
-    status: '已采纳',
-  },
-];
+interface Requirement {
+  id: string;
+  req_id: string;
+  title: string;
+  status: string;
+}
 
-const chatMessages: {
-  role: 'ai' | 'user';
-  time: string;
+interface DiagnosisReport {
+  id: string;
+  requirement_id: string;
+  status: string;
+  overall_score: number | null;
+  summary: string | null;
+  risk_count_high: number;
+  risk_count_medium: number;
+}
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
   content: string;
-  streaming?: boolean;
-}[] = [
-  {
-    role: 'ai',
-    time: '10:32',
-    content:
-      '我注意到需求文档中未提及网络中断时的恢复策略。当用户正在编辑草稿时，如果网络突然断开，系统应该如何处理？具体来说：\n\n1. 是否需要本地缓存未保存的内容？\n2. 网络恢复后，如何与服务端数据合并？\n3. 是否需要提示用户网络状态变更？',
-  },
-  {
-    role: 'user',
-    time: '10:34',
-    content:
-      '网络断开时需要本地缓存，恢复后自动同步。如果有冲突以本地版本为准，但需要弹窗让用户确认。',
-  },
-  {
-    role: 'ai',
-    time: '10:34',
-    content:
-      '已记录。接下来关于「并发编辑冲突」——当两个用户同时编辑同一份文档时，系统应采用什么策略？\n\n常见方案有：\n• **悲观锁**：先到先得，后者只读\n• **乐观锁**：允许同时编辑，提交时检测冲突\n• **实时协同**：类似 Google Docs 的 OT/CRDT',
-  },
-  {
-    role: 'user',
-    time: '10:36',
-    content: '采用乐观锁，提交时如果版本号不一致就提示冲突，让用户选择保留哪个版本。',
-  },
-  {
-    role: 'ai',
-    time: '10:36',
-    content:
-      '明白，已将并发策略更新为「乐观锁 + 版本号校验 + 用户手动选择」。\n\n现在来看第三个高风险项——草稿存储上限。当前需求未定义单个用户可以保存多少份草稿。建议从以下维度考虑：',
-    streaming: true,
-  },
-];
+  thinking_content?: string;
+  created_at: string;
+}
 
-const sceneGroups = [
-  {
-    label: '正常流程',
-    nodes: [
-      { name: '创建草稿', color: 'green' as const },
-      { name: '自动保存', color: 'green' as const },
-      { name: '手动提交', color: 'green' as const },
-    ],
-  },
-  {
-    label: '异常场景',
-    nodes: [
-      { name: '网络中断恢复', color: 'yellow' as const },
-      { name: '并发冲突处理', color: 'yellow' as const },
-      { name: '存储空间不足', color: 'red' as const },
-    ],
-  },
-  {
-    label: '边界值',
-    nodes: [
-      { name: '草稿数量上限', color: 'red' as const },
-      { name: '最小保存间隔', color: 'yellow' as const },
-    ],
-  },
-  {
-    label: '权限 & 安全',
-    nodes: [
-      { name: '越权访问草稿', color: 'red' as const },
-      { name: '已删除用户草稿', color: 'gray' as const },
-      { name: '草稿数据加密', color: 'gray' as const },
-    ],
-  },
-];
+export default function DiagnosisPage() {
+  // Tree state
+  const [products, setProducts] = useState<Product[]>([]);
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
+  const [iterations, setIterations] = useState<Record<string, Iteration[]>>({});
+  const [expandedIterations, setExpandedIterations] = useState<Set<string>>(new Set());
+  const [requirements, setRequirements] = useState<Record<string, Requirement[]>>({});
 
-const statusPill = (s: string) => {
-  if (s === '对话中') return 'pill pill-amber';
-  if (s === '已处理' || s === '已采纳') return 'pill pill-green';
-  return 'pill pill-gray';
-};
+  // Selection
+  const [selectedReqId, setSelectedReqId] = useState<string | null>(null);
+  const [selectedReqTitle, setSelectedReqTitle] = useState<string>('');
 
-/* ── 页面组件 ── */
+  // Diagnosis state
+  const [report, setReport] = useState<DiagnosisReport | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputText, setInputText] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
 
-export default function Page() {
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Load products on mount
+  useEffect(() => {
+    fetch(`${API}/products/`)
+      .then((r) => r.json())
+      .then((data) => setProducts(Array.isArray(data) ? data : data.items || []))
+      .catch(console.error);
+  }, []);
+
+  // Load iterations when product expanded
+  const toggleProduct = async (productId: string) => {
+    const next = new Set(expandedProducts);
+    if (next.has(productId)) {
+      next.delete(productId);
+    } else {
+      next.add(productId);
+      if (!iterations[productId]) {
+        try {
+          const res = await fetch(`${API}/products/${productId}/iterations`);
+          const data = await res.json();
+          setIterations((prev) => ({
+            ...prev,
+            [productId]: Array.isArray(data) ? data : data.items || [],
+          }));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+    setExpandedProducts(next);
+  };
+
+  // Load requirements when iteration expanded
+  const toggleIteration = async (iterationId: string) => {
+    const next = new Set(expandedIterations);
+    if (next.has(iterationId)) {
+      next.delete(iterationId);
+    } else {
+      next.add(iterationId);
+      if (!requirements[iterationId]) {
+        try {
+          const res = await fetch(`${API}/products/iterations/${iterationId}/requirements`);
+          const data = await res.json();
+          setRequirements((prev) => ({
+            ...prev,
+            [iterationId]: Array.isArray(data) ? data : data.items || [],
+          }));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+    setExpandedIterations(next);
+  };
+
+  // Select requirement → load diagnosis
+  const selectRequirement = async (req: Requirement) => {
+    setSelectedReqId(req.id);
+    setSelectedReqTitle(req.title);
+    setMessages([]);
+    setReport(null);
+
+    try {
+      const reportRes = await fetch(`${API}/diagnosis/${req.id}/create`, { method: 'POST' });
+      if (reportRes.ok) {
+        const reportData = await reportRes.json();
+        setReport(reportData);
+      }
+
+      const msgRes = await fetch(`${API}/diagnosis/${req.id}/messages`);
+      if (msgRes.ok) {
+        const msgData = await msgRes.json();
+        setMessages(Array.isArray(msgData) ? msgData : []);
+      }
+    } catch (e) {
+      console.error('Failed to load diagnosis:', e);
+    }
+  };
+
+  // SSE streaming chat
+  const sendMessage = useCallback(async () => {
+    if (!inputText.trim() || !selectedReqId || isStreaming) return;
+
+    const userMsg = inputText.trim();
+    setInputText('');
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        content: userMsg,
+        created_at: new Date().toISOString(),
+      },
+    ]);
+    setIsStreaming(true);
+    setStreamingContent('');
+
+    try {
+      abortRef.current = new AbortController();
+      const res = await fetch(`${API}/diagnosis/${selectedReqId}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMsg }),
+        signal: abortRef.current.signal,
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error('No reader');
+
+      const decoder = new TextDecoder();
+      let fullContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.delta) {
+                fullContent += data.delta;
+                setStreamingContent(fullContent);
+              }
+            } catch {
+              const text = line.slice(6);
+              if (text && text !== '[DONE]') {
+                fullContent += text;
+                setStreamingContent(fullContent);
+              }
+            }
+          } else if (line.startsWith('event: ')) {
+            const eventType = line.slice(7).trim();
+            if (eventType === 'done') {
+              break;
+            }
+          }
+        }
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `ai-${Date.now()}`,
+          role: 'assistant',
+          content: fullContent || '诊断完成',
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        console.error('Chat error:', e);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `err-${Date.now()}`,
+            role: 'assistant',
+            content: `错误: ${e.message}`,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+      }
+    } finally {
+      setIsStreaming(false);
+      setStreamingContent('');
+    }
+  }, [inputText, selectedReqId, isStreaming]);
+
+  // Auto-scroll on new messages or streaming updates
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll must trigger on content changes
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, streamingContent]);
+
+  // Complete diagnosis
+  const completeDiagnosis = async () => {
+    if (!selectedReqId) return;
+    try {
+      const res = await fetch(`${API}/diagnosis/${selectedReqId}/complete`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setReport(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const scoreColor = (score: number | null) => {
+    if (!score) return 'var(--text-secondary, var(--text3))';
+    if (score >= 80) return '#00d9a3';
+    if (score >= 60) return '#f59e0b';
+    return '#ef4444';
+  };
+
+  const diagnosisDimensions = [
+    { icon: Shield, label: '功能边界', desc: '功能边界遗漏检测' },
+    { icon: AlertTriangle, label: '异常场景', desc: '异常场景缺失扫描' },
+    { icon: Database, label: '数据约束', desc: '数据约束模糊识别' },
+    { icon: Zap, label: '性能指标', desc: '性能指标缺失检查' },
+    { icon: Globe, label: '兼容性', desc: '兼容性未提及发现' },
+    { icon: Lock, label: '安全风险', desc: '安全风险忽略扫描' },
+  ];
+
   return (
-    <>
-      {/* ─── 左侧边栏 ─── */}
-      <aside className="sidebar-panel">
-        <div className="sb-section">
-          <a
-            href="/requirements"
-            style={{
-              fontSize: 12,
-              color: 'var(--text3)',
-              textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '6px 4px',
-            }}
-          >
-            ← 返回需求列表
-          </a>
+    <div style={{ display: 'flex', height: 'calc(100vh - 64px)', gap: 0 }}>
+      {/* Left Sidebar - Requirement Tree */}
+      <aside
+        style={{
+          width: 260,
+          minWidth: 260,
+          borderRight: '1px solid var(--border)',
+          background: 'var(--bg1)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+            <Activity size={16} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            需求健康诊断
+          </h3>
         </div>
-
-        <hr className="divider" />
-
-        <div className="sb-section">
-          <div className="sb-label">诊断进度</div>
-          <div className="sb-item active">
-            <Search size={14} />需求健康报告
-          </div>
-          <div className="sb-item">
-            <MessageSquare size={14} />场景补全对话
-          </div>
-          <div className="sb-item" style={{ opacity: 0.4 }}>
-            <Map size={14} />测试点确认
-          </div>
-          <div className="sb-item" style={{ opacity: 0.4 }}>
-            <Zap size={14} />生成用例
-          </div>
-        </div>
-
-        <hr className="divider" />
-
-        <div className="sb-section">
-          <div className="sb-label">健康报告概览</div>
-          <div
-            style={{
-              background: 'var(--bg2)',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-              padding: '12px 14px',
-            }}
-          >
+        <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
+          {products.map((product) => (
+            <div key={product.id}>
+              <button
+                type="button"
+                onClick={() => toggleProduct(product.id)}
+                className="card-hover"
+                style={{
+                  all: 'unset',
+                  boxSizing: 'border-box',
+                  width: '100%',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  borderRadius: 6,
+                  fontSize: 13,
+                  color: 'var(--text)',
+                }}
+              >
+                {expandedProducts.has(product.id) ? (
+                  <ChevronDown size={14} />
+                ) : (
+                  <ChevronRight size={14} />
+                )}
+                <FolderOpen size={14} style={{ color: 'var(--accent)' }} />
+                {product.name}
+              </button>
+              {expandedProducts.has(product.id) &&
+                (iterations[product.id] || []).map((iter) => (
+                  <div key={iter.id} style={{ paddingLeft: 20 }}>
+                    <button
+                      type="button"
+                      onClick={() => toggleIteration(iter.id)}
+                      className="card-hover"
+                      style={{
+                        all: 'unset',
+                        boxSizing: 'border-box',
+                        width: '100%',
+                        padding: '6px 12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        borderRadius: 6,
+                        fontSize: 12,
+                        color: 'var(--text3, var(--text-secondary))',
+                      }}
+                    >
+                      {expandedIterations.has(iter.id) ? (
+                        <ChevronDown size={12} />
+                      ) : (
+                        <ChevronRight size={12} />
+                      )}
+                      <IterationCw size={12} />
+                      {iter.name}
+                    </button>
+                    {expandedIterations.has(iter.id) &&
+                      (requirements[iter.id] || []).map((req) => (
+                        <button
+                          type="button"
+                          key={req.id}
+                          onClick={() => selectRequirement(req)}
+                          className="card-hover"
+                          style={{
+                            all: 'unset',
+                            boxSizing: 'border-box',
+                            width: '100%',
+                            padding: '6px 12px',
+                            marginLeft: 20,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            borderRadius: 6,
+                            fontSize: 12,
+                            background:
+                              selectedReqId === req.id
+                                ? 'var(--accent-d, rgba(0,217,163,0.1))'
+                                : undefined,
+                            color:
+                              selectedReqId === req.id
+                                ? 'var(--accent)'
+                                : 'var(--text3, var(--text-secondary))',
+                          }}
+                        >
+                          <FileText size={12} />
+                          {req.title || req.req_id}
+                        </button>
+                      ))}
+                  </div>
+                ))}
+            </div>
+          ))}
+          {products.length === 0 && (
             <div
               style={{
-                fontSize: 11,
-                color: 'var(--text3)',
-                marginBottom: 8,
+                padding: 16,
+                textAlign: 'center',
+                color: 'var(--text3, var(--text-secondary))',
+                fontSize: 13,
               }}
             >
-              总遗漏项
+              暂无产品数据
             </div>
-            <div
-              className="mono"
-              style={{
-                fontSize: 28,
-                fontWeight: 700,
-                lineHeight: 1,
-                marginBottom: 12,
-              }}
-            >
-              8
-            </div>
+          )}
+        </div>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 6,
-                fontSize: 11,
-              }}
-            >
-              {[
-                { label: '高风险', count: 3, color: 'var(--red)' },
-                { label: '中风险', count: 3, color: 'var(--amber)' },
-                { label: '行业清单', count: 2, color: 'var(--blue)' },
-                { label: '已处理', count: 2, color: 'var(--accent)' },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: '50%',
-                      background: s.color,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span style={{ color: 'var(--text3)' }}>{s.label}</span>
-                  <span className="mono" style={{ marginLeft: 'auto', fontWeight: 600 }}>
-                    {s.count}
-                  </span>
-                </div>
-              ))}
+        {/* Report Summary */}
+        {report && (
+          <div style={{ padding: 16, borderTop: '1px solid var(--border)' }}>
+            <div style={{ textAlign: 'center', marginBottom: 12 }}>
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: '50%',
+                  border: `3px solid ${scoreColor(report.overall_score)}`,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 20,
+                  fontWeight: 700,
+                  color: scoreColor(report.overall_score),
+                }}
+              >
+                {report.overall_score ?? '—'}
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: 'var(--text3, var(--text-secondary))',
+                  marginTop: 4,
+                }}
+              >
+                健康评分
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: 12 }}>
+              <span className="pill pill-red">高风险 {report.risk_count_high}</span>
+              <span className="pill pill-amber">中风险 {report.risk_count_medium}</span>
             </div>
           </div>
-        </div>
+        )}
       </aside>
 
-      {/* ─── 主内容区 ─── */}
-      <div className="main-with-sidebar">
-        {/* Topbar */}
-        <div className="topbar" style={{ flexWrap: 'wrap' }}>
-          <div style={{ width: '100%' }}>
-            <span className="page-watermark">REQ-089 · 需求健康诊断</span>
-          </div>
-          <h1>草稿自动保存功能 — 健康诊断</h1>
-          <span className="topbar sub">识别需求盲区，通过对话补全场景</span>
-          <span className="pill pill-blue">第 2 轮 · 深度聚焦</span>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-            <button type="button" className="btn btn-sm">
-              导出报告
-            </button>
-            <button type="button" className="btn btn-primary btn-sm">
-              完成，进入测试点确认 →
-            </button>
-          </div>
-        </div>
-
-        {/* ─── 三栏诊断布局 ─── */}
-        <div className="diag-col">
-          {/* ── 左列: 健康报告 ── */}
-          <div className="col-left">
-            <div className="col-header">
-              <><Search size={14} /> 需求健康报告</>
-              <span className="pill pill-red" style={{ marginLeft: 'auto' }}>
-                8 处遗漏
-              </span>
-            </div>
-            <div style={{ padding: 10 }}>
-              {/* 高风险 */}
-              <div className="sb-label" style={{ marginBottom: 6, marginTop: 4 }}>
-                <><span className="sb-dot" style={{ background: 'var(--red)' }} /> 高风险 · 3</>
-              </div>
-              {highRisks.map((r) => (
-                <div key={r.id} className="risk-item high">
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 12.5,
-                        fontWeight: 600,
-                        marginBottom: 6,
-                      }}
-                    >
-                      {r.title}
-                    </div>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {r.tags.map((t) => (
-                        <span key={t} className="tag">
-                          {t}
-                        </span>
-                      ))}
-                      <span className={statusPill(r.status)}>{r.status}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* 中风险 */}
-              <div className="sb-label" style={{ marginBottom: 6, marginTop: 14 }}>
-                <><span className="sb-dot" style={{ background: 'var(--amber)' }} /> 中风险 · 3</>
-              </div>
-              {medRisks.map((r) => (
-                <div key={r.id} className="risk-item med">
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 12.5,
-                        fontWeight: 600,
-                        marginBottom: 6,
-                      }}
-                    >
-                      {r.title}
-                    </div>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {r.tags.map((t) => (
-                        <span key={t} className="tag">
-                          {t}
-                        </span>
-                      ))}
-                      <span className={statusPill(r.status)}>{r.status}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* 行业清单 */}
-              <div className="sb-label" style={{ marginBottom: 6, marginTop: 14 }}>
-                <><span className="sb-dot" style={{ background: 'var(--blue)' }} /> 行业清单 · 2</>
-              </div>
-              {industryItems.map((r) => (
-                <div key={r.id} className="risk-item done">
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 12.5,
-                        fontWeight: 600,
-                        marginBottom: 6,
-                      }}
-                    >
-                      {r.title}
-                    </div>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {r.tags.map((t) => (
-                        <span key={t} className="tag">
-                          {t}
-                        </span>
-                      ))}
-                      <span className={statusPill(r.status)}>{r.status}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── 中列: 对话 ── */}
-          <div className="col-mid">
-            <div className="col-header">
-              <><MessageSquare size={14} /> 场景补全对话</>
-              <span className="pill pill-blue">第2轮 · 深度聚焦</span>
-              <span
-                className="mono"
-                style={{
-                  marginLeft: 'auto',
-                  fontSize: 11,
-                  color: 'var(--text3)',
-                }}
-              >
-                3/8 已处理
-              </span>
-            </div>
-
-            <div style={{ padding: 14 }}>
-              {/* 轮次分隔 */}
-              <div
-                style={{
-                  textAlign: 'center',
-                  margin: '8px 0 18px',
-                }}
-              >
-                <span className="pill pill-gray" style={{ fontSize: 10.5 }}>
-                  第一轮 · 广度扫描完成
-                </span>
-              </div>
-
-              {/* 聊天消息 */}
-              {chatMessages.map((msg) => (
-                <div key={`${msg.role}-${msg.time}`} className="chat-msg">
-                  <div className={`chat-avatar ${msg.role === 'ai' ? 'chat-ai' : 'chat-user'}`}>
-                    {msg.role === 'ai' ? 'AI' : '你'}
-                  </div>
-                  <div>
-                    <div
-                      className={`chat-bubble${msg.role === 'ai' ? ' ai-bubble' : ''}`}
-                      style={{ whiteSpace: 'pre-wrap' }}
-                    >
-                      {msg.content}
-                      {msg.streaming && <span className="streaming-cursor" />}
-                    </div>
-                    <div className="chat-time">{msg.time}</div>
-                  </div>
-                </div>
-              ))}
-
-              {/* 输入区 */}
-              <div
-                style={{
-                  marginTop: 8,
-                  borderTop: '1px solid var(--border)',
-                  paddingTop: 12,
-                }}
-              >
-                <textarea
-                  className="input"
-                  rows={3}
-                  placeholder="输入回复，补全遗漏场景…"
-                  style={{
-                    width: '100%',
-                    resize: 'vertical',
-                    fontSize: 12.5,
-                    marginBottom: 8,
-                  }}
-                />
-                <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                  <button type="button" className="btn btn-sm">
-                    跳过
-                  </button>
-                  <button type="button" className="btn btn-sm">
-                    已知晓
-                  </button>
-                  <button type="button" className="btn btn-primary btn-sm">
-                    发送
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── 右列: 场景地图预览 ── */}
-          <div className="col-right">
-            <div className="col-header">
-              <><Map size={14} /> 场景地图实时预览</>
-              <div
-                style={{
-                  marginLeft: 'auto',
-                  display: 'flex',
-                  gap: 2,
-                }}
-              >
-                <button
-                  type="button"
-                  className="btn btn-sm"
-                  style={{
-                    padding: '2px 8px',
-                    borderRadius: '4px 0 0 4px',
-                    background: 'var(--bg3)',
-                  }}
-                >
-                  列表
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-sm"
-                  style={{
-                    padding: '2px 8px',
-                    borderRadius: '0 4px 4px 0',
-                  }}
-                >
-                  树形
-                </button>
-              </div>
-            </div>
-
-            <div style={{ padding: 10 }}>
-              {/* 统计迷你网格 */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: 6,
-                  marginBottom: 14,
-                }}
-              >
-                {[
-                  { label: '绿色', count: 6, cls: 'dot-green' },
-                  { label: '黄色', count: 4, cls: 'dot-yellow' },
-                  { label: '红色', count: 5, cls: 'dot-red' },
-                  { label: '灰色', count: 2, cls: 'dot-gray' },
-                ].map((s) => (
+      {/* Center - Diagnosis Content */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {selectedReqId ? (
+          <>
+            {/* Diagnosis Dimensions */}
+            <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: 14, color: 'var(--text)' }}>
+                诊断维度 — {selectedReqTitle}
+              </h4>
+              <div className="grid-3" style={{ gap: 8 }}>
+                {diagnosisDimensions.map((dim) => (
                   <div
-                    key={s.label}
-                    style={{
-                      textAlign: 'center',
-                      background: 'var(--bg2)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 6,
-                      padding: '8px 4px',
-                    }}
+                    key={dim.label}
+                    className="card"
+                    style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <span className={`scene-dot ${s.cls}`} />
+                    <dim.icon size={16} style={{ color: 'var(--accent)' }} />
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>
+                        {dim.label}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text3, var(--text-secondary))' }}>
+                        {dim.desc}
+                      </div>
                     </div>
-                    <div className="mono" style={{ fontSize: 16, fontWeight: 700 }}>
-                      {s.count}
-                    </div>
-                    <div style={{ fontSize: 10, color: 'var(--text3)' }}>{s.label}</div>
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* 场景节点分组 */}
-              {sceneGroups.map((g) => (
-                <div key={g.label} style={{ marginBottom: 12 }}>
-                  <div className="sb-label" style={{ marginBottom: 4 }}>
-                    {g.label}
-                  </div>
-                  {g.nodes.map((n) => (
-                    <div key={n.name} className="scene-node">
-                      <span className={`scene-dot dot-${n.color}`} />
-                      <span style={{ fontSize: 12 }}>{n.name}</span>
-                    </div>
-                  ))}
-                </div>
-              ))}
-
-              {/* 汇总 */}
-              <div
-                style={{
-                  marginTop: 14,
-                  padding: '10px 12px',
-                  background: 'var(--accent-d)',
-                  border: '1px solid rgba(0,217,163,0.2)',
-                  borderRadius: 8,
-                  textAlign: 'center',
-                }}
-              >
-                <span style={{ fontSize: 12, color: 'var(--text2)' }}>预计生成用例总数</span>
+            {/* Chat Area */}
+            <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
+              {messages.length === 0 && !isStreaming && (
                 <div
-                  className="mono"
                   style={{
-                    fontSize: 20,
-                    fontWeight: 700,
-                    color: 'var(--accent)',
-                    marginTop: 2,
+                    textAlign: 'center',
+                    padding: 40,
+                    color: 'var(--text3, var(--text-secondary))',
                   }}
                 >
-                  ~38 条
+                  <Activity size={48} style={{ opacity: 0.3, marginBottom: 16 }} />
+                  <p style={{ fontSize: 14 }}>选择需求后，开始 AI 健康诊断对话</p>
+                  <p style={{ fontSize: 12 }}>
+                    试试输入：&quot;请对这个需求进行全面的健康诊断&quot;
+                  </p>
                 </div>
-              </div>
+              )}
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    className="card"
+                    style={{
+                      maxWidth: '70%',
+                      padding: '10px 14px',
+                      background: msg.role === 'user' ? 'var(--accent)' : 'var(--bg2)',
+                      color: msg.role === 'user' ? '#fff' : 'var(--text)',
+                      borderRadius:
+                        msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {isStreaming && streamingContent && (
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
+                  <div
+                    className="card"
+                    style={{
+                      maxWidth: '70%',
+                      padding: '10px 14px',
+                      background: 'var(--bg2)',
+                      borderRadius: '12px 12px 12px 2px',
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {streamingContent}
+                    <span style={{ animation: 'pulse 1s infinite' }}>▊</span>
+                  </div>
+                </div>
+              )}
+              {isStreaming && !streamingContent && (
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
+                  <div
+                    className="card"
+                    style={{
+                      padding: '10px 14px',
+                      background: 'var(--bg2)',
+                      borderRadius: '12px 12px 12px 2px',
+                    }}
+                  >
+                    <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span
+                      style={{
+                        marginLeft: 8,
+                        fontSize: 13,
+                        color: 'var(--text3, var(--text-secondary))',
+                      }}
+                    >
+                      AI 正在分析...
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div
+              style={{
+                padding: '12px 16px',
+                borderTop: '1px solid var(--border)',
+                display: 'flex',
+                gap: 8,
+              }}
+            >
+              <textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                placeholder="输入诊断问题，如：请对这个需求进行健康诊断..."
+                style={{
+                  flex: 1,
+                  resize: 'none',
+                  height: 40,
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg2)',
+                  color: 'var(--text)',
+                  fontSize: 13,
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={sendMessage}
+                disabled={isStreaming || !inputText.trim()}
+                style={{ padding: '8px 16px' }}
+              >
+                <Send size={16} />
+              </button>
+            </div>
+          </>
+        ) : (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center', color: 'var(--text3, var(--text-secondary))' }}>
+              <Activity size={64} style={{ opacity: 0.2, marginBottom: 16 }} />
+              <p style={{ fontSize: 16 }}>请从左侧选择一个需求</p>
+              <p style={{ fontSize: 13 }}>开始 AI 驱动的需求健康诊断</p>
             </div>
           </div>
-        </div>
-      </div>
-    </>
+        )}
+      </main>
+
+      {/* Right Panel */}
+      <aside
+        style={{
+          width: 280,
+          minWidth: 280,
+          borderLeft: '1px solid var(--border)',
+          background: 'var(--bg1)',
+          padding: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+        }}
+      >
+        <h4 style={{ margin: 0, fontSize: 14, color: 'var(--text)' }}>快速操作</h4>
+        {selectedReqId ? (
+          <>
+            <button
+              type="button"
+              className="btn btn-primary"
+              style={{ width: '100%' }}
+              onClick={completeDiagnosis}
+            >
+              <CheckCircle size={16} style={{ marginRight: 8 }} />
+              完成诊断
+            </button>
+            <div className="card" style={{ padding: 12 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: 'var(--text3, var(--text-secondary))',
+                  marginBottom: 8,
+                }}
+              >
+                诊断状态
+              </div>
+              <span
+                className={`pill ${report?.status === 'completed' ? 'pill-green' : 'pill-amber'}`}
+              >
+                {report?.status === 'completed' ? '已完成' : '进行中'}
+              </span>
+            </div>
+            {report?.summary && (
+              <div className="card" style={{ padding: 12 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--text3, var(--text-secondary))',
+                    marginBottom: 8,
+                  }}
+                >
+                  诊断摘要
+                </div>
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--text)',
+                    lineHeight: 1.5,
+                    margin: 0,
+                  }}
+                >
+                  {report.summary}
+                </p>
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ fontSize: 13, color: 'var(--text3, var(--text-secondary))' }}>
+            选择需求后显示操作面板
+          </div>
+        )}
+      </aside>
+    </div>
   );
 }
