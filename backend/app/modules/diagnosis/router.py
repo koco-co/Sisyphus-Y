@@ -45,6 +45,31 @@ async def chat_diagnosis(
     return StreamingResponse(stream, media_type="text/event-stream")
 
 
+@router.post("/{requirement_id}/create", response_model=DiagnosisReportResponse)
+async def create_report(requirement_id: uuid.UUID, session: AsyncSessionDep) -> DiagnosisReportResponse:
+    svc = DiagnosisService(session)
+    report = await svc.create_or_get_report(requirement_id)
+    return DiagnosisReportResponse.model_validate(report)
+
+
+@router.get("/{requirement_id}/messages")
+async def list_messages(requirement_id: uuid.UUID, session: AsyncSessionDep) -> list[dict]:
+    svc = DiagnosisService(session)
+    report = await svc.get_report(requirement_id)
+    if not report:
+        return []
+    messages = await svc.list_messages(report.id)
+    return [
+        {
+            "role": m.role,
+            "content": m.content,
+            "round_num": m.round_num,
+            "created_at": m.created_at.isoformat() if m.created_at else "",
+        }
+        for m in messages
+    ]
+
+
 @router.patch("/{requirement_id}/risks/{risk_id}", response_model=DiagnosisRiskResponse)
 async def update_risk(
     requirement_id: uuid.UUID,

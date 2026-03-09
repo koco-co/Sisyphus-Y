@@ -10,9 +10,7 @@ from app.shared.base_model import BaseModel
 class DiagnosisReport(BaseModel):
     __tablename__ = "diagnosis_reports"
 
-    requirement_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("requirements.id"), index=True
-    )
+    requirement_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("requirements.id"), index=True)
     status: Mapped[str] = mapped_column(String(20), default="running")
     overall_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -24,9 +22,7 @@ class DiagnosisReport(BaseModel):
 class DiagnosisRisk(BaseModel):
     __tablename__ = "diagnosis_risks"
 
-    report_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("diagnosis_reports.id"), index=True
-    )
+    report_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("diagnosis_reports.id"), index=True)
     level: Mapped[str] = mapped_column(String(20))
     title: Mapped[str] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -36,9 +32,7 @@ class DiagnosisRisk(BaseModel):
 class DiagnosisChatMessage(BaseModel):
     __tablename__ = "diagnosis_chat_messages"
 
-    report_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("diagnosis_reports.id"), index=True
-    )
+    report_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("diagnosis_reports.id"), index=True)
     role: Mapped[str] = mapped_column(String(10))
     content: Mapped[str] = mapped_column(Text)
     round_num: Mapped[int] = mapped_column(Integer, default=1)

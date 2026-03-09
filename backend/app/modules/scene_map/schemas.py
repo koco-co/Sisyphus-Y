@@ -10,6 +10,7 @@ class TestPointCreate(BaseSchema):
     description: str | None = None
     priority: str = "P1"
     estimated_cases: int = 3
+    source: str | None = "user_added"
 
 
 class TestPointUpdate(BaseSchema):

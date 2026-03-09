@@ -21,9 +21,7 @@ class SceneMap(BaseModel):
 class TestPoint(BaseModel):
     __tablename__ = "test_points"
 
-    scene_map_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("scene_maps.id"), index=True
-    )
+    scene_map_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("scene_maps.id"), index=True)
     group_name: Mapped[str] = mapped_column(String(50))
     title: Mapped[str] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)

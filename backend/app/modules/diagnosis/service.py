@@ -54,13 +54,69 @@ class DiagnosisService:
         messages = [{"role": "user", "content": user_content}]
         return await get_thinking_stream(messages, system=DIAGNOSIS_SYSTEM)
 
+    async def create_or_get_report(self, requirement_id: UUID) -> DiagnosisReport:
+        report = await self.get_report(requirement_id)
+        if report:
+            return report
+        report = DiagnosisReport(
+            requirement_id=requirement_id,
+            status="running",
+        )
+        self.session.add(report)
+        await self.session.commit()
+        await self.session.refresh(report)
+        return report
+
+    async def complete_report(
+        self,
+        report_id: UUID,
+        summary: str,
+        risk_count_high: int = 0,
+        risk_count_medium: int = 0,
+    ) -> DiagnosisReport | None:
+        report = await self.session.get(DiagnosisReport, report_id)
+        if report:
+            report.status = "completed"
+            report.summary = summary
+            report.risk_count_high = risk_count_high
+            report.risk_count_medium = risk_count_medium
+            await self.session.commit()
+            await self.session.refresh(report)
+        return report
+
+    async def save_message(self, report_id: UUID, role: str, content: str, round_num: int = 1) -> DiagnosisChatMessage:
+        msg = DiagnosisChatMessage(
+            report_id=report_id,
+            role=role,
+            content=content,
+            round_num=round_num,
+        )
+        self.session.add(msg)
+        await self.session.commit()
+        return msg
+
+    async def list_messages(self, report_id: UUID) -> list[DiagnosisChatMessage]:
+        q = (
+            select(DiagnosisChatMessage)
+            .where(
+                DiagnosisChatMessage.report_id == report_id,
+                DiagnosisChatMessage.deleted_at.is_(None),
+            )
+            .order_by(DiagnosisChatMessage.created_at)
+        )
+        result = await self.session.execute(q)
+        return list(result.scalars().all())
+
     async def chat_stream(self, requirement_id: UUID, user_message: str) -> AsyncIterator[str]:
         report = await self.get_report(requirement_id)
         history: list[dict] = []
         if report:
             q = (
                 select(DiagnosisChatMessage)
-                .where(DiagnosisChatMessage.report_id == report.id)
+                .where(
+                    DiagnosisChatMessage.report_id == report.id,
+                    DiagnosisChatMessage.deleted_at.is_(None),
+                )
                 .order_by(DiagnosisChatMessage.created_at)
             )
             result = await self.session.execute(q)
