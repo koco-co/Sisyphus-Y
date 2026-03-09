@@ -36,6 +36,26 @@ class GenerationService:
         result = await self.session.execute(q)
         return result.scalar_one_or_none()
 
+    async def get_or_create_session(
+        self, requirement_id: UUID, mode: str = "test_point_driven"
+    ) -> GenerationSession:
+        """Return the latest active session for a requirement, or create one."""
+        q = (
+            select(GenerationSession)
+            .where(
+                GenerationSession.requirement_id == requirement_id,
+                GenerationSession.status == "active",
+                GenerationSession.deleted_at.is_(None),
+            )
+            .order_by(GenerationSession.created_at.desc())
+            .limit(1)
+        )
+        result = await self.session.execute(q)
+        existing = result.scalar_one_or_none()
+        if existing:
+            return existing
+        return await self.create_session(requirement_id, mode)
+
     async def list_sessions(self, requirement_id: UUID) -> list[GenerationSession]:
         q = (
             select(GenerationSession)

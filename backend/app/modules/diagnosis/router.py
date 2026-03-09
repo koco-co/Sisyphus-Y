@@ -17,6 +17,23 @@ from app.modules.diagnosis.service import DiagnosisService
 router = APIRouter(prefix="/diagnosis", tags=["diagnosis"])
 
 
+@router.get("/reports/{requirement_id}")
+async def get_report_status(requirement_id: uuid.UUID, session: AsyncSessionDep) -> dict:
+    """Check whether a diagnosis report exists for a requirement."""
+    svc = DiagnosisService(session)
+    report = await svc.get_report(requirement_id)
+    if not report:
+        return {"exists": False, "requirement_id": str(requirement_id)}
+    return {
+        "exists": True,
+        "requirement_id": str(requirement_id),
+        "report_id": str(report.id),
+        "status": report.status,
+        "summary": report.summary,
+        "created_at": report.created_at.isoformat() if report.created_at else "",
+    }
+
+
 @router.get("/{requirement_id}", response_model=DiagnosisReportResponse)
 async def get_diagnosis(requirement_id: uuid.UUID, session: AsyncSessionDep) -> DiagnosisReportResponse:
     svc = DiagnosisService(session)
