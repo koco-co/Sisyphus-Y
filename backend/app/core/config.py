@@ -40,10 +40,12 @@ class Settings(BaseSettings):
     jwt_access_token_expire_minutes: int = 30
 
     # LLM
-    llm_provider: str = "openai"
+    llm_provider: str = "zhipu"
     openai_api_key: str = ""
     openai_model: str = "gpt-4o"
     ollama_base_url: str = "http://localhost:11434"
+    zhipu_api_key: str = ""
+    zhipu_model: str = "glm-4-flash"
 
 
 settings = Settings()

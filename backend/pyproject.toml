@@ -18,6 +18,7 @@ dependencies = [
     "httpx>=0.28",
     "python-multipart>=0.0.18",
     "minio>=7.2",
+    "zhipuai>=2.1.5.20250825",
 ]
 
 [project.optional-dependencies]

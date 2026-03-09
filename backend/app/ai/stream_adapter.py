@@ -1,4 +1,4 @@
-"""统一的流式输出适配器，支持 OpenAI / Anthropic。
+"""统一的流式输出适配器，支持 OpenAI / Anthropic / ZhiPu。
 
 SSE 事件格式：
   event: thinking\ndata: {"delta": "..."}\n\n
@@ -6,6 +6,7 @@ SSE 事件格式：
   event: done\ndata: {"usage": {...}}\n\n
 """
 
+import asyncio
 import json
 from collections.abc import AsyncIterator
 
@@ -71,6 +72,49 @@ async def anthropic_thinking_stream(
     yield _sse("done", {"usage": {}})
 
 
+async def zhipu_thinking_stream(
+    messages: list[dict],
+    system: str = "",
+) -> AsyncIterator[str]:
+    """智谱 GLM 流式输出，运行在线程池以避免阻塞事件循环。"""
+    from zhipuai import ZhipuAI
+
+    client = ZhipuAI(api_key=settings.zhipu_api_key)
+
+    yield _sse("thinking", {"delta": "正在分析需求，梳理测试场景...\n"})
+
+    all_messages = messages
+    if system:
+        all_messages = [{"role": "system", "content": system}, *messages]
+
+    # ZhiPu SDK 是同步的，放到线程池中执行
+    def _create_stream():
+        return client.chat.completions.create(
+            model=settings.zhipu_model,
+            messages=all_messages,
+            stream=True,
+        )
+
+    stream = await asyncio.to_thread(_create_stream)
+
+    # 逐 chunk 消费也需要包在 to_thread 里
+    def _next_chunk(iterator):
+        try:
+            return next(iterator)
+        except StopIteration:
+            return None
+
+    while True:
+        chunk = await asyncio.to_thread(_next_chunk, stream)
+        if chunk is None:
+            break
+        choice = chunk.choices[0] if chunk.choices else None
+        if choice and choice.delta and choice.delta.content:
+            yield _sse("content", {"delta": choice.delta.content})
+
+    yield _sse("done", {"usage": {}})
+
+
 async def get_thinking_stream(
     messages: list[dict],
     system: str = "",
@@ -79,4 +123,6 @@ async def get_thinking_stream(
     provider = settings.llm_provider.lower()
     if provider == "anthropic":
         return anthropic_thinking_stream(messages, system)
+    if provider == "zhipu":
+        return zhipu_thinking_stream(messages, system)
     return openai_thinking_stream(messages, system)

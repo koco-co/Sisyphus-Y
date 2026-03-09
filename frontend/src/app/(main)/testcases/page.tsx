@@ -1,79 +1,166 @@
-'use client';
-import { useQuery } from '@tanstack/react-query';
-import { Table } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { StatusPill } from '@/components/ui';
-import { apiClient } from '@/lib/api-client';
+"use client";
 
-interface TestCase {
+interface TestCaseRow {
   id: string;
-  case_id: string;
+  caseId: string;
   title: string;
-  priority: 'P0' | 'P1' | 'P2';
-  case_type: string;
+  sourcePoint: string;
+  type: string;
+  typePill: string;
+  priority: string;
+  priorityPill: string;
+  steps: number;
   status: string;
-  source: string;
+  statusPill: string;
 }
 
-const priorityVariant = { P0: 'red', P1: 'amber', P2: 'gray' } as const;
-const statusVariant = { draft: 'gray', reviewed: 'green', pending_review: 'amber' } as const;
-const statusLabel: Record<string, string> = { draft: '草稿', reviewed: '已评审', pending_review: '待复核' };
+const demoRows: TestCaseRow[] = [
+  { id: "1", caseId: "TC-0601", title: "离线任务提交-正常参数校验", sourcePoint: "TP-042", type: "功能", typePill: "pill-blue", priority: "P0", priorityPill: "pill-red", steps: 8, status: "已评审", statusPill: "pill-green" },
+  { id: "2", caseId: "TC-0602", title: "DAG 依赖解析-循环依赖检测", sourcePoint: "TP-043", type: "异常", typePill: "pill-amber", priority: "P0", priorityPill: "pill-red", steps: 6, status: "已评审", statusPill: "pill-green" },
+  { id: "3", caseId: "TC-0603", title: "任务重试策略-指数退避验证", sourcePoint: "TP-044", type: "功能", typePill: "pill-blue", priority: "P1", priorityPill: "pill-amber", steps: 10, status: "待确认", statusPill: "pill-amber" },
+  { id: "4", caseId: "TC-0604", title: "资源隔离-内存超限自动 Kill", sourcePoint: "TP-045", type: "边界", typePill: "pill-purple", priority: "P0", priorityPill: "pill-red", steps: 5, status: "AI 生成", statusPill: "pill-blue" },
+  { id: "5", caseId: "TC-0605", title: "自动保存草稿-网络断开恢复", sourcePoint: "TP-046", type: "功能", typePill: "pill-blue", priority: "P1", priorityPill: "pill-amber", steps: 7, status: "需重写", statusPill: "pill-red" },
+  { id: "6", caseId: "TC-0606", title: "批量导入 CSV-编码兼容性", sourcePoint: "TP-047", type: "兼容", typePill: "pill-gray", priority: "P2", priorityPill: "pill-gray", steps: 4, status: "已评审", statusPill: "pill-green" },
+  { id: "7", caseId: "TC-0607", title: "并发任务调度-死锁预防机制", sourcePoint: "TP-048", type: "并发", typePill: "pill-purple", priority: "P0", priorityPill: "pill-red", steps: 12, status: "AI 生成", statusPill: "pill-blue" },
+  { id: "8", caseId: "TC-0608", title: "权限校验-跨租户数据隔离", sourcePoint: "TP-049", type: "安全", typePill: "pill-red", priority: "P0", priorityPill: "pill-red", steps: 9, status: "待确认", statusPill: "pill-amber" },
+];
 
 export default function TestCasesPage() {
-  const { data: cases = [], isLoading } = useQuery({
-    queryKey: ['testcases'],
-    queryFn: () => apiClient<TestCase[]>('/testcases?page_size=50'),
-  });
-
-  const columns: ColumnsType<TestCase> = [
-    { title: '用例 ID', dataIndex: 'case_id', key: 'case_id', width: 120, render: (v: string) => <span className="font-mono text-[11px] text-text3">{v}</span> },
-    { title: '标题', dataIndex: 'title', key: 'title', ellipsis: true },
-    { title: '优先级', dataIndex: 'priority', key: 'priority', width: 80, render: (v: string) => <StatusPill variant={priorityVariant[v as keyof typeof priorityVariant] ?? 'gray'}>{v}</StatusPill> },
-    { title: '类型', dataIndex: 'case_type', key: 'case_type', width: 80, render: (v: string) => <span className="text-text3 text-[12px]">{v}</span> },
-    { title: '状态', dataIndex: 'status', key: 'status', width: 90, render: (v: string) => <StatusPill variant={statusVariant[v as keyof typeof statusVariant] ?? 'gray'}>{statusLabel[v] ?? v}</StatusPill> },
-    { title: '来源', dataIndex: 'source', key: 'source', width: 70, render: (v: string) => <span className="text-text3 text-[12px]">{v === 'ai' ? '🤖 AI' : '✏️ 手动'}</span> },
-    { title: '操作', key: 'action', width: 120, render: () => (
-      <div className="flex gap-2">
-        <button type="button" className="text-[11.5px] text-text3 hover:text-accent transition-colors">✏️ 编辑</button>
-        <button type="button" className="text-[11.5px] text-text3 hover:text-text transition-colors">👁 查看</button>
-      </div>
-    )},
-  ];
-
   return (
-    <div className="p-6">
-      <div className="flex items-center gap-3 mb-5">
-        <div>
-          <h1 className="font-display font-bold text-[20px]">用例管理</h1>
-          <div className="text-text3 text-[12px]">{cases.length} 条用例</div>
+    <>
+      {/* ── Sidebar ── */}
+      <aside className="sidebar-panel">
+        <div className="sb-section">
+          <div className="sb-label">子产品</div>
+          <div className="sb-item active">
+            <span className="sb-dot" style={{ background: "var(--accent)" }} />
+            离线开发
+          </div>
+          <div className="sb-item">
+            <span className="sb-dot" style={{ background: "var(--blue)" }} />
+            实时开发
+          </div>
+          <div className="sb-item">
+            <span className="sb-dot" style={{ background: "var(--amber)" }} />
+            数据资产
+          </div>
         </div>
-        <div className="flex-1" />
-        <input className="bg-bg2 border border-border rounded-md px-3 py-1.5 text-[13px] text-text outline-none focus:border-accent w-[200px] placeholder:text-text3" placeholder="🔍  搜索用例..." />
-        <button type="button" className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[12.5px] font-semibold bg-accent text-black border border-accent hover:bg-accent2 transition-colors">
-          ＋ 手动添加
-        </button>
-      </div>
 
-      <div className="flex gap-2 mb-4 flex-wrap">
-        {['全部', 'P0', 'P1', 'P2'].map((f) => (
-          <button type="button" key={f} className="px-3 py-1 rounded-md text-[11.5px] border border-border text-text3 hover:border-border2 hover:text-text transition-colors">{f}</button>
-        ))}
-        <div className="w-px bg-border mx-1" />
-        {['正常', '异常', '边界', '并发'].map((f) => (
-          <button type="button" key={f} className="px-3 py-1 rounded-md text-[11.5px] border border-border text-text3 hover:border-border2 hover:text-text transition-colors">{f}</button>
-        ))}
-      </div>
+        <div className="sb-section">
+          <div className="sb-label">迭代</div>
+          <div className="sb-item active">
+            <span className="icon">🏃</span>Sprint 2025-Q2-3
+          </div>
+          <div className="sb-item">
+            <span className="icon">📦</span>Sprint 2025-Q2-2
+          </div>
+          <div className="sb-item">
+            <span className="icon">📦</span>Sprint 2025-Q2-1
+          </div>
+        </div>
 
-      <div className="bg-bg1 border border-border rounded-[10px] overflow-hidden">
-        <Table
-          dataSource={cases}
-          columns={columns}
-          rowKey="id"
-          loading={isLoading}
-          pagination={{ pageSize: 20, size: 'small' }}
-          size="small"
-        />
+        <hr className="divider" />
+
+        <div className="sb-section">
+          <div className="sb-label">快速筛选</div>
+          <div className="sb-item active">
+            <span className="icon">📋</span>全部用例<span className="sb-count">312</span>
+          </div>
+          <div className="sb-item">
+            <span className="icon">❓</span>待确认<span className="sb-count">24</span>
+          </div>
+          <div className="sb-item">
+            <span className="icon">🤖</span>AI生成<span className="sb-count">198</span>
+          </div>
+          <div className="sb-item">
+            <span className="icon">✏️</span>手动创建<span className="sb-count">114</span>
+          </div>
+          <div className="sb-item">
+            <span className="icon">⚠️</span>需要重写
+            <span className="sb-count" style={{ color: "var(--red)" }}>8</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── Main Content ── */}
+      <div className="main-with-sidebar">
+        <span className="page-watermark">P6 · TESTCASES</span>
+
+        {/* Alert Banner */}
+        <div className="alert-banner">
+          ⚠ 检测到 3 条需求已更新（Diff），8 条用例可能需要重写
+          <span className="spacer" />
+          <a href="/diff" style={{ color: "var(--amber)", fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
+            查看 Diff →
+          </a>
+        </div>
+
+        {/* Topbar */}
+        <div className="topbar">
+          <div>
+            <div className="sub">离线开发 · Sprint 2025-Q2-3 · 用例管理</div>
+            <h1>用例管理</h1>
+            <div className="sub">312 条用例</div>
+          </div>
+          <span className="spacer" />
+          <input className="input" placeholder="🔍  搜索用例ID / 标题..." style={{ width: 220 }} />
+          <button type="button" className="btn">🔽 筛选</button>
+          <button type="button" className="btn">批量操作</button>
+          <button type="button" className="btn btn-primary">＋ 新建用例</button>
+        </div>
+
+        {/* Table */}
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th style={{ width: 36 }}><input type="checkbox" /></th>
+                <th>用例ID</th>
+                <th>标题</th>
+                <th>来源测试点</th>
+                <th>类型</th>
+                <th>优先级</th>
+                <th>步骤数</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {demoRows.map((row) => (
+                <tr key={row.id}>
+                  <td><input type="checkbox" /></td>
+                  <td><span className="mono" style={{ color: "var(--accent)", fontSize: 11 }}>{row.caseId}</span></td>
+                  <td style={{ color: "var(--text)" }}>{row.title}</td>
+                  <td><span className="mono" style={{ fontSize: 11, color: "var(--text3)" }}>{row.sourcePoint}</span></td>
+                  <td><span className={`pill ${row.typePill}`}>{row.type}</span></td>
+                  <td><span className={`pill ${row.priorityPill}`}>{row.priority}</span></td>
+                  <td><span className="mono" style={{ fontSize: 11 }}>{row.steps}</span></td>
+                  <td><span className={`pill ${row.statusPill}`}>{row.status}</span></td>
+                  <td>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button type="button" className="btn btn-ghost btn-sm">✏️ 编辑</button>
+                      <button type="button" className="btn btn-ghost btn-sm">👁 查看</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="pagination">
+          <button type="button">«</button>
+          <button type="button">‹</button>
+          <button type="button" className="active">1</button>
+          <button type="button">2</button>
+          <button type="button">3</button>
+          <button type="button">...</button>
+          <button type="button">16</button>
+          <button type="button">›</button>
+          <button type="button">»</button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
