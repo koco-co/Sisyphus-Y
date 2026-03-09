@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import ProgressDashboard from '@/components/ui/ProgressDashboard';
 import {
   LayoutGrid,
   FileText,
@@ -15,6 +16,7 @@ import {
   Settings,
   BookOpen,
   LayoutTemplate,
+  Grid3x3,
   Sun,
   Moon,
   Monitor,
@@ -28,10 +30,11 @@ const navTabs = [
   { href: '/workbench', label: '生成工作台', icon: Wand2 },
   { href: '/testcases', label: '用例管理', icon: ClipboardList },
   { href: '/diff', label: 'Diff 视图', icon: GitCompareArrows },
+  { href: '/coverage', label: '覆盖矩阵', icon: Grid3x3 },
   { href: '/analytics', label: '质量看板', icon: BarChart3 },
-  { href: '/settings', label: '系统设置', icon: Settings },
   { href: '/knowledge', label: '知识库', icon: BookOpen },
   { href: '/templates', label: '模板库', icon: LayoutTemplate },
+  { href: '/settings', label: '系统设置', icon: Settings },
 ];
 
 function ThemeToggle() {
@@ -79,6 +82,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
       </nav>
       {children}
+      <ProgressDashboard />
     </>
   );
 }
