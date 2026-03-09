@@ -1,26 +1,57 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg:       #0d0f12;
+    --bg1:      #131619;
+    --bg2:      #1a1e24;
+    --bg3:      #212730;
+    --border:   #2a313d;
+    --border2:  #353d4a;
+    --text:     #e2e8f0;
+    --text2:    #94a3b8;
+    --text3:    #566577;
+    --accent:   #00d9a3;
+    --accent2:  #00b386;
+    --accent-d: rgba(0, 217, 163, 0.1);
+    --amber:    #f59e0b;
+    --red:      #f43f5e;
+    --blue:     #3b82f6;
+    --purple:   #a855f7;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-bg:      var(--bg);
+  --color-bg1:     var(--bg1);
+  --color-bg2:     var(--bg2);
+  --color-bg3:     var(--bg3);
+  --color-accent:  var(--accent);
+  --color-accent2: var(--accent2);
+  --color-text:    var(--text);
+  --color-text2:   var(--text2);
+  --color-text3:   var(--text3);
+  --color-amber:   var(--amber);
+  --color-red:     var(--red);
+  --color-blue:    var(--blue);
+  --color-border:  var(--border);
+  --font-sans:     'DM Sans', sans-serif;
+  --font-mono:     'JetBrains Mono', monospace;
+  --font-display:  'Syne', sans-serif;
 }
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }

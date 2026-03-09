@@ -1,15 +1,20 @@
 import type { Metadata } from 'next';
+import { AntdProvider } from '@/components/providers/AntdProvider';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 import './globals.css';
 
-export const metadata: Metadata = {
-  title: 'Sisyphus Case Platform',
-  description: 'AI 驱动的企业级测试用例生成平台',
-};
+export const metadata: Metadata = { title: 'TestGen Pro' };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        <QueryProvider>
+          <AntdProvider>{children}</AntdProvider>
+        </QueryProvider>
+      </body>
     </html>
   );
 }
