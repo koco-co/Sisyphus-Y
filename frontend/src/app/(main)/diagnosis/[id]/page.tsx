@@ -1,11 +1,11 @@
 'use client';
-import { useParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, useRef, useEffect } from 'react';
-import { ThinkingStream, ChatBubble, StatusPill, ProgressSteps } from '@/components/ui';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { ChatBubble, ProgressSteps, StatusPill, ThinkingStream } from '@/components/ui';
 import { useSSEStream } from '@/hooks/useSSEStream';
-import { useStreamStore } from '@/stores/stream-store';
 import { apiClient } from '@/lib/api-client';
+import { useStreamStore } from '@/stores/stream-store';
 
 interface Risk {
   id: string;
@@ -55,7 +55,12 @@ export default function DiagnosisPage() {
 
   const { data: sceneMap } = useQuery({
     queryKey: ['scene-map', id],
-    queryFn: () => apiClient<{ id: string; status: string; test_points: { id: string; title: string; group_name: string; priority: string }[] }>(`/scene-map/${id}`),
+    queryFn: () =>
+      apiClient<{
+        id: string;
+        status: string;
+        test_points: { id: string; title: string; group_name: string; priority: string }[];
+      }>(`/scene-map/${id}`),
     retry: false,
   });
 
@@ -74,14 +79,20 @@ export default function DiagnosisPage() {
     setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: msg }]);
     await streamSSE(`/diagnosis/${id}/chat`, { message: msg, round_num: messages.length + 1 });
     if (contentText) {
-      setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', content: contentText }]);
+      setMessages((prev) => [
+        ...prev,
+        { id: (Date.now() + 1).toString(), role: 'ai', content: contentText },
+      ]);
     }
   }
 
   const steps = [
-    { label: '需求分析', status: report ? 'done' as const : 'active' as const },
-    { label: '风险识别', status: report?.risks?.length ? 'done' as const : 'pending' as const },
-    { label: '测试点建议', status: sceneMap?.test_points?.length ? 'done' as const : 'pending' as const },
+    { label: '需求分析', status: report ? ('done' as const) : ('active' as const) },
+    { label: '风险识别', status: report?.risks?.length ? ('done' as const) : ('pending' as const) },
+    {
+      label: '测试点建议',
+      status: sceneMap?.test_points?.length ? ('done' as const) : ('pending' as const),
+    },
   ];
 
   const riskGroups = ['high', 'medium', 'industry'];
@@ -99,7 +110,12 @@ export default function DiagnosisPage() {
         <div className="bg-bg1 border border-border rounded-[10px] p-4 overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
             <div className="text-[13px] font-semibold">风险清单</div>
-            <button type="button" onClick={runDiagnosis} disabled={isStreaming} className="text-[11px] px-2.5 py-1 rounded-md bg-accent text-black font-medium disabled:opacity-50">
+            <button
+              type="button"
+              onClick={runDiagnosis}
+              disabled={isStreaming}
+              className="text-[11px] px-2.5 py-1 rounded-md bg-accent text-black font-medium disabled:opacity-50"
+            >
               {isStreaming ? '分析中...' : '开始诊断'}
             </button>
           </div>
@@ -116,9 +132,19 @@ export default function DiagnosisPage() {
                 {risks.map((r) => (
                   <div key={r.id} className="p-2.5 bg-bg2 rounded-md mb-1.5 border border-border">
                     <div className="text-[12px] text-text font-medium">{r.title}</div>
-                    {r.description && <div className="text-[11px] text-text3 mt-1">{r.description}</div>}
+                    {r.description && (
+                      <div className="text-[11px] text-text3 mt-1">{r.description}</div>
+                    )}
                     <div className="mt-1.5">
-                      <StatusPill variant={r.risk_status === 'resolved' ? 'green' : r.risk_status === 'acknowledged' ? 'amber' : 'gray'}>
+                      <StatusPill
+                        variant={
+                          r.risk_status === 'resolved'
+                            ? 'green'
+                            : r.risk_status === 'acknowledged'
+                              ? 'amber'
+                              : 'gray'
+                        }
+                      >
                         {r.risk_status}
                       </StatusPill>
                     </div>
@@ -127,7 +153,9 @@ export default function DiagnosisPage() {
               </div>
             );
           })}
-          {!report?.risks?.length && <div className="text-text3 text-[12px] text-center py-8">点击「开始诊断」分析需求</div>}
+          {!report?.risks?.length && (
+            <div className="text-text3 text-[12px] text-center py-8">点击「开始诊断」分析需求</div>
+          )}
         </div>
 
         {/* Center: Chat */}
@@ -137,7 +165,9 @@ export default function DiagnosisPage() {
               <ChatBubble key={m.id} role={m.role === 'user' ? 'user' : 'ai'} content={m.content} />
             ))}
             <ThinkingStream text={thinkingText} isStreaming={isStreaming && !contentText} />
-            {contentText && <ChatBubble role="ai" content={contentText} isStreaming={isStreaming} />}
+            {contentText && (
+              <ChatBubble role="ai" content={contentText} isStreaming={isStreaming} />
+            )}
           </div>
           <div className="border-t border-border p-3 flex gap-2">
             <input
@@ -148,7 +178,12 @@ export default function DiagnosisPage() {
               placeholder="输入补充说明或提问..."
               disabled={isStreaming}
             />
-            <button type="button" onClick={sendMessage} disabled={isStreaming || !input.trim()} className="px-4 py-1.5 rounded-md text-[12px] font-semibold bg-accent text-black disabled:opacity-50">
+            <button
+              type="button"
+              onClick={sendMessage}
+              disabled={isStreaming || !input.trim()}
+              className="px-4 py-1.5 rounded-md text-[12px] font-semibold bg-accent text-black disabled:opacity-50"
+            >
               发送
             </button>
           </div>
@@ -162,7 +197,13 @@ export default function DiagnosisPage() {
               {sceneMap.test_points.map((tp) => (
                 <div key={tp.id} className="p-2 bg-bg2 rounded-md border border-border">
                   <div className="flex items-center gap-1.5">
-                    <StatusPill variant={tp.priority === 'P0' ? 'red' : tp.priority === 'P1' ? 'amber' : 'gray'}>{tp.priority}</StatusPill>
+                    <StatusPill
+                      variant={
+                        tp.priority === 'P0' ? 'red' : tp.priority === 'P1' ? 'amber' : 'gray'
+                      }
+                    >
+                      {tp.priority}
+                    </StatusPill>
                     <span className="text-[11.5px] text-text">{tp.title}</span>
                   </div>
                   <div className="text-[10px] text-text3 mt-1">{tp.group_name}</div>

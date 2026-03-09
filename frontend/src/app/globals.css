@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
 @import "tailwindcss";
 
 @layer base {
@@ -69,6 +68,25 @@
   --font-sans:     'DM Sans', sans-serif;
   --font-mono:     'JetBrains Mono', monospace;
   --font-display:  'Syne', sans-serif;
+
+  /* ── sy-* 别名 (CLAUDE.md 设计规范) ── */
+  --color-sy-bg:       var(--bg);
+  --color-sy-bg-1:     var(--bg1);
+  --color-sy-bg-2:     var(--bg2);
+  --color-sy-bg-3:     var(--bg3);
+  --color-sy-border:   var(--border);
+  --color-sy-border-2: var(--border2);
+  --color-sy-text:     var(--text);
+  --color-sy-text-2:   var(--text2);
+  --color-sy-text-3:   var(--text3);
+  --color-sy-accent:   var(--accent);
+  --color-sy-accent-2: var(--accent2);
+  --color-sy-warn:     var(--amber);
+  --color-sy-danger:   var(--red);
+  --color-sy-info:     var(--blue);
+  --color-sy-purple:   var(--purple);
+
+  --animate-blink: blink 0.8s infinite;
 }
 
 * { box-sizing: border-box; }

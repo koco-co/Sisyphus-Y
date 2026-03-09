@@ -1,21 +1,16 @@
 'use client';
+
+import { useRef, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { StatusPill, StatCard } from '@/components/ui';
-import { Stethoscope, TreePine, Zap } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
-
-interface Requirement {
-  id: string;
-  iteration_id: string;
-  req_id: string;
-  title: string;
-  content_ast: { content?: string };
-  frontmatter: { priority?: string; owner?: string } | null;
-  status: string;
-  version: number;
-}
+import { StatusPill } from '@/components/ui';
+import { Stethoscope, TreePine, Zap, Loader2, ArrowLeft } from 'lucide-react';
+import { useRequirement } from '@/hooks/useRequirement';
+import { FrontmatterPanel } from '../_components/FrontmatterPanel';
+import { EditorToolbar } from '../_components/EditorToolbar';
+import { FileUpload } from '../_components/FileUpload';
+import { VersionHistory } from '../_components/VersionHistory';
+import { RelationPanel } from '../_components/RelationPanel';
 
 const statusConfig: Record<string, { variant: 'green' | 'amber' | 'gray' | 'blue'; label: string }> = {
   draft: { variant: 'gray', label: '草稿' },
@@ -27,108 +22,170 @@ const statusConfig: Record<string, { variant: 'green' | 'amber' | 'gray' | 'blue
 
 export default function RequirementDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [contentDirty, setContentDirty] = useState(false);
+  const [localContent, setLocalContent] = useState<string | null>(null);
 
-  const { data: req } = useQuery({
-    queryKey: ['requirement', id],
-    queryFn: () => apiClient<Requirement>(`/products/requirements/${id}`),
-  });
-
-  const { data: sceneMap } = useQuery({
-    queryKey: ['scene-map', id],
-    queryFn: () => apiClient<{ test_points: { id: string }[] }>(`/scene-map/${id}`),
-    retry: false,
-  });
-
-  const { data: testcases = [] } = useQuery({
-    queryKey: ['testcases-for-req', id],
-    queryFn: () => apiClient<{ id: string }[]>(`/testcases?requirement_id=${id}`),
-  });
+  const {
+    requirement: req,
+    requirementLoading,
+    versions,
+    versionsLoading,
+    testPoints,
+    testCases,
+    relationsLoading,
+    updateFrontmatter,
+    updateContent,
+    rollbackToVersion,
+    uploadFile,
+    updating,
+  } = useRequirement(id);
 
   const status = statusConfig[req?.status ?? 'draft'] ?? statusConfig.draft;
-  const priority = req?.frontmatter?.priority ?? 'P1';
+  const priority = (req?.frontmatter?.priority as string) ?? 'P1';
+  const rawContent = (req?.content_ast?.content as string) ?? (req?.content_ast?.raw_text as string) ?? '';
+  const displayContent = localContent ?? rawContent;
+
+  const handleContentChange = useCallback((value: string) => {
+    setLocalContent(value);
+    setContentDirty(true);
+  }, []);
+
+  const handleSaveContent = useCallback(async () => {
+    if (!contentDirty || localContent === null) return;
+    await updateContent({ content: localContent });
+    setContentDirty(false);
+  }, [contentDirty, localContent, updateContent]);
+
+  const handleCompare = useCallback((versionId: string) => {
+    window.open(`/diff/${id}?versionId=${versionId}`, '_blank');
+  }, [id]);
+
+  if (requirementLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 size={24} className="text-text3 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-[1100px] mx-auto">
+    <div className="p-6 max-w-[1200px] mx-auto">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
+          <Link
+            href="/requirements"
+            className="flex items-center gap-1 text-[11.5px] text-text3 hover:text-text mb-2 transition-colors"
+          >
+            <ArrowLeft size={12} /> 返回需求列表
+          </Link>
           <div className="text-text3 text-[11px] font-mono mb-1">{req?.req_id ?? '...'}</div>
           <h1 className="font-display font-bold text-[20px]">{req?.title ?? '加载中...'}</h1>
           <div className="flex items-center gap-2 mt-2">
             <StatusPill variant={status.variant}>{status.label}</StatusPill>
             <StatusPill variant={priority === 'P0' ? 'red' : priority === 'P1' ? 'amber' : 'gray'}>{priority}</StatusPill>
-            <span className="text-text3 text-[11px]">v{req?.version ?? 1}</span>
+            <span className="text-text3 text-[11px] font-mono">v{req?.version ?? 1}</span>
           </div>
         </div>
-        <Link href={`/diagnosis/${id}`}>
-          <button type="button" className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-accent text-black hover:bg-accent2 transition-colors">
-            <Stethoscope size={14} /> 开始健康诊断
-          </button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {contentDirty && (
+            <button
+              type="button"
+              onClick={handleSaveContent}
+              disabled={updating}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-md text-[12.5px] font-medium border border-accent text-accent hover:bg-accent/10 transition-colors disabled:opacity-50"
+            >
+              {updating ? <Loader2 size={14} className="animate-spin" /> : null}
+              保存内容
+            </button>
+          )}
+          <Link href={`/diagnosis/${id}`}>
+            <button type="button" className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-accent text-black hover:bg-accent2 transition-colors">
+              <Stethoscope size={14} /> 开始健康诊断
+            </button>
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-[1fr_300px] gap-6">
+      <div className="grid grid-cols-[1fr_320px] gap-6">
         {/* Main content */}
-        <div>
-          {/* Meta info */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            <div className="bg-bg1 border border-border rounded-lg p-3">
-              <div className="text-[10px] text-text3 uppercase tracking-wide">负责人</div>
-              <div className="text-[13px] font-medium mt-1">{req?.frontmatter?.owner ?? '未指定'}</div>
+        <div className="space-y-5">
+          {/* Editor with toolbar */}
+          <div>
+            <div className="text-[12px] font-semibold text-text3 uppercase tracking-wide mb-2">
+              需求内容
             </div>
-            <div className="bg-bg1 border border-border rounded-lg p-3">
-              <div className="text-[10px] text-text3 uppercase tracking-wide">版本</div>
-              <div className="text-[13px] font-mono font-medium mt-1">v{req?.version ?? 1}</div>
-            </div>
-            <div className="bg-bg1 border border-border rounded-lg p-3">
-              <div className="text-[10px] text-text3 uppercase tracking-wide">状态</div>
-              <div className="text-[13px] font-medium mt-1">{status.label}</div>
-            </div>
+            <EditorToolbar
+              textareaRef={textareaRef}
+              onContentChange={handleContentChange}
+            />
+            <textarea
+              ref={textareaRef}
+              value={displayContent}
+              onChange={(e) => handleContentChange(e.target.value)}
+              placeholder="输入需求描述（支持 Markdown）..."
+              className="w-full min-h-[360px] bg-bg1 border border-border rounded-b-lg p-4 text-[13px] text-text leading-relaxed resize-y outline-none font-mono focus:border-accent transition-colors"
+            />
           </div>
 
-          {/* Content */}
-          <div className="bg-bg1 border border-border rounded-[10px] p-5">
-            <div className="text-[12px] font-semibold text-text3 uppercase tracking-wide mb-3">需求内容</div>
-            <textarea
-              readOnly
-              value={req?.content_ast?.content ?? '暂无内容'}
-              className="w-full min-h-[300px] bg-bg2 border border-border rounded-lg p-4 text-[13px] text-text leading-relaxed resize-y outline-none font-mono"
-            />
+          {/* File Upload */}
+          <div>
+            <div className="text-[12px] font-semibold text-text3 uppercase tracking-wide mb-2">
+              附件上传
+            </div>
+            <FileUpload onUpload={uploadFile} />
           </div>
         </div>
 
         {/* Right panel */}
         <div className="space-y-4">
-          <StatCard
-            value={sceneMap?.test_points?.length ?? 0}
-            label="关联测试点"
-            highlighted={!!sceneMap?.test_points?.length}
-          />
-          <StatCard
-            value={testcases.length}
-            label="关联用例"
+          {/* Frontmatter */}
+          <FrontmatterPanel
+            frontmatter={req?.frontmatter ?? null}
+            status={req?.status ?? 'draft'}
+            createdAt={req?.created_at ?? ''}
+            onSave={updateFrontmatter}
           />
 
+          {/* Quick actions */}
           <div className="bg-bg1 border border-border rounded-[10px] p-4">
-            <div className="text-[12px] font-semibold mb-3">快速操作</div>
+            <div className="text-[12px] font-semibold text-text2 mb-3">快速操作</div>
             <div className="space-y-2">
               <Link href={`/diagnosis/${id}`} className="block">
-                <button type="button" className="w-full text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
-                  <Stethoscope size={12} /> 健康诊断
+                <button type="button" className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
+                  <Stethoscope size={13} /> 健康诊断
                 </button>
               </Link>
               <Link href={`/scene-map/${id}`} className="block">
-                <button type="button" className="w-full text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
-                  <TreePine size={12} /> 测试点确认
+                <button type="button" className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
+                  <TreePine size={13} /> 测试点确认
                 </button>
               </Link>
               <Link href={`/workbench/${id}`} className="block">
-                <button type="button" className="w-full text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
-                  <Zap size={12} /> 生成工作台
+                <button type="button" className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
+                  <Zap size={13} /> 生成工作台
                 </button>
               </Link>
             </div>
           </div>
+
+          {/* Version History */}
+          <VersionHistory
+            versions={versions}
+            currentVersion={req?.version ?? 1}
+            loading={versionsLoading}
+            onRollback={rollbackToVersion}
+            onCompare={handleCompare}
+          />
+
+          {/* Relation Panel */}
+          <RelationPanel
+            requirementId={id}
+            testPoints={testPoints}
+            testCases={testCases}
+            loading={relationsLoading}
+          />
         </div>
       </div>
     </div>

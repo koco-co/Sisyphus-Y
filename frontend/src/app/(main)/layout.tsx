@@ -14,14 +14,17 @@ import {
   Moon,
   Settings,
   Sun,
-  User,
+  Trash2,
   Wand2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { GlobalSearch, SearchTrigger } from '@/components/ui/GlobalSearch';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 import ProgressDashboard from '@/components/ui/ProgressDashboard';
+import { UserMenu } from '@/components/ui/UserMenu';
 
 const navGroups = [
   {
@@ -45,6 +48,7 @@ const navGroups = [
     items: [
       { href: '/knowledge', label: '知识库', icon: BookOpen },
       { href: '/templates', label: '模板', icon: LayoutTemplate },
+      { href: '/recycle', label: '回收站', icon: Trash2 },
       { href: '/settings', label: '设置', icon: Settings },
     ],
   },
@@ -68,6 +72,7 @@ function ThemeToggle() {
       type="button"
       className="theme-toggle"
       onClick={cycleTheme}
+      aria-label={`切换主题，当前: ${theme === 'system' ? '跟随系统' : theme === 'dark' ? '深色' : '浅色'}`}
       title={`当前: ${theme === 'system' ? '跟随系统' : theme === 'dark' ? '深色' : '浅色'}`}
     >
       {resolvedTheme === 'dark' ? <Moon /> : theme === 'system' ? <Monitor /> : <Sun />}
@@ -80,7 +85,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <>
-      <nav className="top-nav">
+      <nav className="top-nav" aria-label="主导航">
         <span className="nav-title">Sisyphus</span>
         <span className="pill pill-green" style={{ marginRight: 8, fontSize: 10 }}>
           v0.2
@@ -119,14 +124,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         })}
 
         <div className="nav-actions">
+          <SearchTrigger />
           <ThemeToggle />
-          <div className="theme-toggle" title="用户">
-            <User />
-          </div>
+          <NotificationBell />
+          <UserMenu />
         </div>
       </nav>
       {children}
       <ProgressDashboard />
+      <GlobalSearch />
     </>
   );
 }

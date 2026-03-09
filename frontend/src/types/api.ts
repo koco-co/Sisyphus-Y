@@ -37,6 +37,13 @@ export interface Iteration {
   updated_at: string;
 }
 
+export interface RequirementFrontmatter {
+  priority?: string;
+  owner?: string;
+  module?: string;
+  [key: string]: unknown;
+}
+
 export interface Requirement {
   id: string;
   iteration_id: string;
@@ -45,6 +52,17 @@ export interface Requirement {
   status: string;
   version: number;
   content_ast: Record<string, unknown> | null;
+  frontmatter: RequirementFrontmatter | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RequirementVersion {
+  id: string;
+  requirement_id: string;
+  version: number;
+  content_ast: Record<string, unknown>;
+  change_summary: string | null;
   created_at: string;
   updated_at: string;
 }

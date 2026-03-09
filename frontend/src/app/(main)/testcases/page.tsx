@@ -1,266 +1,449 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, ClipboardList, Search, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ClipboardList, LayoutGrid, Table2 } from 'lucide-react';
+import { SearchInput } from '@/components/ui/SearchInput';
+import { Pagination } from '@/components/ui/Pagination';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { StatCard } from '@/components/ui/StatCard';
+import { CaseCard } from '@/components/workspace/CaseCard';
+import { api } from '@/lib/api';
+import { ChangeAlert } from './_components/ChangeAlert';
+import { FilterToolbar } from './_components/FilterToolbar';
+import { CaseTable } from './_components/CaseTable';
+import { CaseDetailDrawer } from './_components/CaseDetailDrawer';
+import { CaseEditForm } from './_components/CaseEditForm';
+import { BatchActions } from './_components/BatchActions';
+import type {
+  TestCaseDetail,
+  TestCaseStep,
+  CaseFilters,
+  SortField,
+  SortDirection,
+} from './_components/types';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
-interface TestCase {
-  id: string;
-  case_id: string;
-  title: string;
-  priority: string;
-  case_type: string;
-  status: string;
-  source: string;
-  version: number;
-  created_at: string;
-}
-
-const priorityPill = (p: string) =>
-  p === 'P0'
-    ? 'pill pill-red'
-    : p === 'P1'
-      ? 'pill pill-amber'
-      : p === 'P2'
-        ? 'pill pill-blue'
-        : 'pill pill-gray';
-
-const statusPill = (s: string) =>
-  s === 'active' ? 'pill pill-green' : s === 'draft' ? 'pill pill-amber' : 'pill pill-red';
+const PAGE_SIZE = 20;
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export default function TestCasesPage() {
-  const [cases, setCases] = useState<TestCase[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
-  const fetchCases = async () => {
-    const params = new URLSearchParams({
-      page: String(page),
-      page_size: String(pageSize),
-    });
-    if (statusFilter) params.set('status', statusFilter);
-    if (priorityFilter) params.set('priority', priorityFilter);
+  // ── Data ──
+  const [cases, setCases] = useState<TestCaseDetail[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [affectedCount, setAffectedCount] = useState(0);
+  const [showAlert, setShowAlert] = useState(true);
+
+  // ── Pagination ──
+  const [page, setPage] = useState(1);
+
+  // ── Search & Filters ──
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<CaseFilters>({
+    priority: '',
+    status: '',
+    caseType: '',
+    source: '',
+  });
+
+  // ── Sorting ──
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  // ── Selection ──
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // ── View mode ──
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+
+  // ── Drawer / Edit ──
+  const [selectedCase, setSelectedCase] = useState<TestCaseDetail | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingCase, setEditingCase] = useState<TestCaseDetail | null>(null);
+  const [editFormOpen, setEditFormOpen] = useState(false);
+
+  // ── Delete confirmation ──
+  const [deleteTarget, setDeleteTarget] = useState<{
+    ids: string[];
+    single: boolean;
+  } | null>(null);
+
+  // ── Fetch cases ──
+  const fetchCases = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await fetch(`${API}/testcases/?${params}`);
-      if (res.ok) {
-        const data = await res.json();
-        setCases(data.items || []);
-        setTotal(data.total || 0);
+      const params: Record<string, string> = {
+        page: String(page),
+        page_size: String(PAGE_SIZE),
+      };
+      if (search) params.search = search;
+      if (filters.priority) params.priority = filters.priority;
+      if (filters.status) params.status = filters.status;
+      if (filters.caseType) params.case_type = filters.caseType;
+      if (filters.source) params.source = filters.source;
+      if (sortField) {
+        params.sort_by = sortField;
+        params.sort_dir = sortDirection;
       }
+
+      const qs = new URLSearchParams(params).toString();
+      const data = await api.get<{ items: TestCaseDetail[]; total: number }>(
+        `/testcases/?${qs}`,
+      );
+      setCases(data.items ?? []);
+      setTotal(data.total ?? 0);
     } catch (e) {
-      console.error(e);
+      console.error('Failed to fetch test cases:', e);
+      setCases([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [page, search, filters, sortField, sortDirection]);
+
+  const fetchAffectedCount = useCallback(async () => {
+    try {
+      const data = await api.get<{ count: number }>(
+        '/testcases/affected-count',
+      );
+      setAffectedCount(data.count);
+    } catch {
+      setAffectedCount(0);
+    }
+  }, []);
 
   useEffect(() => {
     fetchCases();
-  }, [page, statusFilter, priorityFilter]);
+  }, [fetchCases]);
 
-  const deleteCase = async (id: string) => {
-    if (!confirm('确定删除？')) return;
-    await fetch(`${API}/testcases/${id}`, { method: 'DELETE' });
-    fetchCases();
+  useEffect(() => {
+    fetchAffectedCount();
+  }, [fetchAffectedCount]);
+
+  // ── Stats (page-level) ──
+  const activeCount = cases.filter((c) => c.status === 'active').length;
+  const pendingCount = cases.filter(
+    (c) => c.status === 'pending_review',
+  ).length;
+  const draftCount = cases.filter((c) => c.status === 'draft').length;
+
+  // ── Handlers ──
+  const handleFilterChange = <K extends keyof CaseFilters>(
+    key: K,
+    value: CaseFilters[K],
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPage(1);
   };
 
-  const filtered = searchTerm
-    ? cases.filter((c) => c.title.includes(searchTerm) || c.case_id.includes(searchTerm))
-    : cases;
-  const totalPages = Math.ceil(total / pageSize);
-  const activeCount = cases.filter((c) => c.status === 'active').length;
-  const aiCount = cases.filter((c) => c.source === 'ai').length;
-  const manualCount = cases.filter((c) => c.source === 'manual').length;
+  const handleClearFilters = () => {
+    setFilters({ priority: '', status: '', caseType: '', source: '' });
+    setPage(1);
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (cases.every((c) => selectedIds.has(c.id))) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(cases.map((c) => c.id)));
+    }
+  };
+
+  const handleRowClick = (tc: TestCaseDetail) => {
+    setSelectedCase(tc);
+    setDrawerOpen(true);
+  };
+
+  const handleEdit = (tc: TestCaseDetail) => {
+    setEditingCase(tc);
+    setEditFormOpen(true);
+    setDrawerOpen(false);
+  };
+
+  const handleSave = async (data: {
+    title: string;
+    priority: string;
+    status: string;
+    case_type: string;
+    precondition: string | null;
+    steps: TestCaseStep[];
+  }) => {
+    if (!editingCase) return;
+    try {
+      await api.patch(`/testcases/${editingCase.id}`, data);
+      setEditFormOpen(false);
+      setEditingCase(null);
+      fetchCases();
+    } catch (e) {
+      console.error('Failed to save test case:', e);
+    }
+  };
+
+  const handleDelete = async (ids: string[]) => {
+    try {
+      if (ids.length === 1) {
+        await api.delete(`/testcases/${ids[0]}`);
+      } else {
+        await api.post('/testcases/batch/delete', { ids });
+      }
+      setSelectedIds(new Set());
+      setDeleteTarget(null);
+      setDrawerOpen(false);
+      fetchCases();
+    } catch (e) {
+      console.error('Failed to delete:', e);
+    }
+  };
+
+  const handleBatchStatusChange = async (status: string) => {
+    try {
+      await api.post('/testcases/batch/status', {
+        ids: Array.from(selectedIds),
+        status,
+      });
+      setSelectedIds(new Set());
+      fetchCases();
+    } catch (e) {
+      console.error('Failed to batch update:', e);
+    }
+  };
+
+  const handleBatchExport = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/testcases/export`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'testcases-export.xlsx';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Failed to export:', e);
+    }
+  };
 
   return (
-    <div>
-      {/* Header */}
-      <div className="topbar">
-        <ClipboardList size={20} style={{ color: 'var(--accent)' }} />
-        <h1>用例管理中心</h1>
-        <span className="sub">Test Case Management</span>
-        <div className="spacer" />
-        <span className="page-watermark">M06 · TESTCASES</span>
+    <div className="no-sidebar">
+      {/* ── Header ── */}
+      <div className="flex items-center gap-3 mb-6">
+        <ClipboardList className="w-5 h-5 text-accent" />
+        <h1 className="font-display text-[20px] font-bold text-text">
+          用例管理中心
+        </h1>
+        <span className="text-[12px] text-text3">Test Case Management</span>
+        <div className="flex-1" />
+        <span className="font-mono text-[10px] text-text3 tracking-wider">
+          M06 · TESTCASES
+        </span>
       </div>
 
-      {/* Toolbar */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          marginBottom: 20,
-          alignItems: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
-        <div style={{ position: 'relative' }}>
-          <Search
-            size={14}
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--text3)',
-              pointerEvents: 'none',
-            }}
-          />
-          <input
-            className="input"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="搜索用例..."
-            style={{ paddingLeft: 32, width: 220 }}
+      {/* ── Change Alert ── */}
+      {showAlert && (
+        <ChangeAlert
+          count={affectedCount}
+          onNavigate={() => router.push('/diff')}
+          onDismiss={() => setShowAlert(false)}
+        />
+      )}
+
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-4 gap-3 mb-5">
+        <StatCard value={total} label="总用例数" highlighted />
+        <StatCard value={activeCount} label="已通过" />
+        <StatCard value={pendingCount} label="待审核" />
+        <StatCard value={draftCount} label="草稿" />
+      </div>
+
+      {/* ── Search + Filters + View Toggle ── */}
+      <div className="flex items-center gap-3 mb-4">
+        <SearchInput
+          value={search}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          placeholder="搜索用例编号或标题..."
+          className="w-[260px]"
+        />
+        <FilterToolbar
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onClearAll={handleClearFilters}
+        />
+        <div className="flex-1" />
+        <div className="flex items-center gap-1 p-0.5 bg-bg2 border border-border rounded-md">
+          <button
+            type="button"
+            onClick={() => setViewMode('table')}
+            className={`p-1.5 rounded transition-colors ${
+              viewMode === 'table'
+                ? 'bg-bg3 text-text'
+                : 'text-text3 hover:text-text2'
+            }`}
+            title="表格视图"
+          >
+            <Table2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('card')}
+            className={`p-1.5 rounded transition-colors ${
+              viewMode === 'card'
+                ? 'bg-bg3 text-text'
+                : 'text-text3 hover:text-text2'
+            }`}
+            title="卡片视图"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Batch Actions ── */}
+      {selectedIds.size > 0 && (
+        <BatchActions
+          selectedCount={selectedIds.size}
+          onStatusChange={handleBatchStatusChange}
+          onExport={handleBatchExport}
+          onDelete={() =>
+            setDeleteTarget({
+              ids: Array.from(selectedIds),
+              single: false,
+            })
+          }
+          onClearSelection={() => setSelectedIds(new Set())}
+        />
+      )}
+
+      {/* ── Content ── */}
+      {!loading && cases.length === 0 ? (
+        <div className="bg-bg1 border border-border rounded-[10px]">
+          <EmptyState
+            icon={<ClipboardList className="w-12 h-12" />}
+            title="暂无用例数据"
+            description="当用例生成完成后，会自动出现在这里"
           />
         </div>
-        <select
-          className="input"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">全部状态</option>
-          <option value="draft">草稿</option>
-          <option value="active">有效</option>
-          <option value="deprecated">废弃</option>
-        </select>
-        <select
-          className="input"
-          value={priorityFilter}
-          onChange={(e) => setPriorityFilter(e.target.value)}
-        >
-          <option value="">全部优先级</option>
-          <option value="P0">P0</option>
-          <option value="P1">P1</option>
-          <option value="P2">P2</option>
-          <option value="P3">P3</option>
-        </select>
-      </div>
-
-      {/* Stats */}
-      <div className="grid-4" style={{ marginBottom: 20 }}>
-        {[
-          { label: '总用例数', value: total, color: 'var(--accent)' },
-          { label: '有效', value: activeCount, color: 'var(--accent)' },
-          { label: 'AI 生成', value: aiCount, color: 'var(--amber)' },
-          { label: '手动创建', value: manualCount, color: 'var(--purple)' },
-        ].map((s) => (
-          <div className="card" key={s.label} style={{ textAlign: 'center' }}>
-            <div className="stat-val" style={{ color: s.color }}>
-              {s.value}
-            </div>
-            <div className="stat-label">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Table */}
-      <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
-        <table className="tbl">
-          <thead>
-            <tr>
-              <th>用例编号</th>
-              <th>标题</th>
-              <th>优先级</th>
-              <th>类型</th>
-              <th>状态</th>
-              <th>来源</th>
-              <th>版本</th>
-              <th style={{ width: 60 }}>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((tc) => (
-              <tr key={tc.id}>
-                <td>
-                  <span className="mono" style={{ color: 'var(--accent)' }}>
-                    {tc.case_id}
-                  </span>
-                </td>
-                <td
-                  style={{
-                    maxWidth: 300,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {tc.title}
-                </td>
-                <td>
-                  <span className={priorityPill(tc.priority)}>{tc.priority}</span>
-                </td>
-                <td>
-                  <span className="pill pill-gray">{tc.case_type}</span>
-                </td>
-                <td>
-                  <span className={statusPill(tc.status)}>{tc.status}</span>
-                </td>
-                <td>
-                  <span className={tc.source === 'ai' ? 'pill pill-blue' : 'pill pill-gray'}>
-                    {tc.source === 'ai' ? 'AI' : '手动'}
-                  </span>
-                </td>
-                <td>
-                  <span className="mono" style={{ fontSize: 11, color: 'var(--text3)' }}>
-                    v{tc.version}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm btn-danger"
-                    onClick={() => deleteCase(tc.id)}
-                    title="删除"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={8}>
-                  <div className="empty-state">
-                    <ClipboardList size={40} />
-                    <p>暂无用例数据</p>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            <ChevronLeft size={14} />
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
-            .map((p, idx, arr) => (
-              <React.Fragment key={p}>
-                {idx > 0 && arr[idx - 1] !== p - 1 && (
-                  <span style={{ color: 'var(--text3)', fontSize: 12 }}>…</span>
-                )}
-                <button
-                  type="button"
-                  className={p === page ? 'active' : ''}
-                  onClick={() => setPage(p)}
-                >
-                  {p}
-                </button>
-              </React.Fragment>
-            ))}
-          <button type="button" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-            <ChevronRight size={14} />
-          </button>
+      ) : viewMode === 'table' ? (
+        <CaseTable
+          cases={cases}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onToggleSelectAll={handleToggleSelectAll}
+          onRowClick={handleRowClick}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+          loading={loading}
+        />
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          {loading ? (
+            <p className="col-span-2 py-16 text-center text-[12.5px] text-text3">
+              加载中...
+            </p>
+          ) : (
+            cases.map((tc) => (
+              <div
+                key={tc.id}
+                className="cursor-pointer"
+                onClick={() => handleRowClick(tc)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleRowClick(tc);
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <CaseCard
+                  caseId={tc.case_id}
+                  title={tc.title}
+                  priority={tc.priority as 'P0' | 'P1' | 'P2' | 'P3'}
+                  type={tc.case_type}
+                  status={tc.status}
+                  steps={tc.steps ?? []}
+                  aiScore={tc.ai_score ?? undefined}
+                />
+              </div>
+            ))
+          )}
         </div>
       )}
+
+      {/* ── Pagination ── */}
+      <Pagination
+        current={page}
+        total={total}
+        pageSize={PAGE_SIZE}
+        onChange={setPage}
+      />
+
+      {/* ── Detail Drawer ── */}
+      <CaseDetailDrawer
+        testCase={selectedCase}
+        open={drawerOpen}
+        onClose={() => {
+          setDrawerOpen(false);
+          setSelectedCase(null);
+        }}
+        onEdit={handleEdit}
+        onDelete={(id) => setDeleteTarget({ ids: [id], single: true })}
+      />
+
+      {/* ── Edit Form ── */}
+      <CaseEditForm
+        testCase={editingCase}
+        open={editFormOpen}
+        onSave={handleSave}
+        onCancel={() => {
+          setEditFormOpen(false);
+          setEditingCase(null);
+        }}
+      />
+
+      {/* ── Delete Confirmation ── */}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={
+          deleteTarget?.single
+            ? '删除用例'
+            : `批量删除 ${deleteTarget?.ids.length ?? 0} 个用例`
+        }
+        description={
+          deleteTarget?.single
+            ? '此操作将软删除该用例，确认继续？'
+            : `将软删除选中的 ${deleteTarget?.ids.length ?? 0} 个用例，确认继续？`
+        }
+        variant="danger"
+        confirmText="删除"
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget.ids)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

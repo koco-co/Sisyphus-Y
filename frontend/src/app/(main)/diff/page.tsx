@@ -1,317 +1,334 @@
 'use client';
 
-import { AlertTriangle, ArrowRight, FileText, GitCompare, History, Target } from 'lucide-react';
-import { useState } from 'react';
+import {
+  AlertTriangle,
+  Clock,
+  FileText,
+  GitCompareArrows,
+  History,
+  Loader2,
+  Target,
+} from 'lucide-react';
+import { useEffect } from 'react';
+import { ThreeColLayout } from '@/components/layout/ThreeColLayout';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useDiff } from '@/hooks/useDiff';
+import { AffectedCases } from './_components/AffectedCases';
+import { DiffView } from './_components/DiffView';
+import { RegenerateButton } from './_components/RegenerateButton';
+import { SemanticAnalysis } from './_components/SemanticAnalysis';
+import { SuggestedPoints } from './_components/SuggestedPoints';
+import { VersionSelector } from './_components/VersionSelector';
+import type { DiffHistoryItem } from '@/stores/diff-store';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+// ── Impact level helpers ──
 
-const impactPill = (level: string) =>
-  level === 'high'
-    ? 'pill pill-red'
-    : level === 'medium'
-      ? 'pill pill-amber'
-      : level === 'low'
-        ? 'pill pill-green'
-        : 'pill pill-gray';
+const impactVariant = (level: string) =>
+  level === 'high' ? 'danger' : level === 'medium' ? 'warning' : 'success';
 
-export default function DiffPage() {
-  const [reqId, setReqId] = useState('');
-  const [versionFrom, setVersionFrom] = useState(1);
-  const [versionTo, setVersionTo] = useState(2);
-  const [diffResult, setDiffResult] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+const impactLabel = (level: string) =>
+  level === 'high' ? '高' : level === 'medium' ? '中' : '低';
 
-  const computeDiff = async () => {
-    if (!reqId) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`${API}/diff/${reqId}/compute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          version_from: versionFrom,
-          version_to: versionTo,
-        }),
-      });
-      if (res.ok) setDiffResult(await res.json());
-    } catch (e) {
-      console.error(e);
-    }
-    setLoading(false);
+// ── Left Column ──
+
+function LeftColumn() {
+  const {
+    requirementId,
+    setRequirementId,
+    computing,
+    computeDiff,
+    loadHistory,
+    loadSuggestions,
+    history,
+    diffResult,
+  } = useDiff();
+
+  const handleCompute = async () => {
+    await computeDiff();
+    await loadSuggestions();
   };
-
-  const loadHistory = async () => {
-    if (!reqId) return;
-    try {
-      const res = await fetch(`${API}/diff/${reqId}/history`);
-      if (res.ok) setHistory(await res.json());
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const renderDiffLines = (text: string) =>
-    text.split('\n').map((line, i) => {
-      const cls = line.startsWith('+')
-        ? 'diff-line diff-add'
-        : line.startsWith('-')
-          ? 'diff-line diff-del'
-          : 'diff-line diff-ctx';
-      return (
-        <div key={i} className={cls}>
-          {line}
-        </div>
-      );
-    });
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="col-header">
+        <GitCompareArrows className="w-3.5 h-3.5 text-accent" />
+        <span>需求版本</span>
+      </div>
+
+      <div className="p-3 space-y-3 flex-1 overflow-y-auto">
+        {/* Requirement ID input */}
+        <div>
+          <label className="block text-[10px] font-semibold text-text3 uppercase tracking-wider mb-1">
+            需求 ID
+          </label>
+          <input
+            type="text"
+            value={requirementId ?? ''}
+            onChange={(e) => setRequirementId(e.target.value || null)}
+            placeholder="输入需求 UUID"
+            className="w-full px-3 py-1.5 text-[12.5px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 outline-none focus:border-accent transition-colors"
+          />
+        </div>
+
+        {/* Version selector */}
+        <VersionSelector />
+
+        {/* Action buttons */}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleCompute}
+            disabled={computing || !requirementId}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-semibold bg-accent text-white dark:text-black hover:bg-accent2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            {computing ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                分析中...
+              </>
+            ) : (
+              '计算 Diff'
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={loadHistory}
+            disabled={!requirementId}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-medium border border-border bg-bg2 text-text2 hover:bg-bg3 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            <History className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Impact summary */}
+        {diffResult && (
+          <div className="space-y-2 pt-2 border-t border-border">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-text3">影响等级</span>
+              <StatusBadge variant={impactVariant(diffResult.impact_level)}>
+                {impactLabel(diffResult.impact_level)}
+              </StatusBadge>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-bg2 rounded-md p-2 text-center">
+                <div className="font-mono text-[16px] font-semibold text-accent leading-none">
+                  +{diffResult.text_diff?.additions ?? 0}
+                </div>
+                <div className="text-[10px] text-text3 mt-0.5">新增</div>
+              </div>
+              <div className="bg-bg2 rounded-md p-2 text-center">
+                <div className="font-mono text-[16px] font-semibold text-red leading-none">
+                  −{diffResult.text_diff?.deletions ?? 0}
+                </div>
+                <div className="text-[10px] text-text3 mt-0.5">删除</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-bg2 rounded-md p-2 text-center">
+                <div className="font-mono text-[14px] font-semibold text-amber leading-none">
+                  {diffResult.affected_test_points?.count ?? 0}
+                </div>
+                <div className="text-[10px] text-text3 mt-0.5">测试点</div>
+              </div>
+              <div className="bg-bg2 rounded-md p-2 text-center">
+                <div className="font-mono text-[14px] font-semibold text-blue leading-none">
+                  {diffResult.affected_test_cases?.count ?? 0}
+                </div>
+                <div className="text-[10px] text-text3 mt-0.5">用例</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* History list */}
+        {history.length > 0 && (
+          <div className="pt-2 border-t border-border">
+            <div className="text-[10px] font-semibold text-text3 uppercase tracking-wider mb-2">
+              变更历史
+            </div>
+            <div className="space-y-1.5">
+              {history.map((h: DiffHistoryItem) => (
+                <HistoryRow key={h.id} item={h} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HistoryRow({ item }: { item: DiffHistoryItem }) {
+  return (
+    <div className="flex items-center gap-2 p-2 bg-bg2 border border-border rounded-md hover:border-border2 cursor-pointer transition-colors">
+      <StatusBadge variant={impactVariant(item.impact_level)}>
+        {impactLabel(item.impact_level)}
+      </StatusBadge>
+      <div className="flex-1 min-w-0">
+        <div className="font-mono text-[11px] text-text2">
+          v{item.version_from} → v{item.version_to}
+        </div>
+        <div className="text-[10px] text-text3 truncate">{item.summary}</div>
+      </div>
+      <div className="flex items-center gap-1 text-[10px] text-text3 font-mono shrink-0">
+        <Clock className="w-2.5 h-2.5" />
+        {item.created_at?.slice(5, 16)}
+      </div>
+    </div>
+  );
+}
+
+// ── Center Column ──
+
+function CenterColumn() {
+  const {
+    diffResult,
+    suggestions,
+    adoptedIds,
+    dismissedIds,
+    adoptSuggestion,
+    dismissSuggestion,
+    computing,
+  } = useDiff();
+
+  if (computing) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-text3 gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <span className="text-[13px] font-medium">正在执行两阶段 Diff 分析...</span>
+        <span className="text-[11px] text-text3/70">文本级 + 语义级</span>
+      </div>
+    );
+  }
+
+  if (!diffResult) {
+    return (
+      <EmptyState
+        icon={<GitCompareArrows className="w-12 h-12" />}
+        title="输入需求 ID 并选择版本范围"
+        description="系统将进行文本级 + 语义级两阶段 Diff 分析"
+        className="h-full"
+      />
+    );
+  }
+
+  return (
+    <div className="p-4 space-y-4">
+      {/* Summary */}
+      {diffResult.summary && (
+        <div className="p-3 bg-bg1 border border-border rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-accent text-white dark:text-black">
+              AI 摘要
+            </span>
+          </div>
+          <p className="text-[12.5px] text-text2 leading-relaxed">
+            {diffResult.summary}
+          </p>
+        </div>
+      )}
+
+      {/* Diff view */}
+      {diffResult.text_diff?.diff_text && (
+        <DiffView
+          diffText={diffResult.text_diff.diff_text}
+          additions={diffResult.text_diff.additions}
+          deletions={diffResult.text_diff.deletions}
+        />
+      )}
+
+      {/* Semantic analysis */}
+      {diffResult.semantic_impact && (
+        <SemanticAnalysis impact={diffResult.semantic_impact} />
+      )}
+
+      {/* Suggested test points */}
+      {suggestions.length > 0 && (
+        <SuggestedPoints
+          suggestions={suggestions}
+          adoptedIds={adoptedIds}
+          dismissedIds={dismissedIds}
+          onAdopt={adoptSuggestion}
+          onDismiss={dismissSuggestion}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Right Column ──
+
+function RightColumn() {
+  const { diffResult, regenerating, regenerateProgress, regenerateCases } =
+    useDiff();
+
+  const cases = diffResult?.affected_test_cases?.items ?? [];
+  const testPointCount = diffResult?.affected_test_points?.count ?? 0;
+  const rewriteCount = cases.filter((c) => c.impact_type === 'rewrite').length;
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="col-header">
+        <Target className="w-3.5 h-3.5 text-amber" />
+        <span>受影响用例</span>
+        {cases.length > 0 && (
+          <span className="ml-auto font-mono text-[10px] text-text3">
+            {cases.length}
+          </span>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3">
+        {diffResult ? (
+          <AffectedCases cases={cases} totalTestPoints={testPointCount} />
+        ) : (
+          <EmptyState
+            icon={<FileText className="w-8 h-8" />}
+            title="等待 Diff 分析"
+            description="完成分析后显示受影响的用例"
+          />
+        )}
+      </div>
+
+      {/* Regenerate button */}
+      {diffResult && rewriteCount > 0 && (
+        <div className="p-3 border-t border-border">
+          <RegenerateButton
+            onRegenerate={() => regenerateCases()}
+            regenerating={regenerating}
+            progress={regenerateProgress}
+            affectedCount={rewriteCount}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Page ──
+
+export default function DiffPage() {
+  return (
+    <div className="no-sidebar">
       {/* Header */}
       <div className="topbar">
-        <GitCompare size={20} style={{ color: 'var(--accent)' }} />
+        <GitCompareArrows className="w-5 h-5 text-accent" />
         <h1>需求变更 Diff</h1>
         <span className="sub">Requirement Change Diff</span>
         <div className="spacer" />
         <span className="page-watermark">M07 · DIFF</span>
       </div>
 
-      {/* Input Bar */}
-      <div
-        className="card"
-        style={{
-          marginBottom: 20,
-          display: 'flex',
-          gap: 12,
-          alignItems: 'flex-end',
-          flexWrap: 'wrap',
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 200 }}>
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: 'var(--text3)',
-              display: 'block',
-              marginBottom: 4,
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            需求 ID
-          </span>
-          <input
-            className="input"
-            value={reqId}
-            onChange={(e) => setReqId(e.target.value)}
-            placeholder="输入需求 UUID"
-            style={{ width: '100%' }}
-          />
-        </div>
-        <div>
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: 'var(--text3)',
-              display: 'block',
-              marginBottom: 4,
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            从版本
-          </span>
-          <input
-            className="input mono"
-            type="number"
-            value={versionFrom}
-            onChange={(e) => setVersionFrom(Number(e.target.value))}
-            style={{ width: 80 }}
-          />
-        </div>
-        <ArrowRight size={16} style={{ color: 'var(--text3)', marginBottom: 8 }} />
-        <div>
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: 'var(--text3)',
-              display: 'block',
-              marginBottom: 4,
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            到版本
-          </span>
-          <input
-            className="input mono"
-            type="number"
-            value={versionTo}
-            onChange={(e) => setVersionTo(Number(e.target.value))}
-            style={{ width: 80 }}
-          />
-        </div>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={computeDiff}
-          disabled={loading || !reqId}
-        >
-          {loading ? '分析中...' : '计算 Diff'}
-        </button>
-        <button type="button" className="btn" onClick={loadHistory} disabled={!reqId}>
-          <History size={14} /> 历史
-        </button>
-      </div>
-
-      {/* Impact Summary */}
-      {diffResult && (
-        <div className="grid-3" style={{ marginBottom: 20 }}>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <div className="stat-label">
-              <AlertTriangle size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-              影响等级
-            </div>
-            <div
-              className="stat-val"
-              style={{
-                marginTop: 8,
-                color:
-                  diffResult.impact_level === 'high'
-                    ? 'var(--red)'
-                    : diffResult.impact_level === 'medium'
-                      ? 'var(--amber)'
-                      : 'var(--accent)',
-              }}
-            >
-              {diffResult.impact_level?.toUpperCase()}
-            </div>
-          </div>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <div className="stat-label">
-              <FileText size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-              文本变更
-            </div>
-            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8 }}>
-              <span
-                className="mono"
-                style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent)' }}
-              >
-                +{diffResult.text_diff?.additions || 0}
-              </span>
-              <span className="mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--red)' }}>
-                −{diffResult.text_diff?.deletions || 0}
-              </span>
-            </div>
-          </div>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <div className="stat-label">
-              <Target size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-              受影响范围
-            </div>
-            <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 8 }}>
-              <div>
-                <div className="stat-val" style={{ fontSize: 20, color: 'var(--amber)' }}>
-                  {diffResult.affected_test_points?.count || 0}
-                </div>
-                <div className="stat-label">测试点</div>
-              </div>
-              <div>
-                <div className="stat-val" style={{ fontSize: 20, color: 'var(--blue)' }}>
-                  {diffResult.affected_test_cases?.count || 0}
-                </div>
-                <div className="stat-label">用例</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Diff Detail */}
-      {diffResult?.text_diff?.diff_text && (
-        <div className="card" style={{ marginBottom: 20, padding: 0, overflow: 'hidden' }}>
-          <div className="col-header">
-            <FileText size={14} />
-            Diff 详情
-          </div>
-          <div
-            style={{
-              maxHeight: 400,
-              overflow: 'auto',
-              padding: '8px 0',
-              background: 'var(--bg2)',
-            }}
-          >
-            {renderDiffLines(diffResult.text_diff.diff_text)}
-          </div>
-        </div>
-      )}
-
-      {/* Summary */}
-      {diffResult?.summary && (
-        <div className="card" style={{ marginBottom: 20 }}>
-          <div className="sec-header">
-            <span className="frame-label">AI 摘要</span>
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--text2)', margin: 0, lineHeight: 1.7 }}>
-            {diffResult.summary}
-          </p>
-        </div>
-      )}
-
-      {/* History Table */}
-      {history.length > 0 && (
-        <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
-          <div className="col-header">
-            <History size={14} />
-            变更历史
-          </div>
-          <table className="tbl">
-            <thead>
-              <tr>
-                <th>版本</th>
-                <th>影响等级</th>
-                <th>摘要</th>
-                <th>时间</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((h: any) => (
-                <tr key={h.id}>
-                  <td>
-                    <span className="mono">
-                      v{h.version_from} → v{h.version_to}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={impactPill(h.impact_level)}>{h.impact_level}</span>
-                  </td>
-                  <td>{h.summary}</td>
-                  <td>
-                    <span className="mono" style={{ fontSize: 11, color: 'var(--text3)' }}>
-                      {h.created_at?.slice(0, 16)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Empty state when no results */}
-      {!diffResult && !loading && (
-        <div className="card">
-          <div className="empty-state">
-            <GitCompare size={48} />
-            <p style={{ fontWeight: 500 }}>输入需求 ID 并选择版本范围</p>
-            <p>系统将进行文本级 + 语义级两阶段 Diff 分析</p>
-          </div>
-        </div>
-      )}
+      {/* Three-column layout */}
+      <ThreeColLayout
+        left={<LeftColumn />}
+        center={<CenterColumn />}
+        right={<RightColumn />}
+        leftWidth="280px"
+        rightWidth="320px"
+      />
     </div>
   );
 }
