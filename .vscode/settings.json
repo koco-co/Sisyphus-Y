@@ -28,6 +28,7 @@
     "DATAX",
     "datefmt",
     "dbname",
+    "deduplicator",
     "difflib",
     "dmypy",
     "DOTALL",

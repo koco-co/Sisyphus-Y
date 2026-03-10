@@ -19,14 +19,13 @@
     "linter": { "enabled": false }
   },
   "files": {
-    "includes": [
-      "src/**/*.ts",
-      "src/**/*.tsx",
-      "src/**/*.js",
-      "*.ts",
-      "*.tsx",
-      "next.config.ts",
-      "next-env.d.ts"
-    ]
-  }
+    "includes": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "*.ts", "*.tsx", "next.config.ts"]
+  },
+  "overrides": [
+    {
+      "includes": ["next-env.d.ts"],
+      "formatter": { "enabled": false },
+      "linter": { "enabled": false }
+    }
+  ]
 }
