@@ -1,6 +1,7 @@
 'use client';
 
 import { Filter, X } from 'lucide-react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import type { CaseFilters } from './types';
 
 interface FilterToolbarProps {
@@ -69,20 +70,14 @@ export function FilterToolbar({ filters, onFilterChange, onClearAll }: FilterToo
       </div>
 
       {filterGroups.map(({ key, options }) => (
-        <select
+        <CustomSelect
           key={key}
           value={filters[key]}
-          onChange={(e) => onFilterChange(key, e.target.value)}
-          className={`px-2.5 py-1.5 text-[12px] bg-bg2 border rounded-md outline-none focus:border-accent transition-colors cursor-pointer ${
-            filters[key] ? 'border-accent/40 text-text' : 'border-border text-text2'
-          }`}
-        >
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          onChange={(value) => onFilterChange(key, value)}
+          options={options}
+          size="sm"
+          className={filters[key] ? 'min-w-[100px]' : 'min-w-[100px]'}
+        />
       ))}
 
       {activeCount > 0 && (

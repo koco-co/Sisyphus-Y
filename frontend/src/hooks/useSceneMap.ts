@@ -30,6 +30,7 @@ export function useSceneMap() {
           ...tp,
           description: tp.description ?? null,
           source: normalizeSource(tp.source),
+          estimated_cases: tp.estimated_cases ?? 0,
         }));
         store.setTestPoints(points);
         if (points.length > 0) store.setStep('confirm');

@@ -15,7 +15,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import {
   collaborationApi,
-  type ReviewDecision,
+  type ReviewDecisionRecord,
   type SharedReviewPayload,
   type TestPoint,
 } from '@/lib/api';
@@ -187,7 +187,7 @@ export default function ReviewPage() {
   }
 
   const requirementTitle = data.entity_snapshot?.requirement_title || data.review.title;
-  const reviewerNames = data.entity_snapshot?.reviewer_names || data.review.reviewer_ids;
+  const reviewerNames = data.entity_snapshot?.reviewer_names || data.review.reviewer_ids || [];
 
   return (
     <div className="flex" style={{ height: 'calc(100vh - 49px)' }}>
@@ -303,7 +303,7 @@ export default function ReviewPage() {
               <span>评审人</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {reviewerNames.map((name) => (
+              {reviewerNames.map((name: string) => (
                 <span key={name} className="pill pill-gray text-[10px]">
                   {name}
                 </span>
@@ -344,7 +344,7 @@ export default function ReviewPage() {
               <p className="text-[12px] text-sy-text-3">暂无已提交的评审结论</p>
             ) : (
               <div className="space-y-2">
-                {data.decisions.map((decision: ReviewDecision) => (
+                {data.decisions.map((decision: ReviewDecisionRecord) => (
                   <div
                     key={decision.id}
                     className="rounded-lg border border-sy-border bg-sy-bg-2 p-3"

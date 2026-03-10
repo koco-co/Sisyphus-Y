@@ -98,7 +98,7 @@ export function RequirementNav({
                         }`}
                       >
                         <span
-                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(req.status)}`}
+                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(req.status ?? '')}`}
                         />
                         <FileText className="w-3 h-3 shrink-0" />
                         <span className="truncate">{req.title || req.req_id}</span>

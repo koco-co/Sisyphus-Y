@@ -14,8 +14,9 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import {
   ApiError,
   type TemplateContentPayload,
@@ -201,8 +202,8 @@ function normalizeSummary(item: TemplateListItem): TemplateCardData {
     description: item.description ?? '',
     usageCount: item.usage_count,
     createdAt: item.created_at,
-    isBuiltin: item.is_builtin,
-    status: item.status,
+    isBuiltin: item.is_builtin ?? false,
+    status: item.status ?? 'active',
   };
 }
 
@@ -280,6 +281,8 @@ export default function TemplatesPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const pendingDeleteTemplate = useRef<TemplateCardData | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -407,11 +410,19 @@ export default function TemplatesPage() {
     }
   }
 
-  async function handleDelete(template: TemplateCardData) {
+  function handleDelete(template: TemplateCardData) {
     if (template.isBuiltin) {
       return;
     }
-    if (!window.confirm(`确认删除模板“${template.name}”吗？`)) {
+    pendingDeleteTemplate.current = template;
+    setDeleteConfirmOpen(true);
+  }
+
+  async function executeDelete() {
+    const template = pendingDeleteTemplate.current;
+    setDeleteConfirmOpen(false);
+    pendingDeleteTemplate.current = null;
+    if (!template) {
       return;
     }
 
@@ -507,22 +518,20 @@ export default function TemplatesPage() {
               placeholder="模板名称"
               className="input flex-1"
             />
-            <select
+            <CustomSelect
               value={formState.category}
-              onChange={(event) =>
+              onChange={(value) =>
                 setFormState((prev) => ({
                   ...prev,
-                  category: event.target.value,
+                  category: value,
                 }))
               }
-              className="input"
-            >
-              {Object.entries(categoryLabels).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              options={Object.entries(categoryLabels).map(([key, label]) => ({
+                value: key,
+                label,
+              }))}
+              className="min-w-[120px]"
+            />
           </div>
 
           <textarea
@@ -846,6 +855,18 @@ export default function TemplatesPage() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onConfirm={() => void executeDelete()}
+        onCancel={() => {
+          setDeleteConfirmOpen(false);
+          pendingDeleteTemplate.current = null;
+        }}
+        title="删除模板"
+        description={`确认删除模板\u201c${pendingDeleteTemplate.current?.name ?? ''}\u201d吗？`}
+        confirmText="删除"
+        variant="danger"
+      />
     </div>
   );
 }

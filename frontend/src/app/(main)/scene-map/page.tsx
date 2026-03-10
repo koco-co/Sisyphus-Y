@@ -28,7 +28,7 @@ export default function SceneMapPage() {
 
   const handleSelectReq = async (req: Requirement) => {
     tree.selectRequirement(req);
-    await sm.selectRequirement(req.id, req.title || req.req_id);
+    await sm.selectRequirement(req.id, req.title || req.req_id || '');
   };
 
   const selectedPoint = sm.testPoints.find((p) => p.id === sm.selectedPointId) ?? null;

@@ -2,6 +2,7 @@
 
 import { ArrowDown, ArrowUp, Loader2, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import type { TestCaseDetail, TestCaseStep } from './types';
 
 interface CaseEditFormProps {
@@ -160,52 +161,31 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
               <label className={labelClass} htmlFor={priorityId}>
                 优先级
               </label>
-              <select
-                id={priorityId}
+              <CustomSelect
                 value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                className={inputClass}
-              >
-                {priorityOptions.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setPriority(value)}
+                options={priorityOptions.map((p) => ({ value: p, label: p }))}
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor={statusId}>
                 状态
               </label>
-              <select
-                id={statusId}
+              <CustomSelect
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className={inputClass}
-              >
-                {statusOptions.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setStatus(value)}
+                options={statusOptions}
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor={caseTypeId}>
                 类型
               </label>
-              <select
-                id={caseTypeId}
+              <CustomSelect
                 value={caseType}
-                onChange={(e) => setCaseType(e.target.value)}
-                className={inputClass}
-              >
-                {typeOptions.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setCaseType(value)}
+                options={typeOptions}
+              />
             </div>
           </div>
 

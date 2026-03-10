@@ -3,6 +3,7 @@
 import { BarChart3, Edit3, FileText, Save, Sparkles, Tag, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { StatusBadge } from '@/components/ui';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import type { TestPointItem, TestPointSource } from '@/stores/scene-map-store';
 
 const sourceLabels: Record<
@@ -184,17 +185,16 @@ export function TestPointDetail({
               >
                 优先级
               </label>
-              <select
-                id="test-point-priority"
+              <CustomSelect
                 value={editPriority}
-                onChange={(e) => setEditPriority(e.target.value)}
-                className="w-full px-3 py-2 text-[13px] bg-sy-bg-2 border border-sy-border rounded-md text-sy-text outline-none focus:border-sy-accent transition-colors"
-              >
-                <option value="P0">P0 - 阻塞</option>
-                <option value="P1">P1 - 严重</option>
-                <option value="P2">P2 - 一般</option>
-                <option value="P3">P3 - 轻微</option>
-              </select>
+                onChange={(value) => setEditPriority(value)}
+                options={[
+                  { value: 'P0', label: 'P0 - 阻塞' },
+                  { value: 'P1', label: 'P1 - 严重' },
+                  { value: 'P2', label: 'P2 - 一般' },
+                  { value: 'P3', label: 'P3 - 轻微' },
+                ]}
+              />
             </div>
           </div>
 

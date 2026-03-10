@@ -33,8 +33,8 @@ export default function LoginPage() {
           id: result.user.id,
           username: result.user.username,
           email: result.user.email,
-          role: result.user.role,
-          full_name: result.user.full_name,
+          role: result.user.role ?? 'user',
+          full_name: result.user.full_name ?? null,
         },
         remember,
       );

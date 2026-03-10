@@ -70,6 +70,7 @@
     "nosetests",
     "NOTSET",
     "numpy",
+    "oceanbase",
     "Ollama",
     "ondelete",
     "onupdate",

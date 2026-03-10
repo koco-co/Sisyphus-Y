@@ -21,7 +21,7 @@ export default function WorkbenchPage() {
 
   const handleSelectRequirement = useCallback(
     (req: Requirement) => {
-      wb.selectRequirement(req.id, req.title || req.req_id);
+      wb.selectRequirement(req.id, req.title || req.req_id || '');
     },
     [wb],
   );

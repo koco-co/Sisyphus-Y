@@ -13,9 +13,10 @@ import {
   Search,
   Trash2,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ApiError, type RecycleItemResponse, recycleApi } from '@/lib/api';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ApiError, type RecycleItem, recycleApi } from '@/lib/api';
 
 type RecycleType = 'product' | 'iteration' | 'requirement' | 'testcase' | 'template' | 'knowledge';
 type FilterType = 'all' | RecycleType;
@@ -78,7 +79,7 @@ function getTypeConfig(type: string) {
 }
 
 export default function RecyclePage() {
-  const [items, setItems] = useState<RecycleItemResponse[]>([]);
+  const [items, setItems] = useState<RecycleItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
@@ -86,6 +87,8 @@ export default function RecyclePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [acting, setActing] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const pendingDeleteIds = useRef<string[]>([]);
 
   const loadItems = useCallback(async (activeFilter: FilterType) => {
     setLoading(true);
@@ -156,8 +159,8 @@ export default function RecyclePage() {
       } else {
         await recycleApi.batchRestore(
           targets.map((item) => ({
-            entityType: item.entity_type,
-            entityId: item.id,
+            entity_type: item.entity_type,
+            id: item.id,
           })),
         );
       }
@@ -170,13 +173,18 @@ export default function RecyclePage() {
     }
   };
 
-  const handlePermanentDelete = async (ids: string[]) => {
+  const handlePermanentDelete = (ids: string[]) => {
     if (ids.length === 0 || acting) {
       return;
     }
-    if (!window.confirm(`确认永久删除选中的 ${ids.length} 项吗？此操作不可恢复。`)) {
-      return;
-    }
+    pendingDeleteIds.current = ids;
+    setConfirmOpen(true);
+  };
+
+  const executePermanentDelete = async () => {
+    const ids = pendingDeleteIds.current;
+    setConfirmOpen(false);
+    pendingDeleteIds.current = [];
     const targets = filtered.filter((item) => ids.includes(item.id));
     setActing(true);
     setError(null);
@@ -367,6 +375,18 @@ export default function RecyclePage() {
           </table>
         </div>
       )}
+      <ConfirmDialog
+        open={confirmOpen}
+        onConfirm={() => void executePermanentDelete()}
+        onCancel={() => {
+          setConfirmOpen(false);
+          pendingDeleteIds.current = [];
+        }}
+        title="永久删除"
+        description={`确认永久删除选中的 ${pendingDeleteIds.current.length} 项吗？此操作不可恢复。`}
+        confirmText="永久删除"
+        variant="danger"
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { CircleDot, Clock, Flag, FolderOpen, Loader2, Pencil, Save, User } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 interface FrontmatterData {
   priority?: string;
@@ -119,17 +120,13 @@ export function FrontmatterPanel({
           <Flag size={13} className="text-text3 shrink-0" />
           <span className="text-[11.5px] text-text3 w-14 shrink-0">优先级</span>
           {editing ? (
-            <select
+            <CustomSelect
               value={draft.priority ?? 'P1'}
-              onChange={(e) => setDraft((d) => ({ ...d, priority: e.target.value }))}
-              className="input text-[12px] py-1 px-2 flex-1"
-            >
-              {PRIORITY_OPTIONS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setDraft((d) => ({ ...d, priority: value }))}
+              options={PRIORITY_OPTIONS.map((p) => ({ value: p, label: p }))}
+              size="sm"
+              className="flex-1"
+            />
           ) : (
             <span
               className={`font-mono text-[12px] font-semibold ${priorityColor[currentPriority ?? 'P1'] ?? 'text-text3'}`}
@@ -144,17 +141,13 @@ export function FrontmatterPanel({
           <CircleDot size={13} className="text-text3 shrink-0" />
           <span className="text-[11.5px] text-text3 w-14 shrink-0">状态</span>
           {editing ? (
-            <select
+            <CustomSelect
               value={draftStatus}
-              onChange={(e) => setDraftStatus(e.target.value)}
-              className="input text-[12px] py-1 px-2 flex-1"
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setDraftStatus(value)}
+              options={STATUS_OPTIONS}
+              size="sm"
+              className="flex-1"
+            />
           ) : (
             <span className="text-[12px] text-text2">
               {STATUS_OPTIONS.find((s) => s.value === currentStatus)?.label ?? currentStatus}

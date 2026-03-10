@@ -2,6 +2,7 @@
 
 import { Save, Settings2 } from 'lucide-react';
 import { useState } from 'react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 interface ToggleOption {
   id: string;
@@ -88,18 +89,12 @@ export function OutputPreferences() {
           >
             输出格式
           </label>
-          <select
-            id="output-format"
+          <CustomSelect
             value={format}
-            onChange={(e) => setFormat(e.target.value)}
-            className="input w-full"
-          >
-            {formatOptions.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => setFormat(value)}
+            options={formatOptions}
+            className="w-full"
+          />
         </div>
 
         <div className="card">
@@ -109,18 +104,12 @@ export function OutputPreferences() {
           >
             优先级体系
           </label>
-          <select
-            id="priority-scheme"
+          <CustomSelect
             value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className="input w-full"
-          >
-            {prioritySchemes.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => setPriority(value)}
+            options={prioritySchemes}
+            className="w-full"
+          />
         </div>
 
         <div className="card">
@@ -130,18 +119,12 @@ export function OutputPreferences() {
           >
             输出语言
           </label>
-          <select
-            id="output-language"
+          <CustomSelect
             value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="input w-full"
-          >
-            {languageOptions.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => setLanguage(value)}
+            options={languageOptions}
+            className="w-full"
+          />
         </div>
       </div>
 

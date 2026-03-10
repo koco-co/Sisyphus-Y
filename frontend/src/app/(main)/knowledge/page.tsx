@@ -2,6 +2,7 @@
 
 import { BookOpen, RefreshCw, Search, Upload } from 'lucide-react';
 import { useState } from 'react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import { useKnowledge } from '@/hooks/useKnowledge';
 import DocTable from './_components/DocTable';
 import RAGBanner from './_components/RAGBanner';
@@ -85,30 +86,32 @@ export default function KnowledgePage() {
           </div>
 
           {/* Type filter */}
-          <select
-            className="input"
+          <CustomSelect
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-          >
-            <option value="">全部类型</option>
-            <option value="md">Markdown</option>
-            <option value="docx">Word</option>
-            <option value="pdf">PDF</option>
-            <option value="txt">文本</option>
-          </select>
+            onChange={(value) => setTypeFilter(value)}
+            options={[
+              { value: '', label: '全部类型' },
+              { value: 'md', label: 'Markdown' },
+              { value: 'docx', label: 'Word' },
+              { value: 'pdf', label: 'PDF' },
+              { value: 'txt', label: '文本' },
+            ]}
+            size="sm"
+          />
 
           {/* Status filter */}
-          <select
-            className="input"
+          <CustomSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="">全部状态</option>
-            <option value="completed">已完成</option>
-            <option value="processing">处理中</option>
-            <option value="failed">失败</option>
-            <option value="pending">待处理</option>
-          </select>
+            onChange={(value) => setStatusFilter(value)}
+            options={[
+              { value: '', label: '全部状态' },
+              { value: 'completed', label: '已完成' },
+              { value: 'processing', label: '处理中' },
+              { value: 'failed', label: '失败' },
+              { value: 'pending', label: '待处理' },
+            ]}
+            size="sm"
+          />
 
           <div className="spacer" />
 

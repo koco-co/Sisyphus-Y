@@ -72,9 +72,11 @@ export function ReportList({ report, loading }: ReportListProps) {
       {/* Score Circle */}
       <div className="text-center mb-4">
         <div
-          className={`w-16 h-16 rounded-full border-[3px] ${scoreBorderColor(report.overall_score)} inline-flex items-center justify-center`}
+          className={`w-16 h-16 rounded-full border-[3px] ${scoreBorderColor(report.overall_score ?? null)} inline-flex items-center justify-center`}
         >
-          <span className={`font-mono text-[20px] font-bold ${scoreColor(report.overall_score)}`}>
+          <span
+            className={`font-mono text-[20px] font-bold ${scoreColor(report.overall_score ?? null)}`}
+          >
             {report.overall_score ?? '—'}
           </span>
         </div>

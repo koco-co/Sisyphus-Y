@@ -3,6 +3,7 @@
 import { CheckCircle, ChevronDown, ChevronRight, FileText, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { SearchInput } from '@/components/ui';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import type { TestPointItem, TestPointSource } from '@/stores/scene-map-store';
 
 const sourceConfig: Record<
@@ -281,16 +282,18 @@ export function TestPointList({
                   placeholder="分类（可选）"
                   className="flex-1 px-2.5 py-1.5 text-[12px] bg-sy-bg-2 border border-sy-border rounded-md text-sy-text placeholder:text-sy-text-3 outline-none focus:border-sy-accent transition-colors"
                 />
-                <select
+                <CustomSelect
                   value={newPriority}
-                  onChange={(e) => setNewPriority(e.target.value)}
-                  className="px-2 py-1.5 text-[12px] bg-sy-bg-2 border border-sy-border rounded-md text-sy-text outline-none focus:border-sy-accent"
-                >
-                  <option value="P0">P0</option>
-                  <option value="P1">P1</option>
-                  <option value="P2">P2</option>
-                  <option value="P3">P3</option>
-                </select>
+                  onChange={(value) => setNewPriority(value)}
+                  options={[
+                    { value: 'P0', label: 'P0' },
+                    { value: 'P1', label: 'P1' },
+                    { value: 'P2', label: 'P2' },
+                    { value: 'P3', label: 'P3' },
+                  ]}
+                  size="sm"
+                  className="w-[72px]"
+                />
               </div>
               <div className="flex gap-1.5">
                 <button

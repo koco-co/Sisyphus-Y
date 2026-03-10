@@ -102,18 +102,19 @@ function formatUpdatedAt(value: string | null): string {
 }
 
 function normalizeResult(item: SearchResultItem): SearchResult | null {
-  if (!(item.entity_type in typeConfig)) {
+  const entityType = item.entity_type ?? item.type;
+  if (!(entityType in typeConfig)) {
     return null;
   }
 
-  const type = item.entity_type as ResultType;
+  const type = entityType as ResultType;
   return {
     id: item.id,
     title: item.title || '未命名结果',
     type,
     description: item.summary || '暂无摘要信息',
     url: getResultUrl(type, item.id),
-    updatedAt: item.updated_at,
+    updatedAt: item.updated_at ?? null,
   };
 }
 

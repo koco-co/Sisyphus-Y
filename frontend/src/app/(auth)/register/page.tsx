@@ -47,8 +47,8 @@ export default function RegisterPage() {
         id: auth.user.id,
         username: auth.user.username,
         email: auth.user.email,
-        role: auth.user.role,
-        full_name: auth.user.full_name,
+        role: auth.user.role ?? 'user',
+        full_name: auth.user.full_name ?? null,
       });
       router.push('/');
     } catch (error) {

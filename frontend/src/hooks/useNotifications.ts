@@ -95,7 +95,7 @@ function normalizeNotification(item: NotificationRecord): NotificationViewItem {
     icon: resolveIcon(item),
     createdAt: item.created_at,
     notificationType: item.notification_type,
-    relatedType: item.related_type,
+    relatedType: item.related_type ?? null,
   };
 }
 

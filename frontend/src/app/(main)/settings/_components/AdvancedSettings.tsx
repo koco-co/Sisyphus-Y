@@ -2,6 +2,7 @@
 
 import { Clock, Database, RefreshCw, Save, Shield, Wrench } from 'lucide-react';
 import { useState } from 'react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
 interface ConfigItem {
   id: string;
@@ -123,18 +124,13 @@ export function AdvancedSettings() {
                       className="input w-24 text-center font-mono text-sm"
                     />
                   )}
-                  {cfg.type === 'select' && (
-                    <select
+                  {cfg.type === 'select' && cfg.options && (
+                    <CustomSelect
                       value={cfg.value as string}
-                      onChange={(e) => updateConfig(cfg.id, e.target.value)}
-                      className="input text-[12px]"
-                    >
-                      {cfg.options?.map((o) => (
-                        <option key={o.value} value={o.value}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(value) => updateConfig(cfg.id, value)}
+                      options={cfg.options}
+                      size="sm"
+                    />
                   )}
                 </div>
               </div>
