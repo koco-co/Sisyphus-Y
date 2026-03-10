@@ -62,18 +62,37 @@ function StatusIcon({ status, size = 13 }: { status: string; size?: number }) {
   );
 }
 
+function deriveModuleStatus(mod: Module): StatusKey {
+  const tasks = mod.tasks ?? [];
+  if (!tasks.length) return mod.status as StatusKey;
+  const allDone = tasks.every((t) => t.status === 'done');
+  if (allDone) return 'done';
+  const anyActive = tasks.some((t) => t.status === 'in_progress' || t.status === 'done');
+  if (anyActive) return 'in_progress';
+  return 'pending';
+}
+
 function getProgress(items: { status: string }[]): number {
   if (!items.length) return 0;
   const done = items.filter((m) => m.status === 'done').length;
-  const partial = items.filter((m) => m.status === 'partial').length;
+  const partial = items.filter((m) => m.status === 'partial' || m.status === 'in_progress').length;
   return Math.round(((done + partial * 0.5) / items.length) * 100);
+}
+
+function getPhaseProgress(phase: Phase): number {
+  if (!phase.modules.length) return 0;
+  const statuses = phase.modules.map((m) => deriveModuleStatus(m));
+  const done = statuses.filter((s) => s === 'done').length;
+  const partial = statuses.filter((s) => s === 'in_progress' || s === 'partial').length;
+  return Math.round(((done + partial * 0.5) / statuses.length) * 100);
 }
 
 function ModuleRow({ mod }: { mod: Module }) {
   const [expanded, setExpanded] = useState(false);
   const hasTasks = (mod.tasks?.length ?? 0) > 0;
   const taskProgress = hasTasks ? getProgress(mod.tasks!) : 0;
-  const cfg = STATUS_CFG[mod.status as StatusKey] ?? STATUS_CFG.pending;
+  const derivedStatus = deriveModuleStatus(mod);
+  const cfg = STATUS_CFG[derivedStatus] ?? STATUS_CFG.pending;
 
   return (
     <div>
@@ -101,7 +120,7 @@ function ModuleRow({ mod }: { mod: Module }) {
         ) : (
           <span style={{ width: 12 }} />
         )}
-        <StatusIcon status={mod.status} />
+        <StatusIcon status={derivedStatus} />
         <span style={{ flex: 1, fontSize: 12.5 }}>
           <span className="mono" style={{ color: 'var(--text3)', marginRight: 5, fontSize: 11 }}>
             {mod.id}
@@ -170,7 +189,7 @@ function ModuleRow({ mod }: { mod: Module }) {
 
 function PhaseSection({ phase }: { phase: Phase }) {
   const [expanded, setExpanded] = useState(phase.status === 'in_progress');
-  const progress = getProgress(phase.modules);
+  const progress = getPhaseProgress(phase);
 
   return (
     <div className="card" style={{ marginBottom: 10, padding: '10px 12px' }}>
