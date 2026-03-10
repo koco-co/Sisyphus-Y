@@ -2,50 +2,30 @@
 
 import {
   AlertTriangle,
-  Check,
   ChevronDown,
   ChevronRight,
+  Clock3,
+  Eye,
   GitBranch,
   Loader2,
-  MessageSquare,
   Shield,
-  X,
+  UserRound,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { CommentSection, type Comment } from '@/components/collaboration/CommentSection';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
-interface ReviewTestPoint {
-  id: string;
-  group_name: string;
-  title: string;
-  description: string | null;
-  priority: string;
-  source: string;
-  status: string;
-  estimated_cases: number;
-}
-
-interface ReviewData {
-  id: string;
-  requirement_id: string;
-  requirement_title: string;
-  status: string;
-  reviewer_name: string;
-  test_points: ReviewTestPoint[];
-  comments: Comment[];
-  created_at: string;
-}
-
-type ReviewAction = 'approved' | 'rejected';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  collaborationApi,
+  type ReviewDecision,
+  type SharedReviewPayload,
+  type TestPoint,
+} from '@/lib/api';
 
 const sourceStyles: Record<string, string> = {
   document: 'pill-green',
   supplemented: 'pill-amber',
   missing: 'pill-red',
   pending: 'pill-gray',
+  user_added: 'pill-blue',
 };
 
 const sourceLabels: Record<string, string> = {
@@ -53,6 +33,7 @@ const sourceLabels: Record<string, string> = {
   supplemented: 'AI 补全',
   missing: '缺失',
   pending: '待确认',
+  user_added: '人工补充',
 };
 
 const priorityStyles: Record<string, string> = {
@@ -62,84 +43,128 @@ const priorityStyles: Record<string, string> = {
   P3: 'pill-gray',
 };
 
+const reviewStatusLabels: Record<string, string> = {
+  pending: '待评审',
+  in_progress: '评审中',
+  approved: '已通过',
+  rejected: '已驳回',
+  completed: '已完成',
+};
+
+const pointStatusLabels: Record<string, string> = {
+  ai_generated: '待确认',
+  confirmed: '已确认',
+  ignored: '已忽略',
+};
+
+const decisionLabels: Record<string, string> = {
+  approved: '通过',
+  rejected: '驳回',
+  request_changes: '需修改',
+};
+
+const decisionStyles: Record<string, string> = {
+  approved: 'pill-green',
+  rejected: 'pill-red',
+  request_changes: 'pill-amber',
+};
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function getSourceLabel(source: string): string {
+  if (source === 'ai') {
+    return 'AI 生成';
+  }
+  if (source === 'manual') {
+    return '人工补充';
+  }
+  return sourceLabels[source] || source;
+}
+
+function getSourceStyle(source: string): string {
+  if (source === 'ai') {
+    return sourceStyles.supplemented;
+  }
+  if (source === 'manual') {
+    return sourceStyles.user_added;
+  }
+  return sourceStyles[source] || 'pill-gray';
+}
+
 export default function ReviewPage() {
   const { token } = useParams<{ token: string }>();
-  const [data, setData] = useState<ReviewData | null>(null);
+  const [data, setData] = useState<SharedReviewPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [reviewComment, setReviewComment] = useState('');
 
   useEffect(() => {
     async function fetchReview() {
+      setLoading(true);
+      setError(null);
       try {
-        const res = await fetch(`${API_BASE}/collaboration/reviews/${token}`);
-        if (!res.ok) {
-          if (res.status === 404) throw new Error('评审链接无效或已过期');
-          throw new Error(`加载失败: ${res.status}`);
-        }
-        const review = await res.json();
+        const review = await collaborationApi.getSharedReview(token);
         setData(review);
         const groups = new Set<string>(
-          (review.test_points || []).map((tp: ReviewTestPoint) => tp.group_name || '未分组'),
+          (review.entity_snapshot?.test_points || []).map((tp) => tp.group_name || '未分组'),
         );
         setExpandedGroups(groups);
       } catch (e) {
-        setError(e instanceof Error ? e.message : '加载失败');
+        const message = e instanceof Error ? e.message : '加载失败';
+        if (message.includes('404')) {
+          setError('评审链接无效或已过期');
+        } else {
+          setError(message);
+        }
       } finally {
         setLoading(false);
       }
     }
-    fetchReview();
+
+    void fetchReview();
   }, [token]);
+
+  const groupedPoints = useMemo(() => {
+    const grouped: Record<string, TestPoint[]> = {};
+    for (const point of data?.entity_snapshot?.test_points || []) {
+      const group = point.group_name || '未分组';
+      if (!grouped[group]) {
+        grouped[group] = [];
+      }
+      grouped[group].push(point);
+    }
+    return grouped;
+  }, [data]);
+
+  const decisionSummary = useMemo(() => {
+    const counts = { approved: 0, rejected: 0, request_changes: 0 };
+    for (const decision of data?.decisions || []) {
+      if (decision.decision in counts) {
+        counts[decision.decision as keyof typeof counts] += 1;
+      }
+    }
+    return counts;
+  }, [data]);
 
   const toggleGroup = (group: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      if (next.has(group)) next.delete(group);
-      else next.add(group);
+      if (next.has(group)) {
+        next.delete(group);
+      } else {
+        next.add(group);
+      }
       return next;
     });
   };
-
-  const handleSubmitReview = useCallback(
-    async (action: ReviewAction) => {
-      if (submitting) return;
-      setSubmitting(true);
-      try {
-        const res = await fetch(`${API_BASE}/collaboration/reviews/${token}/submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, comment: reviewComment }),
-        });
-        if (!res.ok) throw new Error('提交失败');
-        setSubmitted(true);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : '提交失败');
-      } finally {
-        setSubmitting(false);
-      }
-    },
-    [token, reviewComment, submitting],
-  );
-
-  const handleCommentSubmit = useCallback(
-    async (content: string) => {
-      const res = await fetch(`${API_BASE}/collaboration/reviews/${token}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content }),
-      });
-      if (!res.ok) throw new Error('评论提交失败');
-      const newComment = await res.json();
-      setData((prev) =>
-        prev ? { ...prev, comments: [...prev.comments, newComment] } : prev,
-      );
-    },
-    [token],
-  );
 
   if (loading) {
     return (
@@ -151,165 +176,203 @@ export default function ReviewPage() {
 
   if (error || !data) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3" style={{ height: 'calc(100vh - 49px)' }}>
+      <div
+        className="flex flex-col items-center justify-center gap-3"
+        style={{ height: 'calc(100vh - 49px)' }}
+      >
         <AlertTriangle size={40} className="text-sy-danger opacity-50" />
         <p className="text-[14px] text-sy-text-2">{error || '加载失败'}</p>
       </div>
     );
   }
 
-  if (submitted) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3" style={{ height: 'calc(100vh - 49px)' }}>
-        <Check size={40} className="text-sy-accent" />
-        <p className="text-[16px] font-semibold text-sy-text">评审已提交</p>
-        <p className="text-[13px] text-sy-text-3">感谢您的评审，结果已记录。</p>
-      </div>
-    );
-  }
-
-  const grouped: Record<string, ReviewTestPoint[]> = {};
-  for (const tp of data.test_points) {
-    const group = tp.group_name || '未分组';
-    if (!grouped[group]) grouped[group] = [];
-    grouped[group].push(tp);
-  }
+  const requirementTitle = data.entity_snapshot?.requirement_title || data.review.title;
+  const reviewerNames = data.entity_snapshot?.reviewer_names || data.review.reviewer_ids;
 
   return (
     <div className="flex" style={{ height: 'calc(100vh - 49px)' }}>
-      {/* Main content */}
       <div className="flex-1 overflow-y-auto">
-        {/* Header */}
         <div className="px-6 py-4 border-b border-sy-border bg-sy-bg-1">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
             <Shield size={16} className="text-sy-accent" />
-            <h1 className="text-[16px] font-display font-bold text-sy-text">
-              测试点评审
-            </h1>
-            <span className="pill pill-blue text-[10px]">{data.status}</span>
+            <h1 className="text-[16px] font-display font-bold text-sy-text">测试点评审共享视图</h1>
+            <span className="pill pill-blue text-[10px]">
+              {reviewStatusLabels[data.review.status] || data.review.status}
+            </span>
+            <span className="pill pill-gray text-[10px] inline-flex items-center gap-1">
+              <Eye size={11} />
+              只读链接
+            </span>
           </div>
-          <p className="text-[13px] text-sy-text-2">
-            需求: {data.requirement_title}
-          </p>
-          <p className="text-[11px] text-sy-text-3 font-mono mt-0.5">
-            评审人: {data.reviewer_name} · {new Date(data.created_at).toLocaleDateString('zh-CN')}
-          </p>
+          <p className="text-[13px] text-sy-text-2">{requirementTitle}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-sy-text-3 font-mono">
+            <span>评审标题: {data.review.title}</span>
+            {data.entity_snapshot?.req_id ? (
+              <span>需求编号: {data.entity_snapshot.req_id}</span>
+            ) : null}
+            <span>创建时间: {formatDate(data.review.created_at)}</span>
+          </div>
+          {data.review.description ? (
+            <p className="mt-3 text-[12px] leading-relaxed text-sy-text-2">
+              {data.review.description}
+            </p>
+          ) : null}
         </div>
 
-        {/* Test points */}
         <div className="p-4 space-y-2">
-          {Object.entries(grouped).map(([group, points]) => {
-            const isExpanded = expandedGroups.has(group);
-            return (
-              <div key={group} className="card">
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group)}
-                  className="flex items-center gap-2 w-full text-left"
-                  aria-expanded={isExpanded}
-                >
-                  {isExpanded ? (
-                    <ChevronDown size={14} className="text-sy-text-3" />
-                  ) : (
-                    <ChevronRight size={14} className="text-sy-text-3" />
-                  )}
-                  <GitBranch size={13} className="text-sy-accent" />
-                  <span className="text-[13px] font-semibold text-sy-text">
-                    {group}
-                  </span>
-                  <span className="ml-auto font-mono text-[11px] text-sy-text-3">
-                    {points.length} 测试点
-                  </span>
-                </button>
+          {Object.keys(groupedPoints).length === 0 ? (
+            <div className="card py-10 text-center">
+              <GitBranch className="mx-auto mb-3 text-sy-text-3 opacity-40" size={24} />
+              <p className="text-[13px] text-sy-text-2">当前共享评审没有可展示的测试点快照</p>
+            </div>
+          ) : (
+            Object.entries(groupedPoints).map(([group, points]) => {
+              const isExpanded = expandedGroups.has(group);
+              return (
+                <div key={group} className="card">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group)}
+                    className="flex items-center gap-2 w-full text-left"
+                    aria-expanded={isExpanded}
+                  >
+                    {isExpanded ? (
+                      <ChevronDown size={14} className="text-sy-text-3" />
+                    ) : (
+                      <ChevronRight size={14} className="text-sy-text-3" />
+                    )}
+                    <GitBranch size={13} className="text-sy-accent" />
+                    <span className="text-[13px] font-semibold text-sy-text">{group}</span>
+                    <span className="ml-auto font-mono text-[11px] text-sy-text-3">
+                      {points.length} 测试点
+                    </span>
+                  </button>
 
-                {isExpanded && (
-                  <div className="mt-3 space-y-2 ml-6">
-                    {points.map((tp) => (
-                      <div
-                        key={tp.id}
-                        className="p-3 rounded-lg bg-sy-bg-2 border border-sy-border"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[12.5px] font-medium text-sy-text flex-1">
-                            {tp.title}
-                          </span>
-                          <span className={`pill text-[10px] ${priorityStyles[tp.priority] || 'pill-gray'}`}>
-                            {tp.priority}
-                          </span>
-                          <span className={`pill text-[10px] ${sourceStyles[tp.source] || 'pill-gray'}`}>
-                            {sourceLabels[tp.source] || tp.source}
-                          </span>
+                  {isExpanded ? (
+                    <div className="mt-3 space-y-2 ml-6">
+                      {points.map((point) => (
+                        <div
+                          key={point.id}
+                          className="p-3 rounded-lg bg-sy-bg-2 border border-sy-border"
+                        >
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="text-[12.5px] font-medium text-sy-text flex-1">
+                              {point.title}
+                            </span>
+                            <span
+                              className={`pill text-[10px] ${priorityStyles[point.priority] || 'pill-gray'}`}
+                            >
+                              {point.priority}
+                            </span>
+                            <span className={`pill text-[10px] ${getSourceStyle(point.source)}`}>
+                              {getSourceLabel(point.source)}
+                            </span>
+                          </div>
+                          {point.description ? (
+                            <p className="text-[11.5px] text-sy-text-3 leading-relaxed mt-1">
+                              {point.description}
+                            </p>
+                          ) : null}
+                          <div className="flex items-center gap-3 mt-2 text-[10px] font-mono text-sy-text-3">
+                            <span>预计用例: {point.estimated_cases}</span>
+                            <span>状态: {pointStatusLabels[point.status] || point.status}</span>
+                          </div>
                         </div>
-                        {tp.description && (
-                          <p className="text-[11.5px] text-sy-text-3 leading-relaxed mt-1">
-                            {tp.description}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-3 mt-2 text-[10px] font-mono text-sy-text-3">
-                          <span>预计用例: {tp.estimated_cases}</span>
-                          <span>状态: {tp.status}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      <aside className="w-[320px] border-l border-sy-border bg-sy-bg-1 overflow-y-auto">
+        <div className="p-4 border-b border-sy-border">
+          <h2 className="text-[13px] font-semibold text-sy-text">评审概览</h2>
+          <p className="mt-2 text-[12px] text-sy-text-3 leading-relaxed">
+            该共享链接仅用于查看评审快照与已提交结论；若需提交意见，请在平台内登录后处理。
+          </p>
         </div>
 
-        {/* Review actions */}
-        <div className="px-6 py-4 border-t border-sy-border bg-sy-bg-1 sticky bottom-0">
-          <textarea
-            value={reviewComment}
-            onChange={(e) => setReviewComment(e.target.value)}
-            placeholder="评审意见（可选）"
-            rows={2}
-            className="input w-full mb-3 resize-none text-[12.5px]"
-            aria-label="评审意见"
-          />
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => handleSubmitReview('approved')}
-              disabled={submitting}
-              className="btn btn-primary flex-1"
-              aria-label="通过评审"
-            >
-              {submitting ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Check size={14} />
-              )}
-              通过
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSubmitReview('rejected')}
-              disabled={submitting}
-              className="btn btn-danger flex-1"
-              aria-label="驳回评审"
-            >
-              {submitting ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <X size={14} />
-              )}
-              驳回
-            </button>
+        <div className="p-4 space-y-4">
+          <div className="card space-y-3">
+            <div className="flex items-center gap-2 text-[12px] text-sy-text-2">
+              <UserRound size={14} className="text-sy-accent" />
+              <span>评审人</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {reviewerNames.map((name) => (
+                <span key={name} className="pill pill-gray text-[10px]">
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="card space-y-3">
+            <div className="flex items-center gap-2 text-[12px] text-sy-text-2">
+              <Clock3 size={14} className="text-sy-accent" />
+              <span>决策统计</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-lg border border-sy-border bg-sy-bg-2 px-2 py-3">
+                <div className="text-[16px] font-semibold text-sy-accent">
+                  {decisionSummary.approved}
+                </div>
+                <div className="text-[10px] text-sy-text-3">通过</div>
+              </div>
+              <div className="rounded-lg border border-sy-border bg-sy-bg-2 px-2 py-3">
+                <div className="text-[16px] font-semibold text-sy-danger">
+                  {decisionSummary.rejected}
+                </div>
+                <div className="text-[10px] text-sy-text-3">驳回</div>
+              </div>
+              <div className="rounded-lg border border-sy-border bg-sy-bg-2 px-2 py-3">
+                <div className="text-[16px] font-semibold text-sy-warn">
+                  {decisionSummary.request_changes}
+                </div>
+                <div className="text-[10px] text-sy-text-3">需修改</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card space-y-3">
+            <div className="text-[12px] text-sy-text-2">已提交结论</div>
+            {data.decisions.length === 0 ? (
+              <p className="text-[12px] text-sy-text-3">暂无已提交的评审结论</p>
+            ) : (
+              <div className="space-y-2">
+                {data.decisions.map((decision: ReviewDecision) => (
+                  <div
+                    key={decision.id}
+                    className="rounded-lg border border-sy-border bg-sy-bg-2 p-3"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className={`pill text-[10px] ${decisionStyles[decision.decision] || 'pill-gray'}`}
+                      >
+                        {decisionLabels[decision.decision] || decision.decision}
+                      </span>
+                      <span className="text-[10px] font-mono text-sy-text-3">
+                        {formatDate(decision.created_at)}
+                      </span>
+                    </div>
+                    {decision.comment ? (
+                      <p className="text-[12px] leading-relaxed text-sy-text-2">
+                        {decision.comment}
+                      </p>
+                    ) : (
+                      <p className="text-[12px] text-sy-text-3">未填写评审意见</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </div>
-
-      {/* Right: Comments */}
-      <div className="w-[320px] border-l border-sy-border bg-sy-bg-1 flex flex-col overflow-hidden">
-        <CommentSection
-          comments={data.comments}
-          currentUser={data.reviewer_name}
-          onSubmit={handleCommentSubmit}
-          mentionableUsers={[data.reviewer_name]}
-        />
-      </div>
+      </aside>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { DM_Sans, JetBrains_Mono, Syne } from 'next/font/google';
-import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { AntdProvider } from '@/components/providers/AntdProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import './globals.css';
 
 const dmSans = DM_Sans({
@@ -31,13 +31,13 @@ export const metadata: Metadata = {
   description: 'AI 驱动的企业级功能测试用例自动生成平台',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning className={`${dmSans.variable} ${jetbrainsMono.variable} ${syne.variable}`}>
+    <html
+      lang="zh-CN"
+      suppressHydrationWarning
+      className={`${dmSans.variable} ${jetbrainsMono.variable} ${syne.variable}`}
+    >
       <body>
         <ThemeProvider>
           <QueryProvider>

@@ -112,8 +112,7 @@ export const useDiffStore = create<DiffState>((set) => ({
   versionTo: 2,
   setVersionFrom: (v) => set({ versionFrom: v }),
   setVersionTo: (v) => set({ versionTo: v }),
-  swapVersions: () =>
-    set((s) => ({ versionFrom: s.versionTo, versionTo: s.versionFrom })),
+  swapVersions: () => set((s) => ({ versionFrom: s.versionTo, versionTo: s.versionFrom })),
 
   diffResult: null,
   setDiffResult: (r) => set({ diffResult: r }),

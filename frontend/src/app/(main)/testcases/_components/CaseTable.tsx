@@ -1,21 +1,15 @@
 'use client';
 
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  Check,
-  Minus,
-} from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, Minus } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import type { TestCaseDetail, SortField, SortDirection } from './types';
+import type { SortDirection, SortField, TestCaseDetail } from './types';
 import {
-  priorityVariant,
-  statusVariant,
-  statusLabel,
-  typeLabel,
-  sourceLabel,
   formatRelativeTime,
+  priorityVariant,
+  sourceLabel,
+  statusLabel,
+  statusVariant,
+  typeLabel,
 } from './types';
 
 interface CaseTableProps {
@@ -70,8 +64,7 @@ export function CaseTable({
   onSort,
   loading,
 }: CaseTableProps) {
-  const allSelected =
-    cases.length > 0 && cases.every((c) => selectedIds.has(c.id));
+  const allSelected = cases.length > 0 && cases.every((c) => selectedIds.has(c.id));
   const someSelected = cases.some((c) => selectedIds.has(c.id));
 
   return (
@@ -108,11 +101,7 @@ export function CaseTable({
               >
                 <span className="flex items-center gap-1">
                   {col.label}
-                  <SortIcon
-                    field={col.key}
-                    currentField={sortField}
-                    direction={sortDirection}
-                  />
+                  <SortIcon field={col.key} currentField={sortField} direction={sortDirection} />
                 </span>
               </th>
             ))}
@@ -150,18 +139,14 @@ export function CaseTable({
                         : 'bg-bg2 border-border2 group-hover/row:border-accent/50'
                     }`}
                   >
-                    {selectedIds.has(tc.id) && (
-                      <Check className="w-2.5 h-2.5" />
-                    )}
+                    {selectedIds.has(tc.id) && <Check className="w-2.5 h-2.5" />}
                   </button>
                 </td>
 
                 {/* case id + title */}
                 <td className="px-3 py-2.5 border-b border-border/50">
                   <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-[11px] text-accent">
-                      {tc.case_id}
-                    </span>
+                    <span className="font-mono text-[11px] text-accent">{tc.case_id}</span>
                     <span className="text-[12.5px] text-text2 group-hover/row:text-text truncate max-w-[360px]">
                       {tc.title}
                     </span>
@@ -170,18 +155,14 @@ export function CaseTable({
 
                 {/* priority */}
                 <td className="px-3 py-2.5 border-b border-border/50">
-                  <StatusBadge
-                    variant={priorityVariant[tc.priority] ?? 'gray'}
-                  >
+                  <StatusBadge variant={priorityVariant[tc.priority] ?? 'gray'}>
                     {tc.priority}
                   </StatusBadge>
                 </td>
 
                 {/* status */}
                 <td className="px-3 py-2.5 border-b border-border/50">
-                  <StatusBadge
-                    variant={statusVariant[tc.status] ?? 'gray'}
-                  >
+                  <StatusBadge variant={statusVariant[tc.status] ?? 'gray'}>
                     {statusLabel[tc.status] ?? tc.status}
                   </StatusBadge>
                 </td>
@@ -197,7 +178,7 @@ export function CaseTable({
                 <td className="px-3 py-2.5 border-b border-border/50">
                   <StatusBadge
                     variant={
-                      tc.source === 'ai'
+                      tc.source === 'ai_generated' || tc.source === 'ai'
                         ? 'info'
                         : tc.source === 'imported'
                           ? 'purple'

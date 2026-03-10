@@ -8,16 +8,19 @@ interface VersionSelectorProps {
 }
 
 export function VersionSelector({ className = '' }: VersionSelectorProps) {
-  const { versionFrom, versionTo, setVersionFrom, setVersionTo, swapVersions } =
-    useDiffStore();
+  const { versionFrom, versionTo, setVersionFrom, setVersionTo, swapVersions } = useDiffStore();
 
   return (
     <div className={`flex items-end gap-2 ${className}`}>
       <div className="flex-1">
-        <label className="block text-[10px] font-semibold text-text3 uppercase tracking-wider mb-1">
+        <label
+          htmlFor="diff-version-from"
+          className="block text-[10px] font-semibold text-text3 uppercase tracking-wider mb-1"
+        >
           旧版本
         </label>
         <input
+          id="diff-version-from"
           type="number"
           min={1}
           value={versionFrom}
@@ -36,10 +39,14 @@ export function VersionSelector({ className = '' }: VersionSelectorProps) {
       </button>
 
       <div className="flex-1">
-        <label className="block text-[10px] font-semibold text-text3 uppercase tracking-wider mb-1">
+        <label
+          htmlFor="diff-version-to"
+          className="block text-[10px] font-semibold text-text3 uppercase tracking-wider mb-1"
+        >
           新版本
         </label>
         <input
+          id="diff-version-to"
           type="number"
           min={1}
           value={versionTo}

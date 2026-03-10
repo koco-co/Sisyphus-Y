@@ -1,5 +1,5 @@
 'use client';
-import { ConfigProvider, App, theme as antdTheme } from 'antd';
+import { App, theme as antdTheme, ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';

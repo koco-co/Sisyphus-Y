@@ -17,6 +17,10 @@ interface DiffLine {
   newNum: number | null;
 }
 
+function getDiffLineKey(line: DiffLine, prefix = 'line'): string {
+  return `${prefix}-${line.type}-${line.oldNum ?? 'x'}-${line.newNum ?? 'y'}-${line.content}`;
+}
+
 function parseDiffLines(text: string): DiffLine[] {
   const raw = text.split('\n');
   const lines: DiffLine[] = [];
@@ -75,9 +79,7 @@ function groupContextChunks(lines: DiffLine[], threshold = 6) {
   return groups;
 }
 
-function CollapsibleChunk({
-  lines,
-}: { lines: DiffLine[] }) {
+function CollapsibleChunk({ lines }: { lines: DiffLine[] }) {
   const [expanded, setExpanded] = useState(false);
 
   if (!expanded) {
@@ -103,26 +105,17 @@ function CollapsibleChunk({
         <ChevronDown className="w-3 h-3" />
         <span className="font-mono">折叠</span>
       </button>
-      {lines.map((line, i) => (
-        <DiffLineRow key={`ctx-${line.oldNum}-${i}`} line={line} />
+      {lines.map((line) => (
+        <DiffLineRow key={getDiffLineKey(line, 'ctx')} line={line} />
       ))}
     </>
   );
 }
 
 function DiffLineRow({ line }: { line: DiffLine }) {
-  const bgClass =
-    line.type === 'add'
-      ? 'bg-accent/8'
-      : line.type === 'del'
-        ? 'bg-red/8'
-        : '';
+  const bgClass = line.type === 'add' ? 'bg-accent/8' : line.type === 'del' ? 'bg-red/8' : '';
   const textClass =
-    line.type === 'add'
-      ? 'text-accent'
-      : line.type === 'del'
-        ? 'text-red'
-        : 'text-text3';
+    line.type === 'add' ? 'text-accent' : line.type === 'del' ? 'text-red' : 'text-text3';
 
   return (
     <div className={`flex font-mono text-[12px] leading-[1.7] ${bgClass}`}>
@@ -149,9 +142,7 @@ export function DiffView({
   const groups = useMemo(() => groupContextChunks(parsed), [parsed]);
 
   return (
-    <div
-      className={`border border-border rounded-lg overflow-hidden bg-bg1 ${className}`}
-    >
+    <div className={`border border-border rounded-lg overflow-hidden bg-bg1 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-bg1">
         <span className="text-[12px] font-medium text-text2">Diff 详情</span>
@@ -170,16 +161,18 @@ export function DiffView({
 
       {/* Diff body */}
       <div className="max-h-[480px] overflow-y-auto bg-bg">
-        {groups.map((group, gi) => {
+        {groups.map((group) => {
+          const firstLine = group.lines[0];
+          const groupKey = `${group.collapsible ? 'collapsed' : 'group'}-${getDiffLineKey(
+            firstLine,
+            'group',
+          )}-${group.lines.length}`;
+
           if (group.collapsible) {
-            return <CollapsibleChunk key={`g-${gi}`} lines={group.lines} />;
+            return <CollapsibleChunk key={groupKey} lines={group.lines} />;
           }
-          return group.lines.map((line, li) => (
-            <DiffLineRow
-              key={`l-${gi}-${li}`}
-              line={line}
-            />
-          ));
+
+          return group.lines.map((line) => <DiffLineRow key={getDiffLineKey(line)} line={line} />);
         })}
       </div>
     </div>

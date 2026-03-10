@@ -1,13 +1,7 @@
 'use client';
 
+import { ChevronRight, ClipboardList, ExternalLink, Loader2, TreePine } from 'lucide-react';
 import Link from 'next/link';
-import {
-  TreePine,
-  ClipboardList,
-  ChevronRight,
-  ExternalLink,
-  Loader2,
-} from 'lucide-react';
 import { StatusPill } from '@/components/ui';
 
 interface TestPointItem {
@@ -84,9 +78,7 @@ export function RelationPanel({
         </div>
 
         {testPoints.length === 0 ? (
-          <div className="text-center py-4 text-text3 text-[12px]">
-            暂无关联测试点
-          </div>
+          <div className="text-center py-4 text-text3 text-[12px]">暂无关联测试点</div>
         ) : (
           <div className="space-y-1 max-h-[200px] overflow-y-auto">
             {testPoints.map((tp) => (
@@ -130,9 +122,7 @@ export function RelationPanel({
         </div>
 
         {testCases.length === 0 ? (
-          <div className="text-center py-4 text-text3 text-[12px]">
-            暂无关联用例
-          </div>
+          <div className="text-center py-4 text-text3 text-[12px]">暂无关联用例</div>
         ) : (
           <div className="space-y-1 max-h-[200px] overflow-y-auto">
             {testCases.map((tc) => (
@@ -141,9 +131,7 @@ export function RelationPanel({
                 href={`/testcases?highlight=${tc.id}`}
                 className="flex items-center gap-2 p-2 rounded-md hover:bg-bg2 transition-colors group"
               >
-                <span className="text-[11px] font-mono text-accent shrink-0">
-                  {tc.case_id}
-                </span>
+                <span className="text-[11px] font-mono text-accent shrink-0">{tc.case_id}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] text-text truncate">{tc.title}</div>
                 </div>

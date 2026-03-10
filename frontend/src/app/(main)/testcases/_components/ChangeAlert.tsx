@@ -15,7 +15,8 @@ export function ChangeAlert({ count, onNavigate, onDismiss }: ChangeAlertProps) 
     <div className="flex items-center gap-3 px-4 py-3 mb-4 rounded-lg bg-amber/8 border border-amber/25 text-[12.5px]">
       <AlertTriangle className="w-4 h-4 shrink-0 text-amber" />
       <span className="flex-1 text-amber">
-        有 <span className="font-mono font-semibold">{count}</span> 个用例受需求变更影响，需要重新审视
+        有 <span className="font-mono font-semibold">{count}</span>{' '}
+        个用例受需求变更影响，需要重新审视
       </span>
       <button
         type="button"

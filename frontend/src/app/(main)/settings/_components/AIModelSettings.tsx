@@ -1,7 +1,8 @@
 'use client';
 
-import { Bot, Check, Star, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { Bot, Check, Loader2, Save, Star, Zap } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useAiConfig } from '@/hooks/useAiConfig';
 
 interface ModelInfo {
   name: string;
@@ -11,7 +12,6 @@ interface ModelInfo {
   quality: number;
   cost: number;
   scene: string;
-  active: boolean;
 }
 
 const models: ModelInfo[] = [
@@ -23,7 +23,6 @@ const models: ModelInfo[] = [
     quality: 4,
     cost: 5,
     scene: '需求诊断 / 苏格拉底追问',
-    active: true,
   },
   {
     name: 'Qwen-Max',
@@ -33,7 +32,6 @@ const models: ModelInfo[] = [
     quality: 5,
     cost: 3,
     scene: '复杂用例 CoT 生成',
-    active: true,
   },
   {
     name: 'GPT-4o',
@@ -43,13 +41,12 @@ const models: ModelInfo[] = [
     quality: 5,
     cost: 2,
     scene: '备用模型',
-    active: false,
   },
 ];
 
 interface SliderParam {
   label: string;
-  key: string;
+  key: 'temperature' | 'maxTokens' | 'topP' | 'concurrency';
   min: number;
   max: number;
   step: number;
@@ -115,10 +112,51 @@ function StarsRow({ label, count }: { label: string; count: number }) {
 }
 
 export function AIModelSettings() {
-  const [activeModel, setActiveModel] = useState('GLM-4-Flash');
-  const [paramVals, setParamVals] = useState<Record<string, number>>(
-    Object.fromEntries(sliderParams.map((p) => [p.key, p.initial])),
+  const { effectiveConfig, loading, saving, error, saveGlobalConfig } = useAiConfig();
+  const [activeModelId, setActiveModelId] = useState(models[0].id);
+  const [paramVals, setParamVals] = useState<Record<SliderParam['key'], number>>({
+    temperature: 0.7,
+    maxTokens: 4096,
+    topP: 0.95,
+    concurrency: 3,
+  });
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!effectiveConfig) {
+      return;
+    }
+
+    const outputPreference = effectiveConfig.output_preference ?? {};
+    setActiveModelId(effectiveConfig.llm_model ?? models[0].id);
+    setParamVals({
+      temperature: effectiveConfig.llm_temperature ?? 0.7,
+      maxTokens: Number(outputPreference.max_tokens ?? 4096),
+      topP: Number(outputPreference.top_p ?? 0.95),
+      concurrency: Number(outputPreference.concurrency ?? 3),
+    });
+  }, [effectiveConfig]);
+
+  const activeModel = useMemo(
+    () => models.find((model) => model.id === activeModelId) ?? models[0],
+    [activeModelId],
   );
+
+  const handleSave = async () => {
+    const ok = await saveGlobalConfig({
+      llm_model: activeModel.id,
+      llm_temperature: paramVals.temperature,
+      output_preference: {
+        max_tokens: paramVals.maxTokens,
+        top_p: paramVals.topP,
+        concurrency: paramVals.concurrency,
+      },
+    });
+    if (!ok) return;
+
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2000);
+  };
 
   return (
     <div>
@@ -127,32 +165,41 @@ export function AIModelSettings() {
         <span className="sec-title">AI 模型配置</span>
       </div>
 
+      {error && (
+        <div className="mb-4 px-3 py-2 rounded-md bg-red/8 border border-red/20 text-red text-[12.5px]">
+          {error}
+        </div>
+      )}
+
       <div className="grid-3 mb-6">
-        {models.map((m) => (
+        {models.map((model) => (
           <button
             type="button"
-            key={m.name}
-            className={`model-card text-left w-full relative ${activeModel === m.name ? 'active' : ''}`}
-            onClick={() => setActiveModel(m.name)}
+            key={model.name}
+            className={`model-card text-left w-full relative ${activeModelId === model.id ? 'active' : ''}`}
+            onClick={() => setActiveModelId(model.id)}
+            disabled={loading || saving}
           >
-            {activeModel === m.name && (
+            {activeModelId === model.id && (
               <div className="absolute top-3 right-3">
                 <Check className="w-4 h-4 text-accent" />
               </div>
             )}
             <div className="mb-2.5">
-              <div className="text-sm font-semibold text-text">{m.name}</div>
-              <div className="text-[11.5px] text-text3 mt-0.5">{m.provider}</div>
+              <div className="text-sm font-semibold text-text">{model.name}</div>
+              <div className="text-[11.5px] text-text3 mt-0.5">{model.provider}</div>
             </div>
             <div className="flex flex-col gap-1.5 mb-2.5">
-              <StarsRow label="速度" count={m.speed} />
-              <StarsRow label="质量" count={m.quality} />
-              <StarsRow label="成本" count={m.cost} />
+              <StarsRow label="速度" count={model.speed} />
+              <StarsRow label="质量" count={model.quality} />
+              <StarsRow label="成本" count={model.cost} />
             </div>
-            <div className="text-[11px] text-text3 mb-2">{m.scene}</div>
+            <div className="text-[11px] text-text3 mb-2">{model.scene}</div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10.5px] text-text3">{m.id}</span>
-              {m.active && <span className="pill pill-green text-[10px]">启用</span>}
+              <span className="font-mono text-[10.5px] text-text3">{model.id}</span>
+              {activeModelId === model.id && (
+                <span className="pill pill-green text-[10px]">当前生效</span>
+              )}
             </div>
           </button>
         ))}
@@ -165,25 +212,47 @@ export function AIModelSettings() {
         <span className="sec-title">参数调整</span>
       </div>
       <div className="card flex flex-col gap-5">
-        {sliderParams.map((p) => (
-          <div key={p.key}>
+        {sliderParams.map((param) => (
+          <div key={param.key}>
             <div className="flex justify-between mb-1.5">
-              <span className="text-[12.5px] text-text2">{p.label}</span>
-              <span className="font-mono text-xs text-accent">{p.fmt(paramVals[p.key])}</span>
+              <span className="text-[12.5px] text-text2">{param.label}</span>
+              <span className="font-mono text-xs text-accent">
+                {param.fmt(paramVals[param.key])}
+              </span>
             </div>
             <input
               type="range"
-              min={p.min}
-              max={p.max}
-              step={p.step}
-              value={paramVals[p.key]}
+              min={param.min}
+              max={param.max}
+              step={param.step}
+              value={paramVals[param.key]}
               onChange={(e) =>
-                setParamVals((prev) => ({ ...prev, [p.key]: Number(e.target.value) }))
+                setParamVals((prev) => ({ ...prev, [param.key]: Number(e.target.value) }))
               }
               className="w-full accent-accent"
+              disabled={loading || saving}
             />
           </div>
         ))}
+
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-[12px] text-text3">
+            当前模型：<span className="text-text2">{activeModel.name}</span>
+          </p>
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            onClick={() => void handleSave()}
+            disabled={loading || saving}
+          >
+            {saving ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Save className="w-3.5 h-3.5" />
+            )}
+            {saved ? '已保存' : saving ? '保存中...' : '保存配置'}
+          </button>
+        </div>
       </div>
     </div>
   );

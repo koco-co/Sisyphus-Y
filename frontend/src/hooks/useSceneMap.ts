@@ -1,9 +1,9 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { sceneMapApi } from '@/lib/api';
 import {
-  useSceneMapStore,
   type TestPointItem,
   type TestPointSource,
+  useSceneMapStore,
 } from '@/stores/scene-map-store';
 import { useSSE } from './useSSE';
 
@@ -26,13 +26,11 @@ export function useSceneMap() {
     async (reqId: string) => {
       try {
         const data = await sceneMapApi.listTestPoints(reqId);
-        const points: TestPointItem[] = (Array.isArray(data) ? data : []).map(
-          (tp) => ({
-            ...tp,
-            description: tp.description ?? null,
-            source: normalizeSource(tp.source),
-          }),
-        );
+        const points: TestPointItem[] = (Array.isArray(data) ? data : []).map((tp) => ({
+          ...tp,
+          description: tp.description ?? null,
+          source: normalizeSource(tp.source),
+        }));
         store.setTestPoints(points);
         if (points.length > 0) store.setStep('confirm');
       } catch {
@@ -155,9 +153,7 @@ export function useSceneMap() {
     try {
       await sceneMapApi.confirmAll(reqId);
       store.checkAllPoints();
-      store.setTestPoints(
-        store.testPoints.map((tp) => ({ ...tp, status: 'confirmed' })),
-      );
+      store.setTestPoints(store.testPoints.map((tp) => ({ ...tp, status: 'confirmed' })));
       store.lockMap();
     } catch (e) {
       console.error('Failed to confirm all:', e);
@@ -168,8 +164,7 @@ export function useSceneMap() {
   const stats = {
     total: store.testPoints.length,
     document: store.testPoints.filter((p) => p.source === 'document').length,
-    supplemented: store.testPoints.filter((p) => p.source === 'supplemented')
-      .length,
+    supplemented: store.testPoints.filter((p) => p.source === 'supplemented').length,
     missing: store.testPoints.filter((p) => p.source === 'missing').length,
     pending: store.testPoints.filter((p) => p.source === 'pending').length,
     confirmed: store.testPoints.filter((p) => p.status === 'confirmed').length,

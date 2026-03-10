@@ -1,25 +1,15 @@
 'use client';
 
-import {
-  GitBranch,
-  List,
-  Network,
-  ChevronRight,
-  ChevronDown,
-} from 'lucide-react';
+import { ChevronDown, ChevronRight, GitBranch, List, Network } from 'lucide-react';
 import { useState } from 'react';
 import type { TestPointItem, TestPointSource } from '@/stores/scene-map-store';
 import { ExportButtons } from './ExportButtons';
 
 const sourceNodeStyles: Record<TestPointSource, string> = {
-  document:
-    'bg-sy-accent/10 border border-sy-accent/35 text-sy-accent',
-  supplemented:
-    'bg-sy-warn/10 border border-sy-warn/35 text-sy-warn',
-  missing:
-    'bg-sy-danger/10 border-[1.5px] border-sy-danger text-sy-danger font-semibold',
-  pending:
-    'bg-sy-bg-3 border border-dashed border-sy-border-2 text-sy-text-3',
+  document: 'bg-sy-accent/10 border border-sy-accent/35 text-sy-accent',
+  supplemented: 'bg-sy-warn/10 border border-sy-warn/35 text-sy-warn',
+  missing: 'bg-sy-danger/10 border-[1.5px] border-sy-danger text-sy-danger font-semibold',
+  pending: 'bg-sy-bg-3 border border-dashed border-sy-border-2 text-sy-text-3',
 };
 
 const sourceDotColor: Record<TestPointSource, string> = {
@@ -54,9 +44,7 @@ export function SceneMapView({
   stats,
 }: SceneMapViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    new Set(['__all__']),
-  );
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['__all__']));
 
   const grouped: Record<string, TestPointItem[]> = {};
   for (const tp of testPoints) {
@@ -78,10 +66,7 @@ export function SceneMapView({
   const isGroupExpanded = (group: string) =>
     expandedGroups.has('__all__') || expandedGroups.has(group);
 
-  const totalEstimated = testPoints.reduce(
-    (sum, tp) => sum + tp.estimated_cases,
-    0,
-  );
+  const totalEstimated = testPoints.reduce((sum, tp) => sum + tp.estimated_cases, 0);
 
   return (
     <div className="flex flex-col h-full" data-scene-map-view>
@@ -136,21 +121,15 @@ export function SceneMapView({
 
         <div className="grid grid-cols-3 gap-2 mt-3">
           <div className="bg-sy-bg-2 rounded-md p-2 border border-sy-border text-center">
-            <div className="font-mono text-[16px] font-semibold text-sy-accent">
-              {stats.total}
-            </div>
+            <div className="font-mono text-[16px] font-semibold text-sy-accent">{stats.total}</div>
             <div className="text-[10px] text-sy-text-3">测试点</div>
           </div>
           <div className="bg-sy-bg-2 rounded-md p-2 border border-sy-border text-center">
-            <div className="font-mono text-[16px] font-semibold text-sy-text">
-              {totalEstimated}
-            </div>
+            <div className="font-mono text-[16px] font-semibold text-sy-text">{totalEstimated}</div>
             <div className="text-[10px] text-sy-text-3">预计用例</div>
           </div>
           <div className="bg-sy-bg-2 rounded-md p-2 border border-sy-border text-center">
-            <div className="font-mono text-[16px] font-semibold text-sy-warn">
-              {stats.missing}
-            </div>
+            <div className="font-mono text-[16px] font-semibold text-sy-warn">{stats.missing}</div>
             <div className="text-[10px] text-sy-text-3">缺失</div>
           </div>
         </div>
@@ -167,9 +146,7 @@ export function SceneMapView({
           ] as const
         ).map((item) => (
           <div key={item.source} className="flex items-center gap-1.5 text-[10px] text-sy-text-3">
-            <div
-              className={`w-2 h-2 rounded-full ${sourceDotColor[item.source]}`}
-            />
+            <div className={`w-2 h-2 rounded-full ${sourceDotColor[item.source]}`} />
             {item.label}
           </div>
         ))}
@@ -181,9 +158,7 @@ export function SceneMapView({
       {/* Tree / List view */}
       <div className="flex-1 overflow-y-auto p-3">
         {testPoints.length === 0 ? (
-          <div className="text-center py-8 text-sy-text-3 text-[12px]">
-            暂无测试点数据
-          </div>
+          <div className="text-center py-8 text-sy-text-3 text-[12px]">暂无测试点数据</div>
         ) : viewMode === 'tree' ? (
           /* Tree View */
           <div className="space-y-1">
@@ -196,24 +171,16 @@ export function SceneMapView({
                     onClick={() => toggleGroupExpand(group)}
                     className="flex items-center gap-1.5 w-full px-2 py-1.5 rounded-md text-[11px] font-semibold text-sy-text-2 hover:bg-sy-bg-2 transition-colors"
                   >
-                    {isExpanded ? (
-                      <ChevronDown size={12} />
-                    ) : (
-                      <ChevronRight size={12} />
-                    )}
+                    {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                     <GitBranch size={11} className="text-sy-accent" />
                     <span>{group}</span>
-                    <span className="ml-auto font-mono text-sy-text-3">
-                      {points.length}
-                    </span>
+                    <span className="ml-auto font-mono text-sy-text-3">{points.length}</span>
                   </button>
 
                   {isExpanded && (
                     <div className="ml-3 pl-3 border-l border-sy-border">
                       {points.map((tp, i) => {
-                        const nodeStyle =
-                          sourceNodeStyles[tp.source] ??
-                          sourceNodeStyles.pending;
+                        const nodeStyle = sourceNodeStyles[tp.source] ?? sourceNodeStyles.pending;
                         const isSelected = selectedPointId === tp.id;
                         const isLast = i === points.length - 1;
 
@@ -257,8 +224,7 @@ export function SceneMapView({
           /* List View */
           <div className="space-y-1">
             {testPoints.map((tp) => {
-              const nodeStyle =
-                sourceNodeStyles[tp.source] ?? sourceNodeStyles.pending;
+              const nodeStyle = sourceNodeStyles[tp.source] ?? sourceNodeStyles.pending;
               const isSelected = selectedPointId === tp.id;
 
               return (
@@ -267,21 +233,15 @@ export function SceneMapView({
                   type="button"
                   onClick={() => onSelectPoint(tp.id)}
                   className={`w-full text-left flex items-center gap-2 px-2.5 py-2 rounded-md text-[11px] transition-all ${nodeStyle} ${
-                    isSelected
-                      ? 'ring-1 ring-sy-accent/40 shadow-sm'
-                      : 'hover:opacity-80'
+                    isSelected ? 'ring-1 ring-sy-accent/40 shadow-sm' : 'hover:opacity-80'
                   }`}
                 >
                   <div
                     className={`w-2 h-2 rounded-full shrink-0 ${sourceDotColor[tp.source] ?? sourceDotColor.pending}`}
                   />
                   <span className="flex-1 truncate">{tp.title}</span>
-                  <span className="font-mono text-[10px] opacity-60 shrink-0">
-                    {tp.group_name}
-                  </span>
-                  <span className="font-mono text-[10px] opacity-70 shrink-0">
-                    {tp.priority}
-                  </span>
+                  <span className="font-mono text-[10px] opacity-60 shrink-0">{tp.group_name}</span>
+                  <span className="font-mono text-[10px] opacity-70 shrink-0">{tp.priority}</span>
                 </button>
               );
             })}

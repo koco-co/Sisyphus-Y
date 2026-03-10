@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, FileText, Braces, Image, Loader2 } from 'lucide-react';
+import { Braces, Download, FileText, Image, Loader2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
@@ -11,19 +11,6 @@ interface ExportButtonsProps {
 }
 
 type ExportFormat = 'json' | 'markdown' | 'png';
-
-async function downloadBlob(url: string, filename: string) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Export failed: ${res.status}`);
-  const blob = await res.blob();
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  URL.revokeObjectURL(a.href);
-  a.remove();
-}
 
 async function exportAsJson(reqId: string) {
   const res = await fetch(`${API_BASE}/scene-map/${reqId}`);
@@ -163,9 +150,7 @@ export function ExportButtons({ requirementId, disabled }: ExportButtonsProps) {
           </button>
         ))}
       </div>
-      {error && (
-        <p className="text-[10px] text-sy-danger mt-1.5">{error}</p>
-      )}
+      {error && <p className="text-[10px] text-sy-danger mt-1.5">{error}</p>}
     </div>
   );
 }

@@ -5,10 +5,7 @@ import type { CaseFilters } from './types';
 
 interface FilterToolbarProps {
   filters: CaseFilters;
-  onFilterChange: <K extends keyof CaseFilters>(
-    key: K,
-    value: CaseFilters[K],
-  ) => void;
+  onFilterChange: <K extends keyof CaseFilters>(key: K, value: CaseFilters[K]) => void;
   onClearAll: () => void;
 }
 
@@ -31,8 +28,9 @@ const filterGroups: {
     options: [
       { value: '', label: '全部状态' },
       { value: 'draft', label: '草稿' },
-      { value: 'pending_review', label: '待审' },
-      { value: 'active', label: '通过' },
+      { value: 'review', label: '待审' },
+      { value: 'approved', label: '通过' },
+      { value: 'rejected', label: '驳回' },
       { value: 'deprecated', label: '废弃' },
     ],
   },
@@ -41,28 +39,26 @@ const filterGroups: {
     options: [
       { value: '', label: '全部类型' },
       { value: 'functional', label: '功能' },
+      { value: 'normal', label: '功能（旧数据）' },
       { value: 'boundary', label: '边界' },
       { value: 'exception', label: '异常' },
       { value: 'performance', label: '性能' },
       { value: 'security', label: '安全' },
+      { value: 'compatibility', label: '兼容' },
     ],
   },
   {
     key: 'source',
     options: [
       { value: '', label: '全部来源' },
-      { value: 'ai', label: 'AI 生成' },
+      { value: 'ai_generated', label: 'AI 生成' },
       { value: 'manual', label: '手动创建' },
       { value: 'imported', label: '导入' },
     ],
   },
 ];
 
-export function FilterToolbar({
-  filters,
-  onFilterChange,
-  onClearAll,
-}: FilterToolbarProps) {
+export function FilterToolbar({ filters, onFilterChange, onClearAll }: FilterToolbarProps) {
   const activeCount = Object.values(filters).filter(Boolean).length;
 
   return (
@@ -78,9 +74,7 @@ export function FilterToolbar({
           value={filters[key]}
           onChange={(e) => onFilterChange(key, e.target.value)}
           className={`px-2.5 py-1.5 text-[12px] bg-bg2 border rounded-md outline-none focus:border-accent transition-colors cursor-pointer ${
-            filters[key]
-              ? 'border-accent/40 text-text'
-              : 'border-border text-text2'
+            filters[key] ? 'border-accent/40 text-text' : 'border-border text-text2'
           }`}
         >
           {options.map((opt) => (

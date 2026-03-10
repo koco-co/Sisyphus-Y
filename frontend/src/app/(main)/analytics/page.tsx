@@ -1,18 +1,27 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { BarChart3, Loader2, RefreshCw } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { DashboardOverview } from './_components/DashboardOverview';
 import { useAnalyticsData } from './_components/useAnalyticsData';
 
-const TrendCharts = dynamic(
-  () => import('./_components/TrendCharts').then((m) => m.TrendCharts),
-  { loading: () => <div className="h-[280px] flex items-center justify-center text-text3"><Loader2 className="w-5 h-5 animate-spin" /></div> },
-);
+const TrendCharts = dynamic(() => import('./_components/TrendCharts').then((m) => m.TrendCharts), {
+  loading: () => (
+    <div className="h-[280px] flex items-center justify-center text-text3">
+      <Loader2 className="w-5 h-5 animate-spin" />
+    </div>
+  ),
+});
 
 const DistributionCharts = dynamic(
   () => import('./_components/DistributionCharts').then((m) => m.DistributionCharts),
-  { loading: () => <div className="h-[280px] flex items-center justify-center text-text3"><Loader2 className="w-5 h-5 animate-spin" /></div> },
+  {
+    loading: () => (
+      <div className="h-[280px] flex items-center justify-center text-text3">
+        <Loader2 className="w-5 h-5 animate-spin" />
+      </div>
+    ),
+  },
 );
 
 export default function AnalyticsPage() {

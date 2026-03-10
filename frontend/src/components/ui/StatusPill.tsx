@@ -1,14 +1,11 @@
 type PillVariant = 'green' | 'amber' | 'red' | 'blue' | 'purple' | 'gray';
 
 const variantStyles: Record<PillVariant, string> = {
-  green:
-    'bg-[rgba(0,217,163,0.12)] text-accent border border-[rgba(0,217,163,0.25)]',
-  amber:
-    'bg-[rgba(245,158,11,0.1)] text-amber border border-[rgba(245,158,11,0.25)]',
-  red: 'bg-[rgba(244,63,94,0.1)] text-red border border-[rgba(244,63,94,0.25)]',
-  blue: 'bg-[rgba(59,130,246,0.1)] text-blue border border-[rgba(59,130,246,0.25)]',
-  purple:
-    'bg-[rgba(168,85,247,0.1)] text-purple border border-[rgba(168,85,247,0.25)]',
+  green: 'bg-accent/10 text-accent border border-accent/25',
+  amber: 'bg-amber/10 text-amber border border-amber/25',
+  red: 'bg-red/10 text-red border border-red/25',
+  blue: 'bg-blue/10 text-blue border border-blue/25',
+  purple: 'bg-purple/10 text-purple border border-purple/25',
   gray: 'bg-bg3 text-text3 border border-border',
 };
 

@@ -1,34 +1,24 @@
 'use client';
 
-import {
-  AlertTriangle,
-  Clock,
-  FileText,
-  GitCompareArrows,
-  History,
-  Loader2,
-  Target,
-} from 'lucide-react';
-import { useEffect } from 'react';
+import { Clock, FileText, GitCompareArrows, History, Loader2, Target } from 'lucide-react';
 import { ThreeColLayout } from '@/components/layout/ThreeColLayout';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useDiff } from '@/hooks/useDiff';
+import type { DiffHistoryItem } from '@/stores/diff-store';
 import { AffectedCases } from './_components/AffectedCases';
 import { DiffView } from './_components/DiffView';
 import { RegenerateButton } from './_components/RegenerateButton';
 import { SemanticAnalysis } from './_components/SemanticAnalysis';
 import { SuggestedPoints } from './_components/SuggestedPoints';
 import { VersionSelector } from './_components/VersionSelector';
-import type { DiffHistoryItem } from '@/stores/diff-store';
 
 // ── Impact level helpers ──
 
 const impactVariant = (level: string) =>
   level === 'high' ? 'danger' : level === 'medium' ? 'warning' : 'success';
 
-const impactLabel = (level: string) =>
-  level === 'high' ? '高' : level === 'medium' ? '中' : '低';
+const impactLabel = (level: string) => (level === 'high' ? '高' : level === 'medium' ? '中' : '低');
 
 // ── Left Column ──
 
@@ -60,10 +50,14 @@ function LeftColumn() {
       <div className="p-3 space-y-3 flex-1 overflow-y-auto">
         {/* Requirement ID input */}
         <div>
-          <label className="block text-[10px] font-semibold text-text3 uppercase tracking-wider mb-1">
+          <label
+            htmlFor="diff-requirement-id"
+            className="block text-[10px] font-semibold text-text3 uppercase tracking-wider mb-1"
+          >
             需求 ID
           </label>
           <input
+            id="diff-requirement-id"
             type="text"
             value={requirementId ?? ''}
             onChange={(e) => setRequirementId(e.target.value || null)}
@@ -224,9 +218,7 @@ function CenterColumn() {
               AI 摘要
             </span>
           </div>
-          <p className="text-[12.5px] text-text2 leading-relaxed">
-            {diffResult.summary}
-          </p>
+          <p className="text-[12.5px] text-text2 leading-relaxed">{diffResult.summary}</p>
         </div>
       )}
 
@@ -240,9 +232,7 @@ function CenterColumn() {
       )}
 
       {/* Semantic analysis */}
-      {diffResult.semantic_impact && (
-        <SemanticAnalysis impact={diffResult.semantic_impact} />
-      )}
+      {diffResult.semantic_impact && <SemanticAnalysis impact={diffResult.semantic_impact} />}
 
       {/* Suggested test points */}
       {suggestions.length > 0 && (
@@ -261,8 +251,7 @@ function CenterColumn() {
 // ── Right Column ──
 
 function RightColumn() {
-  const { diffResult, regenerating, regenerateProgress, regenerateCases } =
-    useDiff();
+  const { diffResult, regenerating, regenerateProgress, regenerateCases } = useDiff();
 
   const cases = diffResult?.affected_test_cases?.items ?? [];
   const testPointCount = diffResult?.affected_test_points?.count ?? 0;
@@ -274,9 +263,7 @@ function RightColumn() {
         <Target className="w-3.5 h-3.5 text-amber" />
         <span>受影响用例</span>
         {cases.length > 0 && (
-          <span className="ml-auto font-mono text-[10px] text-text3">
-            {cases.length}
-          </span>
+          <span className="ml-auto font-mono text-[10px] text-text3">{cases.length}</span>
         )}
       </div>
 

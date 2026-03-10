@@ -77,8 +77,6 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
     })),
   updateDocumentStatus: (id, status) =>
     set((state) => ({
-      documents: state.documents.map((d) =>
-        d.id === id ? { ...d, vector_status: status } : d,
-      ),
+      documents: state.documents.map((d) => (d.id === id ? { ...d, vector_status: status } : d)),
     })),
 }));

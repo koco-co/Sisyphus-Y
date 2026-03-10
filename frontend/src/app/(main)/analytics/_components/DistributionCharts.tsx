@@ -21,14 +21,19 @@ const PRIORITY_LABELS: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   draft: '草稿',
+  review: '评审中',
   active: '有效',
+  approved: '已通过',
+  rejected: '已驳回',
   deprecated: '废弃',
   pending_review: '待审核',
 };
 
 const SOURCE_LABELS: Record<string, string> = {
   ai: 'AI 生成',
+  ai_generated: 'AI 生成',
   manual: '手动创建',
+  imported: '导入',
 };
 
 interface DistributionChartsProps {

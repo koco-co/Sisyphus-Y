@@ -11,9 +11,10 @@ const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 interface UploadDialogProps {
   open: boolean;
   onClose: () => void;
-  onUpload: (file: File) => Promise<void>;
+  onUpload: (file: File) => Promise<boolean>;
   isUploading: boolean;
   uploadProgress: number;
+  uploadError?: string | null;
 }
 
 export default function UploadDialog({
@@ -22,6 +23,7 @@ export default function UploadDialog({
   onUpload,
   isUploading,
   uploadProgress,
+  uploadError,
 }: UploadDialogProps) {
   const [dragOver, setDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -65,9 +67,11 @@ export default function UploadDialog({
 
   const handleSubmit = useCallback(async () => {
     if (!selectedFile) return;
-    await onUpload(selectedFile);
-    setSelectedFile(null);
-    onClose();
+    const success = await onUpload(selectedFile);
+    if (success) {
+      setSelectedFile(null);
+      onClose();
+    }
   }, [selectedFile, onUpload, onClose]);
 
   const handleClose = useCallback(() => {
@@ -82,16 +86,19 @@ export default function UploadDialog({
   return (
     <>
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label="关闭上传弹窗"
         style={{
           position: 'fixed',
           inset: 0,
           background: 'rgba(0,0,0,0.5)',
           backdropFilter: 'blur(4px)',
           zIndex: 200,
+          border: 'none',
+          padding: 0,
         }}
         onClick={handleClose}
-        onKeyDown={() => {}}
       />
 
       {/* Dialog */}
@@ -137,7 +144,8 @@ export default function UploadDialog({
         </div>
 
         {/* Drop zone */}
-        <div
+        <button
+          type="button"
           onDragOver={(e) => {
             e.preventDefault();
             setDragOver(true);
@@ -153,6 +161,7 @@ export default function UploadDialog({
             cursor: 'pointer',
             transition: 'all 0.15s',
             background: dragOver ? 'var(--accent-d)' : 'var(--bg2)',
+            width: '100%',
           }}
         >
           <FileUp
@@ -170,28 +179,25 @@ export default function UploadDialog({
           </div>
 
           {selectedFile && (
-            <div
-              className="pill pill-green"
-              style={{ marginTop: 12 }}
-            >
+            <div className="pill pill-green" style={{ marginTop: 12 }}>
               {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
             </div>
           )}
+        </button>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={ACCEPT_STRING}
-            style={{ display: 'none' }}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleFile(file);
-            }}
-          />
-        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={ACCEPT_STRING}
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFile(file);
+          }}
+        />
 
         {/* Error */}
-        {error && (
+        {(error || uploadError) && (
           <div
             style={{
               marginTop: 12,
@@ -203,7 +209,7 @@ export default function UploadDialog({
               color: 'var(--red)',
             }}
           >
-            {error}
+            {error || uploadError}
           </div>
         )}
 
@@ -222,15 +228,10 @@ export default function UploadDialog({
                 size={14}
                 style={{ color: 'var(--accent)', animation: 'spin 1s linear infinite' }}
               />
-              <span style={{ fontSize: 12, color: 'var(--text2)' }}>
-                上传中 {uploadProgress}%
-              </span>
+              <span style={{ fontSize: 12, color: 'var(--text2)' }}>上传中 {uploadProgress}%</span>
             </div>
             <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{ width: `${uploadProgress}%` }}
-              />
+              <div className="progress-fill" style={{ width: `${uploadProgress}%` }} />
             </div>
           </div>
         )}
@@ -244,12 +245,7 @@ export default function UploadDialog({
             marginTop: 20,
           }}
         >
-          <button
-            type="button"
-            className="btn"
-            onClick={handleClose}
-            disabled={isUploading}
-          >
+          <button type="button" className="btn" onClick={handleClose} disabled={isUploading}>
             取消
           </button>
           <button

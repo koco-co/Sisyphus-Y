@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useRef, type DragEvent, type ClipboardEvent } from 'react';
-import { Upload, X, FileText, Image, Loader2, CheckCircle } from 'lucide-react';
+import { CheckCircle, FileText, Image, Loader2, Upload, X } from 'lucide-react';
+import { type ClipboardEvent, type DragEvent, useCallback, useRef, useState } from 'react';
 
 interface UploadedFile {
   id: string;
@@ -15,7 +15,7 @@ interface UploadedFile {
 }
 
 interface FileUploadProps {
-  onUpload?: (file: File) => Promise<string | void>;
+  onUpload?: (file: File) => Promise<unknown>;
   accept?: string;
   maxSizeMB?: number;
 }
@@ -28,11 +28,7 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function FileUpload({
-  onUpload,
-  accept = ACCEPT_DEFAULT,
-  maxSizeMB = 20,
-}: FileUploadProps) {
+export function FileUpload({ onUpload, accept = ACCEPT_DEFAULT, maxSizeMB = 20 }: FileUploadProps) {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -155,16 +151,18 @@ export function FileUpload({
   return (
     <div onPaste={handlePaste}>
       {/* Drop zone */}
-      <div
+      <button
+        type="button"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onClick={() => inputRef.current?.click()}
         className={`
           flex flex-col items-center justify-center gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors
-          ${dragging
-            ? 'border-accent bg-accent/5'
-            : 'border-border hover:border-border2 hover:bg-bg2'
+          ${
+            dragging
+              ? 'border-accent bg-accent/5'
+              : 'border-border hover:border-border2 hover:bg-bg2'
           }
         `}
       >
@@ -176,19 +174,17 @@ export function FileUpload({
           <p className="text-[11px] text-text3 mt-1">
             支持 docx、pdf、md、txt、图片，最大 {maxSizeMB}MB
           </p>
-          <p className="text-[10.5px] text-text3 mt-0.5">
-            也可直接粘贴剪贴板中的图片
-          </p>
+          <p className="text-[10.5px] text-text3 mt-0.5">也可直接粘贴剪贴板中的图片</p>
         </div>
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept}
-          multiple
-          className="hidden"
-          onChange={handleInputChange}
-        />
-      </div>
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        multiple
+        className="hidden"
+        onChange={handleInputChange}
+      />
 
       {/* File list */}
       {files.length > 0 && (
@@ -200,10 +196,11 @@ export function FileUpload({
             >
               {/* Preview / Icon */}
               {f.previewUrl ? (
-                <img
-                  src={f.previewUrl}
-                  alt={f.name}
-                  className="w-10 h-10 rounded object-cover shrink-0 border border-border"
+                <div
+                  role="img"
+                  aria-label={f.name}
+                  className="w-10 h-10 rounded object-cover shrink-0 border border-border bg-cover bg-center"
+                  style={{ backgroundImage: `url("${f.previewUrl}")` }}
                 />
               ) : (
                 <div className="w-10 h-10 rounded bg-bg3 border border-border flex items-center justify-center shrink-0">
@@ -225,10 +222,7 @@ export function FileUpload({
                 </div>
                 {f.status === 'uploading' && (
                   <div className="progress-bar mt-1.5">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${f.progress}%` }}
-                    />
+                    <div className="progress-fill" style={{ width: `${f.progress}%` }} />
                   </div>
                 )}
                 {f.status === 'error' && (
@@ -241,9 +235,7 @@ export function FileUpload({
                 {f.status === 'uploading' && (
                   <Loader2 size={14} className="text-accent animate-spin" />
                 )}
-                {f.status === 'done' && (
-                  <CheckCircle size={14} className="text-accent" />
-                )}
+                {f.status === 'done' && <CheckCircle size={14} className="text-accent" />}
                 {f.status === 'error' && (
                   <button
                     type="button"

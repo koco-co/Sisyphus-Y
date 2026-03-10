@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  ArrowDown,
-  ArrowUp,
-  Loader2,
-  Plus,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { ArrowDown, ArrowUp, Loader2, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { TestCaseDetail, TestCaseStep } from './types';
 
@@ -28,24 +21,22 @@ interface CaseEditFormProps {
 const priorityOptions = ['P0', 'P1', 'P2', 'P3'];
 const statusOptions = [
   { value: 'draft', label: '草稿' },
-  { value: 'pending_review', label: '待审' },
-  { value: 'active', label: '通过' },
+  { value: 'review', label: '待审' },
+  { value: 'approved', label: '通过' },
+  { value: 'rejected', label: '驳回' },
   { value: 'deprecated', label: '废弃' },
 ];
 const typeOptions = [
   { value: 'functional', label: '功能' },
+  { value: 'normal', label: '功能（旧数据）' },
   { value: 'boundary', label: '边界' },
   { value: 'exception', label: '异常' },
   { value: 'performance', label: '性能' },
   { value: 'security', label: '安全' },
+  { value: 'compatibility', label: '兼容' },
 ];
 
-export function CaseEditForm({
-  testCase,
-  open,
-  onSave,
-  onCancel,
-}: CaseEditFormProps) {
+export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState('P2');
@@ -76,16 +67,11 @@ export function CaseEditForm({
   }, [open]);
 
   const handleAddStep = () => {
-    setSteps((prev) => [
-      ...prev,
-      { no: prev.length + 1, action: '', expected_result: '' },
-    ]);
+    setSteps((prev) => [...prev, { no: prev.length + 1, action: '', expected_result: '' }]);
   };
 
   const handleRemoveStep = (idx: number) => {
-    setSteps((prev) =>
-      prev.filter((_, i) => i !== idx).map((s, i) => ({ ...s, no: i + 1 })),
-    );
+    setSteps((prev) => prev.filter((_, i) => i !== idx).map((s, i) => ({ ...s, no: i + 1 })));
   };
 
   const handleMoveStep = (idx: number, dir: 'up' | 'down') => {
@@ -98,14 +84,8 @@ export function CaseEditForm({
     });
   };
 
-  const handleStepChange = (
-    idx: number,
-    field: 'action' | 'expected_result',
-    value: string,
-  ) => {
-    setSteps((prev) =>
-      prev.map((s, i) => (i === idx ? { ...s, [field]: value } : s)),
-    );
+  const handleStepChange = (idx: number, field: 'action' | 'expected_result', value: string) => {
+    setSteps((prev) => prev.map((s, i) => (i === idx ? { ...s, [field]: value } : s)));
   };
 
   const handleSubmit = async () => {
@@ -129,8 +109,12 @@ export function CaseEditForm({
 
   const inputClass =
     'w-full px-3 py-2 text-[12.5px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 outline-none focus:border-accent transition-colors';
-  const labelClass =
-    'block text-[11.5px] font-semibold text-text3 uppercase tracking-wider mb-1.5';
+  const labelClass = 'block text-[11.5px] font-semibold text-text3 uppercase tracking-wider mb-1.5';
+  const titleId = 'testcase-edit-title';
+  const priorityId = 'testcase-edit-priority';
+  const statusId = 'testcase-edit-status';
+  const caseTypeId = 'testcase-edit-type';
+  const preconditionId = 'testcase-edit-precondition';
 
   return (
     <dialog
@@ -157,8 +141,11 @@ export function CaseEditForm({
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
           {/* Title */}
           <div>
-            <label className={labelClass}>用例标题</label>
+            <label className={labelClass} htmlFor={titleId}>
+              用例标题
+            </label>
             <input
+              id={titleId}
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -170,8 +157,11 @@ export function CaseEditForm({
           {/* Row: Priority + Status + Type */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className={labelClass}>优先级</label>
+              <label className={labelClass} htmlFor={priorityId}>
+                优先级
+              </label>
               <select
+                id={priorityId}
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
                 className={inputClass}
@@ -184,8 +174,11 @@ export function CaseEditForm({
               </select>
             </div>
             <div>
-              <label className={labelClass}>状态</label>
+              <label className={labelClass} htmlFor={statusId}>
+                状态
+              </label>
               <select
+                id={statusId}
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 className={inputClass}
@@ -198,8 +191,11 @@ export function CaseEditForm({
               </select>
             </div>
             <div>
-              <label className={labelClass}>类型</label>
+              <label className={labelClass} htmlFor={caseTypeId}>
+                类型
+              </label>
               <select
+                id={caseTypeId}
                 value={caseType}
                 onChange={(e) => setCaseType(e.target.value)}
                 className={inputClass}
@@ -215,8 +211,11 @@ export function CaseEditForm({
 
           {/* Precondition */}
           <div>
-            <label className={labelClass}>前置条件</label>
+            <label className={labelClass} htmlFor={preconditionId}>
+              前置条件
+            </label>
             <textarea
+              id={preconditionId}
               value={precondition}
               onChange={(e) => setPrecondition(e.target.value)}
               placeholder="测试执行前需要满足的条件..."
@@ -228,9 +227,7 @@ export function CaseEditForm({
           {/* Steps */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className={labelClass}>
-                测试步骤 ({steps.length})
-              </label>
+              <p className={labelClass}>测试步骤 ({steps.length})</p>
               <button
                 type="button"
                 onClick={handleAddStep}
@@ -262,22 +259,14 @@ export function CaseEditForm({
                       <input
                         type="text"
                         value={step.action}
-                        onChange={(e) =>
-                          handleStepChange(idx, 'action', e.target.value)
-                        }
+                        onChange={(e) => handleStepChange(idx, 'action', e.target.value)}
                         placeholder="操作步骤..."
                         className="w-full px-2.5 py-1.5 text-[12px] bg-bg1 border border-border rounded text-text placeholder:text-text3 outline-none focus:border-accent transition-colors"
                       />
                       <input
                         type="text"
                         value={step.expected_result}
-                        onChange={(e) =>
-                          handleStepChange(
-                            idx,
-                            'expected_result',
-                            e.target.value,
-                          )
-                        }
+                        onChange={(e) => handleStepChange(idx, 'expected_result', e.target.value)}
                         placeholder="预期结果..."
                         className="w-full px-2.5 py-1.5 text-[12px] bg-bg1 border border-border rounded text-accent/80 placeholder:text-text3 outline-none focus:border-accent transition-colors"
                       />

@@ -9,7 +9,7 @@ import {
   Shield,
   TestTube,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { PendingItem } from '@/stores/dashboard-store';
 
 const TYPE_CONFIG: Record<
@@ -53,8 +53,6 @@ interface PendingItemsProps {
 }
 
 export default function PendingItems({ items }: PendingItemsProps) {
-  const router = useRouter();
-
   if (items.length === 0) {
     return (
       <div>
@@ -63,14 +61,9 @@ export default function PendingItems({ items }: PendingItemsProps) {
           <span style={{ fontSize: 13, fontWeight: 600 }}>待处理事项</span>
         </div>
         <div className="card">
-          <div
-            className="empty-state"
-            style={{ padding: 24 }}
-          >
+          <div className="empty-state" style={{ padding: 24 }}>
             <CheckCircle2 size={36} style={{ color: 'var(--accent)' }} />
-            <p style={{ fontWeight: 500, color: 'var(--accent)' }}>
-              所有事项已处理完毕
-            </p>
+            <p style={{ fontWeight: 500, color: 'var(--accent)' }}>所有事项已处理完毕</p>
           </div>
         </div>
       </div>
@@ -93,20 +86,16 @@ export default function PendingItems({ items }: PendingItemsProps) {
           const Icon = cfg.icon;
 
           return (
-            <div
+            <Link
+              href={item.link}
               key={item.id}
               className="card card-hover"
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 12,
-                cursor: 'pointer',
                 padding: '12px 16px',
                 borderLeft: `3px solid ${PRIORITY_COLOR[item.priority] || 'var(--border)'}`,
-              }}
-              onClick={() => router.push(item.link)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') router.push(item.link);
               }}
             >
               <div
@@ -153,11 +142,8 @@ export default function PendingItems({ items }: PendingItemsProps) {
                 </div>
               </div>
 
-              <ArrowRight
-                size={14}
-                style={{ color: 'var(--text3)', flexShrink: 0 }}
-              />
-            </div>
+              <ArrowRight size={14} style={{ color: 'var(--text3)', flexShrink: 0 }} />
+            </Link>
           );
         })}
       </div>

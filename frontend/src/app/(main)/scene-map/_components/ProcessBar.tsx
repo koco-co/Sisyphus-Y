@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Check, FileSearch, Sparkles, CheckCircle, Lock } from 'lucide-react';
+import { ArrowRight, Check, CheckCircle, FileSearch, Lock, Sparkles } from 'lucide-react';
 import type { SceneMapStep } from '@/stores/scene-map-store';
 
 const steps: { key: SceneMapStep; label: string; icon: typeof FileSearch }[] = [
@@ -37,11 +37,7 @@ export function ProcessBar({ currentStep }: ProcessBarProps) {
                     : 'bg-sy-bg-2 text-sy-text-3'
               }`}
             >
-              {isDone ? (
-                <Check size={12} strokeWidth={3} />
-              ) : (
-                <Icon size={12} />
-              )}
+              {isDone ? <Check size={12} strokeWidth={3} /> : <Icon size={12} />}
               {step.label}
             </div>
             {i < steps.length - 1 && (

@@ -1,19 +1,9 @@
 'use client';
 
-import {
-  FileText,
-  HardDrive,
-  Loader2,
-  RotateCcw,
-  Search,
-  Trash2,
-} from 'lucide-react';
+import { FileText, HardDrive, Loader2, RotateCcw, Search, Trash2 } from 'lucide-react';
 import type { KnowledgeDocument, VectorStatus } from '@/stores/knowledge-store';
 
-const STATUS_CONFIG: Record<
-  VectorStatus,
-  { label: string; pillClass: string }
-> = {
+const STATUS_CONFIG: Record<VectorStatus, { label: string; pillClass: string }> = {
   completed: { label: '已完成', pillClass: 'pill pill-green' },
   processing: { label: '处理中', pillClass: 'pill pill-amber' },
   failed: { label: '失败', pillClass: 'pill pill-red' },
@@ -40,12 +30,7 @@ interface DocTableProps {
   onRebuildIndex: (id: string) => void;
 }
 
-export default function DocTable({
-  documents,
-  loading,
-  onDelete,
-  onRebuildIndex,
-}: DocTableProps) {
+export default function DocTable({ documents, loading, onDelete, onRebuildIndex }: DocTableProps) {
   if (loading) {
     return (
       <div className="card" style={{ padding: 40, textAlign: 'center' }}>
@@ -56,9 +41,7 @@ export default function DocTable({
             animation: 'spin 1s linear infinite',
           }}
         />
-        <p style={{ fontSize: 12, color: 'var(--text3)', marginTop: 8 }}>
-          加载文档列表...
-        </p>
+        <p style={{ fontSize: 12, color: 'var(--text3)', marginTop: 8 }}>加载文档列表...</p>
       </div>
     );
   }
@@ -109,10 +92,7 @@ export default function DocTable({
                       gap: 8,
                     }}
                   >
-                    <FileText
-                      size={14}
-                      style={{ color: 'var(--accent)', flexShrink: 0 }}
-                    />
+                    <FileText size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
                     <span
                       style={{
                         fontWeight: 500,
@@ -128,9 +108,7 @@ export default function DocTable({
                   </div>
                 </td>
                 <td>
-                  <span className="pill pill-gray">
-                    {TYPE_LABELS[ext] || ext.toUpperCase()}
-                  </span>
+                  <span className="pill pill-gray">{TYPE_LABELS[ext] || ext.toUpperCase()}</span>
                 </td>
                 <td>
                   <span className="mono" style={{ fontSize: 11 }}>
@@ -140,10 +118,7 @@ export default function DocTable({
                 <td>
                   <span className={statusCfg.pillClass}>
                     {doc.vector_status === 'processing' && (
-                      <Loader2
-                        size={10}
-                        style={{ animation: 'spin 1s linear infinite' }}
-                      />
+                      <Loader2 size={10} style={{ animation: 'spin 1s linear infinite' }} />
                     )}
                     {statusCfg.label}
                   </span>
@@ -154,10 +129,7 @@ export default function DocTable({
                     style={{
                       fontSize: 12,
                       fontWeight: 600,
-                      color:
-                        doc.hit_count > 0
-                          ? 'var(--accent)'
-                          : 'var(--text3)',
+                      color: doc.hit_count > 0 ? 'var(--accent)' : 'var(--text3)',
                     }}
                   >
                     {doc.hit_count}
@@ -188,8 +160,7 @@ export default function DocTable({
                       type="button"
                       className="btn btn-ghost btn-sm btn-danger"
                       onClick={() => {
-                        if (confirm('确定删除该文档？删除后向量数据也会清除。'))
-                          onDelete(doc.id);
+                        if (confirm('确定删除该文档？删除后向量数据也会清除。')) onDelete(doc.id);
                       }}
                       title="删除"
                     >

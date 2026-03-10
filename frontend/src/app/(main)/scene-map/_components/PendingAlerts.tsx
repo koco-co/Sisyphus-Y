@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  AlertOctagon,
-  Check,
-  EyeOff,
-  Edit3,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
+import { AlertOctagon, Check, ChevronDown, ChevronUp, Edit3, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import type { TestPointItem } from '@/stores/scene-map-store';
 
@@ -60,9 +53,7 @@ export function PendingAlerts({
               className="flex items-center gap-2 p-2.5 rounded-md bg-sy-bg-1/60 border border-sy-danger/15"
             >
               <div className="w-1.5 h-1.5 rounded-full bg-sy-danger shrink-0" />
-              <span className="flex-1 text-[12px] text-sy-text truncate">
-                {tp.title}
-              </span>
+              <span className="flex-1 text-[12px] text-sy-text truncate">{tp.title}</span>
               {!isLocked && (
                 <div className="flex items-center gap-1">
                   <button

@@ -7,98 +7,130 @@ import {
   FileText,
   Filter,
   LayoutTemplate,
+  Loader2,
+  type LucideIcon,
   RotateCcw,
   Search,
   Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-interface RecycleItem {
-  id: string;
-  name: string;
-  type: 'requirement' | 'testcase' | 'template' | 'knowledge';
-  deletedAt: string;
-  deletedBy: string;
-  expiresIn: string;
-}
+import { ApiError, type RecycleItemResponse, recycleApi } from '@/lib/api';
 
-const typeConfig = {
-  requirement: { label: '需求', icon: FileText, pill: 'pill-blue' },
-  testcase: { label: '用例', icon: ClipboardList, pill: 'pill-green' },
-  template: { label: '模板', icon: LayoutTemplate, pill: 'pill-purple' },
-  knowledge: { label: '知识库', icon: BookOpen, pill: 'pill-amber' },
-};
+type RecycleType = 'product' | 'iteration' | 'requirement' | 'testcase' | 'template' | 'knowledge';
+type FilterType = 'all' | RecycleType;
 
-const mockItems: RecycleItem[] = [
+const typeConfig: Partial<Record<RecycleType, { label: string; icon: LucideIcon; pill: string }>> =
   {
-    id: '1',
-    name: '用户登录功能需求 v1',
-    type: 'requirement',
-    deletedAt: '2024-01-15 14:30',
-    deletedBy: '张三',
-    expiresIn: '25 天',
-  },
-  {
-    id: '2',
-    name: 'TC-LOGIN-001 密码错误测试',
-    type: 'testcase',
-    deletedAt: '2024-01-15 13:20',
-    deletedBy: '李四',
-    expiresIn: '25 天',
-  },
-  {
-    id: '3',
-    name: 'TC-LOGIN-002 验证码过期',
-    type: 'testcase',
-    deletedAt: '2024-01-14 16:45',
-    deletedBy: '张三',
-    expiresIn: '24 天',
-  },
-  {
-    id: '4',
-    name: '接口测试模板（旧版）',
-    type: 'template',
-    deletedAt: '2024-01-13 10:00',
-    deletedBy: '王五',
-    expiresIn: '23 天',
-  },
-  {
-    id: '5',
-    name: '测试规范文档 v1.0',
-    type: 'knowledge',
-    deletedAt: '2024-01-12 09:15',
-    deletedBy: '张三',
-    expiresIn: '22 天',
-  },
-  {
-    id: '6',
-    name: '数据导入需求',
-    type: 'requirement',
-    deletedAt: '2024-01-10 11:30',
-    deletedBy: '李四',
-    expiresIn: '20 天',
-  },
+    requirement: { label: '需求', icon: FileText, pill: 'pill-blue' },
+    testcase: { label: '用例', icon: ClipboardList, pill: 'pill-green' },
+    template: { label: '模板', icon: LayoutTemplate, pill: 'pill-purple' },
+    knowledge: { label: '知识库', icon: BookOpen, pill: 'pill-amber' },
+  };
+
+const filterOptions: Array<{ value: FilterType; label: string }> = [
+  { value: 'all', label: '全部' },
+  { value: 'requirement', label: '需求' },
+  { value: 'testcase', label: '用例' },
+  { value: 'template', label: '模板' },
+  { value: 'knowledge', label: '知识库' },
 ];
 
-type FilterType = 'all' | 'requirement' | 'testcase' | 'template' | 'knowledge';
+function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    return error.message || `请求失败（${error.status}）`;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return '操作失败，请稍后重试。';
+}
+
+function formatDeletedAt(value: string): string {
+  if (!value) {
+    return '--';
+  }
+  return new Date(value).toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function getExpiresIn(value: string): string {
+  if (!value) {
+    return '--';
+  }
+  const diffDays = Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000);
+  const remainingDays = Math.max(30 - diffDays, 0);
+  return `${remainingDays} 天`;
+}
+
+function getTypeConfig(type: string) {
+  return (
+    typeConfig[type as RecycleType] || {
+      label: type,
+      icon: Trash2,
+      pill: 'pill-gray',
+    }
+  );
+}
 
 export default function RecyclePage() {
-  const [items, setItems] = useState(mockItems);
+  const [items, setItems] = useState<RecycleItemResponse[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [acting, setActing] = useState(false);
 
-  const filtered = items.filter((item) => {
-    if (filter !== 'all' && item.type !== filter) return false;
-    if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
+  const loadItems = useCallback(async (activeFilter: FilterType) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await recycleApi.list({
+        entityType: activeFilter === 'all' ? undefined : activeFilter,
+        pageSize: 100,
+      });
+      setItems(data.items);
+      setTotal(data.total);
+    } catch (err) {
+      setItems([]);
+      setTotal(0);
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+    void loadItems(filter);
+  }, [filter, loadItems]);
+
+  const filtered = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    return items.filter((item) => {
+      if (!keyword) {
+        return true;
+      }
+      return item.name.toLowerCase().includes(keyword);
+    });
+  }, [items, search]);
+
+  const visibleCount = search.trim() ? filtered.length : total;
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -106,43 +138,67 @@ export default function RecyclePage() {
   const toggleSelectAll = () => {
     if (selectedIds.size === filtered.length) {
       setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filtered.map((i) => i.id)));
+      return;
+    }
+    setSelectedIds(new Set(filtered.map((item) => item.id)));
+  };
+
+  const handleRestore = async (ids: string[]) => {
+    if (ids.length === 0 || acting) {
+      return;
+    }
+    const targets = filtered.filter((item) => ids.includes(item.id));
+    setActing(true);
+    setError(null);
+    try {
+      if (targets.length === 1) {
+        await recycleApi.restore(targets[0].entity_type, targets[0].id);
+      } else {
+        await recycleApi.batchRestore(
+          targets.map((item) => ({
+            entityType: item.entity_type,
+            entityId: item.id,
+          })),
+        );
+      }
+      setSelectedIds(new Set());
+      await loadItems(filter);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setActing(false);
     }
   };
 
-  const restore = (ids: string[]) => {
-    setItems((prev) => prev.filter((i) => !ids.includes(i.id)));
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      for (const id of ids) next.delete(id);
-      return next;
-    });
+  const handlePermanentDelete = async (ids: string[]) => {
+    if (ids.length === 0 || acting) {
+      return;
+    }
+    if (!window.confirm(`确认永久删除选中的 ${ids.length} 项吗？此操作不可恢复。`)) {
+      return;
+    }
+    const targets = filtered.filter((item) => ids.includes(item.id));
+    setActing(true);
+    setError(null);
+    try {
+      await Promise.all(
+        targets.map((item) => recycleApi.permanentDelete(item.entity_type, item.id)),
+      );
+      setSelectedIds(new Set());
+      await loadItems(filter);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setActing(false);
+    }
   };
-
-  const permanentDelete = (ids: string[]) => {
-    setItems((prev) => prev.filter((i) => !ids.includes(i.id)));
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      for (const id of ids) next.delete(id);
-      return next;
-    });
-  };
-
-  const filterOptions: { value: FilterType; label: string }[] = [
-    { value: 'all', label: '全部' },
-    { value: 'requirement', label: '需求' },
-    { value: 'testcase', label: '用例' },
-    { value: 'template', label: '模板' },
-    { value: 'knowledge', label: '知识库' },
-  ];
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Trash2 className="w-5 h-5 text-text3" />
         <h1 className="font-display text-lg font-bold text-text">回收站</h1>
-        <span className="pill pill-gray text-[10px]">{items.length} 项</span>
+        <span className="pill pill-gray text-[10px]">{visibleCount} 项</span>
       </div>
 
       <div className="alert-banner mb-6">
@@ -152,33 +208,39 @@ export default function RecyclePage() {
         </span>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 mb-4">
+      {error && (
+        <div className="alert-banner mb-6">
+          <AlertTriangle className="w-4 h-4" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text3" />
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="搜索已删除项..."
             className="input w-full pl-8"
           />
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <Filter className="w-3.5 h-3.5 text-text3" />
-          {filterOptions.map((f) => (
+          {filterOptions.map((item) => (
             <button
               type="button"
-              key={f.value}
+              key={item.value}
               className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                filter === f.value
+                filter === item.value
                   ? 'bg-accent/10 text-accent border border-accent/25'
                   : 'text-text3 hover:text-text2 hover:bg-bg2 border border-transparent'
               }`}
-              onClick={() => setFilter(f.value)}
+              onClick={() => setFilter(item.value)}
             >
-              {f.label}
+              {item.label}
             </button>
           ))}
         </div>
@@ -189,28 +251,44 @@ export default function RecyclePage() {
             <button
               type="button"
               className="btn btn-sm"
-              onClick={() => restore(Array.from(selectedIds))}
+              onClick={() => void handleRestore(Array.from(selectedIds))}
+              disabled={acting}
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              {acting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="w-3.5 h-3.5" />
+              )}
               恢复
             </button>
             <button
               type="button"
               className="btn btn-sm btn-danger"
-              onClick={() => permanentDelete(Array.from(selectedIds))}
+              onClick={() => void handlePermanentDelete(Array.from(selectedIds))}
+              disabled={acting}
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              {acting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
               永久删除
             </button>
           </div>
         )}
       </div>
 
-      {/* Table */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="py-16 text-center">
+          <Loader2 className="w-8 h-8 text-text3 mx-auto mb-3 animate-spin" />
+          <p className="text-[13px] text-text3">正在加载已删除项目...</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="py-16 text-center">
           <Trash2 className="w-12 h-12 text-text3 mx-auto mb-3 opacity-20" />
-          <p className="text-[13px] text-text3">回收站为空</p>
+          <p className="text-[13px] text-text3">
+            {search.trim() ? '暂无匹配的已删除项目' : '回收站为空'}
+          </p>
           <p className="text-[12px] text-text3/60 mt-1">删除的项目将显示在这里</p>
         </div>
       ) : (
@@ -227,16 +305,15 @@ export default function RecyclePage() {
                   />
                 </th>
                 <th>名称</th>
-                <th className="w-20">类型</th>
+                <th className="w-24">类型</th>
                 <th className="w-36">删除时间</th>
-                <th className="w-20">删除者</th>
-                <th className="w-20">过期</th>
+                <th className="w-20">剩余保留</th>
                 <th className="w-28">操作</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((item) => {
-                const config = typeConfig[item.type];
+                const config = getTypeConfig(item.entity_type);
                 const Icon = config.icon;
                 return (
                   <tr key={item.id}>
@@ -257,24 +334,27 @@ export default function RecyclePage() {
                     <td>
                       <span className={`pill ${config.pill} text-[10px]`}>{config.label}</span>
                     </td>
-                    <td className="font-mono text-[11px]">{item.deletedAt}</td>
-                    <td className="text-text3">{item.deletedBy}</td>
-                    <td className="text-text3 font-mono text-[11px]">{item.expiresIn}</td>
+                    <td className="font-mono text-[11px]">{formatDeletedAt(item.deleted_at)}</td>
+                    <td className="text-text3 font-mono text-[11px]">
+                      {getExpiresIn(item.deleted_at)}
+                    </td>
                     <td>
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
                           className="btn btn-sm btn-ghost"
-                          onClick={() => restore([item.id])}
+                          onClick={() => void handleRestore([item.id])}
                           title="恢复"
+                          disabled={acting}
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           className="btn btn-sm btn-ghost text-red"
-                          onClick={() => permanentDelete([item.id])}
+                          onClick={() => void handlePermanentDelete([item.id])}
                           title="永久删除"
+                          disabled={acting}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

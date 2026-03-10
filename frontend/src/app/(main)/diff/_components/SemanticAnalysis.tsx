@@ -1,17 +1,14 @@
 'use client';
 
-import { Brain, Plus, Pencil, Trash2, Wrench, Shield } from 'lucide-react';
-import type { SemanticImpact, SemanticChange } from '@/stores/diff-store';
+import { Brain, Pencil, Plus, Shield, Trash2, Wrench } from 'lucide-react';
+import type { SemanticChange, SemanticImpact } from '@/stores/diff-store';
 
 interface SemanticAnalysisProps {
   impact: SemanticImpact;
   className?: string;
 }
 
-const changeTypeConfig: Record<
-  string,
-  { label: string; icon: typeof Plus; badgeClass: string }
-> = {
+const changeTypeConfig: Record<string, { label: string; icon: typeof Plus; badgeClass: string }> = {
   added: {
     label: '新增功能',
     icon: Plus,
@@ -54,20 +51,14 @@ function ChangeItem({ change }: { change: SemanticChange }) {
         {config.label}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[12.5px] text-text leading-relaxed">
-          {change.description}
-        </p>
+        <p className="text-[12.5px] text-text leading-relaxed">{change.description}</p>
         {change.impact_scope && (
-          <p className="text-[11px] text-text3 mt-1">
-            影响范围：{change.impact_scope}
-          </p>
+          <p className="text-[11px] text-text3 mt-1">影响范围：{change.impact_scope}</p>
         )}
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
         <span className={`w-1.5 h-1.5 rounded-full ${severity.dotClass}`} />
-        <span className="text-[10px] font-mono text-text3">
-          {severity.label}
-        </span>
+        <span className="text-[10px] font-mono text-text3">{severity.label}</span>
       </div>
     </div>
   );
@@ -105,14 +96,15 @@ export function SemanticAnalysis({ impact, className = '' }: SemanticAnalysisPro
         )}
 
         {/* Changes list */}
-        {impact.changes.map((change, i) => (
-          <ChangeItem key={`change-${i}`} change={change} />
+        {impact.changes.map((change) => (
+          <ChangeItem
+            key={`${change.type}-${change.severity}-${change.description}-${change.impact_scope ?? 'none'}`}
+            change={change}
+          />
         ))}
 
         {impact.changes.length === 0 && (
-          <p className="text-[12px] text-text3 text-center py-4">
-            未检测到语义级变更
-          </p>
+          <p className="text-[12px] text-text3 text-center py-4">未检测到语义级变更</p>
         )}
       </div>
     </div>

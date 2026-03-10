@@ -66,8 +66,10 @@ export default function WorkbenchPage() {
   });
 
   useEffect(() => {
-    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
-  }, [thinkingText, contentText, messages]);
+    const shouldAutoScroll = messages.length > 0 || Boolean(thinkingText) || Boolean(contentText);
+    if (!shouldAutoScroll || !chatRef.current) return;
+    chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  }, [contentText, messages.length, thinkingText]);
 
   async function sendMessage() {
     if (!input.trim() || isStreaming || !sessionId) return;
@@ -161,11 +163,11 @@ export default function WorkbenchPage() {
               </div>
             )}
             {messages.map((m) => (
-              <ChatBubble key={m.id} role={m.role} content={m.content} />
+              <ChatBubble key={m.id} sender={m.role} content={m.content} />
             ))}
             <ThinkingStream text={thinkingText} isStreaming={isStreaming && !contentText} />
             {contentText && (
-              <ChatBubble role="ai" content={contentText} isStreaming={isStreaming} />
+              <ChatBubble sender="ai" content={contentText} isStreaming={isStreaming} />
             )}
           </div>
           <div className="border-t border-border p-3 flex gap-2">

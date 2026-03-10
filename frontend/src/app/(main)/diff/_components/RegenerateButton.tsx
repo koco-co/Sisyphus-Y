@@ -51,9 +51,7 @@ export function RegenerateButton({
       {regenerating && (
         <div className="mt-2 space-y-1">
           <ProgressBar value={progress} variant="accent" />
-          <p className="text-[10px] text-text3 text-center font-mono">
-            {progress}%
-          </p>
+          <p className="text-[10px] text-text3 text-center font-mono">{progress}%</p>
         </div>
       )}
 

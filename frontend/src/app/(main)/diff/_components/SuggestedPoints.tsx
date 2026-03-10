@@ -35,9 +35,7 @@ export function SuggestedPoints({
   onDismiss,
   className = '',
 }: SuggestedPointsProps) {
-  const activeItems = suggestions.filter(
-    (_, i) => !adoptedIds.has(i) && !dismissedIds.has(i),
-  );
+  const activeItems = suggestions.filter((_, i) => !adoptedIds.has(i) && !dismissedIds.has(i));
   const adoptedCount = adoptedIds.size;
 
   return (
@@ -45,9 +43,7 @@ export function SuggestedPoints({
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-bg1">
         <Lightbulb className="w-3.5 h-3.5 text-amber" />
-        <span className="text-[12px] font-medium text-text2">
-          建议新增测试点
-        </span>
+        <span className="text-[12px] font-medium text-text2">建议新增测试点</span>
         <span className="ml-auto font-mono text-[10px] text-text3">
           {adoptedCount} 已采纳 / {suggestions.length} 总计
         </span>
@@ -62,7 +58,7 @@ export function SuggestedPoints({
 
           return (
             <div
-              key={`sug-${index}`}
+              key={`${item.category}-${item.priority}-${item.name}-${item.description ?? 'none'}`}
               className={`p-3 rounded-lg border transition-all ${
                 adopted
                   ? 'bg-accent/5 border-accent/25 opacity-70'
@@ -72,12 +68,8 @@ export function SuggestedPoints({
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[12.5px] font-medium text-text">
-                      {item.name}
-                    </span>
-                    <StatusBadge
-                      variant={priorityVariant[item.priority] ?? 'info'}
-                    >
+                    <span className="text-[12.5px] font-medium text-text">{item.name}</span>
+                    <StatusBadge variant={priorityVariant[item.priority] ?? 'info'}>
                       {item.priority}
                     </StatusBadge>
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-bg3 text-text3 border border-border">
@@ -90,9 +82,7 @@ export function SuggestedPoints({
                     </p>
                   )}
                   {item.reason && (
-                    <p className="text-[11px] text-text3 mt-1 italic">
-                      理由：{item.reason}
-                    </p>
+                    <p className="text-[11px] text-text3 mt-1 italic">理由：{item.reason}</p>
                   )}
                 </div>
 
@@ -128,18 +118,14 @@ export function SuggestedPoints({
         })}
 
         {activeItems.length === 0 && suggestions.length > 0 && (
-          <p className="text-[12px] text-text3 text-center py-6">
-            所有建议已处理
-          </p>
+          <p className="text-[12px] text-text3 text-center py-6">所有建议已处理</p>
         )}
 
         {suggestions.length === 0 && (
           <div className="flex flex-col items-center py-8 text-text3">
             <Lightbulb className="w-8 h-8 opacity-30 mb-2" />
             <span className="text-[12px]">暂无新增建议</span>
-            <span className="text-[11px] text-text3/60 mt-0.5">
-              计算 Diff 后将自动生成
-            </span>
+            <span className="text-[11px] text-text3/60 mt-0.5">计算 Diff 后将自动生成</span>
           </div>
         )}
       </div>

@@ -5,23 +5,22 @@ import {
   ChevronRight,
   FileText,
   FolderOpen,
-  GitBranch,
   Loader2,
-  Map,
+  Map as MapIcon,
   RefreshCw,
   Sparkles,
 } from 'lucide-react';
+import { StreamCursor } from '@/components/workspace/StreamCursor';
 import { useRequirementTree } from '@/hooks/useRequirementTree';
 import { useSceneMap } from '@/hooks/useSceneMap';
-import { StreamCursor } from '@/components/workspace/StreamCursor';
 import type { Requirement } from '@/lib/api';
-import { ProcessBar } from './_components/ProcessBar';
-import { TestPointList } from './_components/TestPointList';
-import { TestPointDetail } from './_components/TestPointDetail';
+import { ConfirmAllButton } from './_components/ConfirmAllButton';
 import { GranularityBanner } from './_components/GranularityBanner';
 import { PendingAlerts } from './_components/PendingAlerts';
+import { ProcessBar } from './_components/ProcessBar';
 import { SceneMapView } from './_components/SceneMapView';
-import { ConfirmAllButton } from './_components/ConfirmAllButton';
+import { TestPointDetail } from './_components/TestPointDetail';
+import { TestPointList } from './_components/TestPointList';
 
 export default function SceneMapPage() {
   const tree = useRequirementTree();
@@ -32,8 +31,7 @@ export default function SceneMapPage() {
     await sm.selectRequirement(req.id, req.title || req.req_id);
   };
 
-  const selectedPoint =
-    sm.testPoints.find((p) => p.id === sm.selectedPointId) ?? null;
+  const selectedPoint = sm.testPoints.find((p) => p.id === sm.selectedPointId) ?? null;
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 49px)' }}>
@@ -49,7 +47,7 @@ export default function SceneMapPage() {
         <div className="border-r border-sy-border bg-sy-bg-1 flex flex-col overflow-hidden">
           {/* Requirement tree */}
           <div className="col-header">
-            <Map size={14} className="text-sy-accent" />
+            <MapIcon size={14} className="text-sy-accent" />
             <span>需求导航</span>
           </div>
 
@@ -152,9 +150,7 @@ export default function SceneMapPage() {
                 </button>
 
                 {sm.selectedReqTitle && (
-                  <span className="text-[12px] text-sy-text-3 truncate">
-                    {sm.selectedReqTitle}
-                  </span>
+                  <span className="text-[12px] text-sy-text-3 truncate">{sm.selectedReqTitle}</span>
                 )}
               </div>
 
@@ -216,7 +212,7 @@ export default function SceneMapPage() {
             </>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-sy-text-3">
-              <Map size={64} className="opacity-15 mb-4" />
+              <MapIcon size={64} className="opacity-15 mb-4" />
               <p className="text-[16px] font-medium">请从左侧选择一个需求</p>
               <p className="text-[13px] opacity-60 mt-1">查看或生成测试场景地图</p>
             </div>

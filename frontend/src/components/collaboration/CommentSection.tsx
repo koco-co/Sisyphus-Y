@@ -1,12 +1,7 @@
 'use client';
 
 import { Loader2, MessageSquare, Send, User } from 'lucide-react';
-import {
-  useCallback,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from 'react';
+import { type KeyboardEvent, useCallback, useRef, useState } from 'react';
 
 export interface Comment {
   id: string;
@@ -37,10 +32,13 @@ function timeAgo(dateStr: string): string {
 
 function highlightMentions(text: string) {
   const parts = text.split(/(@\w+)/g);
-  return parts.map((part, i) => {
+  let cursor = 0;
+  return parts.map((part) => {
+    const key = `${part}-${cursor}`;
+    cursor += part.length;
     if (part.startsWith('@')) {
       return (
-        <span key={`${part}-${i}`} className="text-sy-accent font-medium">
+        <span key={key} className="text-sy-accent font-medium">
           {part}
         </span>
       );
@@ -110,30 +108,27 @@ export function CommentSection({
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-sy-border">
         <MessageSquare size={14} className="text-sy-accent" />
-        <span className="text-[12px] font-semibold text-sy-text-2">
-          评论 ({comments.length})
-        </span>
+        <span className="text-[12px] font-semibold text-sy-text-2">评论 ({comments.length})</span>
       </div>
 
       {/* Comment list */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3" role="list" aria-label="评论列表">
+      <ul className="flex-1 overflow-y-auto p-3 space-y-3" aria-label="评论列表">
         {loading ? (
-          <div className="flex justify-center py-6">
+          <li className="flex justify-center py-6">
             <Loader2 size={20} className="animate-spin text-sy-text-3" />
-          </div>
+          </li>
         ) : comments.length === 0 ? (
-          <div className="text-center py-6 text-[12px] text-sy-text-3">
-            暂无评论
-          </div>
+          <li className="text-center py-6 text-[12px] text-sy-text-3">暂无评论</li>
         ) : (
           comments.map((c) => (
-            <div key={c.id} className="flex gap-2.5" role="listitem">
+            <li key={c.id} className="flex gap-2.5">
               <div className="w-7 h-7 rounded-full bg-sy-bg-3 border border-sy-border flex items-center justify-center shrink-0">
                 {c.avatar_url ? (
-                  <img
-                    src={c.avatar_url}
-                    alt={c.author}
-                    className="w-full h-full rounded-full object-cover"
+                  <div
+                    role="img"
+                    aria-label={`${c.author} 头像`}
+                    className="w-full h-full rounded-full bg-cover bg-center"
+                    style={{ backgroundImage: `url("${c.avatar_url}")` }}
                   />
                 ) : (
                   <User size={13} className="text-sy-text-3" />
@@ -141,9 +136,7 @@ export function CommentSection({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[12px] font-semibold text-sy-text">
-                    {c.author}
-                  </span>
+                  <span className="text-[12px] font-semibold text-sy-text">{c.author}</span>
                   <span className="text-[10px] font-mono text-sy-text-3">
                     {timeAgo(c.created_at)}
                   </span>
@@ -152,10 +145,10 @@ export function CommentSection({
                   {highlightMentions(c.content)}
                 </p>
               </div>
-            </div>
+            </li>
           ))
         )}
-      </div>
+      </ul>
 
       {/* Input area */}
       <div className="px-3 pb-3 pt-1 border-t border-sy-border relative">
@@ -181,7 +174,7 @@ export function CommentSection({
             value={input}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="输入评论... 按 @ 提及用户"
+            placeholder={`${currentUser}，输入评论... 按 @ 提及用户`}
             rows={2}
             className="input flex-1 resize-none text-[12.5px] min-h-[56px]"
             aria-label="评论输入框"
@@ -193,16 +186,10 @@ export function CommentSection({
             className="flex items-center justify-center w-8 h-8 rounded-md bg-sy-accent text-black disabled:opacity-40 hover:bg-sy-accent-2 transition-colors shrink-0"
             aria-label="发送评论"
           >
-            {submitting ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Send size={14} />
-            )}
+            {submitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
           </button>
         </div>
-        <p className="text-[10px] text-sy-text-3 mt-1">
-          Ctrl+Enter 发送
-        </p>
+        <p className="text-[10px] text-sy-text-3 mt-1">Ctrl+Enter 发送</p>
       </div>
     </div>
   );

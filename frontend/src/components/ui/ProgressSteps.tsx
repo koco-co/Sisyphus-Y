@@ -20,9 +20,7 @@ export function ProgressSteps({ steps }: { steps: Step[] }) {
             {step.status === 'done' && <span>✓</span>}
             {step.label}
           </div>
-          {i < steps.length - 1 && (
-            <span className="text-border2 text-[12px] mx-1">›</span>
-          )}
+          {i < steps.length - 1 && <span className="text-border2 text-[12px] mx-1">›</span>}
         </div>
       ))}
     </div>

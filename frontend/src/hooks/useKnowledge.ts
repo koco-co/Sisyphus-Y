@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, API_BASE } from '@/lib/api';
+import { API_BASE, api } from '@/lib/api';
 import {
-  useKnowledgeStore,
   type KnowledgeDocument,
   type RAGSearchResult,
+  useKnowledgeStore,
 } from '@/stores/knowledge-store';
 
 interface PaginatedDocs {
@@ -15,24 +15,47 @@ export function useKnowledge() {
   const store = useKnowledgeStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {
+    documents,
+    total,
+    typeFilter,
+    statusFilter,
+    searchQuery,
+    isUploading,
+    uploadProgress,
+    ragQuery,
+    ragResults,
+    ragSearching,
+    setDocuments,
+    setUploading,
+    setUploadProgress,
+    removeDocument,
+    updateDocumentStatus,
+    setRagSearching,
+    setRagResults,
+    setTypeFilter,
+    setStatusFilter,
+    setSearchQuery,
+    setRagQuery,
+  } = store;
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
-      if (store.typeFilter) params.set('doc_type', store.typeFilter);
-      if (store.statusFilter) params.set('vector_status', store.statusFilter);
-      if (store.searchQuery) params.set('q', store.searchQuery);
+      if (typeFilter) params.set('doc_type', typeFilter);
+      if (statusFilter) params.set('vector_status', statusFilter);
+      if (searchQuery) params.set('q', searchQuery);
       const data = await api.get<PaginatedDocs>(`/knowledge/?${params}`);
-      store.setDocuments(data.items || [], data.total || 0);
+      setDocuments(data.items || [], data.total || 0);
     } catch (e) {
       console.error('Failed to fetch documents:', e);
       setError('加载文档列表失败');
     } finally {
       setLoading(false);
     }
-  }, [store.typeFilter, store.statusFilter, store.searchQuery]);
+  }, [typeFilter, statusFilter, searchQuery, setDocuments]);
 
   useEffect(() => {
     fetchDocuments();
@@ -40,7 +63,8 @@ export function useKnowledge() {
 
   const uploadFile = useCallback(
     async (file: File) => {
-      store.setUploading(true, 0);
+      setError(null);
+      setUploading(true, 0);
       try {
         const formData = new FormData();
         formData.append('file', file);
@@ -49,7 +73,7 @@ export function useKnowledge() {
         await new Promise<void>((resolve, reject) => {
           xhr.upload.addEventListener('progress', (e) => {
             if (e.lengthComputable) {
-              store.setUploadProgress(Math.round((e.loaded / e.total) * 100));
+              setUploadProgress(Math.round((e.loaded / e.total) * 100));
             }
           });
           xhr.addEventListener('load', () => {
@@ -62,78 +86,87 @@ export function useKnowledge() {
         });
 
         await fetchDocuments();
+        return true;
       } catch (e) {
         console.error('Upload failed:', e);
         setError('文件上传失败');
+        return false;
       } finally {
-        store.setUploading(false, 0);
+        setUploading(false, 0);
       }
     },
-    [fetchDocuments],
+    [fetchDocuments, setUploadProgress, setUploading],
   );
 
   const deleteDocument = useCallback(
     async (id: string) => {
+      setError(null);
       try {
         await api.delete(`/knowledge/${id}`);
-        store.removeDocument(id);
+        removeDocument(id);
       } catch (e) {
         console.error('Delete failed:', e);
         setError('删除文档失败');
       }
     },
-    [],
+    [removeDocument],
   );
 
   const rebuildIndex = useCallback(
     async (id: string) => {
+      setError(null);
       try {
-        store.updateDocumentStatus(id, 'processing');
+        updateDocumentStatus(id, 'processing');
         await api.post(`/knowledge/${id}/reindex`);
+        await fetchDocuments();
       } catch (e) {
         console.error('Reindex failed:', e);
-        store.updateDocumentStatus(id, 'failed');
+        updateDocumentStatus(id, 'failed');
         setError('重建索引失败');
       }
     },
-    [],
+    [fetchDocuments, updateDocumentStatus],
   );
 
-  const searchRAG = useCallback(async (query: string) => {
-    if (!query.trim()) return;
-    store.setRagSearching(true);
-    store.setRagResults([]);
-    try {
-      const results = await api.post<RAGSearchResult[]>('/knowledge/search', {
-        query,
-        top_k: 5,
-      });
-      store.setRagResults(results);
-    } catch (e) {
-      console.error('RAG search failed:', e);
-      setError('检索失败');
-    } finally {
-      store.setRagSearching(false);
-    }
-  }, []);
+  const searchRAG = useCallback(
+    async (query: string) => {
+      if (!query.trim()) return;
+      setError(null);
+      setRagSearching(true);
+      setRagResults([]);
+      try {
+        const results = await api.post<RAGSearchResult[]>('/knowledge/search', {
+          query,
+          top_k: 5,
+        });
+        setRagResults(results);
+      } catch (e) {
+        console.error('RAG search failed:', e);
+        setError('检索失败');
+      } finally {
+        setRagSearching(false);
+      }
+    },
+    [setRagResults, setRagSearching],
+  );
 
   return {
-    documents: store.documents,
-    total: store.total,
+    documents,
+    total,
     loading,
     error,
-    typeFilter: store.typeFilter,
-    statusFilter: store.statusFilter,
-    searchQuery: store.searchQuery,
-    isUploading: store.isUploading,
-    uploadProgress: store.uploadProgress,
-    ragQuery: store.ragQuery,
-    ragResults: store.ragResults,
-    ragSearching: store.ragSearching,
-    setTypeFilter: store.setTypeFilter,
-    setStatusFilter: store.setStatusFilter,
-    setSearchQuery: store.setSearchQuery,
-    setRagQuery: store.setRagQuery,
+    typeFilter,
+    statusFilter,
+    searchQuery,
+    isUploading,
+    uploadProgress,
+    ragQuery,
+    ragResults,
+    ragSearching,
+    setTypeFilter,
+    setStatusFilter,
+    setSearchQuery,
+    setRagQuery,
     fetchDocuments,
     uploadFile,
     deleteDocument,

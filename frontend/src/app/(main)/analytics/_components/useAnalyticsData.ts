@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import type { AnalyticsOverview, DistributionItem, TrendData, TrendPoint } from './types';
+import type { AnalyticsOverview, DistributionItem, TrendData } from './types';
 
 const DEFAULT_OVERVIEW: AnalyticsOverview = {
   product_count: 0,
@@ -13,6 +13,23 @@ const DEFAULT_OVERVIEW: AnalyticsOverview = {
   automation_rate: 0,
   quality_score: 0,
 };
+
+function normalizeSourceDistributions(items: DistributionItem[]): DistributionItem[] {
+  const counts = new Map<string, number>();
+
+  for (const item of items) {
+    const raw = String(item.source ?? '');
+    const normalized =
+      raw === 'ai' || raw === 'ai_generated'
+        ? 'ai_generated'
+        : raw === 'user_added'
+          ? 'manual'
+          : raw;
+    counts.set(normalized, (counts.get(normalized) ?? 0) + Number(item.count ?? 0));
+  }
+
+  return Array.from(counts.entries()).map(([source, count]) => ({ source, count }));
+}
 
 export function useAnalyticsData() {
   const [overview, setOverview] = useState<AnalyticsOverview>(DEFAULT_OVERVIEW);
@@ -28,18 +45,20 @@ export function useAnalyticsData() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [ov, pr, st, sr] = await Promise.all([
+      const [ov, pr, st, sr, trendData] = await Promise.all([
         api.get<AnalyticsOverview>('/analytics/overview').catch(() => DEFAULT_OVERVIEW),
         api.get<DistributionItem[]>('/analytics/priority-distribution').catch(() => []),
         api.get<DistributionItem[]>('/analytics/status-distribution').catch(() => []),
         api.get<DistributionItem[]>('/analytics/source-distribution').catch(() => []),
+        api
+          .get<TrendData>('/analytics/trends')
+          .catch(() => ({ case_count_trend: [], pass_rate_trend: [] })),
       ]);
 
-      // Derive quality_score if not provided
       const passRate = ov.pass_rate ?? 0;
       const coverageRate = ov.coverage_rate ?? 0;
       const qualityScore =
-        ov.quality_score ||
+        ov.quality_score ??
         Math.round(
           passRate * 0.4 + coverageRate * 0.4 + (100 - (ov.defect_density ?? 0) * 10) * 0.2,
         );
@@ -47,33 +66,8 @@ export function useAnalyticsData() {
       setOverview({ ...ov, quality_score: Math.min(100, Math.max(0, qualityScore)) });
       setPriority(pr);
       setStatus(st);
-      setSource(sr);
-
-      // Try fetching trends (may not exist yet)
-      try {
-        const trendData = await api.get<TrendData>('/analytics/trends');
-        setTrends(trendData);
-      } catch {
-        // Generate mock trend data for demo
-        const now = new Date();
-        const mockTrend: TrendPoint[] = Array.from({ length: 7 }, (_, i) => {
-          const d = new Date(now);
-          d.setDate(d.getDate() - (6 - i));
-          return {
-            date: `${d.getMonth() + 1}/${d.getDate()}`,
-            value: Math.round(Math.random() * 20 + (ov.testcase_count || 10) * (0.5 + i * 0.08)),
-          };
-        });
-        const mockPassRate: TrendPoint[] = Array.from({ length: 7 }, (_, i) => {
-          const d = new Date(now);
-          d.setDate(d.getDate() - (6 - i));
-          return {
-            date: `${d.getMonth() + 1}/${d.getDate()}`,
-            value: Math.round(60 + Math.random() * 30 + i * 2),
-          };
-        });
-        setTrends({ case_count_trend: mockTrend, pass_rate_trend: mockPassRate });
-      }
+      setSource(normalizeSourceDistributions(sr));
+      setTrends(trendData);
     } finally {
       setLoading(false);
     }
@@ -83,7 +77,7 @@ export function useAnalyticsData() {
     fetchData();
   }, [fetchData]);
 
-  const totalCases = priority.reduce((s, p) => s + p.count, 0) || 1;
+  const totalCases = overview.testcase_count || priority.reduce((s, p) => s + p.count, 0);
 
   return {
     overview,

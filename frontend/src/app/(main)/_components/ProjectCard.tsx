@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { Users } from 'lucide-react';
-import { StatusPill, ProgressBar } from '@/components/ui';
+import Link from 'next/link';
+import { ProgressBar, StatusPill } from '@/components/ui';
 
 interface ProjectCardProps {
   id: string;
@@ -19,7 +19,16 @@ const statusMap = {
   paused: { variant: 'amber' as const, label: '暂停' },
 };
 
-export function ProjectCard({ id, name, iteration, status, totalCases, coverage, pending, members }: ProjectCardProps) {
+export function ProjectCard({
+  id,
+  name,
+  iteration,
+  status,
+  totalCases,
+  coverage,
+  pending,
+  members,
+}: ProjectCardProps) {
   const s = statusMap[status];
   return (
     <Link href={`/requirements?product=${id}`}>
@@ -38,13 +47,17 @@ export function ProjectCard({ id, name, iteration, status, totalCases, coverage,
             { val: pending, label: '待处理', color: pending > 0 ? 'text-amber' : undefined },
           ].map((stat) => (
             <div key={stat.label} className="text-center p-2 bg-bg2 rounded-md">
-              <div className={`font-mono text-[18px] font-semibold ${stat.color ?? 'text-text'}`}>{stat.val}</div>
+              <div className={`font-mono text-[18px] font-semibold ${stat.color ?? 'text-text'}`}>
+                {stat.val}
+              </div>
               <div className="text-[10.5px] text-text3">{stat.label}</div>
             </div>
           ))}
         </div>
         <ProgressBar value={coverage} />
-        <div className="mt-2.5 text-[11.5px] text-text3 flex items-center gap-1"><Users size={12} /> {members.slice(0, 3).join('  ')}</div>
+        <div className="mt-2.5 text-[11.5px] text-text3 flex items-center gap-1">
+          <Users size={12} /> {members.slice(0, 3).join('  ')}
+        </div>
       </div>
     </Link>
   );

@@ -7,7 +7,7 @@ export interface TestCaseStep {
 export interface TestCaseDetail {
   id: string;
   requirement_id: string;
-  test_point_id: string | null;
+  scene_node_id: string | null;
   case_id: string;
   title: string;
   priority: string;
@@ -18,19 +18,14 @@ export interface TestCaseDetail {
   precondition: string | null;
   version: number;
   steps: TestCaseStep[];
+  tags?: string[];
   requirement_title?: string;
   test_point_title?: string;
   created_at: string;
   updated_at: string;
 }
 
-export type SortField =
-  | 'title'
-  | 'priority'
-  | 'status'
-  | 'case_type'
-  | 'source'
-  | 'updated_at';
+export type SortField = 'title' | 'priority' | 'status' | 'case_type' | 'source' | 'updated_at';
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -41,20 +36,17 @@ export interface CaseFilters {
   source: string;
 }
 
-export const priorityVariant: Record<
-  string,
-  'danger' | 'warning' | 'info' | 'gray'
-> = {
+export const priorityVariant: Record<string, 'danger' | 'warning' | 'info' | 'gray'> = {
   P0: 'danger',
   P1: 'warning',
   P2: 'info',
   P3: 'gray',
 };
 
-export const statusVariant: Record<
-  string,
-  'success' | 'warning' | 'danger' | 'gray'
-> = {
+export const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'gray'> = {
+  approved: 'success',
+  review: 'warning',
+  rejected: 'danger',
   active: 'success',
   pending_review: 'warning',
   deprecated: 'danger',
@@ -62,6 +54,9 @@ export const statusVariant: Record<
 };
 
 export const statusLabel: Record<string, string> = {
+  approved: '通过',
+  review: '待审',
+  rejected: '驳回',
   active: '通过',
   pending_review: '待审',
   deprecated: '废弃',
@@ -69,14 +64,17 @@ export const statusLabel: Record<string, string> = {
 };
 
 export const typeLabel: Record<string, string> = {
+  normal: '功能',
   functional: '功能',
   boundary: '边界',
   exception: '异常',
   performance: '性能',
   security: '安全',
+  compatibility: '兼容',
 };
 
 export const sourceLabel: Record<string, string> = {
+  ai_generated: 'AI 生成',
   ai: 'AI 生成',
   manual: '手动',
   imported: '导入',

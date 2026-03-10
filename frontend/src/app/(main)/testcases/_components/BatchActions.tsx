@@ -13,8 +13,9 @@ interface BatchActionsProps {
 
 const statusOptions = [
   { value: 'draft', label: '草稿' },
-  { value: 'pending_review', label: '待审' },
-  { value: 'active', label: '通过' },
+  { value: 'review', label: '待审' },
+  { value: 'approved', label: '通过' },
+  { value: 'rejected', label: '驳回' },
   { value: 'deprecated', label: '废弃' },
 ];
 
@@ -48,11 +49,11 @@ export function BatchActions({
         </button>
         {showStatusMenu && (
           <>
-            <div
+            <button
+              type="button"
               className="fixed inset-0 z-10"
               onClick={() => setShowStatusMenu(false)}
-              onKeyDown={() => {}}
-              role="presentation"
+              aria-label="关闭状态菜单"
             />
             <div className="absolute left-0 top-full mt-1 z-20 bg-bg1 border border-border rounded-lg shadow-[var(--shadow-lg)] py-1 min-w-[120px]">
               {statusOptions.map((opt) => (

@@ -1,24 +1,10 @@
 'use client';
 
-import {
-  ArrowRight,
-  Clock,
-  Edit3,
-  FileText,
-  GitBranch,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { ArrowRight, Clock, Edit3, FileText, GitBranch, Trash2, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import type { TestCaseDetail } from './types';
-import {
-  priorityVariant,
-  statusVariant,
-  statusLabel,
-  typeLabel,
-  sourceLabel,
-} from './types';
+import { priorityVariant, sourceLabel, statusLabel, statusVariant, typeLabel } from './types';
 
 interface CaseDetailDrawerProps {
   testCase: TestCaseDetail | null;
@@ -58,11 +44,11 @@ export function CaseDetailDrawer({
   return (
     <>
       {/* Overlay */}
-      <div
+      <button
+        type="button"
         className="fixed inset-0 z-40 bg-black/40 transition-opacity"
         onClick={onClose}
-        onKeyDown={() => {}}
-        role="presentation"
+        aria-label="关闭用例详情"
       />
 
       {/* Drawer Panel */}
@@ -106,9 +92,7 @@ export function CaseDetailDrawer({
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {/* Badges */}
           <div className="flex flex-wrap gap-2">
-            <StatusBadge
-              variant={priorityVariant[testCase.priority] ?? 'gray'}
-            >
+            <StatusBadge variant={priorityVariant[testCase.priority] ?? 'gray'}>
               {testCase.priority}
             </StatusBadge>
             <StatusBadge variant={statusVariant[testCase.status] ?? 'gray'}>
@@ -119,7 +103,7 @@ export function CaseDetailDrawer({
             </StatusBadge>
             <StatusBadge
               variant={
-                testCase.source === 'ai'
+                testCase.source === 'ai_generated' || testCase.source === 'ai'
                   ? 'info'
                   : testCase.source === 'imported'
                     ? 'purple'
@@ -140,9 +124,7 @@ export function CaseDetailDrawer({
             {testCase.ai_score !== null && (
               <span>
                 AI 评分:{' '}
-                <span className="font-mono text-accent font-semibold">
-                  {testCase.ai_score}
-                </span>
+                <span className="font-mono text-accent font-semibold">{testCase.ai_score}</span>
               </span>
             )}
           </div>
@@ -167,9 +149,7 @@ export function CaseDetailDrawer({
               </h3>
               <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bg2 border border-border text-[12.5px]">
                 <FileText className="w-3.5 h-3.5 text-accent shrink-0" />
-                <span className="text-text2 truncate">
-                  {testCase.requirement_title}
-                </span>
+                <span className="text-text2 truncate">{testCase.requirement_title}</span>
               </div>
             </section>
           )}
@@ -182,9 +162,7 @@ export function CaseDetailDrawer({
               </h3>
               <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bg2 border border-border text-[12.5px]">
                 <GitBranch className="w-3.5 h-3.5 text-accent shrink-0" />
-                <span className="text-text2 truncate">
-                  {testCase.test_point_title}
-                </span>
+                <span className="text-text2 truncate">{testCase.test_point_title}</span>
               </div>
             </section>
           )}
@@ -201,13 +179,9 @@ export function CaseDetailDrawer({
                     key={step.no}
                     className="flex gap-2.5 p-3 rounded-lg bg-bg2 border border-border/60 text-[12.5px]"
                   >
-                    <span className="font-mono text-text3 shrink-0 w-5 text-right">
-                      {step.no}.
-                    </span>
+                    <span className="font-mono text-text3 shrink-0 w-5 text-right">{step.no}.</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-text2 leading-relaxed">
-                        {step.action}
-                      </p>
+                      <p className="text-text2 leading-relaxed">{step.action}</p>
                       <p className="flex items-start gap-1 mt-1 text-[11.5px] text-accent/80">
                         <ArrowRight className="w-3 h-3 mt-0.5 shrink-0" />
                         <span>{step.expected_result}</span>

@@ -74,9 +74,7 @@ export const useSceneMapStore = create<SceneMapState>((set) => ({
   setTestPoints: (points) =>
     set((s) => ({
       testPoints: points,
-      checkedPointIds: new Set(
-        points.filter((p) => p.status === 'confirmed').map((p) => p.id),
-      ),
+      checkedPointIds: new Set(points.filter((p) => p.status === 'confirmed').map((p) => p.id)),
       currentStep: points.length > 0 ? 'confirm' : s.currentStep,
     })),
   selectPoint: (id) => set({ selectedPointId: id }),
@@ -93,12 +91,9 @@ export const useSceneMapStore = create<SceneMapState>((set) => ({
     })),
   updatePoint: (id, updates) =>
     set((s) => ({
-      testPoints: s.testPoints.map((p) =>
-        p.id === id ? { ...p, ...updates } : p,
-      ),
+      testPoints: s.testPoints.map((p) => (p.id === id ? { ...p, ...updates } : p)),
     })),
-  addPoint: (point) =>
-    set((s) => ({ testPoints: [...s.testPoints, point] })),
+  addPoint: (point) => set((s) => ({ testPoints: [...s.testPoints, point] })),
   removePoint: (id) =>
     set((s) => ({
       testPoints: s.testPoints.filter((p) => p.id !== id),
@@ -106,9 +101,7 @@ export const useSceneMapStore = create<SceneMapState>((set) => ({
     })),
   confirmPoint: (id) =>
     set((s) => ({
-      testPoints: s.testPoints.map((p) =>
-        p.id === id ? { ...p, status: 'confirmed' } : p,
-      ),
+      testPoints: s.testPoints.map((p) => (p.id === id ? { ...p, status: 'confirmed' } : p)),
       checkedPointIds: new Set([...s.checkedPointIds, id]),
     })),
   ignorePoint: (id) =>

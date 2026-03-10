@@ -1,6 +1,6 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { requirementsApi, type RequirementDetail, type RequirementVersion } from '@/lib/api';
+import { type RequirementDetail, type RequirementVersion, requirementsApi } from '@/lib/api';
 import { apiClient } from '@/lib/api-client';
 
 interface TestPointItem {
@@ -22,6 +22,12 @@ interface TestCaseItem {
 export function useRequirement(reqId: string | undefined) {
   const queryClient = useQueryClient();
   const [uploadProgress, setUploadProgress] = useState(false);
+  const requireReqId = useCallback(() => {
+    if (!reqId) {
+      throw new Error('Requirement ID is required');
+    }
+    return reqId;
+  }, [reqId]);
 
   const requirementQuery = useQuery({
     queryKey: ['requirement', reqId],
@@ -52,7 +58,7 @@ export function useRequirement(reqId: string | undefined) {
 
   const updateMutation = useMutation({
     mutationFn: (data: Parameters<typeof requirementsApi.update>[1]) =>
-      requirementsApi.update(reqId!, data),
+      requirementsApi.update(requireReqId(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requirement', reqId] });
       queryClient.invalidateQueries({ queryKey: ['requirement-versions', reqId] });
@@ -60,7 +66,7 @@ export function useRequirement(reqId: string | undefined) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => requirementsApi.delete(reqId!),
+    mutationFn: () => requirementsApi.delete(requireReqId()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requirements'] });
     },

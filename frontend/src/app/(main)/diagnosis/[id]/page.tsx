@@ -1,5 +1,5 @@
 'use client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { ChatBubble, ProgressSteps, StatusPill, ThinkingStream } from '@/components/ui';
@@ -65,8 +65,10 @@ export default function DiagnosisPage() {
   });
 
   useEffect(() => {
-    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
-  }, [thinkingText, contentText, messages]);
+    const shouldAutoScroll = messages.length > 0 || Boolean(thinkingText) || Boolean(contentText);
+    if (!shouldAutoScroll || !chatRef.current) return;
+    chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  }, [contentText, messages.length, thinkingText]);
 
   async function runDiagnosis() {
     await streamSSE(`/diagnosis/${id}/run`, {});
@@ -78,10 +80,11 @@ export default function DiagnosisPage() {
     setInput('');
     setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: msg }]);
     await streamSSE(`/diagnosis/${id}/chat`, { message: msg, round_num: messages.length + 1 });
-    if (contentText) {
+    const latestContent = useStreamStore.getState().contentText;
+    if (latestContent) {
       setMessages((prev) => [
         ...prev,
-        { id: (Date.now() + 1).toString(), role: 'ai', content: contentText },
+        { id: (Date.now() + 1).toString(), role: 'ai', content: latestContent },
       ]);
     }
   }
@@ -162,11 +165,15 @@ export default function DiagnosisPage() {
         <div className="bg-bg1 border border-border rounded-[10px] flex flex-col overflow-hidden">
           <div ref={chatRef} className="flex-1 overflow-y-auto p-4">
             {messages.map((m) => (
-              <ChatBubble key={m.id} role={m.role === 'user' ? 'user' : 'ai'} content={m.content} />
+              <ChatBubble
+                key={m.id}
+                sender={m.role === 'user' ? 'user' : 'ai'}
+                content={m.content}
+              />
             ))}
             <ThinkingStream text={thinkingText} isStreaming={isStreaming && !contentText} />
             {contentText && (
-              <ChatBubble role="ai" content={contentText} isStreaming={isStreaming} />
+              <ChatBubble sender="ai" content={contentText} isStreaming={isStreaming} />
             )}
           </div>
           <div className="border-t border-border p-3 flex gap-2">

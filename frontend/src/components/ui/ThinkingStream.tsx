@@ -19,9 +19,7 @@ export function ThinkingStream({ text, isStreaming }: ThinkingStreamProps) {
       >
         <span>🧠</span>
         <span>思考过程</span>
-        {isStreaming && (
-          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse ml-1" />
-        )}
+        {isStreaming && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse ml-1" />}
         <span className="ml-auto">{collapsed ? '▼' : '▲'}</span>
       </button>
       {!collapsed && (

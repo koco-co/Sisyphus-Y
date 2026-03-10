@@ -1,20 +1,20 @@
 'use client';
 
-import { useCallback } from 'react';
 import {
   Bold,
-  Italic,
+  CheckSquare,
+  Code,
   Heading1,
   Heading2,
   Heading3,
+  Italic,
+  Link,
   List,
   ListOrdered,
-  Code,
-  Link,
-  Quote,
   Minus,
-  CheckSquare,
+  Quote,
 } from 'lucide-react';
+import { useCallback } from 'react';
 
 interface EditorToolbarProps {
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;

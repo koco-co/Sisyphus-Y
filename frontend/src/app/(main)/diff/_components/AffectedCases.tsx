@@ -1,15 +1,9 @@
 'use client';
 
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Eye,
-  FileText,
-  RefreshCw,
-} from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Eye, FileText, RefreshCw } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import { SearchInput } from '@/components/ui/SearchInput';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import type { AffectedTestCase } from '@/stores/diff-store';
 
 interface AffectedCasesProps {
@@ -24,11 +18,7 @@ const impactBadge: Record<string, { variant: 'danger' | 'warning' | 'success'; l
   none: { variant: 'success', label: '不受影响' },
 };
 
-export function AffectedCases({
-  cases,
-  totalTestPoints = 0,
-  className = '',
-}: AffectedCasesProps) {
+export function AffectedCases({ cases, totalTestPoints = 0, className = '' }: AffectedCasesProps) {
   const [search, setSearch] = useState('');
 
   const stats = useMemo(() => {
@@ -42,9 +32,7 @@ export function AffectedCases({
     if (!search) return cases;
     const q = search.toLowerCase();
     return cases.filter(
-      (c) =>
-        c.title.toLowerCase().includes(q) ||
-        c.case_id.toLowerCase().includes(q),
+      (c) => c.title.toLowerCase().includes(q) || c.case_id.toLowerCase().includes(q),
     );
   }, [cases, search]);
 
@@ -79,12 +67,7 @@ export function AffectedCases({
         </div>
       )}
 
-      <SearchInput
-        value={search}
-        onChange={setSearch}
-        placeholder="搜索用例..."
-        className="mb-3"
-      />
+      <SearchInput value={search} onChange={setSearch} placeholder="搜索用例..." className="mb-3" />
 
       {/* Case list */}
       <div className="space-y-1.5 max-h-[calc(100vh-380px)] overflow-y-auto">
@@ -113,13 +96,9 @@ export function AffectedCases({
                     {badge.label}
                   </StatusBadge>
                 </div>
-                <p className="text-[12px] text-text2 mt-0.5 truncate">
-                  {c.title}
-                </p>
+                <p className="text-[12px] text-text2 mt-0.5 truncate">{c.title}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] font-mono text-text3">
-                    {c.priority}
-                  </span>
+                  <span className="text-[10px] font-mono text-text3">{c.priority}</span>
                 </div>
               </div>
             </div>

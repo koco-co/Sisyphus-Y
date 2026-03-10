@@ -4,9 +4,12 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useAuthSession } from '@/hooks/useAuthSession';
+import { authApi, getApiErrorMessage } from '@/lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { login } = useAuthSession();
   const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,11 +34,25 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
-      // TODO: integrate with real auth API
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      router.push('/login');
-    } catch {
-      setError('注册失败，请稍后重试');
+      await authApi.register({
+        username: form.username.trim(),
+        email: form.email.trim(),
+        password: form.password,
+      });
+      const auth = await authApi.login({
+        username: form.username.trim(),
+        password: form.password,
+      });
+      login(auth.access_token, {
+        id: auth.user.id,
+        username: auth.user.username,
+        email: auth.user.email,
+        role: auth.user.role,
+        full_name: auth.user.full_name,
+      });
+      router.push('/');
+    } catch (error) {
+      setError(getApiErrorMessage(error, '注册失败，请稍后重试'));
     } finally {
       setLoading(false);
     }

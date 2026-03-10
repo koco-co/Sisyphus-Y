@@ -1,13 +1,7 @@
 'use client';
 
-import {
-  ClipboardList,
-  Download,
-  FileText,
-  HeartPulse,
-  Wand2,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { ClipboardList, Download, FileText, HeartPulse, Wand2 } from 'lucide-react';
+import Link from 'next/link';
 
 const actions = [
   {
@@ -45,8 +39,6 @@ const actions = [
 ];
 
 export default function QuickActions() {
-  const router = useRouter();
-
   return (
     <div style={{ marginBottom: 24 }}>
       <div className="sec-header" style={{ marginBottom: 12 }}>
@@ -57,14 +49,11 @@ export default function QuickActions() {
         {actions.map((action) => {
           const Icon = action.icon;
           return (
-            <div
+            <Link
+              href={action.href}
               key={action.label}
-              className="card card-hover"
-              style={{ cursor: 'pointer', padding: 14 }}
-              onClick={() => router.push(action.href)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') router.push(action.href);
-              }}
+              className="card card-hover block"
+              style={{ padding: 14 }}
             >
               <div
                 style={{
@@ -81,13 +70,11 @@ export default function QuickActions() {
               >
                 <Icon size={18} />
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>
-                {action.label}
-              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{action.label}</div>
               <div style={{ fontSize: 11, color: 'var(--text3)', lineHeight: 1.5 }}>
                 {action.description}
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

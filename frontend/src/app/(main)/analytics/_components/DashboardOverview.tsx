@@ -17,6 +17,14 @@ interface DashboardOverviewProps {
   overview: AnalyticsOverview;
 }
 
+const COLOR_BG_CLASS: Record<string, string> = {
+  'text-accent': 'bg-accent/10',
+  'text-blue': 'bg-blue/10',
+  'text-purple': 'bg-purple/10',
+  'text-amber': 'bg-amber/10',
+  'text-red': 'bg-red/10',
+};
+
 function ScoreCard({ overview }: { overview: AnalyticsOverview }) {
   const grade = getGrade(overview.quality_score);
   const gradeColor = getGradeColor(grade);
@@ -58,7 +66,7 @@ function MetricCard({
     <div className="card card-hover">
       <div className="flex items-center gap-2 mb-3">
         <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center bg-${colorClass.replace('text-', '')}/10`}
+          className={`w-8 h-8 rounded-lg flex items-center justify-center ${COLOR_BG_CLASS[colorClass] ?? 'bg-accent/10'}`}
         >
           <Icon className={`w-4 h-4 ${colorClass}`} />
         </div>
@@ -121,7 +129,7 @@ export function DashboardOverview({ overview }: DashboardOverviewProps) {
           <div key={kpi.label} className="card card-hover">
             <div className="flex items-center gap-2 mb-3">
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center ${kpi.color.replace('text-', 'bg-')}/10`}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center ${COLOR_BG_CLASS[kpi.color] ?? 'bg-accent/10'}`}
               >
                 <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
               </div>

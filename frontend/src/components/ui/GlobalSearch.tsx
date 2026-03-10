@@ -169,7 +169,12 @@ export function GlobalSearch() {
       />
 
       {/* Dialog */}
-      <div className="relative w-full max-w-lg bg-bg1 border border-border rounded-xl shadow-lg overflow-hidden" role="dialog" aria-modal="true" aria-label="全局搜索">
+      <div
+        className="relative w-full max-w-lg bg-bg1 border border-border rounded-xl shadow-lg overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="全局搜索"
+      >
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
           <Search className="w-4 h-4 text-text3 shrink-0" />

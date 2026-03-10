@@ -1,20 +1,14 @@
 'use client';
 
-import {
-  Save,
-  X,
-  Edit3,
-  Tag,
-  BarChart3,
-  FileText,
-  Sparkles,
-  User,
-} from 'lucide-react';
+import { BarChart3, Edit3, FileText, Save, Sparkles, Tag, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { StatusBadge } from '@/components/ui';
 import type { TestPointItem, TestPointSource } from '@/stores/scene-map-store';
 
-const sourceLabels: Record<TestPointSource, { label: string; variant: 'success' | 'warning' | 'danger' | 'gray' }> = {
+const sourceLabels: Record<
+  TestPointSource,
+  { label: string; variant: 'success' | 'warning' | 'danger' | 'gray' }
+> = {
   document: { label: '已覆盖', variant: 'success' },
   supplemented: { label: 'AI 补全', variant: 'warning' },
   missing: { label: '缺失', variant: 'danger' },
@@ -89,25 +83,31 @@ export function TestPointDetail({
         <StatusBadge variant={src.variant}>{src.label}</StatusBadge>
         <StatusBadge
           variant={
-            point.priority === 'P0'
-              ? 'danger'
-              : point.priority === 'P1'
-                ? 'warning'
-                : 'gray'
+            point.priority === 'P0' ? 'danger' : point.priority === 'P1' ? 'warning' : 'gray'
           }
         >
           {point.priority}
         </StatusBadge>
         <StatusBadge
-          variant={point.status === 'confirmed' ? 'success' : point.status === 'ignored' ? 'gray' : 'info'}
+          variant={
+            point.status === 'confirmed' ? 'success' : point.status === 'ignored' ? 'gray' : 'info'
+          }
         >
-          {point.status === 'confirmed' ? '已确认' : point.status === 'ignored' ? '已忽略' : '待处理'}
+          {point.status === 'confirmed'
+            ? '已确认'
+            : point.status === 'ignored'
+              ? '已忽略'
+              : '待处理'}
         </StatusBadge>
         <StatusBadge variant="purple">
           {point.source === 'document' ? (
-            <><User size={10} /> 文档</>
+            <>
+              <User size={10} /> 文档
+            </>
           ) : (
-            <><Sparkles size={10} /> AI</>
+            <>
+              <Sparkles size={10} /> AI
+            </>
           )}
         </StatusBadge>
 
@@ -127,10 +127,14 @@ export function TestPointDetail({
         <div className="space-y-3">
           {/* Title */}
           <div>
-            <label className="text-[10px] text-sy-text-3 uppercase tracking-wide font-semibold block mb-1">
+            <label
+              htmlFor="test-point-title"
+              className="text-[10px] text-sy-text-3 uppercase tracking-wide font-semibold block mb-1"
+            >
               名称
             </label>
             <input
+              id="test-point-title"
               type="text"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
@@ -140,10 +144,14 @@ export function TestPointDetail({
 
           {/* Description */}
           <div>
-            <label className="text-[10px] text-sy-text-3 uppercase tracking-wide font-semibold block mb-1">
+            <label
+              htmlFor="test-point-description"
+              className="text-[10px] text-sy-text-3 uppercase tracking-wide font-semibold block mb-1"
+            >
               描述
             </label>
             <textarea
+              id="test-point-description"
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
               rows={4}
@@ -155,10 +163,14 @@ export function TestPointDetail({
           {/* Group + Priority */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] text-sy-text-3 uppercase tracking-wide font-semibold block mb-1">
+              <label
+                htmlFor="test-point-group"
+                className="text-[10px] text-sy-text-3 uppercase tracking-wide font-semibold block mb-1"
+              >
                 分类
               </label>
               <input
+                id="test-point-group"
                 type="text"
                 value={editGroup}
                 onChange={(e) => setEditGroup(e.target.value)}
@@ -166,10 +178,14 @@ export function TestPointDetail({
               />
             </div>
             <div>
-              <label className="text-[10px] text-sy-text-3 uppercase tracking-wide font-semibold block mb-1">
+              <label
+                htmlFor="test-point-priority"
+                className="text-[10px] text-sy-text-3 uppercase tracking-wide font-semibold block mb-1"
+              >
                 优先级
               </label>
               <select
+                id="test-point-priority"
                 value={editPriority}
                 onChange={(e) => setEditPriority(e.target.value)}
                 className="w-full px-3 py-2 text-[13px] bg-sy-bg-2 border border-sy-border rounded-md text-sy-text outline-none focus:border-sy-accent transition-colors"
@@ -205,9 +221,7 @@ export function TestPointDetail({
       ) : (
         <div>
           {/* Title */}
-          <h2 className="text-[16px] font-semibold text-sy-text mb-2">
-            {point.title}
-          </h2>
+          <h2 className="text-[16px] font-semibold text-sy-text mb-2">{point.title}</h2>
 
           {/* Description */}
           <p className="text-[13px] text-sy-text-2 leading-relaxed mb-4">
@@ -221,9 +235,7 @@ export function TestPointDetail({
                 <Tag size={10} />
                 分类
               </div>
-              <div className="text-[13px] font-medium text-sy-text">
-                {point.group_name}
-              </div>
+              <div className="text-[13px] font-medium text-sy-text">{point.group_name}</div>
             </div>
             <div className="bg-sy-bg-2 rounded-lg p-3 border border-sy-border">
               <div className="flex items-center gap-1.5 text-[10px] text-sy-text-3 uppercase tracking-wide mb-1">

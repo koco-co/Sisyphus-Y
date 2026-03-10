@@ -1,16 +1,6 @@
 'use client';
 
-import {
-  CheckCircle,
-  ChevronDown,
-  ChevronRight,
-  Plus,
-  Sparkles,
-  AlertTriangle,
-  HelpCircle,
-  FileText,
-  X,
-} from 'lucide-react';
+import { CheckCircle, ChevronDown, ChevronRight, FileText, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { SearchInput } from '@/components/ui';
 import type { TestPointItem, TestPointSource } from '@/stores/scene-map-store';
@@ -22,8 +12,7 @@ const sourceConfig: Record<
   document: {
     label: '已覆盖',
     dotClass: 'bg-sy-accent',
-    itemClass:
-      'bg-sy-accent/10 border border-sy-accent/35 text-sy-accent',
+    itemClass: 'bg-sy-accent/10 border border-sy-accent/35 text-sy-accent',
   },
   supplemented: {
     label: 'AI 补全',
@@ -33,14 +22,12 @@ const sourceConfig: Record<
   missing: {
     label: '缺失',
     dotClass: 'bg-sy-danger',
-    itemClass:
-      'bg-sy-danger/10 border-[1.5px] border-sy-danger text-sy-danger font-semibold',
+    itemClass: 'bg-sy-danger/10 border-[1.5px] border-sy-danger text-sy-danger font-semibold',
   },
   pending: {
     label: '待确认',
     dotClass: 'bg-sy-text-3',
-    itemClass:
-      'bg-sy-bg-3 border border-dashed border-sy-border-2 text-sy-text-3',
+    itemClass: 'bg-sy-bg-3 border border-dashed border-sy-border-2 text-sy-text-3',
   },
 };
 
@@ -185,18 +172,16 @@ export function TestPointList({
           )}
         </div>
         <div className="flex items-center justify-between mt-1.5 text-[10px] text-sy-text-3 font-mono">
-          <span>{stats.confirmed}/{stats.total} 已确认</span>
+          <span>
+            {stats.confirmed}/{stats.total} 已确认
+          </span>
           <span>{stats.total} 总计</span>
         </div>
       </div>
 
       {/* Search */}
       <div className="px-3 pt-2.5 pb-1">
-        <SearchInput
-          value={searchQuery}
-          onChange={onSearchChange}
-          placeholder="搜索测试点..."
-        />
+        <SearchInput value={searchQuery} onChange={onSearchChange} placeholder="搜索测试点..." />
       </div>
 
       {/* Grouped test points */}
@@ -208,11 +193,7 @@ export function TestPointList({
               onClick={() => toggleGroup(group)}
               className="flex items-center gap-1.5 w-full px-2 py-1.5 text-[11px] font-semibold text-sy-text-2 uppercase tracking-wide hover:text-sy-text transition-colors"
             >
-              {collapsedGroups.has(group) ? (
-                <ChevronRight size={12} />
-              ) : (
-                <ChevronDown size={12} />
-              )}
+              {collapsedGroups.has(group) ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
               <span className="flex-1 text-left">{group}</span>
               <span className="font-mono text-sy-text-3">{points.length}</span>
             </button>
@@ -227,7 +208,6 @@ export function TestPointList({
                 return (
                   <div
                     key={tp.id}
-                    onClick={() => onSelectPoint(tp.id)}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-[12px] mb-0.5 transition-all border ${
                       isSelected
                         ? 'bg-sy-accent/8 border-sy-accent/25'
@@ -249,15 +229,19 @@ export function TestPointList({
                     >
                       {isChecked && <CheckCircle size={10} />}
                     </button>
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${src.dotClass}`}
-                    />
-                    <span className="flex-1 truncate text-sy-text">{tp.title}</span>
-                    <span
-                      className={`inline-flex px-1.5 py-0 rounded-full text-[10px] font-mono font-medium ${pri.class}`}
+                    <button
+                      type="button"
+                      onClick={() => onSelectPoint(tp.id)}
+                      className="flex flex-1 items-center gap-2 min-w-0 text-left"
                     >
-                      {tp.priority}
-                    </span>
+                      <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${src.dotClass}`} />
+                      <span className="flex-1 truncate text-sy-text">{tp.title}</span>
+                      <span
+                        className={`inline-flex px-1.5 py-0 rounded-full text-[10px] font-mono font-medium ${pri.class}`}
+                      >
+                        {tp.priority}
+                      </span>
+                    </button>
                   </div>
                 );
               })}
@@ -265,9 +249,7 @@ export function TestPointList({
         ))}
 
         {filtered.length === 0 && testPoints.length > 0 && (
-          <div className="text-center py-6 text-sy-text-3 text-[12px]">
-            无匹配结果
-          </div>
+          <div className="text-center py-6 text-sy-text-3 text-[12px]">无匹配结果</div>
         )}
 
         {testPoints.length === 0 && (
@@ -290,7 +272,6 @@ export function TestPointList({
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="测试点名称"
                 className="w-full px-2.5 py-1.5 text-[12px] bg-sy-bg-2 border border-sy-border rounded-md text-sy-text placeholder:text-sy-text-3 outline-none focus:border-sy-accent transition-colors"
-                autoFocus
               />
               <div className="flex gap-1.5">
                 <input

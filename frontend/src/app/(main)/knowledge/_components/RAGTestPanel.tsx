@@ -39,10 +39,7 @@ export default function RAGTestPanel({
       </p>
 
       {/* Search form */}
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: 'flex', gap: 8, marginBottom: 16 }}
-      >
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <div style={{ flex: 1, position: 'relative' }}>
           <Search
             size={14}
@@ -62,11 +59,7 @@ export default function RAGTestPanel({
             style={{ width: '100%', paddingLeft: 32 }}
           />
         </div>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={!query.trim() || searching}
-        >
+        <button type="submit" className="btn btn-primary" disabled={!query.trim() || searching}>
           {searching ? (
             <>
               <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />

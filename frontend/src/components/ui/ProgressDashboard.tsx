@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Drawer, Collapse, Spin, Tooltip } from 'antd';
-import { Activity, CheckCircle2, Circle, AlertCircle, X } from 'lucide-react';
+import { Collapse, Drawer, Spin, Tooltip } from 'antd';
+import { Activity, AlertCircle, CheckCircle2, Circle, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface Module {
   id: string;
@@ -23,11 +23,34 @@ interface ProgressData {
   phases: Phase[];
 }
 
-const statusConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
-  done: { icon: <CheckCircle2 size={14} />, color: 'var(--accent)', label: '已完成' },
-  in_progress: { icon: <Spin size="small" />, color: 'var(--blue)', label: '进行中' },
-  partial: { icon: <AlertCircle size={14} />, color: 'var(--amber)', label: '部分完成' },
-  pending: { icon: <Circle size={14} />, color: 'var(--text3)', label: '待开始' },
+const statusConfig: Record<
+  string,
+  { icon: React.ReactNode; iconClass: string; pillClass: string; label: string }
+> = {
+  done: {
+    icon: <CheckCircle2 size={14} />,
+    iconClass: 'text-accent',
+    pillClass: 'pill pill-green',
+    label: '已完成',
+  },
+  in_progress: {
+    icon: <Spin size="small" />,
+    iconClass: 'text-blue',
+    pillClass: 'pill pill-blue',
+    label: '进行中',
+  },
+  partial: {
+    icon: <AlertCircle size={14} />,
+    iconClass: 'text-amber',
+    pillClass: 'pill pill-amber',
+    label: '部分完成',
+  },
+  pending: {
+    icon: <Circle size={14} />,
+    iconClass: 'text-text3',
+    pillClass: 'pill pill-gray',
+    label: '待开始',
+  },
 };
 
 export default function ProgressDashboard() {
@@ -84,7 +107,7 @@ export default function ProgressDashboard() {
       key: phase.id,
       label: (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
-          <span style={{ color: phaseStatus.color }}>{phaseStatus.icon}</span>
+          <span className={phaseStatus.iconClass}>{phaseStatus.icon}</span>
           <span style={{ flex: 1, fontWeight: 500, fontSize: 13 }}>{phase.name}</span>
           <span className="mono" style={{ fontSize: 11, color: 'var(--text3)' }}>
             {progress}%
@@ -112,7 +135,7 @@ export default function ProgressDashboard() {
                   fontSize: 12.5,
                 }}
               >
-                <span style={{ color: ms.color, display: 'flex', alignItems: 'center' }}>
+                <span className={ms.iconClass} style={{ display: 'flex', alignItems: 'center' }}>
                   {ms.icon}
                 </span>
                 <span style={{ flex: 1 }}>
@@ -122,16 +145,7 @@ export default function ProgressDashboard() {
                   {mod.name}
                 </span>
                 <Tooltip title={ms.label}>
-                  <span
-                    className="pill"
-                    style={{
-                      fontSize: 10,
-                      padding: '1px 6px',
-                      background: ms.color + '20',
-                      color: ms.color,
-                      border: `1px solid ${ms.color}40`,
-                    }}
-                  >
+                  <span className={ms.pillClass} style={{ fontSize: 10, padding: '1px 6px' }}>
                     {ms.label}
                   </span>
                 </Tooltip>
@@ -149,35 +163,10 @@ export default function ProgressDashboard() {
     <>
       {/* Floating Action Button */}
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="progress-fab"
         title="开发进度大盘"
-        style={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          zIndex: 1000,
-          width: 48,
-          height: 48,
-          borderRadius: '50%',
-          background: 'var(--accent)',
-          color: '#fff',
-          border: 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 12px rgba(0, 217, 163, 0.4)',
-          transition: 'transform 0.2s, box-shadow 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.1)';
-          e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 217, 163, 0.5)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 217, 163, 0.4)';
-        }}
       >
         <Activity size={22} />
       </button>
@@ -210,7 +199,10 @@ export default function ProgressDashboard() {
             <div className="card" style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>总体进度</span>
-                <span className="mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent)' }}>
+                <span
+                  className="mono"
+                  style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent)' }}
+                >
                   {overall}%
                 </span>
               </div>
@@ -228,7 +220,9 @@ export default function ProgressDashboard() {
             {/* Phase details */}
             <Collapse
               items={collapseItems}
-              defaultActiveKey={data.phases.filter((p) => p.status === 'in_progress').map((p) => p.id)}
+              defaultActiveKey={data.phases
+                .filter((p) => p.status === 'in_progress')
+                .map((p) => p.id)}
               ghost
               style={{ background: 'transparent' }}
             />

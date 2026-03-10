@@ -1,17 +1,12 @@
 interface ChatBubbleProps {
-  role: 'ai' | 'user';
+  sender: 'ai' | 'user';
   content: string;
   time?: string;
   isStreaming?: boolean;
 }
 
-export function ChatBubble({
-  role,
-  content,
-  time,
-  isStreaming,
-}: ChatBubbleProps) {
-  const isAI = role === 'ai';
+export function ChatBubble({ sender, content, time, isStreaming }: ChatBubbleProps) {
+  const isAI = sender === 'ai';
   return (
     <div className={`flex gap-2.5 mb-3.5 ${isAI ? '' : 'flex-row-reverse'}`}>
       <div
@@ -36,9 +31,7 @@ export function ChatBubble({
             <span className="inline-block w-[2px] h-3 bg-accent ml-0.5 animate-[blink_1s_infinite]" />
           )}
         </div>
-        {time && (
-          <div className="text-[10px] text-text3 mt-1 font-mono">{time}</div>
-        )}
+        {time && <div className="text-[10px] text-text3 mt-1 font-mono">{time}</div>}
       </div>
     </div>
   );

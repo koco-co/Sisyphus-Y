@@ -4,11 +4,7 @@ interface ProgressBarProps {
   height?: number;
 }
 
-export function ProgressBar({
-  value,
-  variant = 'accent',
-  height = 3,
-}: ProgressBarProps) {
+export function ProgressBar({ value, variant = 'accent', height = 3 }: ProgressBarProps) {
   const colorMap = { accent: 'bg-accent', amber: 'bg-amber', red: 'bg-red' };
   return (
     <div className="bg-bg3 rounded-sm overflow-hidden" style={{ height }}>

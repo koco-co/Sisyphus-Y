@@ -15,6 +15,7 @@ export default function KnowledgePage() {
     documents,
     total,
     loading,
+    error,
     typeFilter,
     statusFilter,
     searchQuery,
@@ -111,24 +112,30 @@ export default function KnowledgePage() {
 
           <div className="spacer" />
 
-          <button
-            type="button"
-            className="btn"
-            onClick={fetchDocuments}
-          >
+          <button type="button" className="btn" onClick={fetchDocuments}>
             <RefreshCw size={14} />
             刷新
           </button>
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => setShowUpload(true)}
-          >
+          <button type="button" className="btn btn-primary" onClick={() => setShowUpload(true)}>
             <Upload size={14} />
             上传文档
           </button>
         </div>
+
+        {error && (
+          <div
+            className="card"
+            style={{
+              marginBottom: 16,
+              border: '1px solid rgba(244, 63, 94, 0.28)',
+              background: 'rgba(244, 63, 94, 0.08)',
+              color: 'var(--red)',
+            }}
+          >
+            {error}
+          </div>
+        )}
 
         {/* Document Table */}
         <DocTable
@@ -154,6 +161,7 @@ export default function KnowledgePage() {
           onUpload={uploadFile}
           isUploading={isUploading}
           uploadProgress={uploadProgress}
+          uploadError={error}
         />
       </div>
     </div>

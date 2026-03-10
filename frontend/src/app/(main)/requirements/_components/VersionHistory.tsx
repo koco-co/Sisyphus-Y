@@ -1,7 +1,7 @@
 'use client';
 
+import { ChevronRight, GitCompare, History, Loader2, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
-import { History, ChevronRight, RotateCcw, GitCompare, Loader2 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui';
 
 interface VersionItem {
@@ -26,7 +26,9 @@ export function VersionHistory({
   onRollback,
   onCompare,
 }: VersionHistoryProps) {
-  const [rollbackTarget, setRollbackTarget] = useState<{ id: string; version: number } | null>(null);
+  const [rollbackTarget, setRollbackTarget] = useState<{ id: string; version: number } | null>(
+    null,
+  );
   const [rolling, setRolling] = useState(false);
 
   const handleRollback = async () => {
@@ -53,9 +55,7 @@ export function VersionHistory({
       <div className="flex items-center gap-2 mb-3">
         <History size={14} className="text-accent" />
         <span className="text-[12px] font-semibold text-text2">版本历史</span>
-        <span className="text-[10px] font-mono text-text3 ml-auto">
-          当前 v{currentVersion}
-        </span>
+        <span className="text-[10px] font-mono text-text3 ml-auto">当前 v{currentVersion}</span>
       </div>
 
       {loading ? (
@@ -63,9 +63,7 @@ export function VersionHistory({
           <Loader2 size={16} className="text-text3 animate-spin" />
         </div>
       ) : versions.length === 0 ? (
-        <div className="text-center py-6 text-text3 text-[12px]">
-          暂无历史版本
-        </div>
+        <div className="text-center py-6 text-text3 text-[12px]">暂无历史版本</div>
       ) : (
         <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
           {versions.map((v) => (
@@ -129,9 +127,7 @@ export function VersionHistory({
         onConfirm={handleRollback}
         title="确认回滚"
         description={
-          rollbackTarget
-            ? `将回滚到版本 v${rollbackTarget.version}，当前版本将被保存为快照。`
-            : ''
+          rollbackTarget ? `将回滚到版本 v${rollbackTarget.version}，当前版本将被保存为快照。` : ''
         }
         confirmText={rolling ? '回滚中...' : '确认回滚'}
         variant="warning"

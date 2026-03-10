@@ -1,18 +1,21 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { ArrowLeft, Loader2, Stethoscope, TreePine, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useCallback, useRef, useState } from 'react';
 import { StatusPill } from '@/components/ui';
-import { Stethoscope, TreePine, Zap, Loader2, ArrowLeft } from 'lucide-react';
 import { useRequirement } from '@/hooks/useRequirement';
-import { FrontmatterPanel } from '../_components/FrontmatterPanel';
 import { EditorToolbar } from '../_components/EditorToolbar';
 import { FileUpload } from '../_components/FileUpload';
-import { VersionHistory } from '../_components/VersionHistory';
+import { FrontmatterPanel } from '../_components/FrontmatterPanel';
 import { RelationPanel } from '../_components/RelationPanel';
+import { VersionHistory } from '../_components/VersionHistory';
 
-const statusConfig: Record<string, { variant: 'green' | 'amber' | 'gray' | 'blue'; label: string }> = {
+const statusConfig: Record<
+  string,
+  { variant: 'green' | 'amber' | 'gray' | 'blue'; label: string }
+> = {
   draft: { variant: 'gray', label: '草稿' },
   confirmed: { variant: 'green', label: '已确认' },
   diagnosed: { variant: 'blue', label: '已诊断' },
@@ -43,7 +46,8 @@ export default function RequirementDetailPage() {
 
   const status = statusConfig[req?.status ?? 'draft'] ?? statusConfig.draft;
   const priority = (req?.frontmatter?.priority as string) ?? 'P1';
-  const rawContent = (req?.content_ast?.content as string) ?? (req?.content_ast?.raw_text as string) ?? '';
+  const rawContent =
+    (req?.content_ast?.content as string) ?? (req?.content_ast?.raw_text as string) ?? '';
   const displayContent = localContent ?? rawContent;
 
   const handleContentChange = useCallback((value: string) => {
@@ -57,9 +61,12 @@ export default function RequirementDetailPage() {
     setContentDirty(false);
   }, [contentDirty, localContent, updateContent]);
 
-  const handleCompare = useCallback((versionId: string) => {
-    window.open(`/diff/${id}?versionId=${versionId}`, '_blank');
-  }, [id]);
+  const handleCompare = useCallback(
+    (versionId: string) => {
+      window.open(`/diff/${id}?versionId=${versionId}`, '_blank');
+    },
+    [id],
+  );
 
   if (requirementLoading) {
     return (
@@ -84,7 +91,9 @@ export default function RequirementDetailPage() {
           <h1 className="font-display font-bold text-[20px]">{req?.title ?? '加载中...'}</h1>
           <div className="flex items-center gap-2 mt-2">
             <StatusPill variant={status.variant}>{status.label}</StatusPill>
-            <StatusPill variant={priority === 'P0' ? 'red' : priority === 'P1' ? 'amber' : 'gray'}>{priority}</StatusPill>
+            <StatusPill variant={priority === 'P0' ? 'red' : priority === 'P1' ? 'amber' : 'gray'}>
+              {priority}
+            </StatusPill>
             <span className="text-text3 text-[11px] font-mono">v{req?.version ?? 1}</span>
           </div>
         </div>
@@ -101,7 +110,10 @@ export default function RequirementDetailPage() {
             </button>
           )}
           <Link href={`/diagnosis/${id}`}>
-            <button type="button" className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-accent text-black hover:bg-accent2 transition-colors">
+            <button
+              type="button"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-accent text-black hover:bg-accent2 transition-colors"
+            >
               <Stethoscope size={14} /> 开始健康诊断
             </button>
           </Link>
@@ -116,10 +128,7 @@ export default function RequirementDetailPage() {
             <div className="text-[12px] font-semibold text-text3 uppercase tracking-wide mb-2">
               需求内容
             </div>
-            <EditorToolbar
-              textareaRef={textareaRef}
-              onContentChange={handleContentChange}
-            />
+            <EditorToolbar textareaRef={textareaRef} onContentChange={handleContentChange} />
             <textarea
               ref={textareaRef}
               value={displayContent}
@@ -153,17 +162,26 @@ export default function RequirementDetailPage() {
             <div className="text-[12px] font-semibold text-text2 mb-3">快速操作</div>
             <div className="space-y-2">
               <Link href={`/diagnosis/${id}`} className="block">
-                <button type="button" className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors"
+                >
                   <Stethoscope size={13} /> 健康诊断
                 </button>
               </Link>
               <Link href={`/scene-map/${id}`} className="block">
-                <button type="button" className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors"
+                >
                   <TreePine size={13} /> 测试点确认
                 </button>
               </Link>
               <Link href={`/workbench/${id}`} className="block">
-                <button type="button" className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors">
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-md text-[12px] bg-bg2 border border-border text-text2 hover:text-text hover:border-border2 transition-colors"
+                >
                   <Zap size={13} /> 生成工作台
                 </button>
               </Link>

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import {
-  useDashboardStore,
+  type ActivityItem,
   type DashboardStats,
   type PendingItem,
-  type ActivityItem,
+  useDashboardStore,
 } from '@/stores/dashboard-store';
 
 const fallbackStats: DashboardStats = {
@@ -61,18 +61,75 @@ const fallbackPendingItems: PendingItem[] = [
 ];
 
 const fallbackActivities: ActivityItem[] = [
-  { id: 'a1', time: new Date(Date.now() - 28 * 60000).toISOString(), action: '生成 14 条用例', resource: 'testcase', resource_id: '', title: '离线开发平台 · 数据导入', user: '张工' },
-  { id: 'a2', time: new Date(Date.now() - 62 * 60000).toISOString(), action: '完成需求健康诊断', resource: 'diagnosis', resource_id: '', title: '实时计算引擎 · 窗口函数', user: '李工' },
-  { id: 'a3', time: new Date(Date.now() - 105 * 60000).toISOString(), action: '确认场景地图测试点', resource: 'scene_map', resource_id: '', title: '数据资产中心 · 标签管理', user: '王工' },
-  { id: 'a4', time: new Date(Date.now() - 180 * 60000).toISOString(), action: '上传知识库文档', resource: 'knowledge', resource_id: '', title: '测试规范 v2.1.pdf', user: '张工' },
-  { id: 'a5', time: new Date(Date.now() - 360 * 60000).toISOString(), action: '导出测试报告', resource: 'export', resource_id: '', title: '离线开发平台 · Sprint 24-W04', user: '李工' },
-  { id: 'a6', time: new Date(Date.now() - 24 * 3600000).toISOString(), action: '新建迭代 Sprint 24-W05', resource: 'iteration', resource_id: '', title: '数据资产中心', user: '王工' },
-  { id: 'a7', time: new Date(Date.now() - 25 * 3600000).toISOString(), action: '更新需求文档', resource: 'requirement', resource_id: '', title: '数据治理平台 · 质量规则', user: '赵工' },
+  {
+    id: 'a1',
+    time: new Date(Date.now() - 28 * 60000).toISOString(),
+    action: '生成 14 条用例',
+    resource: 'testcase',
+    resource_id: '',
+    title: '离线开发平台 · 数据导入',
+    user: '张工',
+  },
+  {
+    id: 'a2',
+    time: new Date(Date.now() - 62 * 60000).toISOString(),
+    action: '完成需求健康诊断',
+    resource: 'diagnosis',
+    resource_id: '',
+    title: '实时计算引擎 · 窗口函数',
+    user: '李工',
+  },
+  {
+    id: 'a3',
+    time: new Date(Date.now() - 105 * 60000).toISOString(),
+    action: '确认场景地图测试点',
+    resource: 'scene_map',
+    resource_id: '',
+    title: '数据资产中心 · 标签管理',
+    user: '王工',
+  },
+  {
+    id: 'a4',
+    time: new Date(Date.now() - 180 * 60000).toISOString(),
+    action: '上传知识库文档',
+    resource: 'knowledge',
+    resource_id: '',
+    title: '测试规范 v2.1.pdf',
+    user: '张工',
+  },
+  {
+    id: 'a5',
+    time: new Date(Date.now() - 360 * 60000).toISOString(),
+    action: '导出测试报告',
+    resource: 'export',
+    resource_id: '',
+    title: '离线开发平台 · Sprint 24-W04',
+    user: '李工',
+  },
+  {
+    id: 'a6',
+    time: new Date(Date.now() - 24 * 3600000).toISOString(),
+    action: '新建迭代 Sprint 24-W05',
+    resource: 'iteration',
+    resource_id: '',
+    title: '数据资产中心',
+    user: '王工',
+  },
+  {
+    id: 'a7',
+    time: new Date(Date.now() - 25 * 3600000).toISOString(),
+    action: '更新需求文档',
+    resource: 'requirement',
+    resource_id: '',
+    title: '数据治理平台 · 质量规则',
+    user: '赵工',
+  },
 ];
 
 export function useDashboard() {
   const store = useDashboardStore();
   const [loading, setLoading] = useState(true);
+  const { stats, pendingItems, activities, setStats, setPendingItems, setActivities } = store;
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -83,36 +140,34 @@ export function useDashboard() {
         api.get<ActivityItem[]>('/dashboard/activities?limit=10'),
       ]);
 
-      store.setStats(
-        stats.status === 'fulfilled' ? stats.value : fallbackStats,
-      );
-      store.setPendingItems(
+      setStats(stats.status === 'fulfilled' ? stats.value : fallbackStats);
+      setPendingItems(
         pending.status === 'fulfilled' && pending.value.length > 0
           ? pending.value
           : fallbackPendingItems,
       );
-      store.setActivities(
+      setActivities(
         activities.status === 'fulfilled' && activities.value.length > 0
           ? activities.value
           : fallbackActivities,
       );
     } catch {
-      store.setStats(fallbackStats);
-      store.setPendingItems(fallbackPendingItems);
-      store.setActivities(fallbackActivities);
+      setStats(fallbackStats);
+      setPendingItems(fallbackPendingItems);
+      setActivities(fallbackActivities);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setActivities, setPendingItems, setStats]);
 
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
 
   return {
-    stats: store.stats ?? fallbackStats,
-    pendingItems: store.pendingItems.length > 0 ? store.pendingItems : fallbackPendingItems,
-    activities: store.activities.length > 0 ? store.activities : fallbackActivities,
+    stats: stats ?? fallbackStats,
+    pendingItems: pendingItems.length > 0 ? pendingItems : fallbackPendingItems,
+    activities: activities.length > 0 ? activities : fallbackActivities,
     loading,
     refresh: fetchAll,
   };

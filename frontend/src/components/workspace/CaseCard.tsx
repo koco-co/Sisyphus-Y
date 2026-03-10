@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 

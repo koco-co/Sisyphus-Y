@@ -1,16 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import {
-  Flag,
-  CircleDot,
-  FolderOpen,
-  User,
-  Clock,
-  Save,
-  Loader2,
-  Pencil,
-} from 'lucide-react';
+import { CircleDot, Clock, Flag, FolderOpen, Loader2, Pencil, Save, User } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 interface FrontmatterData {
   priority?: string;
@@ -99,9 +90,7 @@ export function FrontmatterPanel({
   return (
     <div className="bg-bg1 border border-border rounded-[10px] p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[12px] font-semibold text-text2 uppercase tracking-wide">
-          元数据
-        </span>
+        <span className="text-[12px] font-semibold text-text2 uppercase tracking-wide">元数据</span>
         {!readOnly && !editing && (
           <button
             type="button"
@@ -136,11 +125,15 @@ export function FrontmatterPanel({
               className="input text-[12px] py-1 px-2 flex-1"
             >
               {PRIORITY_OPTIONS.map((p) => (
-                <option key={p} value={p}>{p}</option>
+                <option key={p} value={p}>
+                  {p}
+                </option>
               ))}
             </select>
           ) : (
-            <span className={`font-mono text-[12px] font-semibold ${priorityColor[currentPriority ?? 'P1'] ?? 'text-text3'}`}>
+            <span
+              className={`font-mono text-[12px] font-semibold ${priorityColor[currentPriority ?? 'P1'] ?? 'text-text3'}`}
+            >
               {currentPriority}
             </span>
           )}
@@ -157,7 +150,9 @@ export function FrontmatterPanel({
               className="input text-[12px] py-1 px-2 flex-1"
             >
               {STATUS_OPTIONS.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
               ))}
             </select>
           ) : (

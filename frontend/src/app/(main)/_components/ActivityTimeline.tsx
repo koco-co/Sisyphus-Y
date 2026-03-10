@@ -42,8 +42,7 @@ function formatTime(raw: string): string {
     const diffHours = Math.floor(diffMin / 60);
     if (diffHours < 24) return `${diffHours} 小时前`;
 
-    const isYesterday =
-      new Date(now.getTime() - 86400000).toDateString() === d.toDateString();
+    const isYesterday = new Date(now.getTime() - 86400000).toDateString() === d.toDateString();
     const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     if (isYesterday) return `昨天 ${time}`;
     return `${d.getMonth() + 1}/${d.getDate()} ${time}`;
@@ -57,10 +56,7 @@ interface ActivityTimelineProps {
   loading?: boolean;
 }
 
-export default function ActivityTimeline({
-  activities,
-  loading,
-}: ActivityTimelineProps) {
+export default function ActivityTimeline({ activities, loading }: ActivityTimelineProps) {
   if (loading) {
     return (
       <div className="card" style={{ padding: 32, textAlign: 'center' }}>
@@ -100,9 +96,7 @@ export default function ActivityTimeline({
                     alignItems: 'flex-start',
                     gap: 12,
                     padding: '12px 16px',
-                    borderBottom: isLast
-                      ? 'none'
-                      : '1px solid var(--border)',
+                    borderBottom: isLast ? 'none' : '1px solid var(--border)',
                     transition: 'background 0.1s',
                   }}
                 >

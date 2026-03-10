@@ -25,6 +25,10 @@ export function CasePreviewCard({
   steps = [],
   onAccept,
 }: CasePreviewCardProps) {
+  const caseTypeLabel =
+    caseType === 'normal' ? '功能' : caseType === 'exception' ? '异常' : caseType;
+  const isAccepted = status === 'review' || status === 'reviewed' || status === 'approved';
+
   return (
     <div className="bg-bg2 border border-border rounded-lg p-3 mb-2">
       <div className="flex items-center gap-1.5 mb-1.5">
@@ -34,7 +38,7 @@ export function CasePreviewCard({
         <StatusPill
           variant={caseType === 'normal' ? 'green' : caseType === 'exception' ? 'red' : 'blue'}
         >
-          {caseType}
+          {caseTypeLabel}
         </StatusPill>
       </div>
       <div className="text-[12.5px] font-medium text-text mb-1">{title}</div>
@@ -77,7 +81,7 @@ export function CasePreviewCard({
           ✓ 接受用例
         </button>
       )}
-      {status === 'reviewed' && (
+      {isAccepted && (
         <div className="mt-2 text-center py-1 text-[11px] text-accent font-mono">✓ 已接受</div>
       )}
     </div>

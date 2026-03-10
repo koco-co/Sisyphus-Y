@@ -4,9 +4,12 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useAuthSession } from '@/hooks/useAuthSession';
+import { authApi, getApiErrorMessage } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuthSession();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
@@ -23,11 +26,21 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      // TODO: integrate with real auth API
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const result = await authApi.login({ username: username.trim(), password });
+      login(
+        result.access_token,
+        {
+          id: result.user.id,
+          username: result.user.username,
+          email: result.user.email,
+          role: result.user.role,
+          full_name: result.user.full_name,
+        },
+        remember,
+      );
       router.push('/');
-    } catch {
-      setError('登录失败，请检查用户名和密码');
+    } catch (error) {
+      setError(getApiErrorMessage(error, '登录失败，请检查用户名和密码'));
     } finally {
       setLoading(false);
     }

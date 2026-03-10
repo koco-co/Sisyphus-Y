@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 import { api } from '@/lib/api';
 import {
-  useDiffStore,
-  type DiffResult,
   type DiffHistoryItem,
+  type DiffResult,
   type SuggestionItem,
+  useDiffStore,
 } from '@/stores/diff-store';
 
 interface SuggestionResponse {
@@ -25,10 +25,10 @@ export function useDiff() {
     if (!requirementId) return;
     store.setComputing(true);
     try {
-      const result = await api.post<DiffResult>(
-        `/diff/${requirementId}/compute`,
-        { version_from: versionFrom, version_to: versionTo },
-      );
+      const result = await api.post<DiffResult>(`/diff/${requirementId}/compute`, {
+        version_from: versionFrom,
+        version_to: versionTo,
+      });
       store.setDiffResult(result);
     } catch (e) {
       console.error('computeDiff failed:', e);
@@ -41,9 +41,7 @@ export function useDiff() {
     const { requirementId } = useDiffStore.getState();
     if (!requirementId) return;
     try {
-      const items = await api.get<DiffHistoryItem[]>(
-        `/diff/${requirementId}/history`,
-      );
+      const items = await api.get<DiffHistoryItem[]>(`/diff/${requirementId}/history`);
       store.setHistory(items);
     } catch (e) {
       console.error('loadHistory failed:', e);
@@ -54,9 +52,7 @@ export function useDiff() {
     const { requirementId } = useDiffStore.getState();
     if (!requirementId) return;
     try {
-      const result = await api.get<DiffResult | null>(
-        `/diff/${requirementId}/latest`,
-      );
+      const result = await api.get<DiffResult | null>(`/diff/${requirementId}/latest`);
       if (result) store.setDiffResult(result);
     } catch (e) {
       console.error('loadLatest failed:', e);
@@ -67,9 +63,7 @@ export function useDiff() {
     const { requirementId } = useDiffStore.getState();
     if (!requirementId) return;
     try {
-      const data = await api.get<SuggestionResponse>(
-        `/diff/${requirementId}/suggestions`,
-      );
+      const data = await api.get<SuggestionResponse>(`/diff/${requirementId}/suggestions`);
       store.setSuggestions(data.suggestions);
     } catch (e) {
       console.error('loadSuggestions failed:', e);
@@ -91,10 +85,9 @@ export function useDiff() {
       }, 500);
 
       try {
-        const result = await api.post<RegenerateResponse>(
-          `/diff/${requirementId}/regenerate`,
-          { test_point_ids: testPointIds ?? null },
-        );
+        const result = await api.post<RegenerateResponse>(`/diff/${requirementId}/regenerate`, {
+          test_point_ids: testPointIds ?? null,
+        });
         store.setRegenerateProgress(100);
         return result;
       } catch (e) {

@@ -51,13 +51,19 @@ export function ConfirmDialog({
       <div className="p-5">
         <div className="flex items-start gap-3">
           {variant !== 'default' && (
-            <AlertTriangle className={`w-5 h-5 shrink-0 mt-0.5 ${variant === 'danger' ? 'text-red' : 'text-amber'}`} />
+            <AlertTriangle
+              className={`w-5 h-5 shrink-0 mt-0.5 ${variant === 'danger' ? 'text-red' : 'text-amber'}`}
+            />
           )}
           <div className="flex-1">
             <h3 className="text-[14px] font-semibold text-text">{title}</h3>
             <p className="text-[12.5px] text-text2 mt-1">{description}</p>
           </div>
-          <button type="button" onClick={onCancel} className="text-text3 hover:text-text transition-colors">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-text3 hover:text-text transition-colors"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
