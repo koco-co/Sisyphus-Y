@@ -1,11 +1,11 @@
 {
   "version": "4.0.0",
-  "lastUpdated": "2026-03-10T18:00:00Z",
+  "lastUpdated": "2026-03-11",
   "stats": {
     "total": 155,
-    "done": 75,
+    "done": 100,
     "in_progress": 0,
-    "pending": 80
+    "pending": 55
   },
   "tasks": [
     {
@@ -171,7 +171,7 @@
         "backend/app/modules/testcases/models.py"
       ],
       "depends_on": [],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-012",
@@ -186,7 +186,7 @@
       "depends_on": [
         "TASK-011"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-013",
@@ -201,7 +201,7 @@
       "depends_on": [
         "TASK-012"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-014",
@@ -214,7 +214,7 @@
         "backend/app/engine/import_clean/cleaner.py"
       ],
       "depends_on": [],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-015",
@@ -229,7 +229,7 @@
       "depends_on": [
         "TASK-014"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-016",
@@ -244,7 +244,7 @@
       "depends_on": [
         "TASK-014"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-017",
@@ -259,7 +259,7 @@
       "depends_on": [
         "TASK-016"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-018",
@@ -277,7 +277,7 @@
         "TASK-016",
         "TASK-017"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-019",
@@ -290,7 +290,7 @@
         "backend/app/engine/import_clean/batch_parser.py"
       ],
       "depends_on": [],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-020",
@@ -305,7 +305,7 @@
       "depends_on": [
         "TASK-019"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-021",
@@ -320,7 +320,7 @@
       "depends_on": [
         "TASK-019"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-022",
@@ -333,7 +333,7 @@
         "backend/app/engine/import_clean/batch_parser.py"
       ],
       "depends_on": [],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-023",
@@ -351,7 +351,7 @@
         "TASK-021",
         "TASK-022"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-024",
@@ -368,7 +368,7 @@
         "TASK-017",
         "TASK-021"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-025",
@@ -383,7 +383,7 @@
       "depends_on": [
         "TASK-024"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-026",
@@ -398,7 +398,7 @@
       "depends_on": [
         "TASK-024"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-027",
@@ -414,7 +414,7 @@
       "depends_on": [
         "TASK-024"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-028",
@@ -431,7 +431,7 @@
         "TASK-025",
         "TASK-026"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-029",
@@ -446,7 +446,7 @@
       "depends_on": [
         "TASK-026"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-030",
@@ -463,7 +463,7 @@
         "TASK-026",
         "TASK-027"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-031",
@@ -624,7 +624,7 @@
       "depends_on": [
         "TASK-040"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-042",
@@ -639,7 +639,7 @@
       "depends_on": [
         "TASK-036"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-043",
@@ -654,7 +654,7 @@
       "depends_on": [
         "TASK-039"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-044",
@@ -670,7 +670,7 @@
         "TASK-040",
         "TASK-036"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-045",
@@ -688,7 +688,7 @@
         "TASK-043",
         "TASK-044"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-046",
