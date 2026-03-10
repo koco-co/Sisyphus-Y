@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy import Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -28,6 +28,11 @@ class TestCase(BaseModel):
     reviewer_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     review_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
+
+    # Data cleaning fields
+    clean_status: Mapped[str] = mapped_column(String(20), default="raw")
+    quality_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    original_raw: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
 
 class TestCaseStep(BaseModel):
