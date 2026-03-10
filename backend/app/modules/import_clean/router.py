@@ -16,6 +16,7 @@ from app.modules.import_clean.schemas import (
     ImportJobResponse,
     ImportRecordAction,
     ImportRecordResponse,
+    TaskStatusResponse,
 )
 from app.modules.import_clean.service import ImportJobService, ImportRecordService
 
@@ -182,3 +183,37 @@ async def record_action(
     svc = ImportRecordService(session)
     record = await svc.apply_action(record_id, action=body.action, merge_target_id=body.merge_target_id)
     return ImportRecordResponse.model_validate(record)
+
+
+# ── 批量清洗 ──────────────────────────────────────────────────────
+
+
+@router.post("/clean/trigger")
+async def trigger_batch_clean(
+    data_dir: str = "待清洗数据",
+    product_id: uuid.UUID | None = None,
+) -> dict:
+    """触发 CSV 批量清洗任务。"""
+    from app.tasks.clean_task import clean_csv_batch
+
+    task = clean_csv_batch.delay(data_dir, str(product_id) if product_id else None)
+    return {"task_id": task.id, "status": "queued"}
+
+
+@router.get("/clean/status/{task_id}", response_model=TaskStatusResponse)
+async def get_clean_status(task_id: str) -> TaskStatusResponse:
+    """查询批量清洗任务状态。"""
+    from celery.result import AsyncResult
+
+    from app.core.celery_app import celery_app
+
+    result = AsyncResult(task_id, app=celery_app)
+    meta = result.info if isinstance(result.info, dict) else {}
+
+    return TaskStatusResponse(
+        task_id=task_id,
+        status=result.status,
+        progress=meta.get("progress"),
+        step=meta.get("step"),
+        result=meta if result.ready() else None,
+    )
