@@ -49,9 +49,7 @@ class TestCreateIteration:
         svc = _make_service(session)
 
         with patch("app.modules.products.service.Iteration", return_value=iter_mock):
-            result = await svc.create_iteration(
-                IterationCreate(product_id=iter_mock.product_id, name="Sprint-1")
-            )
+            result = await svc.create_iteration(IterationCreate(product_id=iter_mock.product_id, name="Sprint-1"))
 
         session.add.assert_called_once_with(iter_mock)
         session.commit.assert_awaited_once()

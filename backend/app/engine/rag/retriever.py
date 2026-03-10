@@ -160,7 +160,7 @@ async def retrieve(
     query: str,
     *,
     top_k: int = 5,
-    score_threshold: float = 0.5,
+    score_threshold: float = 0.3,
     doc_ids: list[str] | None = None,
 ) -> list[RetrievalResult]:
     """语义检索最相似的文档片段。
@@ -223,7 +223,7 @@ async def retrieve_as_context(
     query: str,
     *,
     top_k: int = 5,
-    score_threshold: float = 0.5,
+    score_threshold: float = 0.3,
     doc_ids: list[str] | None = None,
 ) -> str | None:
     """检索并格式化为可直接注入 Prompt 的上下文字符串。

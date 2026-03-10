@@ -35,7 +35,7 @@ const modes: { key: string; label: string; icon: LucideIcon; desc: string }[] = 
 export default function WorkbenchPage() {
   const { id } = useParams<{ id: string }>();
   const { streamSSE } = useSSEStream();
-  const { thinkingText, contentText, isStreaming } = useStreamStore();
+  const { thinkingText, contentText, isStreaming, reset: resetStream } = useStreamStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -53,16 +53,20 @@ export default function WorkbenchPage() {
       .catch(() => {});
   }, [id, mode]);
 
-  const { data: cases = [] } = useQuery({
-    queryKey: ['generation-cases', sessionId],
-    queryFn: () => apiClient<GeneratedCase[]>(`/generation/sessions/${sessionId}/cases`),
-    enabled: !!sessionId,
+  const { data: casesData, refetch: refetchCases } = useQuery({
+    queryKey: ['workbench-cases', id],
+    queryFn: () =>
+      apiClient<{ items: GeneratedCase[]; total: number }>(
+        `/testcases?requirement_id=${id}&limit=100`,
+      ),
+    enabled: !!id,
   });
+  const cases = casesData?.items ?? [];
 
   const acceptMutation = useMutation({
     mutationFn: (caseId: string) =>
       apiClient(`/generation/sessions/${sessionId}/cases/${caseId}/accept`, { method: 'POST' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['generation-cases', sessionId] }),
+    onSuccess: () => refetchCases(),
   });
 
   useEffect(() => {
@@ -83,8 +87,9 @@ export default function WorkbenchPage() {
         ...prev,
         { id: (Date.now() + 1).toString(), role: 'ai', content: latestContent },
       ]);
+      resetStream();
     }
-    queryClient.invalidateQueries({ queryKey: ['generation-cases', sessionId] });
+    queryClient.invalidateQueries({ queryKey: ['workbench-cases', id] });
   }
 
   return (
@@ -163,11 +168,16 @@ export default function WorkbenchPage() {
               </div>
             )}
             {messages.map((m) => (
-              <ChatBubble key={m.id} sender={m.role} content={m.content} />
+              <ChatBubble
+                key={m.id}
+                sender={m.role}
+                content={m.content}
+                filterJson={m.role === 'ai'}
+              />
             ))}
             <ThinkingStream text={thinkingText} isStreaming={isStreaming && !contentText} />
             {contentText && (
-              <ChatBubble sender="ai" content={contentText} isStreaming={isStreaming} />
+              <ChatBubble sender="ai" content={contentText} isStreaming={isStreaming} filterJson />
             )}
           </div>
           <div className="border-t border-border p-3 flex gap-2">

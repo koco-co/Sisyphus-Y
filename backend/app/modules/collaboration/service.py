@@ -300,10 +300,7 @@ class CollaborationService:
             User.deleted_at.is_(None),
         )
         user_rows = await self.session.execute(users_q)
-        display_by_id = {
-            str(user.id): user.full_name or user.username
-            for user in user_rows.scalars().all()
-        }
+        display_by_id = {str(user.id): user.full_name or user.username for user in user_rows.scalars().all()}
         return [display_by_id.get(reviewer_id, reviewer_id) for reviewer_id in raw_order]
 
     @staticmethod

@@ -11,9 +11,7 @@ MAX_BCRYPT_PASSWORD_BYTES = 72
 def _encode_password(password: str) -> bytes:
     password_bytes = password.encode("utf-8")
     if len(password_bytes) > MAX_BCRYPT_PASSWORD_BYTES:
-        raise ValueError(
-            f"Password cannot be longer than {MAX_BCRYPT_PASSWORD_BYTES} bytes for bcrypt hashing"
-        )
+        raise ValueError(f"Password cannot be longer than {MAX_BCRYPT_PASSWORD_BYTES} bytes for bcrypt hashing")
     return password_bytes
 
 

@@ -42,7 +42,7 @@ const riskLevelConfig: Record<string, { label: string; variant: 'red' | 'amber' 
 export default function DiagnosisPage() {
   const { id } = useParams<{ id: string }>();
   const { streamSSE } = useSSEStream();
-  const { thinkingText, contentText, isStreaming } = useStreamStore();
+  const { thinkingText, contentText, isStreaming, reset: resetStream } = useStreamStore();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
@@ -63,6 +63,37 @@ export default function DiagnosisPage() {
       }>(`/scene-map/${id}`),
     retry: false,
   });
+
+  const { data: historyMessages } = useQuery({
+    queryKey: ['diagnosis-messages', id],
+    queryFn: () => apiClient<{ role: string; content: string }[]>(`/diagnosis/${id}/messages`),
+    retry: false,
+  });
+
+  // Initialize messages from history on first load
+  useEffect(() => {
+    if (historyMessages?.length && messages.length === 0) {
+      setMessages(
+        historyMessages
+          // Filter out raw scan JSON messages (assistant messages that are pure JSON code blocks)
+          .filter((m) => {
+            if (m.role !== 'assistant') return true;
+            const trimmed = m.content.trim();
+            // Skip messages that are purely JSON code blocks (diagnosis scan results)
+            return !(
+              trimmed.startsWith('```json') ||
+              trimmed.startsWith('{') ||
+              trimmed.startsWith('[')
+            );
+          })
+          .map((m, i) => ({
+            id: `history-${i}`,
+            role: m.role === 'user' ? 'user' : 'ai',
+            content: m.content,
+          })),
+      );
+    }
+  }, [historyMessages, messages.length]);
 
   useEffect(() => {
     const shouldAutoScroll = messages.length > 0 || Boolean(thinkingText) || Boolean(contentText);
@@ -86,6 +117,7 @@ export default function DiagnosisPage() {
         ...prev,
         { id: (Date.now() + 1).toString(), role: 'ai', content: latestContent },
       ]);
+      resetStream();
     }
   }
 

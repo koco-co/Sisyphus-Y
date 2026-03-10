@@ -5,6 +5,7 @@ Revises: f817de7fa899
 Create Date: 2026-03-10 10:01:26.968226
 
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -13,8 +14,8 @@ from sqlalchemy.dialects import postgresql
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '14d8578f0c07'
-down_revision: str | Sequence[str] | None = 'f817de7fa899'
+revision: str = "14d8578f0c07"
+down_revision: str | Sequence[str] | None = "f817de7fa899"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

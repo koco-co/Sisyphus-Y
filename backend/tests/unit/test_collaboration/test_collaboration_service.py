@@ -92,9 +92,7 @@ class TestGetReviewByToken:
         user_result.scalars.return_value.all.return_value = [user]
 
         session = AsyncMock()
-        session.execute = AsyncMock(
-            side_effect=[share_result, scene_map_result, test_point_result, user_result]
-        )
+        session.execute = AsyncMock(side_effect=[share_result, scene_map_result, test_point_result, user_result])
         session.get = AsyncMock(return_value=requirement)
 
         service = CollaborationService(session)

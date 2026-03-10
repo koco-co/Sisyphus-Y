@@ -79,7 +79,7 @@ async def _invoke_openai(messages: list[dict]) -> LLMResult:
     response = cast(
         Any,
         await client.chat.completions.create(
-        model=settings.openai_model,
+            model=settings.openai_model,
             messages=cast(Any, messages),
         ),
     )
@@ -120,7 +120,7 @@ async def _invoke_dashscope(messages: list[dict]) -> LLMResult:
     response = cast(
         Any,
         await client.chat.completions.create(
-        model=settings.dashscope_model,
+            model=settings.dashscope_model,
             messages=cast(Any, messages),
         ),
     )

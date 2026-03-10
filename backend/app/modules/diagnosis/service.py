@@ -245,9 +245,12 @@ class DiagnosisService:
         if match:
             try:
                 data = json.loads(match.group())
-                return [item for item in data if isinstance(item, dict)]
-            except (json.JSONDecodeError, TypeError):
-                logger.debug("AI 响应 JSON 解析失败，尝试 Markdown 表格回退")
+                if not isinstance(data, list):
+                    logger.warning("AI 响应 JSON 格式异常，期望数组，实际为 %s", type(data).__name__)
+                else:
+                    return [item for item in data if isinstance(item, dict)]
+            except (json.JSONDecodeError, TypeError) as e:
+                logger.debug("AI 响应 JSON 解析失败，尝试 Markdown 表格回退: %s", e)
 
         markdown_items: list[dict[str, str]] = []
         for raw_line in ai_content.splitlines():

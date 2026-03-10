@@ -120,9 +120,7 @@ class CoverageService:
 
             for requirement in iteration_requirements:
                 scene_map = scene_map_by_requirement.get(requirement.id)
-                requirement_test_points = (
-                    test_points_by_scene_map.get(scene_map.id, []) if scene_map else []
-                )
+                requirement_test_points = test_points_by_scene_map.get(scene_map.id, []) if scene_map else []
                 requirement_test_cases = cases_by_requirement.get(requirement.id, [])
                 point_items = []
 
@@ -168,9 +166,7 @@ class CoverageService:
 
             requirement_count = len(iteration_requirements)
             coverage_rate = (
-                round((requirement_count - uncovered_count) / requirement_count * 100)
-                if requirement_count
-                else 0
+                round((requirement_count - uncovered_count) / requirement_count * 100) if requirement_count else 0
             )
             payload_iterations.append(
                 {
@@ -179,8 +175,7 @@ class CoverageService:
                     "coverage_rate": coverage_rate,
                     "requirement_count": requirement_count,
                     "testcase_count": sum(
-                        len(cases_by_requirement.get(requirement.id, []))
-                        for requirement in iteration_requirements
+                        len(cases_by_requirement.get(requirement.id, [])) for requirement in iteration_requirements
                     ),
                     "uncovered_count": uncovered_count,
                     "requirements": requirement_items,

@@ -12,9 +12,7 @@ async def test_embed_zhipu_disables_env_proxy():
     """智谱嵌入客户端应显式禁用系统代理。"""
     http_client = MagicMock()
     zhipu_client = MagicMock()
-    zhipu_client.embeddings.create.return_value = SimpleNamespace(
-        data=[SimpleNamespace(embedding=[0.1, 0.2, 0.3])]
-    )
+    zhipu_client.embeddings.create.return_value = SimpleNamespace(data=[SimpleNamespace(embedding=[0.1, 0.2, 0.3])])
 
     with (
         patch("app.engine.rag.embedder.httpx.Client", return_value=http_client) as httpx_client,

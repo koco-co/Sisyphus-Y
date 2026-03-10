@@ -50,9 +50,7 @@ class TestAssemblePromptReturnsMessages:
         assert "模块专项规则" in result
 
     def test_assembly_with_output_preference(self):
-        result = assemble_prompt(
-            "generation", "task", output_preference={"verbosity": "detailed", "language": "zh-CN"}
-        )
+        result = assemble_prompt("generation", "task", output_preference={"verbosity": "detailed", "language": "zh-CN"})
         assert "verbosity" in result
         assert "detailed" in result
 

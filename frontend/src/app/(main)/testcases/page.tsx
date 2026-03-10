@@ -365,7 +365,7 @@ export default function TestCasesPage() {
       <div className="grid grid-cols-4 gap-3 mb-5">
         <StatCard value={total} label="总用例数" highlighted />
         <StatCard value={activeCount} label="已通过" />
-        <StatCard value={pendingCount} label="待审核" />
+        <StatCard value={pendingCount} label="评审中" />
         <StatCard value={draftCount} label="草稿" />
       </div>
 

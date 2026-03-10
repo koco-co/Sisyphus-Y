@@ -1,0 +1,1404 @@
+{
+  "version": "2.0.0",
+  "lastUpdated": "2026-03-10T07:40:30Z",
+  "phases": [
+    {
+      "id": "phase-t0",
+      "name": "T0 · 环境验证",
+      "status": "done",
+      "modules": [
+        {
+          "id": "T0-M01",
+          "name": "后端服务连通性",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T0-01",
+              "name": "FastAPI 服务启动 (:8000)",
+              "status": "done",
+              "type": "smoke"
+            },
+            {
+              "id": "T0-02",
+              "name": "GET /health 接口正常返回 200",
+              "status": "done",
+              "type": "smoke"
+            },
+            {
+              "id": "T0-03",
+              "name": "Alembic 迁移全部 applied",
+              "status": "partial",
+              "type": "smoke"
+            },
+            {
+              "id": "T0-04",
+              "name": "PostgreSQL 连接验证",
+              "status": "done",
+              "type": "smoke"
+            },
+            {
+              "id": "T0-05",
+              "name": "Redis 连接验证",
+              "status": "done",
+              "type": "smoke"
+            },
+            {
+              "id": "T0-06",
+              "name": "Qdrant 向量库连接验证",
+              "status": "done",
+              "type": "smoke"
+            },
+            {
+              "id": "T0-07",
+              "name": "MinIO 对象存储连接验证",
+              "status": "done",
+              "type": "smoke"
+            }
+          ]
+        },
+        {
+          "id": "T0-M02",
+          "name": "前端服务连通性",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T0-08",
+              "name": "Next.js 前端启动 (:3000)",
+              "status": "done",
+              "type": "smoke"
+            },
+            {
+              "id": "T0-09",
+              "name": "首页正常加载，无 JS 错误",
+              "status": "done",
+              "type": "smoke"
+            },
+            {
+              "id": "T0-10",
+              "name": "progress.json API 路由 (/api/progress) 正常返回",
+              "status": "done",
+              "type": "smoke"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-t1",
+      "name": "T1 · 后端代码规范审查",
+      "status": "done",
+      "modules": [
+        {
+          "id": "T1-M00",
+          "name": "M00 产品/迭代/需求模块审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-01",
+              "name": "router.py 只做参数校验，不含业务逻辑",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-02",
+              "name": "models.py SoftDeleteMixin 已应用",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-03",
+              "name": "schemas.py Pydantic v2 风格，无废弃用法",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-04",
+              "name": "service.py 接收 AsyncSession 参数",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-M03",
+          "name": "M03 诊断模块代码审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-05",
+              "name": "router.py 无 Prompt 内容",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-06",
+              "name": "engine/diagnosis/ 包含所有 Prompt 模板",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-07",
+              "name": "诊断结果 JSON 安全提取（re.search 模式）",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-08",
+              "name": "GLM-4-Flash 模型配置正确，trust_env=False",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-M04",
+          "name": "M04 场景地图模块代码审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-09",
+              "name": "generate_scene_map_stream 在 engine 层",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-10",
+              "name": "scene_map 生成结果持久化到 SceneNode 表",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-11",
+              "name": "confirmed_at 字段在确认时正确设置",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-M05",
+          "name": "M05 用例生成模块代码审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-12",
+              "name": "SSE 流式端点正确使用 StreamingResponse",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-13",
+              "name": "Qwen-Max 模型用于用例生成",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-14",
+              "name": "流式结束后自动将完整内容持久化到 TestCase",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-15",
+              "name": "parse_test_cases 安全提取 JSON（无直接 json.loads）",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-M06",
+          "name": "M06 用例管理模块代码审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-16",
+              "name": "软删除查询过滤 deleted_at.is_(None)",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-17",
+              "name": "PATCH 更新使用 upsert 或幂等写入",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-M07",
+          "name": "M07 Diff 模块代码审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-18",
+              "name": "Myers Diff (difflib) 实现在 engine/diff/",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-19",
+              "name": "语义分析调用 LLM 在 engine 层",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-20",
+              "name": "requirement_diffs 表迁移文件存在",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-M08",
+          "name": "M08 覆盖矩阵模块代码审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-21",
+              "name": "coverage_matrices 表迁移文件存在",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-22",
+              "name": "覆盖率计算逻辑在 service 层",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-M11",
+          "name": "M11 知识库/RAG 模块代码审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-23",
+              "name": "KnowledgeEmbedder 集合名称正确（sisyphus_knowledge）",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-24",
+              "name": "向量维度与嵌入模型匹配",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-25",
+              "name": "doc_type 过滤支持按文档类型检索",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-M01",
+          "name": "M01 UDA 文档解析模块代码审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-26",
+              "name": "支持 docx/pdf/md 三种格式",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-27",
+              "name": "图片归档到 MinIO，返回 minio_path",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-28",
+              "name": "PaddleOCR 扫描件处理逻辑存在",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-AI",
+          "name": "AI 引擎层规范审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-29",
+              "name": "assemble_prompt 7层组装逻辑在 ai/prompts.py",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-30",
+              "name": "容错降级：主模型失败→重试2次→备用模型",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-31",
+              "name": "所有 LLM 调用设置 trust_env=False",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-32",
+              "name": "ruff check 无 lint 错误",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-33",
+              "name": "pyright 类型检查无严重错误",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T1-EXPORT",
+          "name": "M12/M13 导出/执行回流模块审查",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T1-34",
+              "name": "export_jobs 表迁移文件存在",
+              "status": "done",
+              "type": "code-review"
+            },
+            {
+              "id": "T1-35",
+              "name": "执行结果回流接口存在且逻辑正确",
+              "status": "done",
+              "type": "code-review"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-t2",
+      "name": "T2 · 后端接口测试",
+      "status": "done",
+      "modules": [
+        {
+          "id": "T2-M00A",
+          "name": "产品/迭代接口测试",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T2-01",
+              "name": "GET /api/products 返回产品列表",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-02",
+              "name": "POST /api/products 创建产品",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-03",
+              "name": "GET /api/products/{id}/iterations 返回迭代列表",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-04",
+              "name": "POST /api/products/{id}/iterations 创建迭代",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-05",
+              "name": "软删除：DELETE 操作设置 deleted_at 而非物理删除",
+              "status": "done",
+              "type": "api-test"
+            }
+          ]
+        },
+        {
+          "id": "T2-M00B",
+          "name": "需求接口测试",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T2-06",
+              "name": "GET /api/iterations/{id}/requirements 返回需求树",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-07",
+              "name": "POST /api/requirements 创建需求",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-08",
+              "name": "PATCH /api/requirements/{id} 更新需求内容",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-09",
+              "name": "GET /api/requirements/{id}/versions 版本历史",
+              "status": "done",
+              "type": "api-test"
+            }
+          ]
+        },
+        {
+          "id": "T2-M03",
+          "name": "诊断接口测试",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T2-10",
+              "name": "POST /api/diagnosis/scan 触发诊断，返回 diagnosis_id",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-11",
+              "name": "GET /api/diagnosis/{id} 获取诊断报告",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-12",
+              "name": "POST /api/diagnosis/{id}/session/start 开始追问",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-13",
+              "name": "POST 追问 reply 接口正常响应",
+              "status": "done",
+              "type": "api-test"
+            }
+          ]
+        },
+        {
+          "id": "T2-M04",
+          "name": "场景地图接口测试",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T2-14",
+              "name": "POST /api/requirements/{id}/scene-map/generate 触发生成",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-15",
+              "name": "GET /api/requirements/{id}/scene-map 返回测试点列表",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-16",
+              "name": "PATCH /api/scene-nodes/{id} 编辑测试点",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-17",
+              "name": "POST confirm 接口设置 confirmed_at",
+              "status": "done",
+              "type": "api-test"
+            }
+          ]
+        },
+        {
+          "id": "T2-M05",
+          "name": "用例生成接口测试",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T2-18",
+              "name": "POST /api/generate/stream 返回 SSE EventStream",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-19",
+              "name": "SSE 事件格式包含 case_done 类型",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-20",
+              "name": "流结束后数据库中存在生成的用例记录",
+              "status": "done",
+              "type": "api-test"
+            }
+          ]
+        },
+        {
+          "id": "T2-M06",
+          "name": "用例管理接口测试",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T2-21",
+              "name": "GET /api/requirements/{id}/testcases 支持 priority 筛选",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-22",
+              "name": "PATCH /api/testcases/{id} 更新用例字段",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-23",
+              "name": "POST /api/testcases/export 批量导出响应正确",
+              "status": "done",
+              "type": "api-test"
+            }
+          ]
+        },
+        {
+          "id": "T2-M07",
+          "name": "Diff 接口测试",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T2-24",
+              "name": "POST /api/requirements/{id}/diff 计算版本差异",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-25",
+              "name": "GET /api/requirements/{id}/diff/latest 返回变更影响",
+              "status": "done",
+              "type": "api-test"
+            }
+          ]
+        },
+        {
+          "id": "T2-MISC",
+          "name": "辅助模块接口测试",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T2-26",
+              "name": "GET /api/coverage/product/{id} 覆盖矩阵数据",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-27",
+              "name": "GET /api/dashboard/overview 仪表盘数据",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-28",
+              "name": "GET /api/knowledge 知识库列表",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-29",
+              "name": "GET /api/ai-config 模型配置接口",
+              "status": "done",
+              "type": "api-test"
+            },
+            {
+              "id": "T2-30",
+              "name": "GET /api/templates 模板列表",
+              "status": "done",
+              "type": "api-test"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-t3",
+      "name": "T3 · AI 引擎功能测试",
+      "status": "pending",
+      "modules": [
+        {
+          "id": "T3-UDA",
+          "name": "UDA 文档解析引擎测试",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T3-01",
+              "name": "docx 格式解析：提取标题/正文/表格",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-02",
+              "name": "md 格式解析：结构正确转化",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-03",
+              "name": "pdf 解析：文字提取无乱码",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-04",
+              "name": "图片链接识别并归档到 MinIO",
+              "status": "pending",
+              "type": "engine-test"
+            }
+          ]
+        },
+        {
+          "id": "T3-DIAG",
+          "name": "需求诊断引擎测试",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T3-05",
+              "name": "广度扫描识别≥6类风险（缺少边界/异常/并发等）",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-06",
+              "name": "诊断结果 JSON 格式正确，包含 risk_level/items",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-07",
+              "name": "苏格拉底追问在第 3 轮后终止并标记 resolved",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-08",
+              "name": "诊断清单（checklist）生成完整",
+              "status": "pending",
+              "type": "engine-test"
+            }
+          ]
+        },
+        {
+          "id": "T3-SCENE",
+          "name": "场景地图生成引擎测试",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T3-09",
+              "name": "从需求文档生成≥5个测试点分组",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-10",
+              "name": "每个测试点包含 title/priority/estimated_cases",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-11",
+              "name": "SSE 流式输出可正常迭代接收",
+              "status": "pending",
+              "type": "engine-test"
+            }
+          ]
+        },
+        {
+          "id": "T3-CASEGEN",
+          "name": "用例生成引擎测试（使用信永中和需求文档）",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T3-12",
+              "name": "doc_driven 模式：从需求直接生成用例，结构完整",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-13",
+              "name": "chat_driven 模式：对话引导生成，每轮≤5条",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-14",
+              "name": "用例包含 steps 数组（每步有 action/expected_result）",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-15",
+              "name": "生成质量：覆盖正常/异常/边界场景",
+              "status": "pending",
+              "type": "quality"
+            }
+          ]
+        },
+        {
+          "id": "T3-DIFF",
+          "name": "Diff 引擎测试",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T3-16",
+              "name": "Myers Diff 正确识别增删行，返回 hunks",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-17",
+              "name": "语义分析正确标记 needs_rewrite/needs_review/no_impact",
+              "status": "pending",
+              "type": "engine-test"
+            }
+          ]
+        },
+        {
+          "id": "T3-RAG",
+          "name": "RAG 向量检索引擎测试",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T3-18",
+              "name": "Qdrant 集合 sisyphus_knowledge 存在",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-19",
+              "name": "上传知识文档后向量正确写入 Qdrant",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-20",
+              "name": "检索查询返回相关片段（similarity≥0.72）",
+              "status": "pending",
+              "type": "engine-test"
+            },
+            {
+              "id": "T3-21",
+              "name": "RAG 知识注入到用例生成 Prompt 中",
+              "status": "pending",
+              "type": "engine-test"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-t4",
+      "name": "T4 · 前端代码规范审查",
+      "status": "pending",
+      "modules": [
+        {
+          "id": "T4-COLOR",
+          "name": "颜色 Token 使用规范",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T4-01",
+              "name": "全局搜索：无 style={{ color: '#xxx' }} 硬编码",
+              "status": "pending",
+              "type": "code-review"
+            },
+            {
+              "id": "T4-02",
+              "name": "全局搜索：无 className=\"text-[#xxx]\" 硬编码",
+              "status": "pending",
+              "type": "code-review"
+            },
+            {
+              "id": "T4-03",
+              "name": "tailwind.config.ts 包含所有 sy-* token",
+              "status": "pending",
+              "type": "code-review"
+            },
+            {
+              "id": "T4-04",
+              "name": "biome check 无 lint 错误",
+              "status": "pending",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T4-ICON",
+          "name": "图标规范审查",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T4-05",
+              "name": "全局搜索：JSX 中无 emoji 字符（非注释）",
+              "status": "pending",
+              "type": "code-review"
+            },
+            {
+              "id": "T4-06",
+              "name": "图标均来自 lucide-react",
+              "status": "pending",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T4-COMP",
+          "name": "组件规范审查",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T4-07",
+              "name": "StatusBadge 组件存在并被复用（无各页面自实现）",
+              "status": "pending",
+              "type": "code-review"
+            },
+            {
+              "id": "T4-08",
+              "name": "CaseCard 步骤数组逐条渲染，无 JSON.stringify",
+              "status": "pending",
+              "type": "code-review"
+            },
+            {
+              "id": "T4-09",
+              "name": "SSE 流式输出使用 StreamCursor 动画",
+              "status": "pending",
+              "type": "code-review"
+            },
+            {
+              "id": "T4-10",
+              "name": "Select/下拉框使用统一组件，无自定义样式",
+              "status": "pending",
+              "type": "code-review"
+            }
+          ]
+        },
+        {
+          "id": "T4-TYPE",
+          "name": "TypeScript 类型检查",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "T4-11",
+              "name": "tsc --noEmit 无严重 TS 错误",
+              "status": "pending",
+              "type": "code-review"
+            },
+            {
+              "id": "T4-12",
+              "name": "API 响应类型有对应 interface/type 定义",
+              "status": "pending",
+              "type": "code-review"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phase-t5",
+      "name": "T5 · 前端 UI 样式测试",
+      "status": "done",
+      "modules": [
+        {
+          "id": "T5-LAYOUT",
+          "name": "全局布局与导航",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-01",
+              "name": "顶部导航栏高度约 49px，深色背景",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-02",
+              "name": "导航 Tab 激活状态高亮正确",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-03",
+              "name": "进度大盘按钮右下角悬浮，可见可点击",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-04",
+              "name": "进度大盘面板滑入动效正常",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-05",
+              "name": "主题切换（深色/浅色）功能正常",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        },
+        {
+          "id": "T5-HOME",
+          "name": "项目列表页（/）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-06",
+              "name": "产品卡片列表正常渲染",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-07",
+              "name": "新建产品按钮可用，弹窗/表单样式正确",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-08",
+              "name": "hover 效果：-translate-y-px + border 变化",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        },
+        {
+          "id": "T5-REQ",
+          "name": "需求管理页（/requirements）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-09",
+              "name": "需求树结构正确渲染",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-10",
+              "name": "需求卡片编辑器样式与原型一致",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-11",
+              "name": "上传文档按钮存在并可交互",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        },
+        {
+          "id": "T5-DIAG",
+          "name": "诊断页面（/diagnosis）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-12",
+              "name": "三栏布局正确，各栏独立滚动",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-13",
+              "name": "诊断报告卡片风险等级 Badge 颜色正确",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-14",
+              "name": "对话气泡 AI/用户区分明显",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-15",
+              "name": "StreamCursor 闪烁动效在生成时显示",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        },
+        {
+          "id": "T5-SCENE",
+          "name": "测试点确认页（/scene-map）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-16",
+              "name": "React Flow 场景地图正常渲染节点",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-17",
+              "name": "节点颜色编码：document/supplemented/missing/pending 四种",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-18",
+              "name": "确认按钮在有 missing 节点时置灰",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        },
+        {
+          "id": "T5-WORK",
+          "name": "用例生成工作台（/workbench）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-19",
+              "name": "三栏布局正确，高度不超视口",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-20",
+              "name": "中间区域不出现原始 JSON 字符串",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-21",
+              "name": "CaseCard 渲染完整：ID/优先级/步骤列表",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-22",
+              "name": "生成中 Loader2 动效显示，完成后变 CheckCircle2",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        },
+        {
+          "id": "T5-CASES",
+          "name": "用例管理页（/testcases）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-23",
+              "name": "用例列表表格正常渲染，分页正确",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-24",
+              "name": "筛选器（优先级/类型/状态）下拉框样式统一",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-25",
+              "name": "导出按钮存在且可点击",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        },
+        {
+          "id": "T5-DIFF",
+          "name": "Diff 页面（/diff）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-26",
+              "name": "新增行绿色高亮，删除行红色划线",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-27",
+              "name": "受影响用例列表正确展示",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        },
+        {
+          "id": "T5-KNOWLEDGE",
+          "name": "知识库页面（/knowledge）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-28",
+              "name": "知识文档列表正常显示",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-29",
+              "name": "上传文档流程 UI 完整（上传→处理→完成状态）",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        },
+        {
+          "id": "T5-SETTINGS",
+          "name": "设置页面（/settings）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T5-30",
+              "name": "AI 模型配置面板正常加载当前配置",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-31",
+              "name": "测试标准编辑器可正常编辑和保存",
+              "status": "done",
+              "type": "ui-test"
+            },
+            {
+              "id": "T5-32",
+              "name": "下拉框（模型选择）样式与全站一致",
+              "status": "done",
+              "type": "ui-test"
+            }
+          ]
+        }
+      ],
+      "completedAt": "2025-03-10"
+    },
+    {
+      "id": "phase-t6",
+      "name": "T6 · 端到端业务流程测试",
+      "status": "done",
+      "modules": [
+        {
+          "id": "T6-FLOW1",
+          "name": "核心生成流程 E2E",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T6-01",
+              "name": "创建产品 → 创建迭代 → 创建需求",
+              "status": "done",
+              "type": "e2e"
+            },
+            {
+              "id": "T6-02",
+              "name": "触发诊断 → 查看报告 → 完成追问",
+              "status": "done",
+              "type": "e2e"
+            },
+            {
+              "id": "T6-03",
+              "name": "生成场景地图 → 确认测试点",
+              "status": "done",
+              "type": "e2e"
+            },
+            {
+              "id": "T6-04",
+              "name": "进入工作台 → 流式生成用例 → 查看结果",
+              "status": "done",
+              "type": "e2e"
+            }
+          ]
+        },
+        {
+          "id": "T6-FLOW2",
+          "name": "Diff 变更流程 E2E",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T6-05",
+              "name": "更新需求内容 → 触发 Diff → 查看变更摘要",
+              "status": "done",
+              "type": "e2e"
+            },
+            {
+              "id": "T6-06",
+              "name": "Diff 结果中受影响用例列表正确",
+              "status": "done",
+              "type": "e2e"
+            },
+            {
+              "id": "T6-07",
+              "name": "重新生成受影响用例流程正常",
+              "status": "done",
+              "type": "e2e"
+            }
+          ]
+        },
+        {
+          "id": "T6-FLOW3",
+          "name": "知识库 RAG 流程 E2E",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T6-08",
+              "name": "上传知识文档 → 异步向量化完成",
+              "status": "done",
+              "type": "e2e"
+            },
+            {
+              "id": "T6-09",
+              "name": "使用 RAG 测试接口验证命中率",
+              "status": "done",
+              "type": "e2e"
+            },
+            {
+              "id": "T6-10",
+              "name": "知识库内容注入用例生成 Prompt 可见",
+              "status": "done",
+              "type": "e2e"
+            }
+          ]
+        },
+        {
+          "id": "T6-FLOW4",
+          "name": "用例管理与覆盖矩阵 E2E",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T6-11",
+              "name": "用例批量导出（xlsx 格式）成功下载",
+              "status": "done",
+              "type": "e2e"
+            },
+            {
+              "id": "T6-12",
+              "name": "覆盖矩阵正确反映需求-用例映射",
+              "status": "done",
+              "type": "e2e"
+            },
+            {
+              "id": "T6-13",
+              "name": "执行结果回流接口更新用例状态",
+              "status": "done",
+              "type": "e2e"
+            }
+          ]
+        }
+      ],
+      "completedAt": "2025-03-10"
+    },
+    {
+      "id": "phase-t7",
+      "name": "T7 · AI 生成质量评估与优化",
+      "status": "done",
+      "modules": [
+        {
+          "id": "T7-DIAG-QUALITY",
+          "name": "诊断质量评估（GLM-4-Flash）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T7-01",
+              "name": "使用信永中和需求文档触发诊断，评估风险识别完整性",
+              "status": "done",
+              "type": "quality"
+            },
+            {
+              "id": "T7-02",
+              "name": "追问对话自然度与专业性评估",
+              "status": "done",
+              "type": "quality"
+            },
+            {
+              "id": "T7-03",
+              "name": "如质量不足，优化 scanner.py Prompt 并重测",
+              "status": "done",
+              "type": "optimize"
+            }
+          ]
+        },
+        {
+          "id": "T7-SCENE-QUALITY",
+          "name": "场景地图质量评估",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T7-04",
+              "name": "生成的测试点覆盖度评估（需求点覆盖率≥85%）",
+              "status": "done",
+              "type": "quality"
+            },
+            {
+              "id": "T7-05",
+              "name": "测试点分组合理性评估（正常/异常/边界/并发/权限）",
+              "status": "done",
+              "type": "quality"
+            },
+            {
+              "id": "T7-06",
+              "name": "如质量不足，优化 generator.py Prompt 并重测",
+              "status": "done",
+              "type": "optimize"
+            }
+          ]
+        },
+        {
+          "id": "T7-CASEGEN-QUALITY",
+          "name": "用例生成质量评估（Qwen-Max）",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T7-07",
+              "name": "使用 PRD迭代13 需求文档生成用例，评估质量",
+              "status": "done",
+              "type": "quality"
+            },
+            {
+              "id": "T7-08",
+              "name": "步骤描述清晰度（步骤≥3，有具体操作）",
+              "status": "done",
+              "type": "quality"
+            },
+            {
+              "id": "T7-09",
+              "name": "边界值/异常场景覆盖率评估",
+              "status": "done",
+              "type": "quality"
+            },
+            {
+              "id": "T7-10",
+              "name": "如质量不足，优化 doc_driven.py Prompt 并重测",
+              "status": "done",
+              "type": "optimize"
+            }
+          ]
+        },
+        {
+          "id": "T7-RAG-QUALITY",
+          "name": "RAG 检索质量评估",
+          "status": "done",
+          "tasks": [
+            {
+              "id": "T7-11",
+              "name": "检索相关性评估（Top-5 结果中≥3个相关）",
+              "status": "done",
+              "type": "quality"
+            },
+            {
+              "id": "T7-12",
+              "name": "如检索质量差，调整 score_threshold 或分块策略",
+              "status": "done",
+              "type": "optimize"
+            },
+            {
+              "id": "T7-13",
+              "name": "RAG 注入对用例质量提升效果验证",
+              "status": "done",
+              "type": "quality"
+            }
+          ]
+        }
+      ],
+      "completedAt": "2025-03-10"
+    }
+  ]
+}

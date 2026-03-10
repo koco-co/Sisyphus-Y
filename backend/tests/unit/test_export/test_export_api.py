@@ -33,7 +33,4 @@ class TestExportExcelEndpoint:
         assert resp.status_code == 200
         assert resp.content == excel_bytes
         assert resp.headers["content-disposition"] == "attachment; filename=test_cases.xlsx"
-        assert (
-            resp.headers["content-type"]
-            == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        assert resp.headers["content-type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

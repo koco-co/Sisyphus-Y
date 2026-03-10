@@ -112,9 +112,7 @@ class TestAstToMarkdown:
         assert md == "## Hello"
 
     def test_paragraph_node(self):
-        doc = DocumentAST(
-            nodes=[ASTNode(type=NodeType.PARAGRAPH, content="Some text")]
-        )
+        doc = DocumentAST(nodes=[ASTNode(type=NodeType.PARAGRAPH, content="Some text")])
         md = doc.to_markdown()
         assert md == "Some text"
 
@@ -135,24 +133,18 @@ class TestAstToMarkdown:
         assert "- Item B" in md
 
     def test_code_block_node(self):
-        doc = DocumentAST(
-            nodes=[ASTNode(type=NodeType.CODE_BLOCK, content="print('hi')", language="python")]
-        )
+        doc = DocumentAST(nodes=[ASTNode(type=NodeType.CODE_BLOCK, content="print('hi')", language="python")])
         md = doc.to_markdown()
         assert "```python" in md
         assert "print('hi')" in md
 
     def test_image_node(self):
-        doc = DocumentAST(
-            nodes=[ASTNode(type=NodeType.IMAGE, url="http://img.png", alt="pic")]
-        )
+        doc = DocumentAST(nodes=[ASTNode(type=NodeType.IMAGE, url="http://img.png", alt="pic")])
         md = doc.to_markdown()
         assert "![pic](http://img.png)" in md
 
     def test_blockquote_node(self):
-        doc = DocumentAST(
-            nodes=[ASTNode(type=NodeType.BLOCKQUOTE, content="quoted")]
-        )
+        doc = DocumentAST(nodes=[ASTNode(type=NodeType.BLOCKQUOTE, content="quoted")])
         md = doc.to_markdown()
         assert "> quoted" in md
 

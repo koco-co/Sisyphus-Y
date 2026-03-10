@@ -194,7 +194,7 @@ class KnowledgeService:
         query: str,
         *,
         top_k: int = 5,
-        score_threshold: float = 0.5,
+        score_threshold: float = 0.3,
         doc_id: UUID | None = None,
     ) -> list[dict]:
         doc_ids = [str(doc_id)] if doc_id else None

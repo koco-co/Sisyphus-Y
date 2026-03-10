@@ -4,10 +4,10 @@ from sqlalchemy import String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.shared.base_model import Base, TimestampMixin
+from app.shared.base_model import Base, SoftDeleteMixin, TimestampMixin
 
 
-class AuditLog(Base, TimestampMixin):
+class AuditLog(Base, TimestampMixin, SoftDeleteMixin):
     __tablename__ = "audit_logs"
 
     id: Mapped[uuid.UUID] = mapped_column(

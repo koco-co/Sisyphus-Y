@@ -19,7 +19,8 @@ def _make_testcase_dict(title: str = "用例A", steps: list | None = None):
         "case_type": "functional",
         "status": "approved",
         "precondition": "用户已登录",
-        "steps": steps or [
+        "steps": steps
+        or [
             {"step_num": 1, "action": "点击按钮", "expected_result": "弹出对话框"},
         ],
         "tags": ["登录"],

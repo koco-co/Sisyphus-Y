@@ -43,38 +43,20 @@ def upgrade() -> None:
                 existing_nullable=True,
             )
 
-        op.execute(
-            "ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS generation_session_id UUID"
-        )
-        op.execute(
-            "ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS module_path VARCHAR(200)"
-        )
-        op.execute(
-            "ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS steps JSONB NOT NULL DEFAULT '[]'::jsonb"
-        )
-        op.execute(
-            "ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS tags JSONB NOT NULL DEFAULT '[]'::jsonb"
-        )
-        op.execute(
-            "ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS created_by UUID"
-        )
-        op.execute(
-            "ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS reviewer_id UUID"
-        )
-        op.execute(
-            "ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS review_comment TEXT"
-        )
-        op.execute(
-            "CREATE INDEX IF NOT EXISTS ix_test_cases_scene_node_id ON test_cases (scene_node_id)"
-        )
+        op.execute("ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS generation_session_id UUID")
+        op.execute("ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS module_path VARCHAR(200)")
+        op.execute("ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS steps JSONB NOT NULL DEFAULT '[]'::jsonb")
+        op.execute("ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS tags JSONB NOT NULL DEFAULT '[]'::jsonb")
+        op.execute("ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS created_by UUID")
+        op.execute("ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS reviewer_id UUID")
+        op.execute("ALTER TABLE test_cases ADD COLUMN IF NOT EXISTS review_comment TEXT")
+        op.execute("CREATE INDEX IF NOT EXISTS ix_test_cases_scene_node_id ON test_cases (scene_node_id)")
         op.execute(
             "CREATE INDEX IF NOT EXISTS ix_test_cases_generation_session_id ON test_cases (generation_session_id)"
         )
 
     if _has_table("test_points"):
-        op.execute(
-            "ALTER TABLE test_points ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0"
-        )
+        op.execute("ALTER TABLE test_points ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0")
 
     if _has_table("audit_logs"):
         audit_columns = _columns("audit_logs")
@@ -103,12 +85,8 @@ def upgrade() -> None:
                 existing_nullable=True,
             )
 
-        op.execute(
-            "ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS old_value JSONB"
-        )
-        op.execute(
-            "ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS user_agent TEXT"
-        )
+        op.execute("ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS old_value JSONB")
+        op.execute("ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS user_agent TEXT")
         op.execute(
             "CREATE INDEX IF NOT EXISTS ix_audit_logs_entity_type_entity_id ON audit_logs (entity_type, entity_id)"
         )

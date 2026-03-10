@@ -55,7 +55,7 @@ async def openai_thinking_stream(
     stream = cast(
         Any,
         await client.chat.completions.create(
-        model=settings.openai_model,
+            model=settings.openai_model,
             messages=cast(Any, all_messages),
             stream=True,
         ),
@@ -166,7 +166,7 @@ async def dashscope_thinking_stream(
     stream = cast(
         Any,
         await client.chat.completions.create(
-        model=settings.dashscope_model,
+            model=settings.dashscope_model,
             messages=cast(Any, all_messages),
             stream=True,
         ),

@@ -97,9 +97,7 @@ class AnalyticsService:
                 100.0,
                 max(
                     0.0,
-                    pass_rate * 0.4
-                    + coverage_rate * 0.4
-                    + max(0.0, 100 - defect_density * 10) * 0.2,
+                    pass_rate * 0.4 + coverage_rate * 0.4 + max(0.0, 100 - defect_density * 10) * 0.2,
                 ),
             ),
             2,
