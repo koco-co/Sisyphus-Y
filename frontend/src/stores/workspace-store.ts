@@ -27,6 +27,7 @@ export interface WorkbenchTestCase {
   priority: 'P0' | 'P1' | 'P2' | 'P3';
   case_type: string;
   status: string;
+  precondition?: string;
   source: string;
   steps: { no: number; action: string; expected_result: string }[];
   ai_score?: number;

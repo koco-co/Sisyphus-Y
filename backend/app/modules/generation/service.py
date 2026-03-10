@@ -148,6 +148,65 @@ class GenerationService:
         result = await self.session.execute(q)
         return list(result.scalars().all())
 
+    async def list_messages_with_cases(self, session_id: UUID) -> list[dict]:
+        """Return messages with associated test cases for each assistant message."""
+        messages = await self.list_messages(session_id)
+        cases = await self.list_session_cases(session_id)
+
+        result: list[dict] = []
+        for msg in messages:
+            msg_dict: dict = {
+                "id": str(msg.id),
+                "role": msg.role,
+                "content": msg.content,
+                "thinking_content": msg.thinking_content,
+                "created_at": msg.created_at.isoformat() if msg.created_at else "",
+                "cases": None,
+            }
+            if msg.role == "assistant" and cases:
+                msg_created = msg.created_at
+                # Find next user message after this assistant message
+                next_user_msgs = [
+                    m for m in messages
+                    if m.role == "user" and m.created_at and msg_created and m.created_at > msg_created
+                ]
+                cutoff = next_user_msgs[0].created_at if next_user_msgs else None
+
+                matched = []
+                for c in cases:
+                    if (
+                        c.created_at
+                        and msg_created
+                        and c.created_at >= msg_created
+                        and (cutoff is None or c.created_at <= cutoff)
+                    ):
+                        matched.append(c)
+
+                if matched:
+                    msg_dict["cases"] = [
+                        {
+                            "id": str(c.id),
+                            "case_id": c.case_id,
+                            "title": c.title,
+                            "priority": c.priority,
+                            "case_type": c.case_type if c.case_type != "functional" else "normal",
+                            "status": c.status,
+                            "precondition": c.precondition,
+                            "steps": [
+                                {
+                                    "no": s.get("step_num", s.get("step", i + 1)),
+                                    "action": s.get("action", ""),
+                                    "expected_result": s.get("expected_result", s.get("expected", "")),
+                                }
+                                for i, s in enumerate(c.steps or [])
+                            ],
+                            "ai_score": c.ai_score,
+                        }
+                        for c in matched
+                    ]
+            result.append(msg_dict)
+        return result
+
     async def list_session_cases(self, session_id: UUID) -> list[TestCase]:
         q = (
             select(TestCase)

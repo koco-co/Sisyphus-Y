@@ -16,6 +16,7 @@ interface CaseCardProps {
   priority: 'P0' | 'P1' | 'P2' | 'P3';
   type?: string;
   status?: string;
+  precondition?: string;
   steps: TestCaseStep[];
   aiScore?: number;
   className?: string;
@@ -34,6 +35,7 @@ export function CaseCard({
   priority,
   type,
   status,
+  precondition,
   steps,
   aiScore,
   className = '',
@@ -63,6 +65,13 @@ export function CaseCard({
 
       {/* Title */}
       <p className="text-[12.5px] text-text font-medium mb-2">{title}</p>
+
+      {/* Precondition */}
+      {precondition && (
+        <p className="text-[11px] text-text3 mb-2 pl-2 border-l-2 border-border">
+          前置条件：{precondition}
+        </p>
+      )}
 
       {/* AI Score */}
       {aiScore !== undefined && (

@@ -93,17 +93,7 @@ async def list_sessions(requirement_id: uuid.UUID, session: AsyncSessionDep) -> 
 @router.get("/sessions/{session_id}/messages")
 async def list_messages(session_id: uuid.UUID, session: AsyncSessionDep) -> list[dict]:
     svc = GenerationService(session)
-    messages = await svc.list_messages(session_id)
-    return [
-        {
-            "id": str(m.id),
-            "role": m.role,
-            "content": m.content,
-            "thinking_content": m.thinking_content,
-            "created_at": m.created_at.isoformat() if m.created_at else "",
-        }
-        for m in messages
-    ]
+    return await svc.list_messages_with_cases(session_id)
 
 
 @router.post("/sessions/{session_id}/chat")

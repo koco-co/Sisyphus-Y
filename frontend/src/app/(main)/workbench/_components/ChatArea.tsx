@@ -102,6 +102,7 @@ function MessageBubble({ message }: { message: WorkbenchMessage }) {
                 priority={tc.priority}
                 type={tc.case_type}
                 status={tc.status}
+                precondition={tc.precondition}
                 steps={tc.steps}
                 aiScore={tc.ai_score}
               />
