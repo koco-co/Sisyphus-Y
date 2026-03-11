@@ -136,6 +136,7 @@ export default function TestCasesPage() {
 
   // ── 目录树 ──
   const [selectedFolderPath, setSelectedFolderPath] = useState<string | null>(null);
+  const [folderRefreshKey, setFolderRefreshKey] = useState(0);
 
   // ── Pagination ──
   const [page, setPage] = useState(1);
@@ -296,8 +297,10 @@ export default function TestCasesPage() {
       setEditFormOpen(false);
       setEditingCase(null);
       await fetchCases();
+      setFolderRefreshKey((k) => k + 1); // 目录树重新加载
     } catch (e) {
       console.error('Failed to save test case:', e);
+      throw e; // 让 CaseEditForm 显示错误提示
     }
   };
 
@@ -413,6 +416,7 @@ export default function TestCasesPage() {
           <FolderTree
             selectedPath={selectedFolderPath}
             totalCount={globalStats.total}
+            refreshKey={folderRefreshKey}
             onSelect={(path) => {
               setSelectedFolderPath(path);
               setPage(1);

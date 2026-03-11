@@ -48,6 +48,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
   const [modulePath, setModulePath] = useState('');
   const [steps, setSteps] = useState<TestCaseStep[]>([]);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Sync form state when testCase changes
   useEffect(() => {
@@ -95,6 +96,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
   const handleSubmit = async () => {
     if (!title.trim()) return;
     setSaving(true);
+    setSaveError(null);
     try {
       await onSave({
         title: title.trim(),
@@ -105,6 +107,8 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
         module_path: modulePath.trim() || null,
         steps,
       });
+    } catch {
+      setSaveError('保存失败，请稍后重试');
     } finally {
       setSaving(false);
     }
@@ -309,23 +313,30 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 px-5 py-4 border-t border-border shrink-0">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 rounded-md text-[12.5px] font-medium border border-border bg-bg2 text-text2 hover:bg-bg3 transition-colors"
-          >
-            取消
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!title.trim() || saving}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-accent text-white hover:bg-accent2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-            {saving ? '保存中...' : '保存'}
-          </button>
+        <div className="border-t border-border shrink-0">
+          {saveError && (
+            <div className="px-5 py-2 text-[12px] text-red-500 bg-red-50 dark:bg-red/10 dark:text-sy-danger">
+              {saveError}
+            </div>
+          )}
+          <div className="flex justify-end gap-2 px-5 py-4">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 rounded-md text-[12.5px] font-medium border border-border bg-bg2 text-text2 hover:bg-bg3 transition-colors"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!title.trim() || saving}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-accent text-white hover:bg-accent2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {saving ? '保存中...' : '保存'}
+            </button>
+          </div>
         </div>
       </div>
     </dialog>

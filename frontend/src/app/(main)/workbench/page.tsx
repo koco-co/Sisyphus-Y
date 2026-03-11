@@ -1,6 +1,6 @@
 'use client';
 
-import { Sparkles } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import { useCallback } from 'react';
 import { ThreeColLayout } from '@/components/layout/ThreeColLayout';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -83,6 +83,18 @@ export default function WorkbenchPage() {
             icon={<Sparkles className="w-12 h-12" />}
             title={wb.selectedReqId ? '选择或新建会话' : '请从左侧选择需求'}
             description="对话式 AI 测试用例生成"
+            action={
+              wb.selectedReqId ? (
+                <button
+                  type="button"
+                  onClick={wb.createSession}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-sy-accent text-black hover:bg-sy-accent-2 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  新建会话
+                </button>
+              ) : undefined
+            }
           />
         </div>
       )}

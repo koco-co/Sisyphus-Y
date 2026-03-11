@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronRight, Folder, FolderOpen, Inbox } from 'lucide-react';
+import { ChevronDown, ChevronRight, Folder, FolderOpen, Inbox, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 
@@ -15,6 +15,7 @@ interface FolderTreeProps {
   selectedPath: string | null;
   totalCount: number;
   onSelect: (path: string | null) => void;
+  refreshKey?: number;
 }
 
 function FolderItem({
@@ -102,7 +103,7 @@ function FolderItem({
   );
 }
 
-export function FolderTree({ selectedPath, totalCount, onSelect }: FolderTreeProps) {
+export function FolderTree({ selectedPath, totalCount, onSelect, refreshKey }: FolderTreeProps) {
   const [folders, setFolders] = useState<FolderNode[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -120,12 +121,29 @@ export function FolderTree({ selectedPath, totalCount, onSelect }: FolderTreePro
     fetchFolders();
   }, []);
 
+  // 当 refreshKey 改变时重新获取目录
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fetchFolders is stable
+  useEffect(() => {
+    if (refreshKey !== undefined && refreshKey > 0) {
+      fetchFolders();
+    }
+  }, [refreshKey]);
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-3 py-2 border-b border-sy-border">
         <span className="text-[11.5px] font-semibold text-sy-text-3 uppercase tracking-wider">
           目录
         </span>
+        <button
+          type="button"
+          onClick={fetchFolders}
+          disabled={loading}
+          className="p-0.5 rounded text-sy-text-3 hover:text-sy-text disabled:opacity-40 transition-colors"
+          title="刷新目录"
+        >
+          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto py-1.5 px-1.5">
