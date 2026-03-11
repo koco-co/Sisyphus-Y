@@ -14,7 +14,79 @@ interface DiagnosisChatProps {
   hasRequirement: boolean;
 }
 
+interface DiagnosisDimension {
+  title: string;
+  description: string;
+  risk_level: 'high' | 'medium' | 'low';
+  suggestion: string;
+}
+
+interface DiagnosisJsonResult {
+  overall_health_score?: number;
+  dimensions?: DiagnosisDimension[];
+  [key: string]: unknown;
+}
+
+function renderDiagnosisJson(json: DiagnosisJsonResult): string {
+  const riskColors: Record<string, string> = {
+    high: 'border-l-4 border-danger bg-danger/5',
+    medium: 'border-l-4 border-warn bg-warn/5',
+    low: 'border-l-4 border-info bg-info/5',
+  };
+  const riskLabels: Record<string, string> = {
+    high: '<span style="color:var(--danger);font-weight:600">高风险</span>',
+    medium: '<span style="color:var(--warn);font-weight:600">中风险</span>',
+    low: '<span style="color:var(--info);font-weight:600">低风险</span>',
+  };
+
+  let html = '';
+  if (json.overall_health_score !== undefined) {
+    const score = json.overall_health_score;
+    const scoreColor = score >= 70 ? 'var(--accent)' : score >= 50 ? 'var(--warn)' : 'var(--danger)';
+    html += `<div style="margin-bottom:12px;padding:8px 12px;background:var(--bg2);border-radius:8px;display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;color:var(--text3)">总体健康评分</span>
+      <span style="font-size:20px;font-weight:700;color:${scoreColor}">${score}</span>
+      <span style="font-size:11px;color:var(--text3)">/100</span>
+    </div>`;
+  }
+
+  if (Array.isArray(json.dimensions)) {
+    html += '<div style="display:flex;flex-direction:column;gap:8px">';
+    for (const dim of json.dimensions) {
+      const colorClass = riskColors[dim.risk_level] || '';
+      const label = riskLabels[dim.risk_level] || dim.risk_level;
+      html += `<div style="padding:10px 12px;border-radius:6px;${colorClass.includes('border-l') ? 'border-left:4px solid' : ''};background:var(--bg2)">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span style="font-size:12.5px;font-weight:600;color:var(--text)">${dim.title}</span>
+          ${label}
+        </div>
+        <p style="font-size:12px;color:var(--text2);margin:0 0 4px 0">${dim.description}</p>
+        <p style="font-size:11.5px;color:var(--text3);margin:0"><strong>建议：</strong>${dim.suggestion}</p>
+      </div>`;
+    }
+    html += '</div>';
+  }
+  return html || `<pre style="font-size:11px;color:var(--text2);white-space:pre-wrap">${JSON.stringify(json, null, 2)}</pre>`;
+}
+
 function renderMarkdown(text: string): string {
+  // Handle ```json ... ``` code blocks — parse and render diagnosis reports
+  const jsonBlockMatch = text.match(/```json\s*([\s\S]*?)```/);
+  if (jsonBlockMatch) {
+    try {
+      const parsed: DiagnosisJsonResult = JSON.parse(jsonBlockMatch[1]);
+      if (parsed.dimensions || parsed.overall_health_score !== undefined) {
+        const before = text.substring(0, text.indexOf('```json')).trim();
+        const after = text.substring(text.indexOf('```', text.indexOf('```json') + 7) + 3).trim();
+        const beforeHtml = before ? `<p>${before.replace(/\n/g, '<br/>')}</p>` : '';
+        const afterHtml = after ? `<p>${after.replace(/\n/g, '<br/>')}</p>` : '';
+        return `${beforeHtml}${renderDiagnosisJson(parsed)}${afterHtml}`;
+      }
+    } catch {
+      // fall through to normal markdown
+    }
+  }
+
   return text
     .replace(/### (.+)/g, '<h3>$1</h3>')
     .replace(/## (.+)/g, '<h2>$1</h2>')

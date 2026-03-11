@@ -94,3 +94,18 @@ class TaskStatusResponse(BaseSchema):
     progress: int | None = None
     step: str | None = None
     result: dict | None = None
+
+
+class BatchFromDirectoryRequest(BaseSchema):
+    """批量清洗请求。"""
+
+    data_dir: str = Field(default="待清洗数据", description="CSV 数据根目录（相对于项目根）")
+
+
+class BatchPipelineStatsResponse(BaseSchema):
+    """批量清洗流水线启动响应。"""
+
+    task_id: str
+    status: str
+    data_dir: str
+    message: str

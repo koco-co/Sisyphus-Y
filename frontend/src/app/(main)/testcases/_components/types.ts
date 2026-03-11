@@ -15,6 +15,9 @@ export interface TestCaseDetail {
   case_type: string;
   source: string;
   ai_score: number | null;
+  quality_score?: number | null;
+  clean_status?: string | null;
+  original_raw?: Record<string, string> | null;
   precondition: string | null;
   module_path: string | null;
   version: number;
@@ -35,6 +38,7 @@ export interface CaseFilters {
   status: string;
   caseType: string;
   source: string;
+  cleanStatus: string;
 }
 
 export const priorityVariant: Record<string, 'danger' | 'warning' | 'info' | 'gray'> = {

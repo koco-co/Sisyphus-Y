@@ -168,9 +168,33 @@ export default function SceneMapPage() {
 
               {/* Stream output */}
               {sm.sse.content && (
-                <div className="mx-4 mt-3 p-3 rounded-lg bg-sy-bg-2 border border-sy-border text-[12.5px] text-sy-text font-mono leading-relaxed whitespace-pre-wrap">
-                  {sm.sse.content}
-                  {sm.sse.isStreaming && <StreamCursor />}
+                <div className="mx-4 mt-3 p-3 rounded-lg bg-sy-bg-2 border border-sy-border text-[12.5px] text-sy-text leading-relaxed">
+                  <div className="flex items-center gap-2 mb-2 text-[11px] text-sy-text-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sy-accent animate-pulse" />
+                    <span>AI 正在生成测试点...</span>
+                  </div>
+                  <div className="font-mono text-[11.5px] text-sy-text-2 whitespace-pre-wrap max-h-48 overflow-y-auto">
+                    {sm.sse.content
+                      .replace(/```json\n?/g, '')
+                      .replace(/```\s*$/g, '')
+                      .trim()
+                      .split('\n')
+                      .filter((line) => {
+                        const trimmed = line.trim();
+                        const keyMatch = trimmed.match(/"title":\s*"([^"]+)"/);
+                        return keyMatch !== null;
+                      })
+                      .map((line, i) => {
+                        const m = line.match(/"title":\s*"([^"]+)"/);
+                        return m ? (
+                          <div key={`tp-${i}`} className="flex items-center gap-1.5 py-0.5">
+                            <span className="w-1 h-1 rounded-full bg-sy-accent/60 flex-shrink-0" />
+                            <span>{m[1]}</span>
+                          </div>
+                        ) : null;
+                      })}
+                    {sm.sse.isStreaming && <StreamCursor />}
+                  </div>
                 </div>
               )}
 

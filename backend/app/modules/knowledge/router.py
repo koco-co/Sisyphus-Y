@@ -174,3 +174,28 @@ async def delete_document(doc_id: uuid.UUID, session: AsyncSessionDep) -> dict:
     if not success:
         raise HTTPException(status_code=404, detail="Document not found")
     return {"ok": True}
+
+
+@router.post("/rebuild-vector-index")
+async def rebuild_vector_index(
+    payload: dict,
+    session: AsyncSessionDep,
+) -> dict:
+    """重建 Qdrant 向量索引（向量维度变更时调用）。
+
+    接受 {"dimensions": int, "collection": str} 参数。
+    标记所有文档为 pending 重新向量化，并重建 Qdrant collection。
+    """
+    dimensions: int = int(payload.get("dimensions", 1024))
+    collection: str = str(payload.get("collection", "knowledge_chunks"))
+
+    svc = KnowledgeService(session)
+    count = await svc.reset_all_vector_status(collection=collection, new_dimensions=dimensions)
+
+    return {
+        "ok": True,
+        "collection": collection,
+        "dimensions": dimensions,
+        "docs_queued": count,
+        "message": f"已重置 {count} 篇文档的向量化状态，将在后台重新索引",
+    }

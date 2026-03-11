@@ -333,6 +333,25 @@ class ImportRecordService:
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
+    async def list_discarded_records(
+        self,
+        limit: int = 200,
+        offset: int = 0,
+    ) -> list[ImportRecord]:
+        """列出所有丢弃（rejected）的导入记录，跨所有 Job。"""
+        stmt = (
+            select(ImportRecord)
+            .where(
+                ImportRecord.status == "rejected",
+                ImportRecord.deleted_at.is_(None),
+            )
+            .order_by(ImportRecord.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
     async def apply_action(
         self,
         record_id: UUID,

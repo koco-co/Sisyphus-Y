@@ -6,6 +6,7 @@ import { ConnectionTestButton } from '@/components/ui/ConnectionTestButton';
 import { ParamTooltip } from '@/components/ui/ParamTooltip';
 import { useAiConfig } from '@/hooks/useAiConfig';
 import { api } from '@/lib/api';
+import { VectorModelSettings } from './VectorModelSettings';
 
 // ─── Provider / Model 类型 ─────────────────────────────────────────
 
@@ -231,8 +232,11 @@ export function AIModelSettings() {
   };
 
   const isDisabled = loading || saving || providersLoading;
+  type VectorConfig = { provider?: string; model?: string; dimensions?: number; collection?: string } | null;
+  const vectorCfg = (effectiveConfig?.vector_config ?? null) as VectorConfig;
 
   return (
+    <>
     <div>
       {/* ── 标题 ── */}
       <div className="sec-header">
@@ -411,5 +415,11 @@ export function AIModelSettings() {
         </div>
       </div>
     </div>
+    <VectorModelSettings
+      vectorConfig={vectorCfg}
+      onSave={saveGlobalConfig}
+      saving={saving}
+    />
+    </>
   );
 }

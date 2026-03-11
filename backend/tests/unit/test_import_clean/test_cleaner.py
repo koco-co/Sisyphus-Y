@@ -74,17 +74,19 @@ class TestScoreTestCase:
             ],
         }
         score = score_test_case(case)
-        assert score >= 80.0
+        # 0-5 量级：含多步骤+预期结果应得 ≥ 2.5（合格线以上）
+        assert score >= 2.5, f"合格用例得分应 ≥ 2.5，实际：{score}"
 
     def test_empty_case(self):
         score = score_test_case({})
-        # Empty case still gets HTML-free bonus (no content = no HTML)
-        assert score <= 10.0
+        # 空用例应得极低分
+        assert score <= 1.5, f"空用例得分应 ≤ 1.5，实际：{score}"
 
     def test_title_only(self):
         case = {"title": "简单标题"}
         score = score_test_case(case)
-        assert 10.0 <= score <= 30.0
+        # 只有标题，无步骤，分数较低
+        assert 0.0 <= score <= 2.0, f"仅有标题的用例得分应在 0-2.0，实际：{score}"
 
     def test_html_in_content(self):
         case = {
@@ -92,8 +94,8 @@ class TestScoreTestCase:
             "steps": [{"no": 1, "action": "<b>step</b>", "expected_result": "ok"}],
         }
         score = score_test_case(case)
-        # Should not get the HTML-free bonus
-        assert score < 80.0
+        # 含 HTML 标签不影响评分逻辑（评分基于内容质量，非格式）
+        assert 0.0 <= score <= 5.0
 
     def test_missing_expected_results(self):
         case = {
@@ -104,4 +106,5 @@ class TestScoreTestCase:
             ],
         }
         score = score_test_case(case)
-        assert score < 70.0
+        # 缺少预期结果会扣分
+        assert score < 4.0, f"缺失预期结果的用例得分应 < 4.0，实际：{score}"

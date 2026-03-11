@@ -1,6 +1,15 @@
 'use client';
 
-import { ArrowRight, Clock, Edit3, FileText, GitBranch, Trash2, X } from 'lucide-react';
+import {
+  ArrowRight,
+  Clock,
+  Edit3,
+  FileText,
+  GitBranch,
+  SplitSquareHorizontal,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { useEffect } from 'react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import type { TestCaseDetail } from './types';
@@ -12,6 +21,7 @@ interface CaseDetailDrawerProps {
   onClose: () => void;
   onEdit: (tc: TestCaseDetail) => void;
   onDelete: (id: string) => void;
+  onCompare?: (tc: TestCaseDetail) => void;
 }
 
 export function CaseDetailDrawer({
@@ -20,6 +30,7 @@ export function CaseDetailDrawer({
   onClose,
   onEdit,
   onDelete,
+  onCompare,
 }: CaseDetailDrawerProps) {
   // Close on Escape key
   useEffect(() => {
@@ -71,6 +82,16 @@ export function CaseDetailDrawer({
           >
             <Edit3 className="w-4 h-4" />
           </button>
+          {onCompare && testCase.original_raw && (
+            <button
+              type="button"
+              onClick={() => onCompare(testCase)}
+              className="p-1.5 rounded-md text-text3 hover:text-sy-info hover:bg-sy-info/10 transition-colors"
+              title="清洗前后对比"
+            >
+              <SplitSquareHorizontal className="w-4 h-4" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onDelete(testCase.id)}

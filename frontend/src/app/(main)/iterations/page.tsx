@@ -93,7 +93,7 @@ function IterationsContent() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (values: { name: string; start_date?: string; end_date?: string }) =>
+    mutationFn: (values: { name: string; product_id: string; start_date?: string; end_date?: string }) =>
       apiClient.post(`/products/${productId}/iterations`, values),
     onSuccess: () => {
       message.success('迭代创建成功');
@@ -152,8 +152,9 @@ function IterationsContent() {
   }
 
   const handleCreateFinish = (values: Record<string, unknown>) => {
-    const payload: { name: string; start_date?: string; end_date?: string } = {
+    const payload: { name: string; product_id: string; start_date?: string; end_date?: string } = {
       name: values.name as string,
+      product_id: productId!,
     };
     if (values.start_date)
       payload.start_date = (values.start_date as { format: (f: string) => string }).format(

@@ -3,8 +3,8 @@
 Provides utilities for:
 - HTML tag stripping
 - Empty value normalization
-- Automated quality scoring
-- LLM-based test case improvement
+- Quality scoring (0-5 scale) with routing logic
+- LLM-based test case improvement with domain-specific rules
 """
 
 from __future__ import annotations
@@ -14,8 +14,36 @@ import logging
 import re
 
 from app.ai.llm_client import LLMResult, invoke_llm
+from app.engine.import_clean.prompt_rules import (
+    DEPENDENCY_PHRASES as _DEPENDENCY_PHRASE_LIST,
+)
+from app.engine.import_clean.prompt_rules import (
+    SCORE_THRESHOLDS,
+    SYSTEM_PROMPT_V2,
+)
+from app.engine.import_clean.prompt_rules import (
+    VAGUE_ADJECTIVES as _VAGUE_ADJECTIVE_LIST,
+)
 
 logger = logging.getLogger(__name__)
+
+# Quality score routing thresholds（从 prompt_rules 同步）
+SCORE_HIGH = SCORE_THRESHOLDS["high"]      # ≥ 4.5: 直接入库
+SCORE_REVIEW = SCORE_THRESHOLDS["review"]  # 3.5–4.49: 入库，标记 needs_review
+SCORE_POLISH = SCORE_THRESHOLDS["polish"]  # 2.0–3.49: LLM 润色后再评分
+# < 2.0: 丢弃
+
+# Keywords that hint the precondition involves a database
+_DB_KEYWORDS = re.compile(
+    r"(数据库|表|sql|mysql|postgresql|oracle|hive|数据源|入库|建表|字段|schema)",
+    re.IGNORECASE,
+)
+
+# Vague adjectives to detect in steps（从 prompt_rules 同步）
+_VAGUE_ADJECTIVES = re.compile("|".join(re.escape(w) for w in _VAGUE_ADJECTIVE_LIST))
+
+# Step dependency phrases（从 prompt_rules 同步）
+_DEPENDENCY_PHRASES = re.compile("|".join(re.escape(w) for w in _DEPENDENCY_PHRASE_LIST))
 
 
 def strip_html_tags(text: str) -> str:
@@ -39,149 +67,196 @@ def normalize_empty_values(value: str) -> str:
     if not value:
         return ""
     stripped = value.strip()
-    empty_markers = {"无", "无。", "N/A", "n/a", "NA", "na", "-", "--", "——", "/", "null", "NULL", "None", "none", "空"}
+    empty_markers = {
+        "无", "无。", "N/A", "n/a", "NA", "na", "-", "--", "——",
+        "/", "null", "NULL", "None", "none", "空",
+    }
     if stripped in empty_markers:
         return ""
     return stripped
 
 
 def score_test_case(case: dict) -> float:
-    """Score a test case on quality (0-100).
+    """Score a cleaned test case on quality (0–5 scale).
 
-    Criteria:
-    - title present and descriptive (0-25)
-    - steps present and have action+expected (0-35)
-    - precondition present (0-10)
-    - priority valid (0-10)
-    - no HTML remnants (0-10)
-    - reasonable step count (0-10)
+    Scoring criteria:
+    - Title descriptive and specific       (0–1.0)
+    - Steps: all have action + expected    (0–1.5)
+    - Steps: first step is entry action    (0–0.5)
+    - Steps: no dependency phrases         (0–0.5)
+    - Steps: no vague adjectives           (0–0.3)
+    - Precondition present and specific    (0–0.5)
+    - No HTML remnants                     (0–0.3)
+    - Expected result coverage             (0–0.4)
     """
     score = 0.0
 
     title = case.get("title", "")
-    if title:
-        score += 10.0
-        if len(title) >= 10:
-            score += 10.0
-        if len(title) >= 20:
-            score += 5.0
+    steps: list[dict] = case.get("steps", [])
+    precondition = case.get("precondition", "")
 
-    steps = case.get("steps", [])
+    # Title (0–1.0)
+    if title:
+        score += 0.4
+        if len(title) >= 10:
+            score += 0.3
+        if len(title) >= 20:
+            score += 0.3
+
+    # Steps completeness (0–1.5)
     if steps:
-        score += 10.0
         steps_with_action = sum(1 for s in steps if s.get("action"))
         steps_with_expected = sum(1 for s in steps if s.get("expected_result"))
-        if steps_with_action == len(steps):
-            score += 15.0
-        elif steps_with_action > 0:
-            score += 15.0 * (steps_with_action / len(steps))
-        if steps_with_expected == len(steps):
-            score += 10.0
-        elif steps_with_expected > 0:
-            score += 10.0 * (steps_with_expected / len(steps))
+        n = len(steps)
+        score += 0.75 * (steps_with_action / n)
+        score += 0.75 * (steps_with_expected / n)
 
-    if case.get("precondition"):
-        score += 10.0
+    # First step is an entry action (0–0.5)
+    if steps and steps[0].get("action", "").startswith("进入"):
+        score += 0.5
 
-    valid_priorities = {"P0", "P1", "P2", "P3"}
-    if case.get("priority") in valid_priorities:
-        score += 10.0
+    # No cross-case dependencies (0–0.5)
+    all_actions = " ".join(s.get("action", "") for s in steps)
+    if not _DEPENDENCY_PHRASES.search(all_actions):
+        score += 0.5
 
-    # Check for HTML remnants
-    all_text = f"{title} {case.get('precondition', '')} " + " ".join(
-        f"{s.get('action', '')} {s.get('expected_result', '')}" for s in steps
-    )
+    # No vague adjectives (0–0.3)
+    all_text = f"{title} {precondition} {all_actions}"
+    if not _VAGUE_ADJECTIVES.search(all_text):
+        score += 0.3
+
+    # Precondition present (0–0.5)
+    if precondition and len(precondition) >= 5:
+        score += 0.3
+        # Bonus: contains SQL for DB-related cases
+        if _DB_KEYWORDS.search(f"{title} {precondition}") and (
+            "CREATE" in precondition.upper() or "INSERT" in precondition.upper()
+        ):
+            score += 0.2
+
+    # No HTML remnants (0–0.3)
     if not re.search(r"<[^>]+>", all_text):
-        score += 10.0
+        score += 0.3
 
-    if 2 <= len(steps) <= 15:
-        score += 10.0
-    elif 1 <= len(steps) <= 20:
-        score += 5.0
+    # Expected result per-step coverage (0–0.4)
+    if steps:
+        covered = sum(1 for s in steps if s.get("expected_result"))
+        score += 0.4 * (covered / len(steps))
 
-    return round(min(score, 100.0), 1)
+    return round(min(score, 5.0), 2)
 
 
-CLEAN_CASE_PROMPT = """你是测试用例质量优化助手。请优化以下测试用例，使其更加规范、清晰、可执行。
+def route_by_score(score: float) -> str:
+    """Map quality score to clean_status label.
 
-## 输入用例
-标题：{title}
-前置条件：{precondition}
-步骤：
-{steps_text}
+    Returns:
+        'high'      — score >= 4.5, direct import
+        'review'    — score >= 3.5, import with needs_review flag
+        'polish'    — score >= 2.0, send to LLM polish then re-score
+        'discard'   — score <  2.0, drop and record reason
+    """
+    if score >= SCORE_HIGH:
+        return "high"
+    if score >= SCORE_REVIEW:
+        return "review"
+    if score >= SCORE_POLISH:
+        return "polish"
+    return "discard"
 
-## 优化要求
-1. 标题：简明扼要，包含被测功能和验证点
-2. 前置条件：明确列出执行前的环境/数据要求，无则写"无"
-3. 步骤：每步包含操作（action）和预期结果（expected_result），编号连续
-4. 去除 HTML 标签、特殊符号、冗余描述
-5. 保持原始测试意图不变
 
-## 输出格式（严格 JSON）
-{{
-  "title": "优化后标题",
-  "precondition": "优化后前置条件",
-  "steps": [
-    {{"no": 1, "action": "操作描述", "expected_result": "预期结果"}}
-  ]
-}}
+# ---------------------------------------------------------------------------
+# LLM cleaning prompt
+# ---------------------------------------------------------------------------
+# SYSTEM_PROMPT_V2 已在 prompt_rules.py 中定义并通过导入引入
 
-只输出 JSON，不要其他内容。"""
+
+def _build_clean_prompt(case: dict) -> str:
+    title = strip_html_tags(case.get("title", ""))
+    precondition = strip_html_tags(case.get("precondition", "") or "无")
+    steps: list[dict] = case.get("steps", [])
+    module_path = case.get("module_path", "")
+
+    steps_text = "\n".join(
+        f"{s.get('no', i + 1)}. 操作：{strip_html_tags(s.get('action', ''))} "
+        f"| 预期：{strip_html_tags(s.get('expected_result', ''))}"
+        for i, s in enumerate(steps)
+    ) or "（无步骤）"
+
+    return (
+        f"## 待清洗用例\n"
+        f"所属模块：{module_path}\n"
+        f"标题：{title}\n"
+        f"前置条件：{precondition}\n"
+        f"步骤：\n{steps_text}"
+    )
+
+
+def _safe_json_extract(content: str, fallback: dict) -> dict:
+    """Safely extract the first JSON object from LLM response."""
+    match = re.search(r"\{.*\}", content, re.DOTALL)
+    if not match:
+        logger.warning("LLM 返回格式异常，无法提取 JSON: %s", content[:200])
+        return fallback
+    try:
+        return json.loads(match.group())
+    except json.JSONDecodeError as exc:
+        logger.warning("LLM JSON 解析失败 (%s): %s", exc, content[:200])
+        return fallback
+
+
+def _normalize_cleaned(cleaned: dict, original: dict) -> dict:
+    """Ensure cleaned dict has all required fields and step structure."""
+    steps = cleaned.get("steps", [])
+    if not isinstance(steps, list):
+        steps = []
+    normalized_steps = []
+    for i, step in enumerate(steps):
+        if not isinstance(step, dict):
+            continue
+        normalized_steps.append(
+            {
+                "no": step.get("no", i + 1),
+                "action": str(step.get("action", "")).strip(),
+                "expected_result": str(step.get("expected_result", "")).strip(),
+            }
+        )
+
+    return {
+        "title": cleaned.get("title", original.get("title", "")),
+        "precondition": cleaned.get("precondition", original.get("precondition", "")),
+        "steps": normalized_steps,
+    }
 
 
 async def llm_clean_case(case: dict) -> dict:
-    """Use LLM to clean and improve a single test case.
+    """Use LLM to clean and improve a single test case with domain-specific rules.
 
     Args:
-        case: dict with title, precondition, steps fields
+        case: Normalized case dict with title, precondition, steps, module_path.
 
     Returns:
-        Cleaned case dict with title, precondition, steps
+        Cleaned case dict with title, precondition, steps.
     """
-    title = case.get("title", "")
-    precondition = case.get("precondition", "无")
-    steps = case.get("steps", [])
-
-    steps_text = "\n".join(
-        f"{s.get('no', i + 1)}. 操作：{s.get('action', '')} | 预期：{s.get('expected_result', '')}"
-        for i, s in enumerate(steps)
-    )
-
-    prompt = CLEAN_CASE_PROMPT.format(
-        title=strip_html_tags(title),
-        precondition=strip_html_tags(precondition or "无"),
-        steps_text=strip_html_tags(steps_text) if steps_text else "（无步骤）",
-    )
-
-    result: LLMResult = await invoke_llm([{"role": "user", "content": prompt}])
-
-    match = re.search(r"\{.*\}", result.content, re.DOTALL)
-    if not match:
-        logger.warning("LLM 清洗返回格式异常: %s", result.content[:200])
-        return {
-            "title": strip_html_tags(title),
-            "precondition": strip_html_tags(precondition),
-            "steps": [
-                {
-                    "no": s.get("no", i + 1),
-                    "action": strip_html_tags(s.get("action", "")),
-                    "expected_result": strip_html_tags(s.get("expected_result", "")),
-                }
-                for i, s in enumerate(steps)
-            ],
-        }
-
-    cleaned = json.loads(match.group())
-
-    if not isinstance(cleaned.get("steps"), list):
-        cleaned["steps"] = []
-    for i, step in enumerate(cleaned["steps"]):
-        step.setdefault("no", i + 1)
-        step.setdefault("action", "")
-        step.setdefault("expected_result", "")
-
-    return {
-        "title": cleaned.get("title", title),
-        "precondition": cleaned.get("precondition", ""),
-        "steps": cleaned["steps"],
+    user_prompt = _build_clean_prompt(case)
+    fallback = {
+        "title": strip_html_tags(case.get("title", "")),
+        "precondition": strip_html_tags(case.get("precondition", "")),
+        "steps": [
+            {
+                "no": s.get("no", i + 1),
+                "action": strip_html_tags(s.get("action", "")),
+                "expected_result": strip_html_tags(s.get("expected_result", "")),
+            }
+            for i, s in enumerate(case.get("steps", []))
+        ],
     }
+
+    result: LLMResult = await invoke_llm(
+        [
+            {"role": "system", "content": SYSTEM_PROMPT_V2},
+            {"role": "user", "content": user_prompt},
+        ]
+    )
+
+    raw = _safe_json_extract(result.content, fallback)
+    return _normalize_cleaned(raw, case)

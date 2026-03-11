@@ -9,6 +9,8 @@ from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
 from app.core.dependencies import AsyncSessionDep
 from app.modules.import_clean.schemas import (
+    BatchFromDirectoryRequest,
+    BatchPipelineStatsResponse,
     BatchRecordAction,
     FieldMappingResponse,
     FieldMappingUpdate,
@@ -166,14 +168,77 @@ async def list_records(
     session: AsyncSessionDep,
     job_id: uuid.UUID,
     status_filter: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+    search: str | None = None,
 ) -> list[ImportRecordResponse]:
-    """列出导入记录。"""
-    svc = ImportRecordService(session)
-    records = await svc.list_records(job_id, record_status=status_filter)
+    """列出导入记录（支持分页和搜索）。"""
+    from sqlalchemy import select
+    from app.modules.import_clean.models import ImportRecord
+
+    stmt = select(ImportRecord).where(
+        ImportRecord.job_id == job_id,
+        ImportRecord.deleted_at.is_(None),
+    )
+    if status_filter:
+        stmt = stmt.where(ImportRecord.status == status_filter)
+    if search:
+        stmt = stmt.where(ImportRecord.original_title.ilike(f"%{search}%"))
+    stmt = stmt.order_by(ImportRecord.row_number).limit(limit).offset(offset)
+    result = await session.execute(stmt)
+    records = list(result.scalars().all())
     return [ImportRecordResponse.model_validate(r) for r in records]
 
 
-@router.post("/records/{record_id}/action", response_model=ImportRecordResponse)
+@router.get("/records/count")
+async def count_all_records(
+    session: AsyncSessionDep,
+    search: str | None = None,
+) -> dict:
+    """统计所有导入记录数量。"""
+    from sqlalchemy import func, select
+    from app.modules.import_clean.models import ImportRecord
+
+    stmt = select(func.count()).select_from(ImportRecord).where(ImportRecord.deleted_at.is_(None))
+    if search:
+        stmt = stmt.where(ImportRecord.original_title.ilike(f"%{search}%"))
+    result = await session.execute(stmt)
+    return {"total": result.scalar() or 0}
+
+
+@router.get("/records/all", response_model=list[ImportRecordResponse])
+async def list_all_records(
+    session: AsyncSessionDep,
+    limit: int = 50,
+    offset: int = 0,
+    search: str | None = None,
+) -> list[ImportRecordResponse]:
+    """列出所有导入记录（跨所有 Job，支持分页和搜索）。"""
+    from sqlalchemy import select
+    from app.modules.import_clean.models import ImportRecord
+
+    stmt = select(ImportRecord).where(ImportRecord.deleted_at.is_(None))
+    if search:
+        stmt = stmt.where(ImportRecord.original_title.ilike(f"%{search}%"))
+    stmt = stmt.order_by(ImportRecord.created_at.desc(), ImportRecord.row_number).limit(limit).offset(offset)
+    result = await session.execute(stmt)
+    records = list(result.scalars().all())
+    return [ImportRecordResponse.model_validate(r) for r in records]
+
+
+@router.get("/discarded", response_model=list[ImportRecordResponse])
+async def list_discarded_records(
+    session: AsyncSessionDep,
+    limit: int = 200,
+    offset: int = 0,
+) -> list[ImportRecordResponse]:
+    """列出所有清洗后被丢弃（score < 2.0）的导入记录，跨所有 Job。"""
+    svc = ImportRecordService(session)
+    records = await svc.list_discarded_records(limit=limit, offset=offset)
+    return [ImportRecordResponse.model_validate(r) for r in records]
+
+
+
 async def record_action(
     session: AsyncSessionDep,
     record_id: uuid.UUID,
@@ -188,13 +253,37 @@ async def record_action(
 # ── 批量清洗 ──────────────────────────────────────────────────────
 
 
+@router.post("/batch-from-directory", response_model=BatchPipelineStatsResponse)
+async def batch_from_directory(body: BatchFromDirectoryRequest) -> BatchPipelineStatsResponse:
+    """触发从指定目录批量清洗 CSV 历史用例（异步 Celery 任务）。
+
+    遍历 data_dir 下所有 CSV 文件，执行：
+    1. 自动检测格式（数栈平台 / 信永中和）
+    2. HTML 剥离 + LLM 清洗（GLM-4-Flash）
+    3. 0-5 质量评分与路由（高/审查/润色/丢弃）
+    4. 写入 PostgreSQL import_records
+    5. 写入 Qdrant sisyphus_cleaned_cases collection
+
+    使用 GET /import-clean/clean/status/{task_id} 轮询进度。
+    """
+    from app.worker.tasks.clean_tasks import clean_csv_batch
+
+    task = clean_csv_batch.delay(body.data_dir, None)
+    return BatchPipelineStatsResponse(
+        task_id=task.id,
+        status="queued",
+        data_dir=body.data_dir,
+        message="批量清洗任务已入队，共 65 个 CSV 文件待处理。使用 task_id 查询进度。",
+    )
+
+
 @router.post("/clean/trigger")
 async def trigger_batch_clean(
     data_dir: str = "待清洗数据",
     product_id: uuid.UUID | None = None,
 ) -> dict:
-    """触发 CSV 批量清洗任务。"""
-    from app.tasks.clean_task import clean_csv_batch
+    """触发 CSV 批量清洗任务。（兼容旧接口，推荐使用 /batch-from-directory）"""
+    from app.worker.tasks.clean_tasks import clean_csv_batch
 
     task = clean_csv_batch.delay(data_dir, str(product_id) if product_id else None)
     return {"task_id": task.id, "status": "queued"}
@@ -205,7 +294,7 @@ async def get_clean_status(task_id: str) -> TaskStatusResponse:
     """查询批量清洗任务状态。"""
     from celery.result import AsyncResult
 
-    from app.core.celery_app import celery_app
+    from app.worker.celery_app import celery_app
 
     result = AsyncResult(task_id, app=celery_app)
     meta = result.info if isinstance(result.info, dict) else {}

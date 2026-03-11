@@ -117,11 +117,13 @@ export function ReportList({ report, loading }: ReportListProps) {
         </span>
       </div>
 
-      {/* Summary */}
+      {/* Summary — strip markdown symbols before display */}
       {report.summary && (
         <div className="mt-3 px-1">
           <div className="text-[11px] text-text3 mb-1">诊断摘要</div>
-          <p className="text-[12px] text-text2 leading-relaxed line-clamp-4">{report.summary}</p>
+          <p className="text-[12px] text-text2 leading-relaxed line-clamp-4">
+            {report.summary.replace(/#{1,6}\s*/g, '').replace(/\|/g, ' ').replace(/[-]{2,}/g, '').replace(/\n+/g, ' ').trim()}
+          </p>
         </div>
       )}
     </div>

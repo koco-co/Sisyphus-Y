@@ -136,17 +136,20 @@ async def test_llm_connection(
 async def test_embedding_connection() -> dict:
     """Test embedding/vector service connection."""
     try:
-        from qdrant_client import QdrantClient
+        import httpx
 
         from app.core.config import settings
 
-        client = QdrantClient(url=settings.qdrant_url, timeout=5)
-        collections = client.get_collections()
+        async with httpx.AsyncClient(trust_env=False, timeout=5) as client:
+            r = await client.get(f"{settings.qdrant_url}/collections")
+            r.raise_for_status()
+            data = r.json()
+        collections = data.get("result", {}).get("collections", [])
         return {
             "status": "ok",
             "qdrant_url": settings.qdrant_url,
-            "collections_count": len(collections.collections),
-            "collection_names": [c.name for c in collections.collections],
+            "collections_count": len(collections),
+            "collection_names": [c["name"] for c in collections],
         }
     except Exception as e:
         return {

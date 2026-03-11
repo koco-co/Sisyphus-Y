@@ -385,7 +385,8 @@ class DiagnosisService:
             async with get_async_session_context() as new_session:
                 new_svc = DiagnosisService(new_session)
                 await new_svc.persist_ai_response(report_id, full_text, round_num=1)
-                await new_svc.complete_report(report_id, summary=full_text)
+                # Only mark as completed; do NOT overwrite the structured summary set by run_scan()
+                await new_svc.complete_report(report_id, summary=full_text[:120].replace("\n", " "))
 
         return SSECollector(stream, on_complete=on_complete)
 

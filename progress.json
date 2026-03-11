@@ -2,10 +2,11 @@
   "version": "4.0.0",
   "lastUpdated": "2026-03-11",
   "stats": {
-    "total": 155,
-    "done": 110,
+    "total": 169,
+    "done": 124,
     "in_progress": 0,
-    "pending": 45
+    "pending": 45,
+    "failed": 0
   },
   "tasks": [
     {
@@ -2157,6 +2158,305 @@
       ],
       "depends_on": [],
       "status": "done"
+    },
+    {
+      "id": "TASK-156",
+      "module": "M02",
+      "title": "重写 cleaner.py LLM 清洗规则（0-5评分+路由+SQL前置+步骤标准化）",
+      "description": "重写 engine/import_clean/cleaner.py，实现 0-5 质量评分、4.5+直接入库/3.5-4.4标记review/2-3.4润色/低于2丢弃的路由逻辑，前置条件含SQL建表，步骤第一步必须进入完整路径页面",
+      "acceptance": [
+        "score_test_case() 返回 0-5 浮点数",
+        "route_by_score() 正确路由",
+        "strip_html_tags() 剥离 HTML 标签",
+        "normalize_empty_values() 统一空值"
+      ],
+      "files": [
+        "backend/app/engine/import_clean/cleaner.py"
+      ],
+      "depends_on": [],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": ""
+    },
+    {
+      "id": "TASK-157",
+      "module": "M02",
+      "title": "新增 pipeline.py 完整清洗流水线（解析→评分→路由→写PG）",
+      "description": "新建 engine/import_clean/pipeline.py，实现 run_pipeline() 完整流程：discover CSV → parse → score → route → upsert PG，支持 dry_run 模式",
+      "acceptance": [
+        "pipeline.py 存在",
+        "run_pipeline(dry_run=True) 不写入数据库",
+        "返回 stats 包含 total/high/review/polish/discard"
+      ],
+      "files": [
+        "backend/app/engine/import_clean/pipeline.py"
+      ],
+      "depends_on": [
+        "TASK-156"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": ""
+    },
+    {
+      "id": "TASK-158",
+      "module": "M02",
+      "title": "后端 API：POST /api/import-clean/batch-from-directory",
+      "description": "在 modules/import_clean/router.py 新增 POST /batch-from-directory 端点，触发遍历 待清洗数据/ 目录并执行完整清洗 pipeline",
+      "acceptance": [
+        "POST /api/import-clean/batch-from-directory 返回 job_id",
+        "端点存在于 router.py",
+        "service.py 有对应方法"
+      ],
+      "files": [
+        "backend/app/modules/import_clean/router.py",
+        "backend/app/modules/import_clean/service.py"
+      ],
+      "depends_on": [
+        "TASK-157"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": ""
+    },
+    {
+      "id": "TASK-159",
+      "module": "M02",
+      "title": "确认 alembic 迁移（testcases表quality_score/clean_status/original_raw）",
+      "description": "确认 alembic 迁移文件已包含 testcases 表的 quality_score / clean_status / original_raw 字段",
+      "acceptance": [
+        "alembic upgrade head 无报错",
+        "testcases 表有 quality_score / clean_status / original_raw 字段"
+      ],
+      "files": [
+        "backend/alembic/versions/"
+      ],
+      "depends_on": [
+        "TASK-158"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": ""
+    },
+    {
+      "id": "TASK-160",
+      "module": "M06",
+      "title": "前端 testcases 页 — 新增 cleanStatus 筛选栏",
+      "description": "更新 FilterToolbar.tsx 新增 cleanStatus 筛选（全部/优质/待审核/已润色/未清洗），更新 types.ts 和 page.tsx 集成",
+      "acceptance": [
+        "FilterToolbar 有 cleanStatus 选项",
+        "API 参数包含 clean_status",
+        "types.ts 有 cleanStatus 字段"
+      ],
+      "files": [
+        "frontend/src/app/(main)/testcases/_components/FilterToolbar.tsx",
+        "frontend/src/app/(main)/testcases/_components/types.ts",
+        "frontend/src/app/(main)/testcases/page.tsx"
+      ],
+      "depends_on": [
+        "TASK-159"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": ""
+    },
+    {
+      "id": "TASK-161",
+      "module": "M06",
+      "title": "前端 testcases 页 — CleanCompareDrawer 清洗前后对比视图",
+      "description": "新建 CleanCompareDrawer.tsx，双栏对比展示原始数据（original_raw）vs 清洗后内容，CaseDetailDrawer 添加对比按钮",
+      "acceptance": [
+        "CleanCompareDrawer.tsx 存在",
+        "双栏布局左原始右清洗",
+        "有质量分数和状态 Badge"
+      ],
+      "files": [
+        "frontend/src/app/(main)/testcases/_components/CleanCompareDrawer.tsx",
+        "frontend/src/app/(main)/testcases/_components/CaseDetailDrawer.tsx"
+      ],
+      "depends_on": [
+        "TASK-160"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": ""
+    },
+    {
+      "id": "TASK-162",
+      "module": "M06",
+      "title": "前端 testcases 页 — 丢弃记录入口（DiscardedRecordsModal）",
+      "description": "新建 DiscardedRecordsModal.tsx 展示 status=rejected 记录，后端新增 GET /import-clean/discarded 端点，页面标题区添加入口按钮",
+      "acceptance": [
+        "DiscardedRecordsModal.tsx 存在",
+        "GET /api/import-clean/discarded 返回丢弃列表",
+        "page.tsx 有丢弃记录按钮"
+      ],
+      "files": [
+        "frontend/src/app/(main)/testcases/_components/DiscardedRecordsModal.tsx",
+        "backend/app/modules/import_clean/router.py"
+      ],
+      "depends_on": [
+        "TASK-161"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": ""
+    },
+    {
+      "id": "TASK-163",
+      "module": "M02",
+      "title": "从高质量用例提取 Prompt 规范写入 prompt_rules.py",
+      "description": "新建 engine/import_clean/prompt_rules.py，包含 SYSTEM_PROMPT_V2、PRODUCT_PATH_PREFIXES、PRECONDITION_TEMPLATES、SCORE_THRESHOLDS 等常量，cleaner.py 引用",
+      "acceptance": [
+        "prompt_rules.py 存在",
+        "cleaner.py 导入 prompt_rules 中的常量",
+        "无硬编码 Prompt 字符串在 cleaner.py"
+      ],
+      "files": [
+        "backend/app/engine/import_clean/prompt_rules.py",
+        "backend/app/engine/import_clean/cleaner.py"
+      ],
+      "depends_on": [
+        "TASK-156"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": ""
+    },
+    {
+      "id": "TASK-164",
+      "module": "M02",
+      "title": "CSV 清洗 pipeline 集成测试（信永中和格式）",
+      "description": "新建 test_xingyong_pipeline.py，测试信永中和格式 CSV 解析+评分+路由+pipeline dry_run",
+      "acceptance": [
+        "test_xingyong_pipeline.py 全部测试通过",
+        "strip_html_tags/score_test_case/route_by_score 单元测试覆盖"
+      ],
+      "files": [
+        "backend/tests/unit/test_import_clean/test_xingyong_pipeline.py"
+      ],
+      "depends_on": [
+        "TASK-157"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": "修复了 normalize_empty → normalize_empty_values 导入名称不匹配问题"
+    },
+    {
+      "id": "TASK-165",
+      "module": "M02",
+      "title": "CSV 清洗 pipeline 集成测试（数栈平台格式）",
+      "description": "新建 test_datastacks_pipeline.py，测试数栈平台格式 CSV 解析+评分+路由+pipeline dry_run",
+      "acceptance": [
+        "test_datastacks_pipeline.py 全部测试通过",
+        "62 tests passed"
+      ],
+      "files": [
+        "backend/tests/unit/test_import_clean/test_datastacks_pipeline.py"
+      ],
+      "depends_on": [
+        "TASK-164"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": "修复 HTML 检测断言（> 是路径分隔符）、discover_csv_files 返回 Path 对象"
+    },
+    {
+      "id": "TASK-166",
+      "module": "P1",
+      "title": "AIModelSettings — 参数 Tooltip（temperature/top_p/max_tokens）",
+      "description": "AIModelSettings.tsx 中各参数右上角显示 ParamTooltip，ParamTooltip.tsx 组件已实现，sliderParams 数组携带 tooltip 字段",
+      "acceptance": [
+        "ParamTooltip.tsx 存在",
+        "temperature 等参数有 Tooltip 提示",
+        "Biome lint 通过"
+      ],
+      "files": [
+        "frontend/src/components/ui/ParamTooltip.tsx",
+        "frontend/src/app/(main)/settings/_components/AIModelSettings.tsx"
+      ],
+      "depends_on": [],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": "已在上一段完成实现"
+    },
+    {
+      "id": "TASK-167",
+      "module": "P1",
+      "title": "VectorModelSettings — 维度变更确认弹窗 + 后端 Qdrant collection 重建 API",
+      "description": "VectorModelSettings.tsx 检测维度变更时弹出确认框，确认后调用 POST /api/knowledge/rebuild-vector-index，后端重置所有文档向量化状态",
+      "acceptance": [
+        "维度变更时显示 warn 提示",
+        "保存时弹出确认弹窗",
+        "后端 /knowledge/rebuild-vector-index 端点存在并返回 docs_queued",
+        "Biome lint 通过"
+      ],
+      "files": [
+        "frontend/src/app/(main)/settings/_components/VectorModelSettings.tsx",
+        "backend/app/modules/knowledge/router.py",
+        "backend/app/modules/knowledge/service.py"
+      ],
+      "depends_on": [
+        "TASK-166"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": ""
+    },
+    {
+      "id": "TASK-168",
+      "module": "P1",
+      "title": "AIModelSettings — LLM 连接测试按钮",
+      "description": "ConnectionTestButton 组件调用 POST /api/ai-config/test-llm，展示响应时间和返回内容",
+      "acceptance": [
+        "ConnectionTestButton.tsx 存在",
+        "AIModelSettings 中有测试连接按钮",
+        "后端 /ai-config/test-llm 端点存在"
+      ],
+      "files": [
+        "frontend/src/components/ui/ConnectionTestButton.tsx",
+        "frontend/src/app/(main)/settings/_components/AIModelSettings.tsx",
+        "backend/app/modules/ai_config/router.py"
+      ],
+      "depends_on": [],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": "已在上一段完成实现"
+    },
+    {
+      "id": "TASK-169",
+      "module": "P1",
+      "title": "VectorModelSettings — 向量模型连接测试按钮",
+      "description": "ConnectionTestButton 组件调用 POST /api/ai-config/test-embedding，展示向量维度和耗时",
+      "acceptance": [
+        "VectorModelSettings 有测试向量连接按钮",
+        "后端 /ai-config/test-embedding 端点存在"
+      ],
+      "files": [
+        "frontend/src/app/(main)/settings/_components/VectorModelSettings.tsx",
+        "backend/app/modules/ai_config/router.py"
+      ],
+      "depends_on": [
+        "TASK-168"
+      ],
+      "status": "done",
+      "started_at": "2026-03-11T02:29:07.012302Z",
+      "completed_at": "2026-03-11T02:29:07.012302Z",
+      "notes": "已在上一段完成实现"
     }
-  ]
+  ],
+  "last_updated": "2026-03-11T02:29:07.012302Z"
 }

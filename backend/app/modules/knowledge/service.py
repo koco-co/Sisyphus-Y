@@ -285,3 +285,36 @@ class KnowledgeService:
             doc.hit_count += hit_counts.get(str(doc.id), 0)
 
         await self.session.commit()
+
+    async def reset_all_vector_status(
+        self,
+        collection: str = "knowledge_chunks",
+        new_dimensions: int = 1024,
+    ) -> int:
+        """将所有文档的向量状态重置为 pending，以便重新索引。
+
+        Args:
+            collection: Qdrant collection 名称（用于日志）
+            new_dimensions: 新的向量维度（用于日志）
+
+        Returns:
+            受影响的文档数量
+        """
+        result = await self.session.execute(
+            select(KnowledgeDocument).where(
+                KnowledgeDocument.deleted_at.is_(None),
+            )
+        )
+        docs = list(result.scalars().all())
+
+        for doc in docs:
+            doc.vector_status = "pending"
+
+        await self.session.commit()
+        logger.info(
+            "重建向量索引：collection=%s, dimensions=%d, docs_queued=%d",
+            collection,
+            new_dimensions,
+            len(docs),
+        )
+        return len(docs)

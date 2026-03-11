@@ -1,6 +1,6 @@
 'use client';
 
-import { ClipboardList, LayoutGrid, Table2 } from 'lucide-react';
+import { Archive, ClipboardList, LayoutGrid, Table2, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -15,8 +15,11 @@ import { CaseDetailDrawer } from './_components/CaseDetailDrawer';
 import { CaseEditForm } from './_components/CaseEditForm';
 import { CaseTable } from './_components/CaseTable';
 import { ChangeAlert } from './_components/ChangeAlert';
+import { CleanCompareDrawer } from './_components/CleanCompareDrawer';
+import { DiscardedRecordsModal } from './_components/DiscardedRecordsModal';
 import { FilterToolbar } from './_components/FilterToolbar';
 import { FolderTree } from './_components/FolderTree';
+import { ImportedCasesTab } from './_components/ImportedCasesTab';
 import type {
   CaseFilters,
   SortDirection,
@@ -148,6 +151,7 @@ export default function TestCasesPage() {
     status: '',
     caseType: '',
     source: '',
+    cleanStatus: '',
   });
 
   // ── Sorting ──
@@ -165,6 +169,13 @@ export default function TestCasesPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingCase, setEditingCase] = useState<TestCaseDetail | null>(null);
   const [editFormOpen, setEditFormOpen] = useState(false);
+
+  // ── Tab ──
+  const [activeTab, setActiveTab] = useState<'ai' | 'imported'>('ai');
+
+  // ── Clean Compare / Discarded ──
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [discardedOpen, setDiscardedOpen] = useState(false);
 
   // ── Delete confirmation ──
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -212,6 +223,7 @@ export default function TestCasesPage() {
       if (filters.caseType) params.case_type = filters.caseType;
       if (filters.source) params.source = filters.source;
       if (selectedFolderPath) params.module_path = selectedFolderPath;
+      if (filters.cleanStatus) params.clean_status = filters.cleanStatus;
 
       const qs = new URLSearchParams(params).toString();
       const data = await api.get<{ items: ApiTestCaseDetail[]; total: number }>(`/testcases?${qs}`);
@@ -238,7 +250,7 @@ export default function TestCasesPage() {
   };
 
   const handleClearFilters = () => {
-    setFilters({ priority: '', status: '', caseType: '', source: '' });
+    setFilters({ priority: '', status: '', caseType: '', source: '', cleanStatus: '' });
     setPage(1);
   };
 
@@ -386,8 +398,50 @@ export default function TestCasesPage() {
         <h1 className="font-display text-[20px] font-bold text-sy-text">用例管理中心</h1>
         <span className="text-[12px] text-sy-text-3">Test Case Management</span>
         <div className="flex-1" />
+        <button
+          type="button"
+          onClick={() => setDiscardedOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-sy-danger/70 hover:text-sy-danger border border-sy-danger/20 hover:border-sy-danger/40 rounded-md transition-colors bg-sy-danger/5 hover:bg-sy-danger/10"
+        >
+          <Trash className="w-3.5 h-3.5" />
+          丢弃记录
+        </button>
         <span className="font-mono text-[10px] text-sy-text-3 tracking-wider">M06 · TESTCASES</span>
       </div>
+
+      {/* ── Tab Switcher ── */}
+      <div className="flex items-center gap-0.5 mb-5 border-b border-sy-border">
+        <button
+          type="button"
+          onClick={() => setActiveTab('ai')}
+          className={`flex items-center gap-1.5 px-4 py-2 text-[13px] border-b-2 transition-colors -mb-px ${
+            activeTab === 'ai'
+              ? 'border-sy-accent text-sy-accent'
+              : 'border-transparent text-sy-text-3 hover:text-sy-text-2'
+          }`}
+        >
+          <ClipboardList className="w-3.5 h-3.5" />
+          AI 生成用例
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('imported')}
+          className={`flex items-center gap-1.5 px-4 py-2 text-[13px] border-b-2 transition-colors -mb-px ${
+            activeTab === 'imported'
+              ? 'border-sy-accent text-sy-accent'
+              : 'border-transparent text-sy-text-3 hover:text-sy-text-2'
+          }`}
+        >
+          <Archive className="w-3.5 h-3.5" />
+          历史导入数据
+        </button>
+      </div>
+
+      {/* ── Imported Cases Tab ── */}
+      {activeTab === 'imported' && <ImportedCasesTab />}
+
+      {/* ── AI Cases Tab ── */}
+      {activeTab === 'ai' && (<>
 
       {/* ── Change Alert ── */}
       {showAlert && (
@@ -572,6 +626,11 @@ export default function TestCasesPage() {
         }}
         onEdit={handleEdit}
         onDelete={(id) => setDeleteTarget({ ids: [id], single: true })}
+        onCompare={(tc) => {
+          setDrawerOpen(false);
+          setCompareOpen(true);
+          setSelectedCase(tc);
+        }}
       />
 
       {/* ── Edit Form ── */}
@@ -601,6 +660,18 @@ export default function TestCasesPage() {
         onConfirm={() => deleteTarget && handleDelete(deleteTarget.ids)}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      {/* ── Clean Compare Drawer ── */}
+      <CleanCompareDrawer
+        open={compareOpen}
+        testCase={selectedCase}
+        onClose={() => setCompareOpen(false)}
+      />
+
+      {/* ── Discarded Records Modal ── */}
+      <DiscardedRecordsModal open={discardedOpen} onClose={() => setDiscardedOpen(false)} />
+
+      </>)}
     </div>
   );
 }

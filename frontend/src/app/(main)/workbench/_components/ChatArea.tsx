@@ -16,7 +16,29 @@ interface ChatAreaProps {
   isStreaming: boolean;
 }
 
+interface ParsedCase {
+  title?: string;
+  priority?: string;
+  case_type?: string;
+  precondition?: string;
+  steps?: { step_num?: number; action?: string; expected_result?: string }[];
+  keywords?: string[];
+}
+
+function parseCasesFromContent(content: string): ParsedCase[] {
+  try {
+    const match = content.match(/```json\s*([\s\S]*?)```/) || content.match(/(\[[\s\S]*\])/);
+    if (!match) return [];
+    const parsed = JSON.parse(match[1]);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function renderMarkdown(text: string): string {
+  // If content looks like a JSON case array, don't render as markdown
+  if (text.trim().startsWith('[') || text.includes('```json')) return text;
   return text
     .replace(/### (.+)/g, '<h3 class="text-[13px] font-semibold text-text mt-3 mb-1">$1</h3>')
     .replace(/## (.+)/g, '<h2 class="text-[14px] font-semibold text-text mt-3 mb-1">$1</h2>')

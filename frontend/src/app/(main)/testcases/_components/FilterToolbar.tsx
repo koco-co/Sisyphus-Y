@@ -57,6 +57,16 @@ const filterGroups: {
       { value: 'imported', label: '导入' },
     ],
   },
+  {
+    key: 'cleanStatus',
+    options: [
+      { value: '', label: '全部清洗状态' },
+      { value: 'high', label: '⭐ 优质' },
+      { value: 'review', label: '🔍 待审核' },
+      { value: 'polished', label: '✨ 已润色' },
+      { value: 'raw', label: '📋 未清洗' },
+    ],
+  },
 ];
 
 export function FilterToolbar({ filters, onFilterChange, onClearAll }: FilterToolbarProps) {
