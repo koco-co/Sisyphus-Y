@@ -74,6 +74,13 @@ async def batch_update_status(data: TestCaseBatchAction, session: AsyncSessionDe
     return {"updated": count}
 
 
+@router.get("/module-paths")
+async def get_module_paths(session: AsyncSessionDep) -> list[dict]:
+    """返回所有唯一 module_path 构成的目录树，含各节点用例数量。"""
+    svc = TestCaseService(session)
+    return await svc.get_module_paths()
+
+
 # ── CRUD ───────────────────────────────────────────────────────────
 
 
@@ -88,6 +95,7 @@ async def list_cases(
     case_type: str | None = None,
     source: str | None = None,
     keyword: str | None = None,
+    module_path: str | None = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
 ) -> TestCaseListResponse:
@@ -101,6 +109,7 @@ async def list_cases(
         case_type=case_type,
         source=source,
         keyword=keyword,
+        module_path=module_path,
         page=page,
         page_size=page_size,
     )

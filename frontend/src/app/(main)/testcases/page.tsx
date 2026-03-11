@@ -16,6 +16,7 @@ import { CaseEditForm } from './_components/CaseEditForm';
 import { CaseTable } from './_components/CaseTable';
 import { ChangeAlert } from './_components/ChangeAlert';
 import { FilterToolbar } from './_components/FilterToolbar';
+import { FolderTree } from './_components/FolderTree';
 import type {
   CaseFilters,
   SortDirection,
@@ -123,8 +124,18 @@ export default function TestCasesPage() {
   const [cases, setCases] = useState<TestCaseDetail[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const affectedCount = 0;
-  const [showAlert, setShowAlert] = useState(true);
+  const [showAlert, setShowAlert] = useState(false);
+
+  // ── Global stats (全量统计，非页面级) ──
+  const [globalStats, setGlobalStats] = useState<{
+    total: number;
+    approved: number;
+    review: number;
+    draft: number;
+  }>({ total: 0, approved: 0, review: 0, draft: 0 });
+
+  // ── 目录树 ──
+  const [selectedFolderPath, setSelectedFolderPath] = useState<string | null>(null);
 
   // ── Pagination ──
   const [page, setPage] = useState(1);
@@ -160,6 +171,32 @@ export default function TestCasesPage() {
     single: boolean;
   } | null>(null);
 
+  // ── 拉取全量统计 ──
+  const fetchStats = useCallback(async () => {
+    try {
+      const data = await api.get<{ total: number; by_status: { status: string; count: number }[] }>(
+        '/testcases/stats',
+      );
+      const byStatus = data.by_status ?? [];
+      const approved = byStatus
+        .filter((s) => s.status === 'approved' || s.status === 'active')
+        .reduce((acc, s) => acc + s.count, 0);
+      const review = byStatus
+        .filter((s) => s.status === 'review' || s.status === 'pending_review')
+        .reduce((acc, s) => acc + s.count, 0);
+      const draft = byStatus
+        .filter((s) => s.status === 'draft')
+        .reduce((acc, s) => acc + s.count, 0);
+      setGlobalStats({ total: data.total ?? 0, approved, review, draft });
+    } catch {
+      // 忽略统计错误，不影响主列表
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
   // ── Fetch cases ──
   const fetchCases = useCallback(async () => {
     setLoading(true);
@@ -173,6 +210,7 @@ export default function TestCasesPage() {
       if (filters.status) params.status = filters.status;
       if (filters.caseType) params.case_type = filters.caseType;
       if (filters.source) params.source = filters.source;
+      if (selectedFolderPath) params.module_path = selectedFolderPath;
 
       const qs = new URLSearchParams(params).toString();
       const data = await api.get<{ items: ApiTestCaseDetail[]; total: number }>(`/testcases?${qs}`);
@@ -186,16 +224,11 @@ export default function TestCasesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, filters, sortField, sortDirection]);
+  }, [page, search, filters, sortField, sortDirection, selectedFolderPath]);
 
   useEffect(() => {
     fetchCases();
   }, [fetchCases]);
-
-  // ── Stats (page-level) ──
-  const activeCount = cases.filter((c) => c.status === 'approved').length;
-  const pendingCount = cases.filter((c) => c.status === 'review').length;
-  const draftCount = cases.filter((c) => c.status === 'draft').length;
 
   // ── Handlers ──
   const handleFilterChange = <K extends keyof CaseFilters>(key: K, value: CaseFilters[K]) => {
@@ -251,6 +284,7 @@ export default function TestCasesPage() {
     status: string;
     case_type: string;
     precondition: string | null;
+    module_path: string | null;
     steps: TestCaseStep[];
   }) => {
     if (!editingCase) return;
@@ -277,7 +311,7 @@ export default function TestCasesPage() {
       setSelectedIds(new Set());
       setDeleteTarget(null);
       setDrawerOpen(false);
-      await fetchCases();
+      await Promise.all([fetchCases(), fetchStats()]);
     } catch (e) {
       console.error('Failed to delete:', e);
     }
@@ -290,7 +324,7 @@ export default function TestCasesPage() {
         status,
       });
       setSelectedIds(new Set());
-      await fetchCases();
+      await Promise.all([fetchCases(), fetchStats()]);
     } catch (e) {
       console.error('Failed to batch update:', e);
     }
@@ -344,139 +378,185 @@ export default function TestCasesPage() {
   return (
     <div className="no-sidebar">
       {/* ── Header ── */}
-      <div className="flex items-center gap-3 mb-6">
-        <ClipboardList className="w-5 h-5 text-accent" />
-        <h1 className="font-display text-[20px] font-bold text-text">用例管理中心</h1>
-        <span className="text-[12px] text-text3">Test Case Management</span>
+      <div className="flex items-center gap-3 mb-5">
+        <ClipboardList className="w-5 h-5 text-sy-accent" />
+        <h1 className="font-display text-[20px] font-bold text-sy-text">用例管理中心</h1>
+        <span className="text-[12px] text-sy-text-3">Test Case Management</span>
         <div className="flex-1" />
-        <span className="font-mono text-[10px] text-text3 tracking-wider">M06 · TESTCASES</span>
+        <span className="font-mono text-[10px] text-sy-text-3 tracking-wider">M06 · TESTCASES</span>
       </div>
 
       {/* ── Change Alert ── */}
       {showAlert && (
         <ChangeAlert
-          count={affectedCount}
+          count={0}
           onNavigate={() => router.push('/diff')}
           onDismiss={() => setShowAlert(false)}
         />
       )}
 
-      {/* ── Stats ── */}
+      {/* ── Stats (全量统计) ── */}
       <div className="grid grid-cols-4 gap-3 mb-5">
-        <StatCard value={total} label="总用例数" highlighted />
-        <StatCard value={activeCount} label="已通过" />
-        <StatCard value={pendingCount} label="评审中" />
-        <StatCard value={draftCount} label="草稿" />
+        <StatCard value={globalStats.total} label="总用例数" highlighted />
+        <StatCard value={globalStats.approved} label="已通过" />
+        <StatCard value={globalStats.review} label="评审中" />
+        <StatCard value={globalStats.draft} label="草稿" />
       </div>
 
-      {/* ── Search + Filters + View Toggle ── */}
-      <div className="flex items-center gap-3 mb-4">
-        <SearchInput
-          value={search}
-          onChange={(v) => {
-            setSearch(v);
-            setPage(1);
-          }}
-          placeholder="搜索用例编号或标题..."
-          className="w-[260px]"
-        />
-        <FilterToolbar
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onClearAll={handleClearFilters}
-        />
-        <div className="flex-1" />
-        <div className="flex items-center gap-1 p-0.5 bg-bg2 border border-border rounded-md">
-          <button
-            type="button"
-            onClick={() => setViewMode('table')}
-            className={`p-1.5 rounded transition-colors ${
-              viewMode === 'table' ? 'bg-bg3 text-text' : 'text-text3 hover:text-text2'
-            }`}
-            title="表格视图"
-          >
-            <Table2 className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('card')}
-            className={`p-1.5 rounded transition-colors ${
-              viewMode === 'card' ? 'bg-bg3 text-text' : 'text-text3 hover:text-text2'
-            }`}
-            title="卡片视图"
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* ── Batch Actions ── */}
-      {selectedIds.size > 0 && (
-        <BatchActions
-          selectedCount={selectedIds.size}
-          onStatusChange={handleBatchStatusChange}
-          onExport={handleBatchExport}
-          onDelete={() =>
-            setDeleteTarget({
-              ids: Array.from(selectedIds),
-              single: false,
-            })
-          }
-          onClearSelection={() => setSelectedIds(new Set())}
-        />
-      )}
-
-      {/* ── Content ── */}
-      {!loading && cases.length === 0 ? (
-        <div className="bg-bg1 border border-border rounded-[10px]">
-          <EmptyState
-            icon={<ClipboardList className="w-12 h-12" />}
-            title="暂无用例数据"
-            description="当用例生成完成后，会自动出现在这里"
+      {/* ── 双栏布局：左侧目录树 + 右侧用例列表 ── */}
+      <div className="flex gap-4 min-h-0">
+        {/* 左侧目录树 */}
+        <div
+          className="w-[220px] shrink-0 bg-sy-bg-1 border border-sy-border rounded-[10px] overflow-hidden flex flex-col"
+          style={{ maxHeight: 'calc(100vh - 260px)', position: 'sticky', top: '12px' }}
+        >
+          <FolderTree
+            selectedPath={selectedFolderPath}
+            totalCount={globalStats.total}
+            onSelect={(path) => {
+              setSelectedFolderPath(path);
+              setPage(1);
+              setSelectedIds(new Set());
+            }}
           />
         </div>
-      ) : viewMode === 'table' ? (
-        <CaseTable
-          cases={cases}
-          selectedIds={selectedIds}
-          onToggleSelect={handleToggleSelect}
-          onToggleSelectAll={handleToggleSelectAll}
-          onRowClick={handleRowClick}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          loading={loading}
-        />
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {loading ? (
-            <p className="col-span-2 py-16 text-center text-[12.5px] text-text3">加载中...</p>
-          ) : (
-            cases.map((tc) => (
+
+        {/* 右侧主内容 */}
+        <div className="flex-1 min-w-0">
+          {/* ── Search + Filters + View Toggle ── */}
+          <div className="flex items-center gap-3 mb-4">
+            <SearchInput
+              value={search}
+              onChange={(v) => {
+                setSearch(v);
+                setPage(1);
+              }}
+              placeholder="搜索用例编号或标题..."
+              className="w-[240px]"
+            />
+            <FilterToolbar
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onClearAll={handleClearFilters}
+            />
+            <div className="flex-1" />
+            {selectedFolderPath && (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sy-bg-3 text-[11.5px] text-sy-text-2">
+                <span className="text-sy-text-3">目录：</span>
+                {selectedFolderPath === '__uncategorized__' ? '未分类' : selectedFolderPath}
+                <button
+                  type="button"
+                  className="ml-1 text-sy-text-3 hover:text-sy-text"
+                  onClick={() => {
+                    setSelectedFolderPath(null);
+                    setPage(1);
+                  }}
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            <div className="flex items-center gap-1 p-0.5 bg-sy-bg-2 border border-sy-border rounded-md">
               <button
                 type="button"
-                key={tc.id}
-                className="cursor-pointer bg-transparent border-0 p-0 text-left"
-                onClick={() => handleRowClick(tc)}
+                onClick={() => setViewMode('table')}
+                className={`p-1.5 rounded transition-colors ${
+                  viewMode === 'table'
+                    ? 'bg-sy-bg-3 text-sy-text'
+                    : 'text-sy-text-3 hover:text-sy-text-2'
+                }`}
+                title="表格视图"
               >
-                <CaseCard
-                  caseId={tc.case_id}
-                  title={tc.title}
-                  priority={tc.priority as 'P0' | 'P1' | 'P2' | 'P3'}
-                  type={typeLabel[tc.case_type] ?? tc.case_type}
-                  status={statusLabel[tc.status] ?? tc.status}
-                  steps={tc.steps ?? []}
-                  aiScore={tc.ai_score ?? undefined}
-                  className="mb-0"
-                />
+                <Table2 className="w-3.5 h-3.5" />
               </button>
-            ))
-          )}
-        </div>
-      )}
+              <button
+                type="button"
+                onClick={() => setViewMode('card')}
+                className={`p-1.5 rounded transition-colors ${
+                  viewMode === 'card'
+                    ? 'bg-sy-bg-3 text-sy-text'
+                    : 'text-sy-text-3 hover:text-sy-text-2'
+                }`}
+                title="卡片视图"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
 
-      {/* ── Pagination ── */}
-      <Pagination current={page} total={total} pageSize={PAGE_SIZE} onChange={setPage} />
+          {/* ── Batch Actions ── */}
+          {selectedIds.size > 0 && (
+            <BatchActions
+              selectedCount={selectedIds.size}
+              onStatusChange={handleBatchStatusChange}
+              onExport={handleBatchExport}
+              onDelete={() =>
+                setDeleteTarget({
+                  ids: Array.from(selectedIds),
+                  single: false,
+                })
+              }
+              onClearSelection={() => setSelectedIds(new Set())}
+            />
+          )}
+
+          {/* ── Content ── */}
+          {!loading && cases.length === 0 ? (
+            <div className="bg-sy-bg-1 border border-sy-border rounded-[10px]">
+              <EmptyState
+                icon={<ClipboardList className="w-12 h-12" />}
+                title="暂无用例数据"
+                description={
+                  selectedFolderPath ? '该目录下暂无用例' : '当用例生成完成后，会自动出现在这里'
+                }
+              />
+            </div>
+          ) : viewMode === 'table' ? (
+            <CaseTable
+              cases={cases}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onToggleSelectAll={handleToggleSelectAll}
+              onRowClick={handleRowClick}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              loading={loading}
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {loading ? (
+                <p className="col-span-2 py-16 text-center text-[12.5px] text-sy-text-3">
+                  加载中...
+                </p>
+              ) : (
+                cases.map((tc) => (
+                  <button
+                    type="button"
+                    key={tc.id}
+                    className="cursor-pointer bg-transparent border-0 p-0 text-left"
+                    onClick={() => handleRowClick(tc)}
+                  >
+                    <CaseCard
+                      caseId={tc.case_id}
+                      title={tc.title}
+                      priority={tc.priority as 'P0' | 'P1' | 'P2' | 'P3'}
+                      type={typeLabel[tc.case_type] ?? tc.case_type}
+                      status={statusLabel[tc.status] ?? tc.status}
+                      steps={tc.steps ?? []}
+                      aiScore={tc.ai_score ?? undefined}
+                      className="mb-0"
+                    />
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* ── Pagination ── */}
+          <Pagination current={page} total={total} pageSize={PAGE_SIZE} onChange={setPage} />
+        </div>
+      </div>
 
       {/* ── Detail Drawer ── */}
       <CaseDetailDrawer

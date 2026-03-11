@@ -14,6 +14,7 @@ interface CaseEditFormProps {
     status: string;
     case_type: string;
     precondition: string | null;
+    module_path: string | null;
     steps: TestCaseStep[];
   }) => void;
   onCancel: () => void;
@@ -44,6 +45,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
   const [status, setStatus] = useState('draft');
   const [caseType, setCaseType] = useState('functional');
   const [precondition, setPrecondition] = useState('');
+  const [modulePath, setModulePath] = useState('');
   const [steps, setSteps] = useState<TestCaseStep[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -55,6 +57,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
       setStatus(testCase.status);
       setCaseType(testCase.case_type);
       setPrecondition(testCase.precondition ?? '');
+      setModulePath(testCase.module_path ?? '');
       setSteps(testCase.steps.map((s) => ({ ...s })));
     }
   }, [testCase]);
@@ -99,6 +102,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
         status,
         case_type: caseType,
         precondition: precondition.trim() || null,
+        module_path: modulePath.trim() || null,
         steps,
       });
     } finally {
@@ -116,6 +120,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
   const statusId = 'testcase-edit-status';
   const caseTypeId = 'testcase-edit-type';
   const preconditionId = 'testcase-edit-precondition';
+  const modulePathId = 'testcase-edit-module-path';
 
   return (
     <dialog
@@ -202,6 +207,24 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
               rows={2}
               className={`${inputClass} resize-none`}
             />
+          </div>
+
+          {/* Module Path */}
+          <div>
+            <label className={labelClass} htmlFor={modulePathId}>
+              所属目录
+            </label>
+            <input
+              id={modulePathId}
+              type="text"
+              value={modulePath}
+              onChange={(e) => setModulePath(e.target.value)}
+              placeholder="例如：登录模块/单点登录（留空为未分类）"
+              className={inputClass}
+            />
+            <p className="mt-1 text-[11px] text-text3">
+              使用 / 分隔多级目录，如 "功能模块/用户管理"
+            </p>
           </div>
 
           {/* Steps */}

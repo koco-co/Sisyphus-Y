@@ -27,6 +27,7 @@ class TestCaseService:
         case_type: str | None = None,
         source: str | None = None,
         keyword: str | None = None,
+        module_path: str | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> tuple[list[TestCase], int]:
@@ -88,6 +89,23 @@ class TestCaseService:
             )
             q = q.where(keyword_filter)
             count_q = count_q.where(keyword_filter)
+
+        if module_path is not None:
+            if module_path == "__uncategorized__":
+                # 查询未分类（module_path 为 NULL 或空字符串）的用例
+                uncategorized_filter = or_(
+                    TestCase.module_path.is_(None), TestCase.module_path == ""
+                )
+                q = q.where(uncategorized_filter)
+                count_q = count_q.where(uncategorized_filter)
+            else:
+                # 精确匹配或前缀匹配（以该目录开头的所有子路径）
+                path_filter = or_(
+                    TestCase.module_path == module_path,
+                    TestCase.module_path.like(f"{module_path}/%"),
+                )
+                q = q.where(path_filter)
+                count_q = count_q.where(path_filter)
 
         total = (await self.session.execute(count_q)).scalar() or 0
         q = q.order_by(TestCase.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
@@ -331,6 +349,65 @@ class TestCaseService:
             result["product"] = None
 
         return result
+
+    # ── Module path tree ───────────────────────────────────────────
+
+    async def get_module_paths(self) -> list[dict]:
+        """返回所有唯一 module_path 及其用例数量，构建为树形结构。
+
+        返回格式：
+        [
+          {"path": "登录模块", "count": 12, "children": [
+            {"path": "登录模块/手机号登录", "count": 7, "children": [...]},
+            ...
+          ]},
+          ...
+        ]
+        """
+        q = (
+            select(TestCase.module_path, func.count(TestCase.id).label("cnt"))
+            .where(TestCase.deleted_at.is_(None), TestCase.module_path.isnot(None))
+            .group_by(TestCase.module_path)
+            .order_by(TestCase.module_path)
+        )
+        result = await self.session.execute(q)
+        rows = [(row.module_path, row.cnt) for row in result.all() if row.module_path]
+
+        # 未分类用例数量（module_path 为 None 或空）
+        uncategorized_q = select(func.count(TestCase.id)).where(
+            TestCase.deleted_at.is_(None),
+            or_(TestCase.module_path.is_(None), TestCase.module_path == ""),
+        )
+        uncategorized_count = (await self.session.execute(uncategorized_q)).scalar() or 0
+
+        # 构建树形结构
+        def build_tree(path_counts: list[tuple[str, int]]) -> list[dict]:
+            tree: dict[str, dict] = {}
+            for path, count in path_counts:
+                parts = path.split("/")
+                current = tree
+                for depth, part in enumerate(parts):
+                    full_path = "/".join(parts[: depth + 1])
+                    if full_path not in current:
+                        current[full_path] = {"path": full_path, "name": part, "count": 0, "_children": {}}
+                    current[full_path]["count"] += count
+                    current = current[full_path]["_children"]
+
+            def to_list(nodes: dict) -> list[dict]:
+                result_list = []
+                for node in nodes.values():
+                    children = to_list(node.pop("_children"))
+                    node["children"] = children
+                    result_list.append(node)
+                return result_list
+
+            return to_list(tree)
+
+        tree = build_tree(rows)
+        return [
+            {"path": "__uncategorized__", "name": "未分类", "count": uncategorized_count, "children": []},
+            *tree,
+        ]
 
     # ── Internal helpers ───────────────────────────────────────────
 

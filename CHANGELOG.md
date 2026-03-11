@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **M06 用例管理中心 — 目录树功能**：左侧 220px 固定目录树，支持层级展开/折叠；从 `module_path` 字段动态构建树；点击目录过滤右侧用例列表；特殊"未分类"节点显示 module_path 为空的用例
+- **M06 用例管理中心 — StatCard 全量统计**：从 `/api/testcases/stats` 获取全量数据，修复原先仅统计当前页20条的问题
+- **M06 CaseEditForm — 目录路径编辑**：编辑用例时可设置所属目录，支持 `/` 分隔多级路径
+- **AI配置 — 通用提供商选择表单**：AI模型配置页面从硬编码3卡片改为动态表单；通过 `GET /api/ai-config/providers` 加载提供商列表（智谱AI/阿里云百炼/OpenAI）；3步式交互：选提供商→选模型版本→输入API Key
+
+### Changed
+
+- `backend/app/modules/testcases/service.py`：`list_cases()` 支持 `module_path` 过滤（精确+前缀匹配）；特殊值 `__uncategorized__` 过滤 NULL/空路径；新增 `get_module_paths()` 构建树形结构
+- `backend/app/modules/testcases/router.py`：新增 `GET /api/testcases/module-paths` 端点
+- `backend/app/modules/ai_config/router.py`：新增 `GET /api/ai-config/providers` 静态端点
+- `frontend/src/app/(main)/testcases/_components/types.ts`：`TestCaseDetail` 新增 `module_path` 字段
+
 ### Added (Phase 0–5: Full Platform Implementation)
 
 - **Progress Dashboard**: Visual FAB + Drawer showing real-time M00–M21 module completion status

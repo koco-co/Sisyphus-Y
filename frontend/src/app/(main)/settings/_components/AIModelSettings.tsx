@@ -1,50 +1,30 @@
 'use client';
 
-import { Bot, Check, Eye, EyeOff, Key, Loader2, Save, Star, Zap } from 'lucide-react';
+import { Bot, Check, ChevronDown, Eye, EyeOff, Key, Loader2, Save, Zap } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ConnectionTestButton } from '@/components/ui/ConnectionTestButton';
 import { ParamTooltip } from '@/components/ui/ParamTooltip';
 import { useAiConfig } from '@/hooks/useAiConfig';
+import { api } from '@/lib/api';
 
-interface ModelInfo {
-  name: string;
-  provider: string;
+// ─── Provider / Model 类型 ─────────────────────────────────────────
+
+interface ModelOption {
   id: string;
-  speed: number;
-  quality: number;
-  cost: number;
-  scene: string;
+  name: string;
+  description: string;
+  recommended?: boolean;
 }
 
-const models: ModelInfo[] = [
-  {
-    name: 'GLM-4-Flash',
-    provider: '智谱AI',
-    id: 'glm-4-flash',
-    speed: 5,
-    quality: 4,
-    cost: 5,
-    scene: '需求诊断 / 苏格拉底追问',
-  },
-  {
-    name: 'Qwen-Max',
-    provider: '阿里云',
-    id: 'qwen-max',
-    speed: 3,
-    quality: 5,
-    cost: 3,
-    scene: '复杂用例 CoT 生成',
-  },
-  {
-    name: 'GPT-4o',
-    provider: 'OpenAI',
-    id: 'gpt-4o-2024-08-06',
-    speed: 3,
-    quality: 5,
-    cost: 2,
-    scene: '备用模型',
-  },
-];
+interface ProviderInfo {
+  id: string;
+  name: string;
+  description: string;
+  api_key_placeholder: string;
+  models: ModelOption[];
+}
+
+// ─── 参数滑块配置 ─────────────────────────────────────────────────
 
 interface SliderParam {
   label: string;
@@ -103,39 +83,66 @@ const sliderParams: SliderParam[] = [
   },
 ];
 
-const starKeys = ['s1', 's2', 's3', 's4', 's5'] as const;
+// ─── Provider 选择卡片 ────────────────────────────────────────────
 
-interface ProviderKeyInfo {
-  key: string;
-  label: string;
-  placeholder: string;
-}
-
-const providerKeys: ProviderKeyInfo[] = [
-  { key: 'zhipu', label: '智谱AI (GLM)', placeholder: 'xxxxxxxx.xxxxxxxxxx' },
-  { key: 'dashscope', label: '阿里云 (Qwen)', placeholder: 'sk-xxxxxxxxxxxxxxxx' },
-  { key: 'openai', label: 'OpenAI (GPT)', placeholder: 'sk-xxxxxxxxxxxxxxxx' },
-];
-
-function StarsRow({ label, count }: { label: string; count: number }) {
+function ProviderCard({
+  provider,
+  active,
+  onClick,
+  disabled,
+}: {
+  provider: ProviderInfo;
+  active: boolean;
+  onClick: () => void;
+  disabled: boolean;
+}) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-[11.5px] text-text3 w-9">{label}</span>
-      <span className="flex gap-0.5">
-        {starKeys.map((key, i) => (
-          <Star
-            key={`${label}-${key}`}
-            className={`w-3 h-3 ${i < count ? 'text-accent fill-accent' : 'text-text3/30'}`}
-          />
-        ))}
-      </span>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`relative flex flex-col gap-2 p-4 rounded-xl border text-left w-full transition-all
+        ${
+          active
+            ? 'bg-sy-accent/5 border-sy-accent/40 shadow-[0_0_0_1px_rgba(0,217,163,0.2)]'
+            : 'bg-sy-bg-2 border-sy-border hover:border-sy-border-2'
+        }
+        disabled:opacity-50 disabled:cursor-not-allowed`}
+    >
+      {active && (
+        <span className="absolute top-3 right-3 flex items-center justify-center w-5 h-5 rounded-full bg-sy-accent/15">
+          <Check className="w-3 h-3 text-sy-accent" />
+        </span>
+      )}
+      <div>
+        <div className="text-[13px] font-semibold text-sy-text">{provider.name}</div>
+        <div className="font-mono text-[10.5px] text-sy-text-3 mt-0.5">{provider.id}</div>
+      </div>
+      <p className="text-[11.5px] text-sy-text-3 leading-relaxed line-clamp-2">
+        {provider.description}
+      </p>
+      {active && (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sy-accent/10 text-sy-accent text-[10px] font-mono w-fit">
+          当前生效
+        </span>
+      )}
+    </button>
   );
 }
 
+// ─── 主组件 ──────────────────────────────────────────────────────
+
 export function AIModelSettings() {
   const { effectiveConfig, loading, saving, error, saveGlobalConfig } = useAiConfig();
-  const [activeModelId, setActiveModelId] = useState(models[0].id);
+
+  const [providers, setProviders] = useState<ProviderInfo[]>([]);
+  const [providersLoading, setProvidersLoading] = useState(true);
+
+  const [activeProviderId, setActiveProviderId] = useState<string>('zhipu');
+  const [activeModelId, setActiveModelId] = useState<string>('glm-4-flash');
+  const [apiKey, setApiKey] = useState('');
+  const [keyVisible, setKeyVisible] = useState(false);
+
   const [paramVals, setParamVals] = useState<Record<SliderParam['key'], number>>({
     temperature: 0.7,
     maxTokens: 4096,
@@ -143,154 +150,226 @@ export function AIModelSettings() {
     concurrency: 3,
   });
   const [saved, setSaved] = useState(false);
-  const [apiKeys, setApiKeys] = useState<Record<string, string>>({ zhipu: '', dashscope: '', openai: '' });
-  const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
 
+  // ── 拉取 providers 列表 ──
   useEffect(() => {
-    if (!effectiveConfig) {
-      return;
+    api
+      .get<{ providers: ProviderInfo[] }>('/ai-config/providers')
+      .then((data) => setProviders(data.providers ?? []))
+      .catch(() => setProviders([]))
+      .finally(() => setProvidersLoading(false));
+  }, []);
+
+  // ── 从 effectiveConfig 初始化表单 ──
+  // biome-ignore lint/correctness/useExhaustiveDependencies: activeProviderId intentionally excluded to avoid init loop
+  useEffect(() => {
+    if (!effectiveConfig || providers.length === 0) return;
+
+    const modelId = effectiveConfig.llm_model ?? 'glm-4-flash';
+    // 找到该 model 属于哪个 provider
+    const ownerProvider = providers.find((p) => p.models.some((m) => m.id === modelId));
+    if (ownerProvider) {
+      setActiveProviderId(ownerProvider.id);
     }
+    setActiveModelId(modelId);
 
     const outputPreference = effectiveConfig.output_preference ?? {};
-    setActiveModelId(effectiveConfig.llm_model ?? models[0].id);
     setParamVals({
       temperature: effectiveConfig.llm_temperature ?? 0.7,
       maxTokens: Number(outputPreference.max_tokens ?? 4096),
       topP: Number(outputPreference.top_p ?? 0.95),
       concurrency: Number(outputPreference.concurrency ?? 3),
     });
-    if (effectiveConfig.api_keys) {
-      setApiKeys((prev) => ({ ...prev, ...(effectiveConfig.api_keys as Record<string, string>) }));
-    }
-  }, [effectiveConfig]);
 
-  const activeModel = useMemo(
-    () => models.find((model) => model.id === activeModelId) ?? models[0],
-    [activeModelId],
+    if (effectiveConfig.api_keys) {
+      const keys = effectiveConfig.api_keys as Record<string, string>;
+      const provId = ownerProvider?.id ?? activeProviderId;
+      setApiKey(keys[provId] ?? '');
+    }
+  }, [effectiveConfig, providers]);
+
+  // ── 当切换提供商时，切换到推荐模型 + 清空 API Key 显示 ──
+  const handleProviderChange = (providerId: string) => {
+    setActiveProviderId(providerId);
+    setKeyVisible(false);
+    const prov = providers.find((p) => p.id === providerId);
+    if (prov) {
+      const recommended = prov.models.find((m) => m.recommended) ?? prov.models[0];
+      if (recommended) setActiveModelId(recommended.id);
+    }
+    // 恢复该提供商已保存的 key
+    if (effectiveConfig?.api_keys) {
+      const keys = effectiveConfig.api_keys as Record<string, string>;
+      setApiKey(keys[providerId] ?? '');
+    } else {
+      setApiKey('');
+    }
+  };
+
+  const activeProvider = useMemo(
+    () => providers.find((p) => p.id === activeProviderId),
+    [providers, activeProviderId],
   );
 
   const handleSave = async () => {
-    const filteredKeys = Object.fromEntries(
-      Object.entries(apiKeys).filter(([, v]) => v.trim() !== ''),
-    );
+    const apiKeys: Record<string, string> = {};
+    if (apiKey.trim()) apiKeys[activeProviderId] = apiKey.trim();
+
     const ok = await saveGlobalConfig({
-      llm_model: activeModel.id,
+      llm_model: activeModelId,
       llm_temperature: paramVals.temperature,
       output_preference: {
         max_tokens: paramVals.maxTokens,
         top_p: paramVals.topP,
         concurrency: paramVals.concurrency,
       },
-      api_keys: Object.keys(filteredKeys).length > 0 ? filteredKeys : null,
+      api_keys: Object.keys(apiKeys).length > 0 ? apiKeys : null,
     });
     if (!ok) return;
-
     setSaved(true);
     window.setTimeout(() => setSaved(false), 2000);
   };
 
+  const isDisabled = loading || saving || providersLoading;
+
   return (
     <div>
+      {/* ── 标题 ── */}
       <div className="sec-header">
-        <Bot className="w-4 h-4 text-accent" />
+        <Bot className="w-4 h-4 text-sy-accent" />
         <span className="sec-title">AI 模型配置</span>
       </div>
 
       {error && (
-        <div className="mb-4 px-3 py-2 rounded-md bg-red/8 border border-red/20 text-red text-[12.5px]">
+        <div className="mb-4 px-3 py-2 rounded-md bg-sy-danger/8 border border-sy-danger/20 text-sy-danger text-[12.5px]">
           {error}
         </div>
       )}
 
-      <div className="grid-3 mb-6">
-        {models.map((model) => (
-          <button
-            type="button"
-            key={model.name}
-            className={`model-card text-left w-full relative ${activeModelId === model.id ? 'active' : ''}`}
-            onClick={() => setActiveModelId(model.id)}
-            disabled={loading || saving}
-          >
-            {activeModelId === model.id && (
-              <div className="absolute top-3 right-3">
-                <Check className="w-4 h-4 text-accent" />
-              </div>
-            )}
-            <div className="mb-2.5">
-              <div className="text-sm font-semibold text-text">{model.name}</div>
-              <div className="text-[11.5px] text-text3 mt-0.5">{model.provider}</div>
-            </div>
-            <div className="flex flex-col gap-1.5 mb-2.5">
-              <StarsRow label="速度" count={model.speed} />
-              <StarsRow label="质量" count={model.quality} />
-              <StarsRow label="成本" count={model.cost} />
-            </div>
-            <div className="text-[11px] text-text3 mb-2">{model.scene}</div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10.5px] text-text3">{model.id}</span>
-              {activeModelId === model.id && (
-                <span className="pill pill-green text-[10px]">当前生效</span>
-              )}
-            </div>
-          </button>
-        ))}
+      {/* ── Step 1：选择模型提供商 ── */}
+      <div className="mb-1">
+        <p className="text-[12px] text-sy-text-3 mb-3">
+          <span className="font-mono text-sy-accent mr-1.5">01</span>
+          选择模型提供商
+          <span className="ml-2 text-[11px]">（平台已完成底层适配，选择后填入 API Key 即可）</span>
+        </p>
+
+        {providersLoading ? (
+          <div className="flex items-center gap-2 py-6 text-[12px] text-sy-text-3">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" /> 加载提供商列表...
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {providers.map((provider) => (
+              <ProviderCard
+                key={provider.id}
+                provider={provider}
+                active={activeProviderId === provider.id}
+                onClick={() => handleProviderChange(provider.id)}
+                disabled={isDisabled}
+              />
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* ── Step 2：选择模型版本 ── */}
+      {activeProvider && (
+        <div className="mb-6">
+          <p className="text-[12px] text-sy-text-3 mb-3">
+            <span className="font-mono text-sy-accent mr-1.5">02</span>
+            选择{activeProvider.name}模型版本
+          </p>
+          <div className="relative w-full max-w-xs">
+            <select
+              value={activeModelId}
+              onChange={(e) => setActiveModelId(e.target.value)}
+              disabled={isDisabled}
+              className="w-full appearance-none bg-sy-bg-2 border border-sy-border rounded-lg px-3 py-2 text-[13px] text-sy-text
+                         pr-8 focus:border-sy-accent focus:outline-none transition-colors
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {activeProvider.models.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.name}
+                  {model.recommended ? ' ★ 推荐' : ''}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-sy-text-3 pointer-events-none" />
+          </div>
+          {/* 当前选中模型说明 */}
+          {activeProvider.models.find((m) => m.id === activeModelId) && (
+            <p className="mt-2 text-[11.5px] text-sy-text-3">
+              {activeProvider.models.find((m) => m.id === activeModelId)?.description}
+            </p>
+          )}
+        </div>
+      )}
 
       <hr className="divider" />
 
-      <div className="sec-header">
-        <Key className="w-4 h-4 text-accent" />
-        <span className="sec-title">API Key 配置</span>
-      </div>
-      <div className="card flex flex-col gap-4 mb-6">
-        {providerKeys.map((provider) => (
-          <div key={provider.key}>
-            <label className="text-[12.5px] text-text2 mb-1.5 block">{provider.label}</label>
+      {/* ── Step 3：API Key ── */}
+      {activeProvider && (
+        <div className="mb-6">
+          <div className="sec-header">
+            <Key className="w-4 h-4 text-sy-accent" />
+            <span className="sec-title">{activeProvider.name} API Key</span>
+          </div>
+          <div className="card">
+            <p className="text-[12.5px] text-sy-text-2 mb-1.5">{activeProvider.name} Secret Key</p>
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <input
-                  type={visibleKeys[provider.key] ? 'text' : 'password'}
-                  className="w-full bg-bg2 border border-border rounded-md px-3 py-1.5 text-[12.5px] text-text font-mono pr-9 focus:border-accent focus:outline-none transition-colors"
-                  placeholder={provider.placeholder}
-                  value={apiKeys[provider.key] ?? ''}
-                  onChange={(e) => setApiKeys((prev) => ({ ...prev, [provider.key]: e.target.value }))}
-                  disabled={loading || saving}
+                  type={keyVisible ? 'text' : 'password'}
+                  className="w-full bg-sy-bg-2 border border-sy-border rounded-md px-3 py-1.5 text-[12.5px] text-sy-text font-mono pr-9
+                             focus:border-sy-accent focus:outline-none transition-colors disabled:opacity-50"
+                  placeholder={activeProvider.api_key_placeholder}
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  disabled={isDisabled}
                 />
                 <button
                   type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-text3 hover:text-text2 transition-colors"
-                  onClick={() => setVisibleKeys((prev) => ({ ...prev, [provider.key]: !prev[provider.key] }))}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sy-text-3 hover:text-sy-text-2 transition-colors"
+                  onClick={() => setKeyVisible((v) => !v)}
                 >
-                  {visibleKeys[provider.key] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {keyVisible ? (
+                    <EyeOff className="w-3.5 h-3.5" />
+                  ) : (
+                    <Eye className="w-3.5 h-3.5" />
+                  )}
                 </button>
               </div>
               <ConnectionTestButton
-                testUrl={`/api/ai-config/test-llm?provider=${provider.key}`}
-                label="测试"
+                testUrl={`/api/ai-config/test-llm?provider=${activeProviderId}`}
+                label="测试连接"
               />
             </div>
+            <p className="mt-2 text-[11px] text-sy-text-3">
+              API Key 保存在数据库中（加密存储），优先于 .env 环境变量。留空则使用服务器 .env
+              中的配置。
+            </p>
           </div>
-        ))}
-        <p className="text-[11px] text-text3">
-          API Key 保存在数据库中，优先于 .env 环境变量。留空则使用 .env 中的配置。
-        </p>
-      </div>
+        </div>
+      )}
 
       <hr className="divider" />
 
+      {/* ── 参数调整 ── */}
       <div className="sec-header">
-        <Zap className="w-4 h-4 text-accent" />
+        <Zap className="w-4 h-4 text-sy-accent" />
         <span className="sec-title">参数调整</span>
       </div>
       <div className="card flex flex-col gap-5">
         {sliderParams.map((param) => (
           <div key={param.key}>
             <div className="flex justify-between mb-1.5">
-              <span className="text-[12.5px] text-text2 flex items-center gap-1">
+              <span className="text-[12.5px] text-sy-text-2 flex items-center gap-1">
                 {param.label}
                 <ParamTooltip content={param.tooltip} />
               </span>
-              <span className="font-mono text-xs text-accent">
+              <span className="font-mono text-xs text-sy-accent">
                 {param.fmt(paramVals[param.key])}
               </span>
             </div>
@@ -303,27 +382,24 @@ export function AIModelSettings() {
               onChange={(e) =>
                 setParamVals((prev) => ({ ...prev, [param.key]: Number(e.target.value) }))
               }
-              className="w-full accent-accent"
-              disabled={loading || saving}
+              className="w-full accent-sy-accent"
+              disabled={isDisabled}
             />
           </div>
         ))}
 
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-3">
-            <p className="text-[12px] text-text3">
-              当前模型：<span className="text-text2">{activeModel.name}</span>
-            </p>
-            <ConnectionTestButton
-              testUrl={`/api/ai-config/test-llm?provider=${activeModel.provider === '智谱AI' ? 'zhipu' : activeModel.provider === '阿里云' ? 'dashscope' : 'openai'}`}
-              label="测试连接"
-            />
+        <div className="flex items-center justify-between pt-2 border-t border-sy-border">
+          <div className="text-[12px] text-sy-text-3">
+            当前配置：
+            <span className="text-sy-text-2 ml-1">
+              {activeProvider?.name} / {activeModelId}
+            </span>
           </div>
           <button
             type="button"
             className="btn btn-sm btn-primary"
             onClick={() => void handleSave()}
-            disabled={loading || saving}
+            disabled={isDisabled}
           >
             {saving ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />

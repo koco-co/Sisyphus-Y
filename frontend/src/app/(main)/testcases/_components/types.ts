@@ -16,6 +16,7 @@ export interface TestCaseDetail {
   source: string;
   ai_score: number | null;
   precondition: string | null;
+  module_path: string | null;
   version: number;
   steps: TestCaseStep[];
   tags?: string[];
