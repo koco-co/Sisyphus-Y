@@ -111,7 +111,7 @@ export function useWorkbench() {
         store.addMessage({
           id: `err-${Date.now()}`,
           role: 'assistant',
-          content: sse.error ? `错误: ${sse.error}` : '生成完成',
+          content: sse.error ? `⚠️ ${sse.error}` : '⚠️ AI 未返回有效内容，请检查模型配置后重试。',
           created_at: new Date().toISOString(),
         });
       }

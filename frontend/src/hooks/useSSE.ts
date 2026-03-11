@@ -74,6 +74,10 @@ export function useSSE() {
                   contentRef.current += data.delta;
                   setState((s) => ({ ...s, content: contentRef.current }));
                   options?.onContent?.(data.delta, contentRef.current);
+                } else if (eventType === 'error') {
+                  const errMsg = data.message || 'AI 服务异常';
+                  setState((s) => ({ ...s, error: errMsg }));
+                  options?.onError?.(new Error(errMsg));
                 } else if (eventType === 'done') {
                   options?.onDone?.(contentRef.current);
                 }

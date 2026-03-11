@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.ai.parser import parse_test_cases
 from app.ai.prompts import assemble_prompt
 from app.ai.sse_collector import SSECollector
-from app.ai.stream_adapter import get_thinking_stream
+from app.ai.stream_adapter import get_thinking_stream_with_fallback
 from app.core.database import get_async_session_context
 from app.modules.generation.models import GenerationMessage, GenerationSession
 from app.modules.products.models import Requirement
@@ -167,7 +167,8 @@ class GenerationService:
                 msg_created = msg.created_at
                 # Find next user message after this assistant message
                 next_user_msgs = [
-                    m for m in messages
+                    m
+                    for m in messages
                     if m.role == "user" and m.created_at and msg_created and m.created_at > msg_created
                 ]
                 cutoff = next_user_msgs[0].created_at if next_user_msgs else None
@@ -304,7 +305,7 @@ class GenerationService:
         else:
             task_instruction = "与用户协作完成测试用例设计，根据对话上下文生成或调整用例。"
             system = assemble_prompt("exploratory", task_instruction)
-        return await get_thinking_stream(history, system=system)
+        return await get_thinking_stream_with_fallback(history, system=system)
 
     # ── SSE stream with auto-persistence ──────────────────────────────
 

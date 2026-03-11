@@ -7,6 +7,10 @@ from collections.abc import AsyncIterator, Awaitable, Callable
 logger = logging.getLogger(__name__)
 
 
+def _sse_event(event: str, data: dict) -> str:
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
 class SSECollector:
     """Wraps an SSE async generator, collecting content while streaming.
 
@@ -36,9 +40,11 @@ class SSECollector:
                 await self._on_complete(full_text)
             except Exception:
                 logger.exception("SSECollector on_complete callback failed")
-        except Exception:
+        except Exception as exc:
             logger.exception("SSECollector stream error")
-            raise
+            error_msg = str(exc) or "AI 服务异常，请稍后重试"
+            yield _sse_event("error", {"message": error_msg})
+            yield _sse_event("done", {"usage": {}})
 
     # ------------------------------------------------------------------
 
