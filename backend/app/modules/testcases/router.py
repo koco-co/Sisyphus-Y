@@ -44,6 +44,29 @@ async def get_stats(
     )
 
 
+@router.get("/clean/stats")
+async def get_clean_stats(session: AsyncSessionDep) -> dict:
+    """获取历史导入清洗用例的统计数据（按 clean_status 分组）。"""
+    from sqlalchemy import func, select
+
+    from app.modules.testcases.models import TestCase
+
+    q = (
+        select(TestCase.clean_status, func.count().label("count"), func.avg(TestCase.quality_score).label("avg_score"))
+        .where(TestCase.deleted_at.is_(None), TestCase.source == "imported")
+        .group_by(TestCase.clean_status)
+    )
+    result = await session.execute(q)
+    rows = result.all()
+    total_q = select(func.count()).where(TestCase.deleted_at.is_(None), TestCase.source == "imported")
+    total = (await session.execute(total_q)).scalar() or 0
+    by_status = [
+        {"status": r.clean_status or "raw", "count": r.count, "avg_score": round(r.avg_score or 0, 1)}
+        for r in rows
+    ]
+    return {"total": total, "by_status": by_status}
+
+
 @router.post("/batch-status")
 async def batch_update_status(data: TestCaseBatchAction, session: AsyncSessionDep) -> dict[str, int]:
     svc = TestCaseService(session)
@@ -60,6 +83,7 @@ async def list_cases(
     requirement_id: uuid.UUID | None = None,
     scene_node_id: uuid.UUID | None = None,
     status_filter: str | None = Query(None, alias="status"),
+    clean_status: str | None = None,
     priority: str | None = None,
     case_type: str | None = None,
     source: str | None = None,
@@ -72,6 +96,7 @@ async def list_cases(
         requirement_id=requirement_id,
         scene_node_id=scene_node_id,
         status_filter=status_filter,
+        clean_status=clean_status,
         priority=priority,
         case_type=case_type,
         source=source,

@@ -64,9 +64,27 @@ def clean_csv_batch(self, data_dir: str, product_id: str | None = None) -> dict:
 
         loop = asyncio.new_event_loop()
         try:
-            saved = loop.run_until_complete(_persist_cleaned_cases(all_cases, product_id))
+            saved_cases, saved = loop.run_until_complete(_persist_cleaned_cases(all_cases, product_id))
         finally:
             loop.close()
+
+        # Vectorize saved cases into Qdrant (best-effort, non-blocking)
+        vectorized = 0
+        if saved_cases:
+            self.update_state(
+                state="STARTED",
+                meta={"step": "vectorizing", "progress": 85, "total_cases": len(all_cases)},
+            )
+            try:
+                from app.engine.import_clean.vectorizer import upsert_cases_to_qdrant
+
+                loop2 = asyncio.new_event_loop()
+                try:
+                    vectorized = loop2.run_until_complete(upsert_cases_to_qdrant(saved_cases))
+                finally:
+                    loop2.close()
+            except Exception:
+                logger.warning("向量化步骤失败（非致命）", exc_info=True)
 
         self.update_state(state="STARTED", meta={"step": "complete", "progress": 100})
         return {
@@ -74,6 +92,7 @@ def clean_csv_batch(self, data_dir: str, product_id: str | None = None) -> dict:
             "total_files": total_files,
             "total_cases": len(all_cases),
             "saved_cases": saved,
+            "vectorized_cases": vectorized,
         }
 
     except Exception as exc:
@@ -81,8 +100,13 @@ def clean_csv_batch(self, data_dir: str, product_id: str | None = None) -> dict:
         return {"status": "failed", "error": str(exc)}
 
 
-async def _persist_cleaned_cases(cases: list[dict], product_id: str | None) -> int:
-    """将清洗后的用例写入 test_cases 表（upsert by case_id）。"""
+async def _persist_cleaned_cases(cases: list[dict], product_id: str | None) -> tuple[list[dict], int]:
+    """将清洗后的用例写入 test_cases 表（upsert by case_id）。
+
+    Returns:
+        (enriched_cases_with_db_id, saved_count)
+        enriched_cases 中包含 ``_db_id`` 字段，供后续向量化使用。
+    """
     import uuid as uuid_mod
 
     from sqlalchemy import select
@@ -92,6 +116,7 @@ async def _persist_cleaned_cases(cases: list[dict], product_id: str | None) -> i
     from app.modules.testcases.models import TestCase
 
     saved = 0
+    saved_cases_out: list[dict] = []
     async with get_async_session_context() as session:
         # Find or create a placeholder requirement for imported cases
         req_id: uuid_mod.UUID | None = None
@@ -136,7 +161,7 @@ async def _persist_cleaned_cases(cases: list[dict], product_id: str | None) -> i
 
         if not req_id:
             logger.warning("No product_id or placeholder requirement available, skipping persistence")
-            return 0
+            return [], 0
 
         for case in cases:
             existing_case_id = case.get("case_id", "")
@@ -150,6 +175,7 @@ async def _persist_cleaned_cases(cases: list[dict], product_id: str | None) -> i
                     existing.quality_score = case.get("quality_score")
                     existing.original_raw = case.get("original_raw")
                     existing.clean_status = "scored"
+                    saved_cases_out.append({**case, "_db_id": str(existing.id), "clean_status": "scored"})
                     saved += 1
                     continue
 
@@ -173,8 +199,8 @@ async def _persist_cleaned_cases(cases: list[dict], product_id: str | None) -> i
                 original_raw=case.get("original_raw"),
             )
             session.add(tc)
+            await session.flush()
+            saved_cases_out.append({**case, "_db_id": str(tc.id), "clean_status": "scored"})
             saved += 1
 
-        await session.flush()
-
-    return saved
+    return saved_cases_out, saved

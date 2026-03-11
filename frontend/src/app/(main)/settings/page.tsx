@@ -3,6 +3,7 @@
 import {
   Bot,
   ClipboardCheck,
+  DatabaseZap,
   FileText,
   Layers,
   Link2,
@@ -14,6 +15,7 @@ import { useState } from 'react';
 import { AdvancedSettings } from './_components/AdvancedSettings';
 import { AIModelSettings } from './_components/AIModelSettings';
 import { ChecklistManager } from './_components/ChecklistManager';
+import { CleanCompare } from './_components/CleanCompare';
 import { IntegrationSettings } from './_components/IntegrationSettings';
 import { ModuleRules } from './_components/ModuleRules';
 import { OutputPreferences } from './_components/OutputPreferences';
@@ -25,6 +27,7 @@ const sidebarItems: { icon: LucideIcon; key: string; label: string }[] = [
   { icon: Layers, key: 'module-rules', label: '模块专项规则' },
   { icon: Settings2, key: 'output', label: '输出偏好' },
   { icon: ClipboardCheck, key: 'checklist', label: '必问清单' },
+  { icon: DatabaseZap, key: 'clean-compare', label: '历史数据清洗' },
   { icon: Wrench, key: 'advanced', label: '高级配置' },
   { icon: Link2, key: 'integration', label: '外部集成' },
 ];
@@ -35,6 +38,7 @@ const panels: Record<string, React.ComponentType> = {
   'module-rules': ModuleRules,
   output: OutputPreferences,
   checklist: ChecklistManager,
+  'clean-compare': CleanCompare,
   advanced: AdvancedSettings,
   integration: IntegrationSettings,
 };

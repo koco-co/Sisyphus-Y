@@ -22,6 +22,7 @@ class TestCaseService:
         requirement_id: UUID | None = None,
         scene_node_id: UUID | None = None,
         status_filter: str | None = None,
+        clean_status: str | None = None,
         priority: str | None = None,
         case_type: str | None = None,
         source: str | None = None,
@@ -53,6 +54,10 @@ class TestCaseService:
             else:
                 q = q.where(TestCase.status.in_(statuses))
                 count_q = count_q.where(TestCase.status.in_(statuses))
+
+        if clean_status is not None:
+            q = q.where(TestCase.clean_status == clean_status)
+            count_q = count_q.where(TestCase.clean_status == clean_status)
 
         if case_type is not None:
             case_types = [case_type]

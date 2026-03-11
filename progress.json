@@ -3,9 +3,9 @@
   "lastUpdated": "2026-03-11",
   "stats": {
     "total": 155,
-    "done": 100,
+    "done": 110,
     "in_progress": 0,
-    "pending": 55
+    "pending": 45
   },
   "tasks": [
     {
@@ -476,7 +476,7 @@
         "backend/app/core/encryption.py"
       ],
       "depends_on": [],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-032",
@@ -491,7 +491,7 @@
       "depends_on": [
         "TASK-031"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-033",
@@ -506,7 +506,7 @@
       "depends_on": [
         "TASK-031"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-034",
@@ -519,7 +519,7 @@
         "backend/app/modules/ai_config/models.py"
       ],
       "depends_on": [],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-035",
@@ -535,7 +535,7 @@
         "TASK-033",
         "TASK-034"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-036",
@@ -551,7 +551,7 @@
       "depends_on": [
         "TASK-035"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-037",
@@ -567,7 +567,7 @@
       "depends_on": [
         "TASK-035"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-038",
@@ -583,7 +583,7 @@
         "TASK-036",
         "TASK-037"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-039",
@@ -596,7 +596,7 @@
         "frontend/src/app/(main)/settings/_components/ParamTooltip.tsx"
       ],
       "depends_on": [],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-040",
@@ -609,7 +609,7 @@
         "frontend/src/app/(main)/settings/_components/ConnectionTestButton.tsx"
       ],
       "depends_on": [],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "TASK-041",

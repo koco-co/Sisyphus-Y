@@ -75,6 +75,9 @@ class TestCaseResponse(BaseResponse):
     steps: list[TestCaseStepSchema]
     tags: list[str]
     ai_score: float | None
+    clean_status: str | None = None
+    quality_score: float | None = None
+    original_raw: dict | None = None
     created_by: uuid.UUID | None
     reviewer_id: uuid.UUID | None = None
     review_comment: str | None = None
