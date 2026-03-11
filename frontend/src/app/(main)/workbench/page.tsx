@@ -1,7 +1,7 @@
 'use client';
 
 import { Plus, Sparkles } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ThreeColLayout } from '@/components/layout/ThreeColLayout';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useWorkbench } from '@/hooks/useWorkbench';
@@ -18,6 +18,13 @@ const SUB_NAV_HEIGHT = 41;
 
 export default function WorkbenchPage() {
   const wb = useWorkbench();
+
+  // 离开页面时停止正在进行的 SSE 流
+  const { stopStream } = wb;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: stopStream is stable
+  useEffect(() => {
+    return () => stopStream();
+  }, []);
 
   const handleSelectRequirement = useCallback(
     (req: Requirement) => {
