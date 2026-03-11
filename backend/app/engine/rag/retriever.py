@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 # ═══════════════════════════════════════════════════════════════════
 
 COLLECTION_NAME = "knowledge_chunks"
+TESTCASE_COLLECTION = "historical_testcases"
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -244,5 +245,109 @@ async def retrieve_as_context(
     for i, r in enumerate(results, 1):
         source = r.metadata.get("section_path") or r.metadata.get("doc_id", "未知来源")
         parts.append(f"### 参考片段 {i}（相似度 {r.score:.2f} | {source}）\n{r.content}")
+
+    return "\n\n".join(parts)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 历史用例检索
+# ═══════════════════════════════════════════════════════════════════
+
+
+async def retrieve_similar_cases(
+    query: str,
+    *,
+    top_k: int = 5,
+    score_threshold: float = 0.35,
+    product: str | None = None,
+) -> list[RetrievalResult]:
+    """从 historical_testcases collection 检索相似的历史用例。
+
+    Args:
+        query: 查询文本（通常是需求描述或测试点）。
+        top_k: 返回的最大结果数。
+        score_threshold: 最低相似度阈值。
+        product: 可选的产品名称过滤。
+
+    Returns:
+        按相似度降序排列的检索结果。
+    """
+    client = _get_client()
+    collections = [c.name for c in client.get_collections().collections]
+    if TESTCASE_COLLECTION not in collections:
+        logger.warning("历史用例 collection '%s' 不存在，跳过检索", TESTCASE_COLLECTION)
+        return []
+
+    query_vector = await embed_query(query)
+
+    query_filter = None
+    if product:
+        query_filter = models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="product",
+                    match=models.MatchValue(value=product),
+                )
+            ]
+        )
+
+    results = client.query_points(
+        collection_name=TESTCASE_COLLECTION,
+        query=query_vector,
+        query_filter=query_filter,
+        limit=top_k,
+        score_threshold=score_threshold,
+    ).points
+
+    return [
+        RetrievalResult(
+            content=hit.payload.get("content", "") if hit.payload else "",
+            score=hit.score if hit.score is not None else 0.0,
+            metadata={
+                "testcase_id": hit.payload.get("testcase_id", "") if hit.payload else "",
+                "title": hit.payload.get("title", "") if hit.payload else "",
+                "product": hit.payload.get("product", "") if hit.payload else "",
+                "module": hit.payload.get("module", "") if hit.payload else "",
+                "priority": hit.payload.get("priority", "") if hit.payload else "",
+            },
+            chunk_id=str(hit.id),
+        )
+        for hit in results
+    ]
+
+
+async def retrieve_cases_as_context(
+    query: str,
+    *,
+    top_k: int = 5,
+    score_threshold: float = 0.35,
+    product: str | None = None,
+) -> str | None:
+    """检索历史用例并格式化为 Prompt 上下文。
+
+    返回 None 表示没有检索到相关内容。供 case_gen 引擎
+    通过 ``historical_cases_context`` 参数注入 Prompt。
+    """
+    results = await retrieve_similar_cases(
+        query,
+        top_k=top_k,
+        score_threshold=score_threshold,
+        product=product,
+    )
+    if not results:
+        return None
+
+    parts: list[str] = []
+    for i, r in enumerate(results, 1):
+        title = r.metadata.get("title", "未知用例")
+        priority = r.metadata.get("priority", "")
+        module = r.metadata.get("module", "")
+        header = f"### 参考用例 {i}（相似度 {r.score:.2f}"
+        if module:
+            header += f" | {module}"
+        if priority:
+            header += f" | {priority}"
+        header += f"）\n**{title}**\n{r.content}"
+        parts.append(header)
 
     return "\n\n".join(parts)
