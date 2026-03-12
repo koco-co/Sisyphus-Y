@@ -25,8 +25,8 @@ class ProductResponse(BaseResponse):
 class IterationCreate(BaseSchema):
     product_id: uuid.UUID
     name: str
-    start_date: date | str | None = None
-    end_date: date | str | None = None
+    start_date: date | None = None
+    end_date: date | None = None
 
 
 class IterationUpdate(BaseSchema):
