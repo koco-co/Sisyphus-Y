@@ -23,6 +23,7 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { GlobalSearch, SearchTrigger } from '@/components/ui/GlobalSearch';
 import { NotificationBell } from '@/components/ui/NotificationBell';
+import { OnboardingGuideButton } from '@/components/ui/OnboardingGuide';
 import ProgressDashboard from '@/components/ui/ProgressDashboard';
 import { UserMenu } from '@/components/ui/UserMenu';
 
@@ -125,6 +126,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
         <div className="nav-actions">
           <SearchTrigger />
+          <OnboardingGuideButton />
           <ThemeToggle />
           <NotificationBell />
           <UserMenu />
