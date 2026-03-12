@@ -22,6 +22,8 @@ interface ProviderInfo {
   name: string;
   description: string;
   api_key_placeholder: string;
+  requires_base_url?: boolean;
+  default_base_url?: string;
   models: ModelOption[];
 }
 
@@ -143,6 +145,7 @@ export function AIModelSettings() {
   const [activeModelId, setActiveModelId] = useState<string>('glm-4-flash');
   const [apiKey, setApiKey] = useState('');
   const [keyVisible, setKeyVisible] = useState(false);
+  const [baseUrl, setBaseUrl] = useState('');
 
   const [paramVals, setParamVals] = useState<Record<SliderParam['key'], number>>({
     temperature: 0.7,
@@ -197,6 +200,7 @@ export function AIModelSettings() {
     if (prov) {
       const recommended = prov.models.find((m) => m.recommended) ?? prov.models[0];
       if (recommended) setActiveModelId(recommended.id);
+      setBaseUrl(prov.default_base_url ?? '');
     }
     // 恢复该提供商已保存的 key
     if (effectiveConfig?.api_keys) {
@@ -223,6 +227,7 @@ export function AIModelSettings() {
         max_tokens: paramVals.maxTokens,
         top_p: paramVals.topP,
         concurrency: paramVals.concurrency,
+        ...(baseUrl.trim() ? { base_url: baseUrl.trim() } : {}),
       },
       api_keys: Object.keys(apiKeys).length > 0 ? apiKeys : null,
     });
@@ -263,7 +268,7 @@ export function AIModelSettings() {
             <Loader2 className="w-3.5 h-3.5 animate-spin" /> 加载提供商列表...
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             {providers.map((provider) => (
               <ProviderCard
                 key={provider.id}
@@ -354,6 +359,24 @@ export function AIModelSettings() {
               API Key 保存在数据库中（加密存储），优先于 .env 环境变量。留空则使用服务器 .env
               中的配置。
             </p>
+            {/* ── Base URL（Ollama 等需要自定义地址的提供商） ── */}
+            {activeProvider.requires_base_url && (
+              <div className="mt-4 pt-3 border-t border-sy-border">
+                <p className="text-[12.5px] text-sy-text-2 mb-1.5">Base URL</p>
+                <input
+                  type="text"
+                  className="w-full bg-sy-bg-2 border border-sy-border rounded-md px-3 py-1.5 text-[12.5px] text-sy-text font-mono
+                             focus:border-sy-accent focus:outline-none transition-colors disabled:opacity-50"
+                  placeholder={activeProvider.default_base_url ?? 'http://localhost:11434'}
+                  value={baseUrl}
+                  onChange={(e) => setBaseUrl(e.target.value)}
+                  disabled={isDisabled}
+                />
+                <p className="mt-1.5 text-[11px] text-sy-text-3">
+                  Ollama 服务地址，默认为 http://localhost:11434。如在远程服务器部署请修改为对应地址。
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

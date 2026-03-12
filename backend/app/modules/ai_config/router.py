@@ -79,6 +79,21 @@ async def get_providers() -> dict:
                     {"id": "gpt-3.5-turbo", "name": "GPT-3.5 Turbo", "description": "经济型，快速响应"},
                 ],
             },
+            {
+                "id": "ollama",
+                "name": "Ollama",
+                "description": "本地部署开源模型，无需 API Key，需配置 Base URL 指向 Ollama 服务地址",
+                "api_key_placeholder": "（Ollama 无需 API Key，留空即可）",
+                "requires_base_url": True,
+                "default_base_url": "http://localhost:11434",
+                "models": [
+                    {"id": "llama3", "name": "Llama 3", "description": "Meta 开源旗舰模型", "recommended": True},
+                    {"id": "qwen2", "name": "Qwen 2", "description": "通义千问开源版"},
+                    {"id": "mistral", "name": "Mistral", "description": "高效轻量模型"},
+                    {"id": "codellama", "name": "Code Llama", "description": "代码生成专用"},
+                    {"id": "deepseek-coder", "name": "DeepSeek Coder", "description": "编程优化模型"},
+                ],
+            },
         ]
     }
 
