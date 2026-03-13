@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { searchApi } from '@/lib/api';
 
 interface SearchResult {
   id: string;
@@ -85,16 +86,51 @@ export function GlobalSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const router = useRouter();
 
-  const filteredResults = query.trim()
-    ? mockResults.filter(
-        (r) =>
-          r.title.toLowerCase().includes(query.toLowerCase()) ||
-          r.description.toLowerCase().includes(query.toLowerCase()),
-      )
-    : mockResults.slice(0, 5);
+  // Debounced API search
+  useEffect(() => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const data = await searchApi.search(query, undefined, 10);
+        setSearchResults(
+          (data.items ?? []).map((item: Record<string, string>) => ({
+            id: item.id,
+            title: item.title,
+            type: item.type ?? 'requirement',
+            description: item.description ?? item.subtitle ?? '',
+            url: item.url ?? `/${item.type}s`,
+          })),
+        );
+      } catch {
+        // Fallback to mock filtering
+        setSearchResults(
+          mockResults.filter(
+            (r) =>
+              r.title.toLowerCase().includes(query.toLowerCase()) ||
+              r.description.toLowerCase().includes(query.toLowerCase()),
+          ),
+        );
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, [query]);
+
+  const filteredResults = query.trim() ? searchResults : mockResults.slice(0, 5);
 
   const grouped = filteredResults.reduce<Record<string, SearchResult[]>>((acc, r) => {
     acc[r.type] = acc[r.type] || [];
