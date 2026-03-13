@@ -7,6 +7,22 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.shared.base_model import BaseModel
 
 
+class TestCaseFolder(BaseModel):
+    """Hierarchical folder structure for test cases (max 3 levels)."""
+
+    __tablename__ = "test_case_folders"
+
+    name: Mapped[str] = mapped_column(String(200))
+    parent_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("test_case_folders.id"),
+        nullable=True,
+        index=True,
+    )
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    level: Mapped[int] = mapped_column(Integer, default=1)
+
+
 class TestCase(BaseModel):
     __tablename__ = "test_cases"
 
@@ -33,6 +49,14 @@ class TestCase(BaseModel):
     clean_status: Mapped[str] = mapped_column(String(20), default="raw")
     quality_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     original_raw: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+
+    # v2.0: folder support
+    folder_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("test_case_folders.id"),
+        nullable=True,
+        index=True,
+    )
 
 
 class TestCaseStep(BaseModel):

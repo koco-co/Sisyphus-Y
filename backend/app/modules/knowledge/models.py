@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import Boolean, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -21,3 +21,17 @@ class KnowledgeDocument(BaseModel):
     hit_count: Mapped[int] = mapped_column(Integer, default=0)
     chunk_count: Mapped[int] = mapped_column(Integer, default=0)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # v2.0 fields
+    category: Mapped[str] = mapped_column(
+        String(50),
+        default="business_rule",
+        server_default="business_rule",
+        index=True,
+    )
+    entry_type: Mapped[str] = mapped_column(
+        String(20),
+        default="file",
+        server_default="file",
+    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")

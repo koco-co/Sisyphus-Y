@@ -19,3 +19,11 @@ class TestCaseTemplate(BaseModel):
     is_builtin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="active")
+
+    # v2.0 fields: prompt vs case_structure
+    template_type: Mapped[str] = mapped_column(
+        String(30),
+        default="prompt",
+        server_default="prompt",
+    )
+    applicable_module: Mapped[str | None] = mapped_column(String(50), nullable=True)
