@@ -460,13 +460,39 @@ export default function TemplatesPage() {
     }
   }
 
+  const [activeTab, setActiveTab] = useState<'case' | 'prompt'>('case');
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <LayoutTemplate className="w-5 h-5 text-accent" />
-          <h1 className="font-display text-lg font-bold text-text">用例模板库</h1>
+          <h1 className="font-display text-lg font-bold text-text">模板库</h1>
           <span className="pill pill-gray text-[10px]">{totalCount} 个模板</span>
+          <div className="flex items-center bg-bg2 rounded-lg p-0.5 ml-2">
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-md text-[12px] transition-colors ${
+                activeTab === 'case'
+                  ? 'bg-bg1 text-text font-medium shadow-sm'
+                  : 'text-text3 hover:text-text2'
+              }`}
+              onClick={() => setActiveTab('case')}
+            >
+              用例结构模板
+            </button>
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-md text-[12px] transition-colors ${
+                activeTab === 'prompt'
+                  ? 'bg-bg1 text-text font-medium shadow-sm'
+                  : 'text-text3 hover:text-text2'
+              }`}
+              onClick={() => setActiveTab('prompt')}
+            >
+              Prompt 模板
+            </button>
+          </div>
         </div>
         <button type="button" className="btn btn-primary" onClick={openCreateForm}>
           <Plus className="w-3.5 h-3.5" />
@@ -474,6 +500,18 @@ export default function TemplatesPage() {
         </button>
       </div>
 
+      {activeTab === 'prompt' && (
+        <div className="card p-6 text-center">
+          <LayoutTemplate className="w-12 h-12 text-text3 mx-auto mb-3 opacity-20" />
+          <p className="text-[13px] text-text3">Prompt 模板功能即将上线</p>
+          <p className="text-[12px] text-text3/60 mt-1">
+            在「设置 → Prompt 管理」中可编辑系统级 Prompt
+          </p>
+        </div>
+      )}
+
+      {activeTab === 'case' && (
+      <>
       {pageError && (
         <div className="alert-banner mb-6">
           <LayoutTemplate className="w-4 h-4" />
@@ -867,6 +905,8 @@ export default function TemplatesPage() {
         confirmText="删除"
         variant="danger"
       />
+      </>
+      )}
     </div>
   );
 }

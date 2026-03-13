@@ -5,24 +5,29 @@ import {
   ClipboardCheck,
   DatabaseZap,
   FileText,
+  History,
   Layers,
   Link2,
   type LucideIcon,
+  MessageSquareCode,
   Settings2,
   Wrench,
 } from 'lucide-react';
 import { useState } from 'react';
 import { AdvancedSettings } from './_components/AdvancedSettings';
 import { AIModelSettings } from './_components/AIModelSettings';
+import { AuditLogs } from './_components/AuditLogs';
 import { ChecklistManager } from './_components/ChecklistManager';
 import { CleanCompare } from './_components/CleanCompare';
 import { IntegrationSettings } from './_components/IntegrationSettings';
 import { ModuleRules } from './_components/ModuleRules';
 import { OutputPreferences } from './_components/OutputPreferences';
+import { PromptManager } from './_components/PromptManager';
 import { TestStandardEditor } from './_components/TestStandardEditor';
 
 const sidebarItems: { icon: LucideIcon; key: string; label: string }[] = [
   { icon: Bot, key: 'ai-model', label: 'AI 模型配置' },
+  { icon: MessageSquareCode, key: 'prompts', label: 'Prompt 管理' },
   { icon: FileText, key: 'test-standard', label: '测试规范' },
   { icon: Layers, key: 'module-rules', label: '模块专项规则' },
   { icon: Settings2, key: 'output', label: '输出偏好' },
@@ -30,10 +35,12 @@ const sidebarItems: { icon: LucideIcon; key: string; label: string }[] = [
   { icon: DatabaseZap, key: 'clean-compare', label: '历史数据清洗' },
   { icon: Wrench, key: 'advanced', label: '高级配置' },
   { icon: Link2, key: 'integration', label: '外部集成' },
+  { icon: History, key: 'audit-logs', label: '操作日志' },
 ];
 
 const panels: Record<string, React.ComponentType> = {
   'ai-model': AIModelSettings,
+  prompts: PromptManager,
   'test-standard': TestStandardEditor,
   'module-rules': ModuleRules,
   output: OutputPreferences,
@@ -41,6 +48,7 @@ const panels: Record<string, React.ComponentType> = {
   'clean-compare': CleanCompare,
   advanced: AdvancedSettings,
   integration: IntegrationSettings,
+  'audit-logs': AuditLogs,
 };
 
 export default function SettingsPage() {

@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, RefreshCw, Search, Upload } from 'lucide-react';
+import { BookOpen, FileCode2, FolderOpen, GraduationCap, History, RefreshCw, Search, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { CustomSelect } from '@/components/ui/CustomSelect';
 import { useKnowledge } from '@/hooks/useKnowledge';
@@ -9,8 +9,17 @@ import RAGBanner from './_components/RAGBanner';
 import RAGTestPanel from './_components/RAGTestPanel';
 import UploadDialog from './_components/UploadDialog';
 
+const categories = [
+  { key: '', label: '全部', icon: FolderOpen },
+  { key: 'standard', label: '企业测试规范', icon: GraduationCap },
+  { key: 'domain', label: '业务领域知识', icon: BookOpen },
+  { key: 'historical', label: '历史用例', icon: History },
+  { key: 'reference', label: '技术参考', icon: FileCode2 },
+];
+
 export default function KnowledgePage() {
   const [showUpload, setShowUpload] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   const {
     documents,
@@ -53,6 +62,28 @@ export default function KnowledgePage() {
 
         {/* RAG Banner */}
         <RAGBanner />
+
+        {/* Category Navigation */}
+        <div className="flex items-center gap-1.5 mb-4">
+          {categories.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.key}
+                type="button"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] transition-colors ${
+                  categoryFilter === cat.key
+                    ? 'bg-accent/10 text-accent font-medium border border-accent/25'
+                    : 'text-text3 hover:text-text2 hover:bg-bg2 border border-transparent'
+                }`}
+                onClick={() => setCategoryFilter(cat.key)}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Toolbar */}
         <div

@@ -59,13 +59,13 @@ function formatDeletedAt(value: string): string {
   });
 }
 
-function getExpiresIn(value: string): string {
+function getExpiresIn(value: string): { text: string; urgent: boolean } {
   if (!value) {
-    return '--';
+    return { text: '--', urgent: false };
   }
   const diffDays = Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000);
   const remainingDays = Math.max(30 - diffDays, 0);
-  return `${remainingDays} 天`;
+  return { text: `${remainingDays} 天`, urgent: remainingDays <= 3 };
 }
 
 function getTypeConfig(type: string) {
@@ -207,6 +207,17 @@ export default function RecyclePage() {
         <Trash2 className="w-5 h-5 text-text3" />
         <h1 className="font-display text-lg font-bold text-text">回收站</h1>
         <span className="pill pill-gray text-[10px]">{visibleCount} 项</span>
+        {filtered.length > 0 && (
+          <button
+            type="button"
+            className="btn btn-sm btn-danger ml-auto"
+            onClick={() => void handlePermanentDelete(filtered.map((i) => i.id))}
+            disabled={acting}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            清空回收站
+          </button>
+        )}
       </div>
 
       <div className="alert-banner mb-6">
@@ -343,8 +354,17 @@ export default function RecyclePage() {
                       <span className={`pill ${config.pill} text-[10px]`}>{config.label}</span>
                     </td>
                     <td className="font-mono text-[11px]">{formatDeletedAt(item.deleted_at)}</td>
-                    <td className="text-text3 font-mono text-[11px]">
-                      {getExpiresIn(item.deleted_at)}
+                    <td>
+                      {(() => {
+                        const expires = getExpiresIn(item.deleted_at);
+                        return (
+                          <span
+                            className={`font-mono text-[11px] ${expires.urgent ? 'text-red font-semibold' : 'text-text3'}`}
+                          >
+                            {expires.text}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td>
                       <div className="flex items-center gap-1">
