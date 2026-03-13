@@ -12,6 +12,9 @@ class KnowledgeDocumentResponse(BaseModel):
     hit_count: int
     chunk_count: int
     tags: list[str] = Field(default_factory=list)
+    category: str = "business_rule"
+    entry_type: str = "file"
+    is_active: bool = True
     uploaded_at: str = ""
     updated_at: str = ""
 

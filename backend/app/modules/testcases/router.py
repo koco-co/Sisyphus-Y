@@ -6,6 +6,10 @@ from fastapi import APIRouter, Query, status
 
 from app.core.dependencies import AsyncSessionDep
 from app.modules.testcases.schemas import (
+    FolderCreate,
+    FolderResponse,
+    FolderUpdate,
+    MoveCasesRequest,
     ReviewRequest,
     StatusCountItem,
     TestCaseBatchAction,
@@ -17,7 +21,7 @@ from app.modules.testcases.schemas import (
     TestCaseVersionResponse,
     TraceabilityResponse,
 )
-from app.modules.testcases.service import TestCaseService
+from app.modules.testcases.service import FolderService, TestCaseService
 
 router = APIRouter(prefix="/testcases", tags=["testcases"])
 
@@ -61,8 +65,7 @@ async def get_clean_stats(session: AsyncSessionDep) -> dict:
     total_q = select(func.count()).where(TestCase.deleted_at.is_(None), TestCase.source == "imported")
     total = (await session.execute(total_q)).scalar() or 0
     by_status = [
-        {"status": r.clean_status or "raw", "count": r.count, "avg_score": round(r.avg_score or 0, 1)}
-        for r in rows
+        {"status": r.clean_status or "raw", "count": r.count, "avg_score": round(r.avg_score or 0, 1)} for r in rows
     ]
     return {"total": total, "by_status": by_status}
 
@@ -223,3 +226,59 @@ async def get_traceability(case_id: uuid.UUID, session: AsyncSessionDep) -> Trac
         iteration=_to_dict(chain.get("iteration")),
         product=_to_dict(chain.get("product")),
     )
+
+
+# ── Folder CRUD ────────────────────────────────────────────────────
+
+
+@router.get("/folders/tree")
+async def get_folder_tree(session: AsyncSessionDep) -> list[dict]:
+    svc = FolderService(session)
+    return await svc.get_tree()
+
+
+@router.post("/folders", response_model=FolderResponse, status_code=status.HTTP_201_CREATED)
+async def create_folder(data: FolderCreate, session: AsyncSessionDep) -> FolderResponse:
+    svc = FolderService(session)
+    folder = await svc.create_folder(data.name, data.parent_id)
+    count = await svc.get_case_count(folder.id)
+    return FolderResponse(
+        id=folder.id,
+        name=folder.name,
+        parent_id=folder.parent_id,
+        sort_order=folder.sort_order,
+        level=folder.level,
+        case_count=count,
+        created_at=folder.created_at,
+        updated_at=folder.updated_at,
+    )
+
+
+@router.patch("/folders/{folder_id}", response_model=FolderResponse)
+async def update_folder(folder_id: uuid.UUID, data: FolderUpdate, session: AsyncSessionDep) -> FolderResponse:
+    svc = FolderService(session)
+    folder = await svc.update_folder(folder_id, data.name, data.sort_order)
+    count = await svc.get_case_count(folder.id)
+    return FolderResponse(
+        id=folder.id,
+        name=folder.name,
+        parent_id=folder.parent_id,
+        sort_order=folder.sort_order,
+        level=folder.level,
+        case_count=count,
+        created_at=folder.created_at,
+        updated_at=folder.updated_at,
+    )
+
+
+@router.delete("/folders/{folder_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_folder(folder_id: uuid.UUID, session: AsyncSessionDep) -> None:
+    svc = FolderService(session)
+    await svc.delete_folder(folder_id)
+
+
+@router.post("/folders/move-cases")
+async def move_cases_to_folder(data: MoveCasesRequest, session: AsyncSessionDep) -> dict:
+    svc = FolderService(session)
+    count = await svc.move_cases(data.case_ids, data.folder_id)
+    return {"moved": count}

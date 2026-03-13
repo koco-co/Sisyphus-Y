@@ -93,9 +93,7 @@ class TestCaseService:
         if module_path is not None:
             if module_path == "__uncategorized__":
                 # 查询未分类（module_path 为 NULL 或空字符串）的用例
-                uncategorized_filter = or_(
-                    TestCase.module_path.is_(None), TestCase.module_path == ""
-                )
+                uncategorized_filter = or_(TestCase.module_path.is_(None), TestCase.module_path == "")
                 q = q.where(uncategorized_filter)
                 count_q = count_q.where(uncategorized_filter)
             else:
@@ -430,3 +428,134 @@ class TestCaseService:
         )
         self.session.add(version)
         return version
+
+
+# ── Folder Service ─────────────────────────────────────────────────
+
+
+class FolderService:
+    MAX_DEPTH = 3
+
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
+    async def list_folders(self) -> list:
+        from app.modules.testcases.models import TestCaseFolder
+
+        q = (
+            select(TestCaseFolder)
+            .where(TestCaseFolder.deleted_at.is_(None))
+            .order_by(TestCaseFolder.level, TestCaseFolder.sort_order, TestCaseFolder.name)
+        )
+        result = await self.session.execute(q)
+        return list(result.scalars().all())
+
+    async def get_folder(self, folder_id: UUID):
+        from app.modules.testcases.models import TestCaseFolder
+
+        item = await self.session.get(TestCaseFolder, folder_id)
+        if not item or item.deleted_at is not None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found")
+        return item
+
+    async def create_folder(self, name: str, parent_id: UUID | None = None):
+        from app.modules.testcases.models import TestCaseFolder
+
+        level = 1
+        if parent_id:
+            parent = await self.get_folder(parent_id)
+            level = parent.level + 1
+            if level > self.MAX_DEPTH:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"最多支持 {self.MAX_DEPTH} 级目录",
+                )
+
+        max_order_q = select(func.max(TestCaseFolder.sort_order)).where(
+            TestCaseFolder.parent_id == parent_id if parent_id else TestCaseFolder.parent_id.is_(None),
+            TestCaseFolder.deleted_at.is_(None),
+        )
+        max_order = (await self.session.execute(max_order_q)).scalar() or 0
+
+        folder = TestCaseFolder(name=name, parent_id=parent_id, level=level, sort_order=max_order + 1)
+        self.session.add(folder)
+        await self.session.commit()
+        await self.session.refresh(folder)
+        return folder
+
+    async def update_folder(self, folder_id: UUID, name: str | None = None, sort_order: int | None = None):
+        folder = await self.get_folder(folder_id)
+        if name is not None:
+            folder.name = name
+        if sort_order is not None:
+            folder.sort_order = sort_order
+        await self.session.commit()
+        await self.session.refresh(folder)
+        return folder
+
+    async def delete_folder(self, folder_id: UUID) -> None:
+        from app.modules.testcases.models import TestCaseFolder
+
+        folder = await self.get_folder(folder_id)
+        # Check for children
+        children_q = select(func.count()).where(
+            TestCaseFolder.parent_id == folder_id,
+            TestCaseFolder.deleted_at.is_(None),
+        )
+        child_count = (await self.session.execute(children_q)).scalar() or 0
+        if child_count > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="请先删除或移动子目录",
+            )
+
+        # Unassign cases in this folder
+        cases_q = select(TestCase).where(TestCase.folder_id == folder_id, TestCase.deleted_at.is_(None))
+        result = await self.session.execute(cases_q)
+        for tc in result.scalars().all():
+            tc.folder_id = None
+
+        folder.deleted_at = datetime.now(UTC)
+        await self.session.commit()
+
+    async def move_cases(self, case_ids: list[UUID], folder_id: UUID | None) -> int:
+        if folder_id:
+            await self.get_folder(folder_id)  # validate exists
+        q = select(TestCase).where(TestCase.id.in_(case_ids), TestCase.deleted_at.is_(None))
+        result = await self.session.execute(q)
+        cases = list(result.scalars().all())
+        for tc in cases:
+            tc.folder_id = folder_id
+        await self.session.commit()
+        return len(cases)
+
+    async def get_case_count(self, folder_id: UUID) -> int:
+        q = select(func.count()).where(TestCase.folder_id == folder_id, TestCase.deleted_at.is_(None))
+        return (await self.session.execute(q)).scalar() or 0
+
+    async def get_tree(self) -> list[dict]:
+        folders = await self.list_folders()
+        count_map: dict[UUID, int] = {}
+        for f in folders:
+            count_map[f.id] = await self.get_case_count(f.id)
+
+        folder_map: dict[UUID | None, list] = {}
+        for f in folders:
+            pid = f.parent_id
+            folder_map.setdefault(pid, []).append(f)
+
+        def build(parent_id: UUID | None) -> list[dict]:
+            children = folder_map.get(parent_id, [])
+            return [
+                {
+                    "id": f.id,
+                    "name": f.name,
+                    "level": f.level,
+                    "sort_order": f.sort_order,
+                    "case_count": count_map.get(f.id, 0),
+                    "children": build(f.id),
+                }
+                for f in children
+            ]
+
+        return build(None)

@@ -27,6 +27,9 @@ class KnowledgeService:
         query: str | None = None,
         page: int = 1,
         page_size: int = 20,
+        *,
+        category: str | None = None,
+        entry_type: str | None = None,
     ) -> tuple[list[KnowledgeDocument], int]:
         q = select(KnowledgeDocument).where(KnowledgeDocument.deleted_at.is_(None))
         count_q = select(func.count()).select_from(KnowledgeDocument).where(KnowledgeDocument.deleted_at.is_(None))
@@ -37,6 +40,12 @@ class KnowledgeService:
         if vector_status:
             q = q.where(KnowledgeDocument.vector_status == vector_status)
             count_q = count_q.where(KnowledgeDocument.vector_status == vector_status)
+        if category:
+            q = q.where(KnowledgeDocument.category == category)
+            count_q = count_q.where(KnowledgeDocument.category == category)
+        if entry_type:
+            q = q.where(KnowledgeDocument.entry_type == entry_type)
+            count_q = count_q.where(KnowledgeDocument.entry_type == entry_type)
         if query:
             like = f"%{query}%"
             search_clause = or_(

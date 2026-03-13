@@ -12,11 +12,14 @@ from app.ai.prompts import (
     DEFAULT_TEAM_STANDARD,
 )
 from app.core.encryption import decrypt_api_key, encrypt_api_key, mask_api_key
-from app.modules.ai_config.models import AiConfiguration
-from app.modules.ai_config.schemas import AiConfigCreate, AiConfigUpdate
+from app.modules.ai_config.models import AiConfiguration, ModelConfiguration, PromptConfiguration, PromptHistory
+from app.modules.ai_config.schemas import AiConfigCreate, AiConfigUpdate, ModelConfigCreate, ModelConfigUpdate
 from app.modules.products.models import Iteration
 
 logger = logging.getLogger(__name__)
+
+
+# ── Legacy AiConfiguration service ─────────────────────────────────
 
 
 class AiConfigService:
@@ -58,7 +61,6 @@ class AiConfigService:
             if updates["api_keys"]:
                 updates["api_keys"] = self._encrypt_keys(updates["api_keys"])
             else:
-                # Don't overwrite existing keys with null
                 del updates["api_keys"]
         for key, value in updates.items():
             setattr(config, key, value)
@@ -67,27 +69,18 @@ class AiConfigService:
         return config
 
     async def get_effective_config(self, iteration_id: UUID | None = None, product_id: UUID | None = None) -> dict:
-        """Get merged config with MASKED API keys (safe for frontend display)."""
         merged = await self._get_effective_raw(iteration_id, product_id)
         return self._mask_keys_in_result(merged)
 
     async def get_effective_config_with_secrets(
         self, iteration_id: UUID | None = None, product_id: UUID | None = None
     ) -> dict:
-        """Get merged config with DECRYPTED API keys (for internal LLM calls only)."""
         merged = await self._get_effective_raw(iteration_id, product_id)
         if merged.get("api_keys"):
             merged["api_keys"] = self._decrypt_keys(merged["api_keys"])
         return merged
 
     async def _get_effective_raw(self, iteration_id: UUID | None = None, product_id: UUID | None = None) -> dict:
-        """Get merged config following inheritance: iteration > product > global > default.
-
-        Returns raw encrypted API keys — callers must mask or decrypt before use.
-
-        If iteration_id is given but product_id is not, automatically resolve
-        the owning product so that product-level overrides are applied.
-        """
         merged: dict = {
             "team_standard_prompt": DEFAULT_TEAM_STANDARD,
             "output_preference": dict(DEFAULT_OUTPUT_PREFERENCE),
@@ -101,25 +94,21 @@ class AiConfigService:
             "vector_config": None,
         }
 
-        # Auto-resolve product_id from iteration
         resolved_product_id = product_id
         if iteration_id and not resolved_product_id:
             iteration = await self.session.get(Iteration, iteration_id)
             if iteration:
                 resolved_product_id = iteration.product_id
 
-        # Layer 1: global defaults
         global_config = await self.get_by_scope("global")
         if global_config:
             merged = self._merge_config(merged, global_config)
 
-        # Layer 2: product-level overrides
         if resolved_product_id:
             product_config = await self.get_by_scope("product", resolved_product_id)
             if product_config:
                 merged = self._merge_config(merged, product_config)
 
-        # Layer 3: iteration-level overrides (highest priority)
         if iteration_id:
             iteration_config = await self.get_by_scope("iteration", iteration_id)
             if iteration_config:
@@ -128,19 +117,16 @@ class AiConfigService:
         return merged
 
     def _mask_keys_in_result(self, result: dict) -> dict:
-        """Mask API keys before returning to frontend."""
         if result.get("api_keys"):
             result["api_keys"] = self._mask_keys(result["api_keys"])
         return result
 
     @staticmethod
     def _encrypt_keys(keys: dict) -> dict:
-        """Encrypt each API key value for DB storage."""
         return {k: encrypt_api_key(v) for k, v in keys.items() if v}
 
     @staticmethod
     def _decrypt_keys(keys: dict) -> dict:
-        """Decrypt each API key value from DB storage."""
         decrypted = {}
         for k, v in keys.items():
             try:
@@ -151,7 +137,6 @@ class AiConfigService:
 
     @staticmethod
     def _mask_keys(keys: dict) -> dict:
-        """Mask each API key value for display."""
         masked = {}
         for k, v in keys.items():
             try:
@@ -162,7 +147,6 @@ class AiConfigService:
         return masked
 
     def _merge_config(self, base: dict, override: AiConfiguration) -> dict:
-        """Merge override config into base. Text fields override, JSONB deep merge."""
         result = dict(base)
 
         if override.team_standard_prompt:
@@ -197,3 +181,178 @@ class AiConfigService:
     async def list_configs(self) -> list[AiConfiguration]:
         result = await self.session.execute(select(AiConfiguration).where(AiConfiguration.deleted_at.is_(None)))
         return list(result.scalars().all())
+
+
+# ── ModelConfiguration service ─────────────────────────────────────
+
+
+class ModelConfigService:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
+    async def list_models(self) -> list[ModelConfiguration]:
+        q = (
+            select(ModelConfiguration)
+            .where(ModelConfiguration.deleted_at.is_(None))
+            .order_by(ModelConfiguration.is_default.desc(), ModelConfiguration.created_at)
+        )
+        result = await self.session.execute(q)
+        return list(result.scalars().all())
+
+    async def get_model(self, model_config_id: UUID) -> ModelConfiguration:
+        item = await self.session.get(ModelConfiguration, model_config_id)
+        if not item or item.deleted_at is not None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Model config not found")
+        return item
+
+    async def create_model(self, data: ModelConfigCreate) -> ModelConfiguration:
+        dump = data.model_dump(exclude={"api_key"})
+        if data.api_key:
+            dump["api_key_encrypted"] = encrypt_api_key(data.api_key)
+        if data.is_default:
+            await self._clear_default()
+        item = ModelConfiguration(**dump)
+        self.session.add(item)
+        await self.session.commit()
+        await self.session.refresh(item)
+        return item
+
+    async def update_model(self, model_config_id: UUID, data: ModelConfigUpdate) -> ModelConfiguration:
+        item = await self.get_model(model_config_id)
+        updates = data.model_dump(exclude_unset=True, exclude={"api_key"})
+        if data.api_key is not None:
+            updates["api_key_encrypted"] = encrypt_api_key(data.api_key) if data.api_key else None
+        if updates.get("is_default"):
+            await self._clear_default()
+        for key, value in updates.items():
+            setattr(item, key, value)
+        await self.session.commit()
+        await self.session.refresh(item)
+        return item
+
+    async def delete_model(self, model_config_id: UUID) -> None:
+        item = await self.get_model(model_config_id)
+        from datetime import UTC, datetime
+
+        item.deleted_at = datetime.now(UTC)
+        await self.session.commit()
+
+    async def _clear_default(self) -> None:
+        q = select(ModelConfiguration).where(
+            ModelConfiguration.is_default.is_(True),
+            ModelConfiguration.deleted_at.is_(None),
+        )
+        result = await self.session.execute(q)
+        for m in result.scalars().all():
+            m.is_default = False
+
+    def serialize(self, item: ModelConfiguration) -> dict:
+        masked_key = None
+        if item.api_key_encrypted:
+            try:
+                plain = decrypt_api_key(item.api_key_encrypted)
+                masked_key = mask_api_key(plain)
+            except Exception:
+                masked_key = "***"
+        return {
+            "id": item.id,
+            "name": item.name,
+            "provider": item.provider,
+            "model_id": item.model_id,
+            "base_url": item.base_url,
+            "api_key_masked": masked_key,
+            "temperature": item.temperature,
+            "max_tokens": item.max_tokens,
+            "purpose_tags": item.purpose_tags or [],
+            "is_enabled": item.is_enabled,
+            "is_default": item.is_default,
+            "extra_params": item.extra_params,
+            "created_at": item.created_at,
+            "updated_at": item.updated_at,
+        }
+
+
+# ── PromptConfiguration service ────────────────────────────────────
+
+
+class PromptConfigService:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
+    async def list_prompts(self) -> list[PromptConfiguration]:
+        q = (
+            select(PromptConfiguration)
+            .where(PromptConfiguration.deleted_at.is_(None))
+            .order_by(PromptConfiguration.module)
+        )
+        result = await self.session.execute(q)
+        return list(result.scalars().all())
+
+    async def get_prompt(self, module: str) -> PromptConfiguration | None:
+        q = select(PromptConfiguration).where(
+            PromptConfiguration.module == module,
+            PromptConfiguration.deleted_at.is_(None),
+        )
+        result = await self.session.execute(q)
+        return result.scalar_one_or_none()
+
+    async def upsert_prompt(
+        self, module: str, system_prompt: str, change_reason: str | None = None
+    ) -> PromptConfiguration:
+        existing = await self.get_prompt(module)
+        if existing:
+            await self._save_history(existing, change_reason)
+            existing.system_prompt = system_prompt
+            existing.is_customized = True
+            existing.version += 1
+            await self.session.commit()
+            await self.session.refresh(existing)
+            return existing
+
+        item = PromptConfiguration(module=module, system_prompt=system_prompt, is_customized=True, version=1)
+        self.session.add(item)
+        await self.session.commit()
+        await self.session.refresh(item)
+        return item
+
+    async def reset_prompt(self, module: str) -> None:
+        existing = await self.get_prompt(module)
+        if not existing:
+            return
+        from datetime import UTC, datetime
+
+        existing.deleted_at = datetime.now(UTC)
+        await self.session.commit()
+
+    async def get_history(self, module: str) -> list[PromptHistory]:
+        q = (
+            select(PromptHistory)
+            .where(PromptHistory.module == module, PromptHistory.deleted_at.is_(None))
+            .order_by(PromptHistory.version.desc())
+            .limit(5)
+        )
+        result = await self.session.execute(q)
+        return list(result.scalars().all())
+
+    async def _save_history(self, prompt: PromptConfiguration, change_reason: str | None) -> None:
+        history = PromptHistory(
+            module=prompt.module,
+            version=prompt.version,
+            system_prompt=prompt.system_prompt,
+            change_reason=change_reason,
+        )
+        self.session.add(history)
+
+        # Keep max 5 versions per module
+        q = (
+            select(PromptHistory)
+            .where(PromptHistory.module == prompt.module, PromptHistory.deleted_at.is_(None))
+            .order_by(PromptHistory.version.desc())
+        )
+        result = await self.session.execute(q)
+        all_history = list(result.scalars().all())
+        if len(all_history) >= 5:
+            from datetime import UTC, datetime
+
+            for old in all_history[4:]:
+                old.deleted_at = datetime.now(UTC)

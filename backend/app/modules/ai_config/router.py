@@ -4,10 +4,23 @@ from typing import Annotated
 from fastapi import APIRouter, Query, status
 
 from app.core.dependencies import AsyncSessionDep
-from app.modules.ai_config.schemas import AiConfigCreate, AiConfigResponse, AiConfigUpdate
-from app.modules.ai_config.service import AiConfigService
+from app.modules.ai_config.schemas import (
+    AiConfigCreate,
+    AiConfigResponse,
+    AiConfigUpdate,
+    ModelConfigCreate,
+    ModelConfigResponse,
+    ModelConfigUpdate,
+    PromptConfigResponse,
+    PromptConfigUpdate,
+    PromptHistoryResponse,
+)
+from app.modules.ai_config.service import AiConfigService, ModelConfigService, PromptConfigService
 
 router = APIRouter(prefix="/ai-config", tags=["ai-config"])
+
+
+# ── Legacy scope-based config endpoints ────────────────────────────
 
 
 @router.get("", response_model=list[AiConfigResponse])
@@ -35,7 +48,7 @@ async def get_providers() -> dict:
             {
                 "id": "zhipu",
                 "name": "智谱AI",
-                "description": "国内领先大模型，中文理解强，响应速度快，适合需求诊断与追问场景",
+                "description": "国内领先大模型，中文理解强，响应速度快",
                 "api_key_placeholder": "xxxxxxxx.xxxxxxxxxx",
                 "models": [
                     {
@@ -53,7 +66,7 @@ async def get_providers() -> dict:
             {
                 "id": "dashscope",
                 "name": "阿里云百炼",
-                "description": "阿里云 DashScope，推理能力强，结构化输出稳定，适合复杂用例 CoT 生成",
+                "description": "推理能力强，结构化输出稳定，适合复杂用例生成",
                 "api_key_placeholder": "sk-xxxxxxxxxxxxxxxx",
                 "models": [
                     {
@@ -68,31 +81,63 @@ async def get_providers() -> dict:
                 ],
             },
             {
+                "id": "deepseek",
+                "name": "DeepSeek",
+                "description": "DeepSeek 系列模型，推理和编程能力出色",
+                "api_key_placeholder": "sk-xxxxxxxxxxxxxxxx",
+                "models": [
+                    {"id": "deepseek-chat", "name": "DeepSeek-V3", "description": "通用对话模型", "recommended": True},
+                    {"id": "deepseek-reasoner", "name": "DeepSeek-R1", "description": "深度推理模型"},
+                ],
+            },
+            {
+                "id": "moonshot",
+                "name": "Kimi (月之暗面)",
+                "description": "超长上下文，中文理解优秀",
+                "api_key_placeholder": "sk-xxxxxxxxxxxxxxxx",
+                "models": [
+                    {"id": "moonshot-v1-8k", "name": "Moonshot-v1-8K", "description": "标准版"},
+                    {
+                        "id": "moonshot-v1-32k",
+                        "name": "Moonshot-v1-32K",
+                        "description": "长上下文",
+                        "recommended": True,
+                    },
+                    {"id": "moonshot-v1-128k", "name": "Moonshot-v1-128K", "description": "超长上下文"},
+                ],
+            },
+            {
                 "id": "openai",
                 "name": "OpenAI",
-                "description": "兼容 OpenAI 协议的模型，也可配合自定义 Base URL 使用 Moonshot、DeepSeek 等兼容服务",
+                "description": "兼容 OpenAI 协议的模型",
                 "api_key_placeholder": "sk-xxxxxxxxxxxxxxxx",
                 "models": [
                     {"id": "gpt-4o", "name": "GPT-4o", "description": "多模态旗舰模型", "recommended": True},
-                    {"id": "gpt-4o-mini", "name": "GPT-4o mini", "description": "低成本版，适合高并发"},
+                    {"id": "gpt-4o-mini", "name": "GPT-4o mini", "description": "低成本版"},
                     {"id": "gpt-4-turbo", "name": "GPT-4 Turbo", "description": "强推理，128K 上下文"},
-                    {"id": "gpt-3.5-turbo", "name": "GPT-3.5 Turbo", "description": "经济型，快速响应"},
                 ],
             },
             {
                 "id": "ollama",
-                "name": "Ollama",
-                "description": "本地部署开源模型，无需 API Key，需配置 Base URL 指向 Ollama 服务地址",
-                "api_key_placeholder": "（Ollama 无需 API Key，留空即可）",
+                "name": "Ollama (本地)",
+                "description": "本地部署开源模型，无需 API Key",
+                "api_key_placeholder": "（留空即可）",
                 "requires_base_url": True,
                 "default_base_url": "http://localhost:11434",
                 "models": [
                     {"id": "llama3", "name": "Llama 3", "description": "Meta 开源旗舰模型", "recommended": True},
                     {"id": "qwen2", "name": "Qwen 2", "description": "通义千问开源版"},
-                    {"id": "mistral", "name": "Mistral", "description": "高效轻量模型"},
-                    {"id": "codellama", "name": "Code Llama", "description": "代码生成专用"},
                     {"id": "deepseek-coder", "name": "DeepSeek Coder", "description": "编程优化模型"},
                 ],
+            },
+            {
+                "id": "custom",
+                "name": "自定义 (OpenAI 兼容)",
+                "description": "任何兼容 OpenAI API 协议的服务",
+                "api_key_placeholder": "your-api-key",
+                "requires_base_url": True,
+                "default_base_url": "https://your-api.example.com/v1",
+                "models": [],
             },
         ]
     }
@@ -171,3 +216,101 @@ async def test_embedding_connection() -> dict:
             "status": "error",
             "error": str(e),
         }
+
+
+# ── Model Configuration CRUD endpoints ────────────────────────────
+
+
+@router.get("/models/list", response_model=list[ModelConfigResponse])
+async def list_model_configs(session: AsyncSessionDep) -> list[ModelConfigResponse]:
+    svc = ModelConfigService(session)
+    items = await svc.list_models()
+    return [ModelConfigResponse.model_validate(svc.serialize(m)) for m in items]
+
+
+@router.post("/models", response_model=ModelConfigResponse, status_code=status.HTTP_201_CREATED)
+async def create_model_config(data: ModelConfigCreate, session: AsyncSessionDep) -> ModelConfigResponse:
+    svc = ModelConfigService(session)
+    item = await svc.create_model(data)
+    return ModelConfigResponse.model_validate(svc.serialize(item))
+
+
+@router.patch("/models/{model_config_id}", response_model=ModelConfigResponse)
+async def update_model_config(
+    model_config_id: uuid.UUID, data: ModelConfigUpdate, session: AsyncSessionDep
+) -> ModelConfigResponse:
+    svc = ModelConfigService(session)
+    item = await svc.update_model(model_config_id, data)
+    return ModelConfigResponse.model_validate(svc.serialize(item))
+
+
+@router.delete("/models/{model_config_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_model_config(model_config_id: uuid.UUID, session: AsyncSessionDep) -> None:
+    svc = ModelConfigService(session)
+    await svc.delete_model(model_config_id)
+
+
+@router.post("/models/{model_config_id}/test")
+async def test_model_config(model_config_id: uuid.UUID, session: AsyncSessionDep) -> dict:
+    """Test connection for a specific model configuration."""
+    svc = ModelConfigService(session)
+    item = await svc.get_model(model_config_id)
+    try:
+        from app.ai.llm_client import invoke_llm
+
+        result = await invoke_llm(
+            [{"role": "user", "content": "请回复'连接成功'四个字。"}],
+            provider=item.provider,
+            max_retries=0,
+        )
+        return {
+            "status": "ok",
+            "model": item.model_id,
+            "response_preview": result.content[:100],
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "model": item.model_id,
+            "error": str(e),
+        }
+
+
+# ── Prompt Configuration endpoints ────────────────────────────────
+
+
+@router.get("/prompts", response_model=list[PromptConfigResponse])
+async def list_prompt_configs(session: AsyncSessionDep) -> list[PromptConfigResponse]:
+    svc = PromptConfigService(session)
+    items = await svc.list_prompts()
+    return [PromptConfigResponse.model_validate(p) for p in items]
+
+
+@router.get("/prompts/{module}", response_model=PromptConfigResponse | None)
+async def get_prompt_config(module: str, session: AsyncSessionDep) -> PromptConfigResponse | None:
+    svc = PromptConfigService(session)
+    item = await svc.get_prompt(module)
+    if not item:
+        return None
+    return PromptConfigResponse.model_validate(item)
+
+
+@router.put("/prompts/{module}", response_model=PromptConfigResponse)
+async def upsert_prompt_config(module: str, data: PromptConfigUpdate, session: AsyncSessionDep) -> PromptConfigResponse:
+    svc = PromptConfigService(session)
+    item = await svc.upsert_prompt(module, data.system_prompt, data.change_reason)
+    return PromptConfigResponse.model_validate(item)
+
+
+@router.delete("/prompts/{module}", status_code=status.HTTP_204_NO_CONTENT)
+async def reset_prompt_config(module: str, session: AsyncSessionDep) -> None:
+    """Reset module prompt to system default by soft-deleting the custom config."""
+    svc = PromptConfigService(session)
+    await svc.reset_prompt(module)
+
+
+@router.get("/prompts/{module}/history", response_model=list[PromptHistoryResponse])
+async def get_prompt_history(module: str, session: AsyncSessionDep) -> list[PromptHistoryResponse]:
+    svc = PromptConfigService(session)
+    items = await svc.get_history(module)
+    return [PromptHistoryResponse.model_validate(h) for h in items]

@@ -1,7 +1,12 @@
 from fastapi import APIRouter
 
 from app.core.dependencies import AsyncSessionDep
-from app.modules.dashboard.schemas import DashboardActivityItem, DashboardPendingItem, DashboardStatsResponse
+from app.modules.dashboard.schemas import (
+    DashboardActivityItem,
+    DashboardPendingItem,
+    DashboardStatsResponse,
+    QualityStatsResponse,
+)
 from app.modules.dashboard.service import DashboardService
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -29,3 +34,10 @@ async def get_pending_items(session: AsyncSessionDep, limit: int = 10) -> list[D
 async def get_products_overview(session: AsyncSessionDep) -> list[dict]:
     svc = DashboardService(session)
     return await svc.get_products_overview()
+
+
+@router.get("/quality", response_model=QualityStatsResponse)
+async def get_quality_stats(session: AsyncSessionDep) -> QualityStatsResponse:
+    svc = DashboardService(session)
+    data = await svc.get_quality_stats()
+    return QualityStatsResponse.model_validate(data)

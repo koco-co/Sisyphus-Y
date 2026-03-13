@@ -148,3 +148,38 @@ class TraceabilityResponse(BaseSchema):
     requirement: dict | None = None
     iteration: dict | None = None
     product: dict | None = None
+
+
+# ── Folder schemas ─────────────────────────────────────────────────
+
+
+class FolderCreate(BaseSchema):
+    name: str = Field(..., max_length=200)
+    parent_id: uuid.UUID | None = None
+
+
+class FolderUpdate(BaseSchema):
+    name: str | None = None
+    sort_order: int | None = None
+
+
+class FolderResponse(BaseResponse):
+    name: str
+    parent_id: uuid.UUID | None
+    sort_order: int
+    level: int
+    case_count: int = 0
+
+
+class FolderTreeNode(BaseSchema):
+    id: uuid.UUID
+    name: str
+    level: int
+    sort_order: int
+    case_count: int = 0
+    children: list["FolderTreeNode"] = []
+
+
+class MoveCasesRequest(BaseSchema):
+    case_ids: list[uuid.UUID]
+    folder_id: uuid.UUID | None = None

@@ -40,6 +40,9 @@ def _serialize_document(doc: KnowledgeDocument) -> dict:
         "hit_count": getattr(doc, "hit_count", 0),
         "chunk_count": getattr(doc, "chunk_count", 0),
         "tags": list(getattr(doc, "tags", []) or []),
+        "category": getattr(doc, "category", "business_rule"),
+        "entry_type": getattr(doc, "entry_type", "file"),
+        "is_active": getattr(doc, "is_active", True),
         "uploaded_at": _serialize_timestamp(getattr(doc, "created_at", None)),
         "updated_at": _serialize_timestamp(getattr(doc, "updated_at", None)),
     }
@@ -65,12 +68,22 @@ async def list_documents(
     session: AsyncSessionDep,
     doc_type: str | None = None,
     vector_status: str | None = None,
+    category: str | None = None,
+    entry_type: str | None = None,
     q: str | None = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
 ) -> KnowledgeListResponse:
     svc = KnowledgeService(session)
-    docs, total = await svc.list_documents(doc_type, vector_status, q, page, page_size)
+    docs, total = await svc.list_documents(
+        doc_type,
+        vector_status,
+        q,
+        page,
+        page_size,
+        category=category,
+        entry_type=entry_type,
+    )
     return KnowledgeListResponse(
         items=[KnowledgeDocumentResponse.model_validate(_serialize_document(doc)) for doc in docs],
         total=total,

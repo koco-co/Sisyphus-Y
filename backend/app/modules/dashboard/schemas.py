@@ -35,3 +35,13 @@ class DashboardPendingItem(BaseSchema):
     priority: Literal["high", "medium", "low"]
     link: str
     created_at: datetime
+
+
+class QualityStatsResponse(BaseSchema):
+    total_cases: int
+    by_priority: list[dict]
+    by_type: list[dict]
+    by_status: list[dict]
+    by_source: list[dict]
+    avg_ai_score: float | None
+    coverage_rate: float

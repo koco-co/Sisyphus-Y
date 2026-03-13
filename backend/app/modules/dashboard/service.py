@@ -263,6 +263,70 @@ class DashboardService:
         result = await self.session.execute(q)
         return result.scalar() or 0
 
+    async def get_quality_stats(self) -> dict:
+        """Get quality analysis statistics for the dashboard."""
+        total_q = select(func.count()).where(TestCase.deleted_at.is_(None))
+        total = (await self.session.execute(total_q)).scalar() or 0
+
+        # By priority
+        priority_q = (
+            select(TestCase.priority, func.count().label("count"))
+            .where(TestCase.deleted_at.is_(None))
+            .group_by(TestCase.priority)
+        )
+        priority_rows = await self.session.execute(priority_q)
+        by_priority = [{"label": r.priority, "count": r.count} for r in priority_rows.all()]
+
+        # By type
+        type_q = (
+            select(TestCase.case_type, func.count().label("count"))
+            .where(TestCase.deleted_at.is_(None))
+            .group_by(TestCase.case_type)
+        )
+        type_rows = await self.session.execute(type_q)
+        by_type = [{"label": r.case_type, "count": r.count} for r in type_rows.all()]
+
+        # By status
+        status_q = (
+            select(TestCase.status, func.count().label("count"))
+            .where(TestCase.deleted_at.is_(None))
+            .group_by(TestCase.status)
+        )
+        status_rows = await self.session.execute(status_q)
+        by_status = [{"label": r.status, "count": r.count} for r in status_rows.all()]
+
+        # By source
+        source_q = (
+            select(TestCase.source, func.count().label("count"))
+            .where(TestCase.deleted_at.is_(None))
+            .group_by(TestCase.source)
+        )
+        source_rows = await self.session.execute(source_q)
+        by_source = [{"label": r.source, "count": r.count} for r in source_rows.all()]
+
+        # Average AI score
+        avg_q = select(func.avg(TestCase.ai_score)).where(
+            TestCase.deleted_at.is_(None),
+            TestCase.ai_score.is_not(None),
+        )
+        avg_score = (await self.session.execute(avg_q)).scalar()
+
+        # Coverage: requirements with at least one test case / total requirements
+        req_count = await self._count(Requirement)
+        covered_q = select(func.count(func.distinct(TestCase.requirement_id))).where(TestCase.deleted_at.is_(None))
+        covered = (await self.session.execute(covered_q)).scalar() or 0
+        coverage = round(covered / req_count * 100, 1) if req_count > 0 else 0
+
+        return {
+            "total_cases": total,
+            "by_priority": by_priority,
+            "by_type": by_type,
+            "by_status": by_status,
+            "by_source": by_source,
+            "avg_ai_score": round(avg_score, 2) if avg_score else None,
+            "coverage_rate": coverage,
+        }
+
     def _map_priority(self, priority: str | None) -> Literal["high", "medium", "low"]:
         if priority == "P0":
             return "high"
