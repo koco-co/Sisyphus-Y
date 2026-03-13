@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **6 模块 System Prompt 重写** — 每个模块包含独立的 ①身份声明 ②任务边界 ③输出规范 ④质量红线 四部分结构，各模块角色声明差异化
+- **Prompt 编辑器「默认值」badge** — 未自定义的模块显示「默认值」标识，保存后显示保存时间
+
+### Fixed
+- **Prompt 管理器 key 错误** — `diff_semantic` 修正为 `diff`，与后端 `_MODULE_PROMPTS` 一致
+- **GET /ai-config/prompts 空列表问题** — 首次安装无 DB 记录时，现在始终返回全部 6 个模块，默认值标注 `is_default: true`
+- **文案 typo** — 「需求需求分析时」→「需求分析时」
+- **历史记录缺少预览** — 历史面板每条记录新增 80 字符内容预览
+
 ## [2.0.0-rc] - 2026-03-13
 
 ### Added
