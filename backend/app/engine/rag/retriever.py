@@ -161,7 +161,7 @@ async def retrieve(
     query: str,
     *,
     top_k: int = 5,
-    score_threshold: float = 0.3,
+    score_threshold: float = 0.72,
     doc_ids: list[str] | None = None,
 ) -> list[RetrievalResult]:
     """语义检索最相似的文档片段。
@@ -224,7 +224,7 @@ async def retrieve_as_context(
     query: str,
     *,
     top_k: int = 5,
-    score_threshold: float = 0.3,
+    score_threshold: float = 0.72,
     doc_ids: list[str] | None = None,
 ) -> str | None:
     """检索并格式化为可直接注入 Prompt 的上下文字符串。
@@ -258,7 +258,7 @@ async def retrieve_similar_cases(
     query: str,
     *,
     top_k: int = 5,
-    score_threshold: float = 0.35,
+    score_threshold: float = 0.72,
     product: str | None = None,
 ) -> list[RetrievalResult]:
     """从 historical_testcases collection 检索相似的历史用例。
@@ -320,7 +320,7 @@ async def retrieve_cases_as_context(
     query: str,
     *,
     top_k: int = 5,
-    score_threshold: float = 0.35,
+    score_threshold: float = 0.72,
     product: str | None = None,
 ) -> str | None:
     """检索历史用例并格式化为 Prompt 上下文。

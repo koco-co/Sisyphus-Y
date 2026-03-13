@@ -1,14 +1,10 @@
 'use client';
 import {
-  BarChart3,
   BookOpen,
   ClipboardList,
-  FileText,
-  GitBranch,
+  FolderSearch,
   GitCompareArrows,
-  Grid3x3,
-  HeartPulse,
-  LayoutGrid,
+  LayoutDashboard,
   LayoutTemplate,
   Monitor,
   Moon,
@@ -30,25 +26,17 @@ import { UserMenu } from '@/components/ui/UserMenu';
 const navGroups = [
   {
     items: [
-      { href: '/', label: '项目列表', icon: LayoutGrid },
-      { href: '/requirements', label: '需求', icon: FileText },
-      { href: '/diagnosis', label: '诊断', icon: HeartPulse },
-      { href: '/scene-map', label: '测试点', icon: GitBranch },
+      { href: '/', label: '仪表盘', icon: LayoutDashboard },
+      { href: '/analysis', label: '分析台', icon: FolderSearch },
       { href: '/workbench', label: '工作台', icon: Wand2 },
-      { href: '/testcases', label: '用例', icon: ClipboardList },
+      { href: '/diff', label: '需求Diff', icon: GitCompareArrows },
+      { href: '/testcases', label: '用例库', icon: ClipboardList },
     ],
   },
   {
     items: [
-      { href: '/diff', label: 'Diff', icon: GitCompareArrows },
-      { href: '/coverage', label: '覆盖', icon: Grid3x3 },
-      { href: '/analytics', label: '看板', icon: BarChart3 },
-    ],
-  },
-  {
-    items: [
+      { href: '/templates', label: '模板库', icon: LayoutTemplate },
       { href: '/knowledge', label: '知识库', icon: BookOpen },
-      { href: '/templates', label: '模板', icon: LayoutTemplate },
       { href: '/recycle', label: '回收站', icon: Trash2 },
       { href: '/settings', label: '设置', icon: Settings },
     ],
@@ -89,7 +77,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <nav className="top-nav" aria-label="主导航">
         <span className="nav-title">Sisyphus</span>
         <span className="pill pill-green" style={{ marginRight: 8, fontSize: 10 }}>
-          v0.2
+          v2.0
         </span>
 
         {navGroups.map((group, gi) => {
@@ -99,7 +87,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             const isActive =
               t.href === '/'
                 ? pathname === '/'
-                : pathname === t.href || pathname.startsWith(`${t.href}/`);
+                : t.href === '/analysis'
+                  ? pathname.startsWith('/analysis') ||
+                    pathname.startsWith('/diagnosis') ||
+                    pathname.startsWith('/scene-map') ||
+                    pathname.startsWith('/requirements') ||
+                    pathname.startsWith('/coverage')
+                  : pathname === t.href || pathname.startsWith(`${t.href}/`);
             return (
               <Link key={t.href} href={t.href} className={`tab${isActive ? ' active' : ''}`}>
                 <Icon />
