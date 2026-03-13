@@ -103,7 +103,7 @@ async def complete_diagnosis(requirement_id: uuid.UUID, session: AsyncSessionDep
         industry = sum(1 for r in risks if r.level == "industry")
         report = await svc.complete_report(
             report.id,
-            summary=f"诊断完成，发现 {high} 个高风险、{medium} 个中风险项",
+            summary=f"分析完成，发现 {high} 个高风险、{medium} 个中风险项",
             risk_count_high=high,
             risk_count_medium=medium,
             risk_count_industry=industry,

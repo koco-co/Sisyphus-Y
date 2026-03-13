@@ -30,14 +30,14 @@ const GROUP_LABELS: Record<string, { phase: string; phaseName: string; order: nu
 
 const MODULE_NAMES: Record<string, string> = {
   M00: '产品/迭代/需求', M01: '文档解析(UDA)', M02: '数据清洗',
-  M03: '需求诊断', M04: '场景地图', M05: '用例生成工作台',
+  M03: '需求分析', M04: '场景地图', M05: '用例生成工作台',
   M06: '用例管理', M07: 'Diff分析', M08: '覆盖度矩阵',
   M09: '测试计划', M10: '模板库', M11: '知识库(RAG)',
   M12: '导出集成', M13: '执行回流', M14: '质量看板',
   M16: '通知系统', M17: '全局搜索', M18: '协作功能',
   M19: '首页仪表盘', M20: '审计日志', M21: '回收站',
   infra: '基础设施', test: '测试', ui: 'UI组件', integration: '集成测试',
-  'engine-case_gen': '用例生成引擎', 'engine-diagnosis': '诊断引擎',
+  'engine-case_gen': '用例生成引擎', 'engine-diagnosis': '分析引擎',
   'engine-scene_map': '场景地图引擎', 'engine-diff': 'Diff引擎',
   'engine-rag': 'RAG引擎', 'engine-uda': 'UDA引擎',
 };

@@ -27,7 +27,7 @@ SCAN_DIMENSIONS = [
     "跨模块依赖",
 ]
 
-SCANNER_TASK = """请对以下需求文档进行广度扫描诊断，从 6 个维度逐一识别风险。
+SCANNER_TASK = """请对以下需求文档进行广度扫描分析，从 6 个维度逐一识别风险。
 
 ## 需求文档
 {requirement_text}

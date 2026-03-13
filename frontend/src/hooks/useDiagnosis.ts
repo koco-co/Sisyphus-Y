@@ -90,7 +90,7 @@ export function useDiagnosis(reqId: string | null) {
             {
               id: `ai-${Date.now()}`,
               role: 'assistant',
-              content: fullText || '诊断完成',
+              content: fullText || '分析完成',
               created_at: new Date().toISOString(),
             },
           ]);

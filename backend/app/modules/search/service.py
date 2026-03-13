@@ -115,7 +115,7 @@ class SearchService:
                     summary_parts = [getattr(row, "source", None), getattr(row, "doc_type", None)]
                     summary = " · ".join(part for part in summary_parts if part) or None
                 elif et == "diagnosis":
-                    title = getattr(row, "summary", None) or "需求诊断报告"
+                    title = getattr(row, "summary", None) or "需求分析报告"
                     summary = (
                         f"状态 {getattr(row, 'status', 'unknown')} · "
                         f"高风险 {getattr(row, 'risk_count_high', 0)} · "

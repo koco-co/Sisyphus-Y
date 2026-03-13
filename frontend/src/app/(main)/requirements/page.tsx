@@ -9,13 +9,13 @@ import {
   Loader2,
   Plus,
   Target,
-  X,
   Zap,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import type { Iteration, Product, Requirement } from '@/types/api';
+import { UploadRequirementDialog } from './_components/UploadRequirementDialog';
 
 /* ── Static fallback data ── */
 const fallbackRequirements = [
@@ -67,14 +67,10 @@ const statusMap: Record<string, { label: string; cls: string }> = {
   diagnosed: { label: '已分析', cls: 'pill-blue' },
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';
-
 export default function RequirementsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedIterationId, setSelectedIterationId] = useState<string | null>(null);
 
@@ -112,124 +108,18 @@ export default function RequirementsPage() {
     enabled: !!selectedProductId && !!selectedIterationId,
   });
 
-  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
-    if (!selectedIterationId) return;
-    fd.set('iteration_id', selectedIterationId);
-
-    setUploading(true);
-    setUploadError(null);
-    try {
-      const res = await fetch(`${API_BASE}/products/upload-requirement`, {
-        method: 'POST',
-        body: fd,
-      });
-      if (!res.ok) {
-        const detail = await res.text().catch(() => res.statusText);
-        throw new Error(`上传失败: ${detail}`);
-      }
-      dialogRef.current?.close();
-      form.reset();
-      queryClient.invalidateQueries({ queryKey: ['requirements'] });
-    } catch (err) {
-      setUploadError(err instanceof Error ? err.message : '上传失败');
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const displayReqs = requirements ?? [];
   const useStatic = !selectedProductId || (!reqLoading && displayReqs.length === 0 && !reqError);
 
   return (
     <>
-      {/* Upload modal */}
-      <dialog
-        ref={dialogRef}
-        style={{
-          padding: 0,
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          background: 'var(--bg)',
-          color: 'var(--text)',
-          maxWidth: 440,
-          width: '100%',
-        }}
-      >
-        <form onSubmit={handleUpload} style={{ padding: 24 }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 16,
-            }}
-          >
-            <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>新建需求</h2>
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={() => dialogRef.current?.close()}
-            >
-              <X size={14} />
-            </button>
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <label
-              htmlFor="requirement-title"
-              style={{ fontSize: 12, color: 'var(--text2)', display: 'block', marginBottom: 4 }}
-            >
-              需求标题
-            </label>
-            <input
-              id="requirement-title"
-              name="title"
-              className="input"
-              required
-              placeholder="输入需求标题"
-              style={{ width: '100%' }}
-            />
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label
-              htmlFor="requirement-file"
-              style={{ fontSize: 12, color: 'var(--text2)', display: 'block', marginBottom: 4 }}
-            >
-              需求文档 (.docx / .pdf / .md / .txt)
-            </label>
-            <input
-              id="requirement-file"
-              name="file"
-              type="file"
-              accept=".docx,.doc,.pdf,.md,.txt"
-              required
-              className="input"
-              style={{ width: '100%' }}
-            />
-          </div>
-          {uploadError && (
-            <div className="alert alert-red" style={{ marginBottom: 12, fontSize: 12 }}>
-              {uploadError}
-            </div>
-          )}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <button type="button" className="btn" onClick={() => dialogRef.current?.close()}>
-              取消
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={uploading}>
-              {uploading ? (
-                <>
-                  <Loader2 size={12} className="spin" /> 上传中...
-                </>
-              ) : (
-                '上传并创建'
-              )}
-            </button>
-          </div>
-        </form>
-      </dialog>
+      <UploadRequirementDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        productId={selectedProductId ?? undefined}
+        iterationId={selectedIterationId ?? undefined}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['requirements'] })}
+      />
 
       <div className="sidebar-panel">
         <div className="sb-section">
@@ -334,11 +224,7 @@ export default function RequirementsPage() {
             </div>
           </div>
           <div className="spacer" />
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => dialogRef.current?.showModal()}
-          >
+          <button type="button" className="btn btn-primary" onClick={() => setDialogOpen(true)}>
             <Plus size={14} /> 新建需求
           </button>
         </div>

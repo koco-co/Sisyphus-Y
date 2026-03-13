@@ -54,7 +54,7 @@ class DiagnosisService:
         await self.session.refresh(risk)
         return risk
 
-    # ── 流式诊断 ──────────────────────────────────────────────────────
+    # ── 流式分析 ──────────────────────────────────────────────────────
 
     async def run_stream(self, requirement_id: UUID) -> AsyncIterator[str]:
         req = await self.session.get(Requirement, requirement_id)
@@ -182,7 +182,7 @@ class DiagnosisService:
         ai_content: str,
         round_num: int = 1,
     ) -> list[DiagnosisRisk]:
-        """将 AI 诊断响应持久化：保存消息 + 解析风险项。
+        """将 AI 分析响应持久化：保存消息 + 解析风险项。
 
         1. 保存聊天消息到 DiagnosisChatMessage（role=assistant）
         2. 从 AI 内容中安全提取 JSON 风险项数组
@@ -288,14 +288,14 @@ class DiagnosisService:
             return "low"
         return "medium"
 
-    # ── 完整诊断流程（引擎整合） ───────────────────────────────────────
+    # ── 完整分析流程（引擎整合） ───────────────────────────────────────
 
     async def run_full_diagnosis(
         self,
         requirement_id: UUID,
         requirement_text: str,
     ) -> dict:
-        """运行完整诊断流程：扫描 → 清单匹配 → 质量评估 → 生成报告。
+        """运行完整分析流程：扫描 → 清单匹配 → 质量评估 → 生成报告。
 
         Returns:
             dict: {

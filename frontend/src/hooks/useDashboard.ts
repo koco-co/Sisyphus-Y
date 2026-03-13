@@ -41,7 +41,7 @@ const fallbackPendingItems: PendingItem[] = [
   {
     id: 'p3',
     type: 'failed_diagnosis',
-    title: '数据质量规则引擎诊断异常',
+    title: '数据质量规则引擎分析异常',
     description: '需求文档解析失败，建议补充结构化描述',
     product_name: '数据治理平台',
     priority: 'high',
@@ -73,7 +73,7 @@ const fallbackActivities: ActivityItem[] = [
   {
     id: 'a2',
     time: new Date(Date.now() - 62 * 60000).toISOString(),
-    action: '完成需求健康诊断',
+    action: '完成需求健康分析',
     resource: 'diagnosis',
     resource_id: '',
     title: '实时计算引擎 · 窗口函数',

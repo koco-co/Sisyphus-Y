@@ -7,7 +7,7 @@ from fastapi import APIRouter, File, Form, UploadFile, status
 from app.core.dependencies import AsyncSessionDep
 from app.modules.products.schemas import RequirementCreate
 from app.modules.products.service import RequirementService
-from app.modules.uda.schemas import ParsedDocumentResponse
+from app.modules.uda.schemas import ParsedDocumentResponse, ParseStructureResponse
 from app.modules.uda.service import UdaService
 
 router = APIRouter(prefix="/uda", tags=["uda"])
@@ -23,6 +23,16 @@ async def parse_document(
     service = UdaService(session)
     doc = await service.parse_upload(file, requirement_id)
     return ParsedDocumentResponse.model_validate(doc)
+
+
+@router.post("/parse-structure", response_model=ParseStructureResponse)
+async def parse_structure(
+    file: Annotated[UploadFile, File(...)],
+    session: AsyncSessionDep,
+) -> ParseStructureResponse:
+    """解析文档并返回结构化需求条目列表（不入库）。"""
+    service = UdaService(session)
+    return await service.parse_structure(file)
 
 
 @router.get("/{doc_id}", response_model=ParsedDocumentResponse)

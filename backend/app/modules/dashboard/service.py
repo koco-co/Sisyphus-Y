@@ -195,7 +195,7 @@ class DashboardService:
                     id=str(report_id),
                     type="failed_diagnosis",
                     title=title,
-                    description="诊断流程执行失败，建议重新触发并检查输入",
+                    description="分析流程执行失败，建议重新触发并检查输入",
                     product_name=product_name,
                     priority="high",
                     link="/diagnosis",
