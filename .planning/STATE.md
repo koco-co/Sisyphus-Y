@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01 historical testcase LLM review script
-last_updated: "2026-03-15T23:58:00.000Z"
-last_activity: 2026-03-15 — Completed 03-01 historical testcase LLM review script with TDD
+stopped_at: Completed 03-03 RAG parameter verification (checkpoint pending)
+last_updated: "2026-03-16T00:10:00.000Z"
+last_activity: 2026-03-16 — Completed 03-03 Task 1 (RAG-05), Task 2 pending human verification
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 12
-  percent: 62
+  completed_plans: 13
+  percent: 65
 ---
 
 # Project State
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 3 of 5 (AI 质量提升)
-Plan: 1 of 3 in current phase
-Status: In progress
+Plan: 3 of 3 in current phase
+Status: Checkpoint - awaiting human verification
 Last activity: 2026-03-15 — Completed 03-01 historical testcase LLM review script with TDD
 
 Progress: [██████░░░░] 62%
@@ -63,6 +63,7 @@ Progress: [██████░░░░] 62%
 | Phase 02-main-refactor P07 | 6 | 1 tasks | 1 files |
 | Phase 03-ai P02 | 35 | 2 tasks | 2 files |
 | Phase 03-ai P01 | 45 | 2 tasks | 7 files |
+| Phase 03-ai P03 | 10 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,8 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 03-ai P01]: 使用 md5(filepath::row_index) 生成稳定 ID 实现幂等性
 - [Phase 03-ai P01]: utf-8-sig 编码处理带 BOM 的 CSV 文件
 - [Phase 03-ai P01]: 三分支 verdict 系统：pass/polish/discard
+- [Phase 03-ai P03]: retrieve_similar_cases 调用处显式指定 top_k=5, score_threshold=0.72
+- [Phase 03-ai P03]: RAG 预览端点使用 graceful degradation，任何异常返回空结果而非 500
 
 ### Pending Todos
 
