@@ -13,6 +13,7 @@ from app.modules.products.schemas import (
     ProductResponse,
     ProductUpdate,
     RequirementCreate,
+    RequirementDetailResponse,
     RequirementResponse,
     RequirementUpdate,
 )
@@ -120,6 +121,15 @@ async def list_all_requirements(session: AsyncSessionDep) -> list[RequirementRes
     service = RequirementService(session)
     reqs = await service.list_all()
     return [RequirementResponse.model_validate(r) for r in reqs]
+
+
+@router.get("/requirements/{requirement_id}", response_model=RequirementDetailResponse)
+async def get_requirement_detail(
+    requirement_id: uuid.UUID, session: AsyncSessionDep
+) -> RequirementDetailResponse:
+    service = RequirementService(session)
+    requirement = await service.get_requirement(requirement_id)
+    return RequirementDetailResponse.model_validate(requirement)
 
 
 @router.patch("/requirements/{requirement_id}", response_model=RequirementResponse)

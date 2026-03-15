@@ -59,7 +59,11 @@ class AiConfigService:
         updates = data.model_dump(exclude_unset=True)
         if "api_keys" in updates:
             if updates["api_keys"]:
-                updates["api_keys"] = self._encrypt_keys(updates["api_keys"])
+                existing_keys = config.api_keys or {}
+                updates["api_keys"] = {
+                    **existing_keys,
+                    **self._encrypt_keys(updates["api_keys"]),
+                }
             else:
                 del updates["api_keys"]
         for key, value in updates.items():
@@ -333,6 +337,31 @@ class PromptConfigService:
         )
         result = await self.session.execute(q)
         return list(result.scalars().all())
+
+    async def rollback_prompt(self, module: str, history_id: UUID) -> PromptConfiguration:
+        history = await self.session.get(PromptHistory, history_id)
+        if not history or history.deleted_at is not None or history.module != module:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prompt history not found")
+
+        existing = await self.get_prompt(module)
+        if existing:
+            await self._save_history(existing, "rollback")
+            existing.system_prompt = history.system_prompt
+            existing.is_customized = True
+            existing.version += 1
+            target = existing
+        else:
+            target = PromptConfiguration(
+                module=module,
+                system_prompt=history.system_prompt,
+                is_customized=True,
+                version=max(history.version + 1, 1),
+            )
+            self.session.add(target)
+
+        await self.session.commit()
+        await self.session.refresh(target)
+        return target
 
     async def _save_history(self, prompt: PromptConfiguration, change_reason: str | None) -> None:
         history = PromptHistory(

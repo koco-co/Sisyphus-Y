@@ -9,7 +9,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.engine.rag.chunker import chunk_by_headers, chunk_by_paragraphs
-from app.engine.rag.retriever import delete_by_doc_id, index_chunks, retrieve
+from app.engine.rag.retriever import delete_by_doc_id, index_chunks, recreate_collection, retrieve
 from app.modules.knowledge.models import KnowledgeDocument
 from app.modules.uda.parsers import parse_document
 
@@ -203,7 +203,7 @@ class KnowledgeService:
         query: str,
         *,
         top_k: int = 5,
-        score_threshold: float = 0.3,
+        score_threshold: float = 0.72,
         doc_id: UUID | None = None,
     ) -> list[dict]:
         doc_ids = [str(doc_id)] if doc_id else None
@@ -299,7 +299,7 @@ class KnowledgeService:
         self,
         collection: str = "knowledge_chunks",
         new_dimensions: int = 1024,
-    ) -> int:
+    ) -> dict[str, object]:
         """将所有文档的向量状态重置为 pending，以便重新索引。
 
         Args:
@@ -307,7 +307,7 @@ class KnowledgeService:
             new_dimensions: 新的向量维度（用于日志）
 
         Returns:
-            受影响的文档数量
+            包含旧向量清理结果与待重建文档数量的摘要。
         """
         result = await self.session.execute(
             select(KnowledgeDocument).where(
@@ -315,15 +315,27 @@ class KnowledgeService:
             )
         )
         docs = list(result.scalars().all())
+        cleanup_report = recreate_collection(collection_name=collection, vector_size=new_dimensions)
 
         for doc in docs:
             doc.vector_status = "pending"
 
         await self.session.commit()
+        summary = (
+            f"已清理 {cleanup_report['deleted_points']} 个旧向量点，并将 {len(docs)} 篇文档重新标记为 pending。"
+        )
         logger.info(
-            "重建向量索引：collection=%s, dimensions=%d, docs_queued=%d",
+            "重建向量索引：collection=%s, dimensions=%d, docs_queued=%d, deleted_points=%d",
             collection,
             new_dimensions,
             len(docs),
+            cleanup_report["deleted_points"],
         )
-        return len(docs)
+        return {
+            "collection": collection,
+            "dimensions": new_dimensions,
+            "docs_queued": len(docs),
+            "deleted_points": cleanup_report["deleted_points"],
+            "collection_recreated": True,
+            "summary": summary,
+        }

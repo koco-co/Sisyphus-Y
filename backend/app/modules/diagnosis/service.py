@@ -9,13 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.prompts import assemble_prompt
 from app.ai.sse_collector import SSECollector
-from app.ai.stream_adapter import get_thinking_stream
+from app.ai.stream_adapter import get_thinking_stream_with_fallback
 from app.core.database import get_async_session_context
 from app.modules.diagnosis.models import DiagnosisChatMessage, DiagnosisReport, DiagnosisRisk
 from app.modules.diagnosis.schemas import DiagnosisRiskUpdate
 from app.modules.products.models import Requirement
 
 logger = logging.getLogger(__name__)
+_DIAGNOSIS_MODEL = "glm-4-flash"
 
 
 class DiagnosisService:
@@ -58,7 +59,7 @@ class DiagnosisService:
 
     async def run_stream(self, requirement_id: UUID) -> AsyncIterator[str]:
         req = await self.session.get(Requirement, requirement_id)
-        content = json.dumps(req.content_ast, ensure_ascii=False) if req else ""
+        content = req.content_ast.get("raw_text", "") if req and isinstance(req.content_ast, dict) else ""
         title = req.title if req else ""
 
         # 注入行业清单匹配结果到 Prompt
@@ -74,7 +75,12 @@ class DiagnosisService:
         task_instruction = "对用户提供的需求文档进行全面的测试健康诊断，按 6 个维度逐一扫描并给出评分。"
         system = assemble_prompt("diagnosis", task_instruction)
         messages = [{"role": "user", "content": user_content}]
-        return await get_thinking_stream(messages, system=system)
+        return await get_thinking_stream_with_fallback(
+            messages,
+            system=system,
+            provider="zhipu",
+            model=_DIAGNOSIS_MODEL,
+        )
 
     # ── 报告管理 ──────────────────────────────────────────────────────
 
@@ -172,7 +178,7 @@ class DiagnosisService:
         history.append({"role": "user", "content": user_message})
         task_instruction = "针对上一轮对话中发现的风险点进行苏格拉底式追问，深入挖掘需求盲区。"
         system = assemble_prompt("diagnosis_followup", task_instruction)
-        return await get_thinking_stream(history, system=system)
+        return await get_thinking_stream_with_fallback(history, system=system, provider="zhipu", model=_DIAGNOSIS_MODEL)
 
     # ── AI 响应自动解析与持久化 ────────────────────────────────────────
 

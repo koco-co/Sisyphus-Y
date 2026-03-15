@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter
 
 from app.core.dependencies import AsyncSessionDep
@@ -13,21 +15,32 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 @router.get("/stats", response_model=DashboardStatsResponse)
-async def get_dashboard_stats(session: AsyncSessionDep) -> DashboardStatsResponse:
+async def get_dashboard_stats(
+    session: AsyncSessionDep,
+    iteration_id: uuid.UUID | None = None,
+) -> DashboardStatsResponse:
     svc = DashboardService(session)
-    return await svc.get_stats()
+    return await svc.get_stats(iteration_id)
 
 
 @router.get("/activities", response_model=list[DashboardActivityItem])
-async def get_recent_activities(session: AsyncSessionDep, limit: int = 10) -> list[DashboardActivityItem]:
+async def get_recent_activities(
+    session: AsyncSessionDep,
+    limit: int = 10,
+    iteration_id: uuid.UUID | None = None,
+) -> list[DashboardActivityItem]:
     svc = DashboardService(session)
-    return await svc.get_recent_activities(limit)
+    return await svc.get_recent_activities(limit, iteration_id)
 
 
 @router.get("/pending-items", response_model=list[DashboardPendingItem])
-async def get_pending_items(session: AsyncSessionDep, limit: int = 10) -> list[DashboardPendingItem]:
+async def get_pending_items(
+    session: AsyncSessionDep,
+    limit: int = 10,
+    iteration_id: uuid.UUID | None = None,
+) -> list[DashboardPendingItem]:
     svc = DashboardService(session)
-    return await svc.get_pending_items(limit)
+    return await svc.get_pending_items(limit, iteration_id)
 
 
 @router.get("/products-overview")
@@ -37,7 +50,10 @@ async def get_products_overview(session: AsyncSessionDep) -> list[dict]:
 
 
 @router.get("/quality", response_model=QualityStatsResponse)
-async def get_quality_stats(session: AsyncSessionDep) -> QualityStatsResponse:
+async def get_quality_stats(
+    session: AsyncSessionDep,
+    iteration_id: uuid.UUID | None = None,
+) -> QualityStatsResponse:
     svc = DashboardService(session)
-    data = await svc.get_quality_stats()
+    data = await svc.get_quality_stats(iteration_id)
     return QualityStatsResponse.model_validate(data)

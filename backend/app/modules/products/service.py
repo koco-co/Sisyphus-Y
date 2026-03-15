@@ -99,6 +99,12 @@ class RequirementService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    async def get_requirement(self, requirement_id: UUID) -> Requirement:
+        requirement = await self.session.get(Requirement, requirement_id)
+        if not requirement or requirement.deleted_at is not None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Requirement not found")
+        return requirement
+
     async def create_requirement(self, data: RequirementCreate) -> Requirement:
         requirement = Requirement(**data.model_dump(exclude_none=True))
         self.session.add(requirement)

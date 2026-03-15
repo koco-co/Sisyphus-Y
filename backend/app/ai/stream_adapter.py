@@ -18,12 +18,14 @@ import time
 from collections.abc import AsyncIterator
 from typing import Any, cast
 
+from app.ai.llm_client import invoke_llm
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 # 心跳间隔 (秒) 和超时时间 (秒)
 _HEARTBEAT_INTERVAL = 15
+_STALL_FALLBACK_TIMEOUT = 8
 _STREAM_TIMEOUT = 300  # 5 分钟
 
 
@@ -35,9 +37,47 @@ def _keepalive() -> str:
     return ": keepalive\n\n"
 
 
+class StreamStalledError(RuntimeError):
+    """Raised when a streaming provider never emits real content."""
+
+
+def _is_substantive_chunk(chunk: str) -> bool:
+    return chunk.startswith("event: content") or chunk.startswith("event: done") or chunk.startswith("event: error")
+
+
+def _messages_with_system(messages: list[dict], system: str) -> list[dict]:
+    if not system:
+        return messages
+    return [{"role": "system", "content": system}, *messages]
+
+
+def _chunk_text(content: str, chunk_size: int = 160) -> list[str]:
+    if not content:
+        return [""]
+    return [content[i : i + chunk_size] for i in range(0, len(content), chunk_size)]
+
+
+async def _emit_non_stream_fallback(
+    messages: list[dict],
+    system: str,
+    provider_name: str,
+    model: str | None = None,
+) -> AsyncIterator[str]:
+    result = await invoke_llm(
+        _messages_with_system(messages, system),
+        provider=provider_name,
+        model=model,
+        max_retries=0,
+    )
+    for delta in _chunk_text(result.content):
+        yield _sse("content", {"delta": delta})
+    yield _sse("done", {"usage": result.usage})
+
+
 async def openai_thinking_stream(
     messages: list[dict],
     system: str = "",
+    model: str | None = None,
 ) -> AsyncIterator[str]:
     """OpenAI 流式输出。"""
     import httpx
@@ -55,7 +95,7 @@ async def openai_thinking_stream(
     stream = cast(
         Any,
         await client.chat.completions.create(
-            model=settings.openai_model,
+            model=model or settings.openai_model,
             messages=cast(Any, all_messages),
             stream=True,
         ),
@@ -72,6 +112,7 @@ async def openai_thinking_stream(
 async def anthropic_thinking_stream(
     messages: list[dict],
     system: str = "",
+    model: str | None = None,
 ) -> AsyncIterator[str]:
     """Claude 扩展思考流式输出。"""
     anthropic = importlib.import_module("anthropic")
@@ -79,7 +120,7 @@ async def anthropic_thinking_stream(
     client = anthropic.AsyncAnthropic()
 
     async with client.messages.stream(
-        model="claude-sonnet-4-6",
+        model=model or "claude-sonnet-4-6",
         max_tokens=16000,
         thinking={"type": "enabled", "budget_tokens": 10000},
         system=system,
@@ -98,6 +139,7 @@ async def anthropic_thinking_stream(
 async def zhipu_thinking_stream(
     messages: list[dict],
     system: str = "",
+    model: str | None = None,
 ) -> AsyncIterator[str]:
     """智谱 GLM 流式输出，运行在线程池以避免阻塞事件循环。"""
     import httpx
@@ -116,7 +158,7 @@ async def zhipu_thinking_stream(
     # ZhiPu SDK 是同步的，放到线程池中执行
     def _create_stream():
         return client.chat.completions.create(
-            model=settings.zhipu_model,
+            model=model or settings.zhipu_model,
             messages=cast(Any, all_messages),
             stream=True,
         )
@@ -144,6 +186,7 @@ async def zhipu_thinking_stream(
 async def dashscope_thinking_stream(
     messages: list[dict],
     system: str = "",
+    model: str | None = None,
 ) -> AsyncIterator[str]:
     """阿里百炼 Dashscope 流式输出 (OpenAI 兼容模式)。"""
     import httpx
@@ -166,7 +209,7 @@ async def dashscope_thinking_stream(
     stream = cast(
         Any,
         await client.chat.completions.create(
-            model=settings.dashscope_model,
+            model=model or settings.dashscope_model,
             messages=cast(Any, all_messages),
             stream=True,
         ),
@@ -182,16 +225,18 @@ async def dashscope_thinking_stream(
 async def get_thinking_stream(
     messages: list[dict],
     system: str = "",
+    provider: str | None = None,
+    model: str | None = None,
 ) -> AsyncIterator[str]:
     """根据 settings.llm_provider 选择适配器。"""
-    provider = settings.llm_provider.lower()
-    if provider == "anthropic":
-        return anthropic_thinking_stream(messages, system)
-    if provider == "zhipu":
-        return zhipu_thinking_stream(messages, system)
-    if provider == "dashscope":
-        return dashscope_thinking_stream(messages, system)
-    return openai_thinking_stream(messages, system)
+    selected_provider = (provider or settings.llm_provider).lower()
+    if selected_provider == "anthropic":
+        return anthropic_thinking_stream(messages, system, model)
+    if selected_provider == "zhipu":
+        return zhipu_thinking_stream(messages, system, model)
+    if selected_provider == "dashscope":
+        return dashscope_thinking_stream(messages, system, model)
+    return openai_thinking_stream(messages, system, model)
 
 
 _PROVIDER_FUNCS = {
@@ -207,26 +252,40 @@ async def _with_heartbeat_and_timeout(
 ) -> AsyncIterator[str]:
     """为任意 SSE 流添加心跳 (15s) 和超时保护 (5min)。"""
     last_activity = time.monotonic()
+    stream_started = last_activity
+    has_substantive_output = False
 
     async def _next_chunk():
         return await source.__anext__()
 
     while True:
-        remaining = _STREAM_TIMEOUT - (time.monotonic() - last_activity)
+        now = time.monotonic()
+        remaining = _STREAM_TIMEOUT - (now - last_activity)
         if remaining <= 0:
             logger.warning("SSE 流超时 (%ds 无输出)，自动关闭", _STREAM_TIMEOUT)
             yield _sse("content", {"delta": "\n\n⚠️ 流式输出超时，已自动关闭。"})
             yield _sse("done", {"usage": {}})
             return
 
+        stall_remaining: float | None = None
+        if not has_substantive_output:
+            stall_remaining = _STALL_FALLBACK_TIMEOUT - (now - stream_started)
+            if stall_remaining <= 0:
+                raise StreamStalledError("流式提供商长时间未返回有效内容")
+
         try:
+            timeout = min(_HEARTBEAT_INTERVAL, remaining, stall_remaining or _HEARTBEAT_INTERVAL)
             chunk = await asyncio.wait_for(
                 _next_chunk(),
-                timeout=min(_HEARTBEAT_INTERVAL, remaining),
+                timeout=timeout,
             )
             last_activity = time.monotonic()
+            if _is_substantive_chunk(chunk):
+                has_substantive_output = True
             yield chunk
         except TimeoutError:
+            if not has_substantive_output and (time.monotonic() - stream_started) >= _STALL_FALLBACK_TIMEOUT:
+                raise StreamStalledError("流式提供商长时间未返回有效内容") from None
             yield _keepalive()
         except StopAsyncIteration:
             return
@@ -235,6 +294,8 @@ async def _with_heartbeat_and_timeout(
 async def get_thinking_stream_with_fallback(
     messages: list[dict],
     system: str = "",
+    provider: str | None = None,
+    model: str | None = None,
     max_retries: int = 2,
 ) -> AsyncIterator[str]:
     """带重试、降级、心跳和超时保护的流式输出。
@@ -244,7 +305,7 @@ async def get_thinking_stream_with_fallback(
     3. 降级到备用模型 (settings.llm_fallback_provider)
     4. 每 15s 发送 :keepalive，5min 无输出自动关闭
     """
-    primary = settings.llm_provider.lower()
+    primary = (provider or settings.llm_provider).lower()
     fallback = getattr(settings, "llm_fallback_provider", "zhipu").lower()
 
     providers_to_try = [primary]
@@ -252,21 +313,50 @@ async def get_thinking_stream_with_fallback(
         providers_to_try.append(fallback)
 
     async def _stream_with_fallback() -> AsyncIterator[str]:
+        last_error: Exception | None = None
         for provider_name in providers_to_try:
             func = _PROVIDER_FUNCS.get(provider_name)
             if not func:
                 continue
             for attempt in range(max_retries + 1):
+                provider_model = model if provider_name == primary else None
                 try:
-                    raw_stream = func(messages, system)
+                    raw_stream = func(messages, system, provider_model)
                     guarded = _with_heartbeat_and_timeout(raw_stream)
-                    has_content = False
+                    has_substantive_output = False
                     async for chunk in guarded:
-                        has_content = True
+                        if _is_substantive_chunk(chunk):
+                            has_substantive_output = True
                         yield chunk
-                    if has_content:
+                    if has_substantive_output:
                         return
+                    async for chunk in _emit_non_stream_fallback(messages, system, provider_name, provider_model):
+                        yield chunk
+                    return
+                except StreamStalledError as e:
+                    last_error = e
+                    logger.warning(
+                        "LLM %s attempt %d stalled before content, falling back to non-stream: %s",
+                        provider_name,
+                        attempt + 1,
+                        e,
+                    )
+                    try:
+                        async for chunk in _emit_non_stream_fallback(messages, system, provider_name, provider_model):
+                            yield chunk
+                        return
+                    except Exception as fallback_error:
+                        last_error = fallback_error
+                        logger.warning(
+                            "LLM %s non-stream fallback attempt %d failed: %s",
+                            provider_name,
+                            attempt + 1,
+                            fallback_error,
+                        )
+                        if attempt < max_retries:
+                            await asyncio.sleep(2**attempt)
                 except Exception as e:
+                    last_error = e
                     logger.warning(
                         "LLM %s attempt %d failed: %s",
                         provider_name,
@@ -277,6 +367,7 @@ async def get_thinking_stream_with_fallback(
                         await asyncio.sleep(2**attempt)
 
         # All providers failed
+        logger.error("All LLM stream attempts failed: %s", last_error)
         yield _sse("content", {"delta": "⚠️ AI 服务暂时不可用，请稍后重试。"})
         yield _sse("done", {"usage": {}})
 

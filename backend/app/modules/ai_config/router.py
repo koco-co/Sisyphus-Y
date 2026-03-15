@@ -343,8 +343,24 @@ async def reset_prompt_config(module: str, session: AsyncSessionDep) -> None:
     await svc.reset_prompt(module)
 
 
+@router.post("/prompts/{module}/reset", status_code=status.HTTP_204_NO_CONTENT)
+async def reset_prompt_config_post(module: str, session: AsyncSessionDep) -> None:
+    """Backward-compatible reset endpoint consumed by the frontend Prompt manager."""
+    svc = PromptConfigService(session)
+    await svc.reset_prompt(module)
+
+
 @router.get("/prompts/{module}/history", response_model=list[PromptHistoryResponse])
 async def get_prompt_history(module: str, session: AsyncSessionDep) -> list[PromptHistoryResponse]:
     svc = PromptConfigService(session)
     items = await svc.get_history(module)
     return [PromptHistoryResponse.model_validate(h) for h in items]
+
+
+@router.post("/prompts/{module}/rollback/{history_id}", response_model=PromptConfigResponse)
+async def rollback_prompt_config(
+    module: str, history_id: uuid.UUID, session: AsyncSessionDep
+) -> PromptConfigResponse:
+    svc = PromptConfigService(session)
+    item = await svc.rollback_prompt(module, history_id)
+    return PromptConfigResponse.model_validate(item)

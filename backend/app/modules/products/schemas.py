@@ -66,3 +66,9 @@ class RequirementResponse(BaseResponse):
     status: str
     version: int
     content_ast: dict | None = None
+
+
+class RequirementDetailResponse(RequirementResponse):
+    frontmatter: dict | None = None
+    product_name: str | None = None
+    iteration_name: str | None = None

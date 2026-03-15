@@ -1,4 +1,3 @@
-import json
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from itertools import groupby
@@ -12,11 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.ai.parser import parse_test_points
 from app.ai.prompts import assemble_prompt
 from app.ai.sse_collector import SSECollector
-from app.ai.stream_adapter import get_thinking_stream
+from app.ai.stream_adapter import get_thinking_stream_with_fallback
 from app.core.database import get_async_session_context
 from app.modules.products.models import Requirement
 from app.modules.scene_map.models import SceneMap, TestPoint
 from app.modules.scene_map.schemas import BatchPointUpdate, ReorderItem, TestPointCreate, TestPointUpdate
+
+_SCENE_MAP_MODEL = "glm-4-flash"
 
 
 class SceneMapService:
@@ -265,7 +266,7 @@ class SceneMapService:
 
     async def generate_stream(self, requirement_id: UUID) -> AsyncIterator[str]:
         req = await self.session.get(Requirement, requirement_id)
-        content = json.dumps(req.content_ast, ensure_ascii=False) if req else ""
+        content = req.content_ast.get("raw_text", "") if req and isinstance(req.content_ast, dict) else ""
         title = req.title if req else ""
         user_content = (
             f"请为以下需求生成测试点列表：\n\n"
@@ -277,7 +278,12 @@ class SceneMapService:
         task_instruction = "根据需求文档提取完整的测试点列表，按场景类型分组，输出 JSON 数组。"
         system = assemble_prompt("scene_map", task_instruction)
         messages = [{"role": "user", "content": user_content}]
-        return await get_thinking_stream(messages, system=system)
+        return await get_thinking_stream_with_fallback(
+            messages,
+            system=system,
+            provider="zhipu",
+            model=_SCENE_MAP_MODEL,
+        )
 
     async def generate_stream_with_persistence(self, requirement_id: UUID) -> SSECollector:
         """Generate scene map stream; auto-persist parsed test points on completion."""

@@ -265,7 +265,7 @@ class GenerationService:
                 TestPoint.deleted_at.is_(None),
             )
             tp_result = await self.session.execute(tp_q)
-            test_points = tp_result.scalars().all()
+            test_points = [tp for tp in tp_result.scalars().all() if tp.status == "confirmed"]
             if test_points:
                 tp_text = "\n".join(f"- [{tp.group_name}] {tp.title} (优先级: {tp.priority})" for tp in test_points)
                 context_parts.append(f"已确认测试点：\n{tp_text}")

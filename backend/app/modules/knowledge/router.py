@@ -203,12 +203,14 @@ async def rebuild_vector_index(
     collection: str = str(payload.get("collection", "knowledge_chunks"))
 
     svc = KnowledgeService(session)
-    count = await svc.reset_all_vector_status(collection=collection, new_dimensions=dimensions)
+    report = await svc.reset_all_vector_status(collection=collection, new_dimensions=dimensions)
 
     return {
         "ok": True,
-        "collection": collection,
-        "dimensions": dimensions,
-        "docs_queued": count,
-        "message": f"已重置 {count} 篇文档的向量化状态，将在后台重新索引",
+        "collection": report["collection"],
+        "dimensions": report["dimensions"],
+        "docs_queued": report["docs_queued"],
+        "deleted_points": report["deleted_points"],
+        "collection_recreated": report["collection_recreated"],
+        "message": report["summary"],
     }

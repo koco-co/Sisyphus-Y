@@ -81,6 +81,36 @@ def ensure_collection() -> None:
         )
 
 
+def recreate_collection(*, collection_name: str = COLLECTION_NAME, vector_size: int = EMBEDDING_DIMENSION) -> dict:
+    """删除并重建指定 collection，返回清理摘要。"""
+    client = _get_client()
+    collections = [c.name for c in client.get_collections().collections]
+    existed = collection_name in collections
+    deleted_points = 0
+
+    if existed:
+        info = client.get_collection(collection_name=collection_name)
+        deleted_points = int(getattr(info, "points_count", 0) or 0)
+        client.delete_collection(collection_name=collection_name)
+        logger.info("删除 Qdrant collection: %s (points=%d)", collection_name, deleted_points)
+
+    client.create_collection(
+        collection_name=collection_name,
+        vectors_config=models.VectorParams(
+            size=vector_size,
+            distance=models.Distance.COSINE,
+        ),
+    )
+    logger.info("重建 Qdrant collection: %s (dim=%d)", collection_name, vector_size)
+
+    return {
+        "collection": collection_name,
+        "existed": existed,
+        "deleted_points": deleted_points,
+        "vector_size": vector_size,
+    }
+
+
 # ═══════════════════════════════════════════════════════════════════
 # 文档入库
 # ═══════════════════════════════════════════════════════════════════

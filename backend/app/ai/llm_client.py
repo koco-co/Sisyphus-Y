@@ -22,6 +22,7 @@ async def invoke_llm(
     messages: list[dict],
     *,
     provider: str | None = None,
+    model: str | None = None,
     max_retries: int = 2,
 ) -> LLMResult:
     """非流式调用 LLM，带重试和降级。
@@ -41,7 +42,7 @@ async def invoke_llm(
     for provider_name in providers_to_try:
         for attempt in range(max_retries + 1):
             try:
-                return await _invoke(provider_name, messages)
+                return await _invoke(provider_name, messages, model=model if provider_name == primary else None)
             except Exception as e:
                 last_error = e
                 logger.warning("LLM %s attempt %d failed: %s", provider_name, attempt + 1, e)
@@ -51,12 +52,12 @@ async def invoke_llm(
     raise RuntimeError(f"所有 LLM 提供商调用失败: {last_error}")
 
 
-async def _invoke(provider: str, messages: list[dict]) -> LLMResult:
+async def _invoke(provider: str, messages: list[dict], *, model: str | None = None) -> LLMResult:
     if provider == "zhipu":
-        return await _invoke_zhipu(messages)
+        return await _invoke_zhipu(messages, model=model)
     if provider == "dashscope":
-        return await _invoke_dashscope(messages)
-    return await _invoke_openai(messages)
+        return await _invoke_dashscope(messages, model=model)
+    return await _invoke_openai(messages, model=model)
 
 
 def _extract_usage(usage: object | None) -> dict:
@@ -68,7 +69,7 @@ def _extract_usage(usage: object | None) -> dict:
     }
 
 
-async def _invoke_openai(messages: list[dict]) -> LLMResult:
+async def _invoke_openai(messages: list[dict], model: str | None = None) -> LLMResult:
     import httpx
     from openai import AsyncOpenAI
 
@@ -79,7 +80,7 @@ async def _invoke_openai(messages: list[dict]) -> LLMResult:
     response = cast(
         Any,
         await client.chat.completions.create(
-            model=settings.openai_model,
+            model=model or settings.openai_model,
             messages=cast(Any, messages),
         ),
     )
@@ -89,7 +90,7 @@ async def _invoke_openai(messages: list[dict]) -> LLMResult:
     )
 
 
-async def _invoke_zhipu(messages: list[dict]) -> LLMResult:
+async def _invoke_zhipu(messages: list[dict], model: str | None = None) -> LLMResult:
     import httpx
     from zhipuai import ZhipuAI
 
@@ -99,7 +100,7 @@ async def _invoke_zhipu(messages: list[dict]) -> LLMResult:
     )
 
     def _call():
-        return client.chat.completions.create(model=settings.zhipu_model, messages=cast(Any, messages))
+        return client.chat.completions.create(model=model or settings.zhipu_model, messages=cast(Any, messages))
 
     response = cast(Any, await asyncio.to_thread(_call))
     return LLMResult(
@@ -108,7 +109,7 @@ async def _invoke_zhipu(messages: list[dict]) -> LLMResult:
     )
 
 
-async def _invoke_dashscope(messages: list[dict]) -> LLMResult:
+async def _invoke_dashscope(messages: list[dict], model: str | None = None) -> LLMResult:
     import httpx
     from openai import AsyncOpenAI
 
@@ -120,7 +121,7 @@ async def _invoke_dashscope(messages: list[dict]) -> LLMResult:
     response = cast(
         Any,
         await client.chat.completions.create(
-            model=settings.dashscope_model,
+            model=model or settings.dashscope_model,
             messages=cast(Any, messages),
         ),
     )
