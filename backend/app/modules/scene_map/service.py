@@ -141,6 +141,16 @@ class SceneMapService:
         await self.session.commit()
         return True
 
+    async def get_test_points_by_ids(self, ids: list[UUID]) -> list[TestPoint]:
+        if not ids:
+            return []
+        q = select(TestPoint).where(
+            TestPoint.id.in_(ids),
+            TestPoint.deleted_at.is_(None),
+        )
+        result = await self.session.execute(q)
+        return list(result.scalars().all())
+
     async def get_test_point(self, tp_id: UUID) -> TestPoint | None:
         q = select(TestPoint).where(TestPoint.id == tp_id, TestPoint.deleted_at.is_(None))
         result = await self.session.execute(q)

@@ -1,3 +1,4 @@
+import logging
 import uuid
 from typing import Literal
 
@@ -7,6 +8,9 @@ from fastapi.responses import PlainTextResponse, StreamingResponse
 from app.core.dependencies import AsyncSessionDep
 from app.modules.scene_map.schemas import (
     BatchUpdateRequest,
+    RagPreviewRequest,
+    RagPreviewResponse,
+    RagPreviewResult,
     ReorderRequest,
     SceneMapResponse,
     TestPointCreate,
@@ -14,6 +18,8 @@ from app.modules.scene_map.schemas import (
     TestPointUpdate,
 )
 from app.modules.scene_map.service import SceneMapService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/scene-map", tags=["scene-map"])
 
@@ -103,6 +109,36 @@ async def confirm_scene_map(requirement_id: uuid.UUID, session: AsyncSessionDep)
     resp = SceneMapResponse.model_validate(scene_map)
     resp.test_points = [TestPointResponse.model_validate(tp) for tp in test_points]
     return resp
+
+
+# ── RAG Preview (WRK-04) ─────────────────────────────────────────
+
+
+@router.post("/{requirement_id}/rag-preview", response_model=RagPreviewResponse)
+async def rag_preview(
+    requirement_id: uuid.UUID,
+    data: RagPreviewRequest,
+    session: AsyncSessionDep,
+) -> RagPreviewResponse:
+    if not data.test_point_ids:
+        return RagPreviewResponse(results=[])
+    svc = SceneMapService(session)
+    points = await svc.get_test_points_by_ids(data.test_point_ids)
+    query = " ".join(p.title for p in points)
+    try:
+        from app.engine.rag.retriever import retrieve_similar_cases
+        results = await retrieve_similar_cases(query, top_k=5, score_threshold=0.72)
+        return RagPreviewResponse(results=[
+            RagPreviewResult(
+                title=r.metadata.get("title", ""),
+                score=r.score,
+                content=r.content,
+            )
+            for r in results
+        ])
+    except Exception:
+        logger.warning("RAG preview failed, returning empty results")
+        return RagPreviewResponse(results=[])
 
 
 # ── Batch operations (B-M04-09) ───────────────────────────────────

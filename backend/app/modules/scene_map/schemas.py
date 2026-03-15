@@ -2,6 +2,8 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
+from pydantic import BaseModel
+
 from app.shared.base_schema import BaseResponse, BaseSchema
 
 
@@ -70,3 +72,20 @@ class ReorderRequest(BaseSchema):
 # ── Export (B-M04-10) ─────────────────────────────────────────────
 
 ExportFormatLiteral = Literal["json", "md"]
+
+
+# ── RAG Preview (WRK-04) ──────────────────────────────────────────
+
+
+class RagPreviewRequest(BaseModel):
+    test_point_ids: list[uuid.UUID]
+
+
+class RagPreviewResult(BaseModel):
+    title: str
+    score: float
+    content: str
+
+
+class RagPreviewResponse(BaseModel):
+    results: list[RagPreviewResult]
