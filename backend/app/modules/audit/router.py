@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from fastapi import APIRouter, Query, status
 
@@ -24,10 +25,20 @@ async def list_audit_logs(
     action: str | None = None,
     user_id: uuid.UUID | None = None,
     page: int = Query(1, ge=1),
-    page_size: int = Query(50, ge=1, le=100),
+    page_size: int = Query(100, ge=1, le=100),
+    date_from: datetime | None = Query(None),  # noqa: B008
+    date_to: datetime | None = Query(None),  # noqa: B008
 ) -> dict:
     svc = AuditService(session)
-    logs, total = await svc.get_audit_logs(entity_type, action, user_id, page, page_size)
+    logs, total = await svc.get_audit_logs(
+        entity_type,
+        action,
+        user_id,
+        page,
+        page_size,
+        date_from=date_from,
+        date_to=date_to,
+    )
     return {
         "items": [AuditLogResponse.model_validate(log) for log in logs],
         "total": total,

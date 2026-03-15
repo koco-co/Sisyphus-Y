@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -25,6 +26,8 @@ class AuditService:
         user_id: UUID | None = None,
         page: int = 1,
         page_size: int = 50,
+        date_from: datetime | None = None,
+        date_to: datetime | None = None,
     ) -> tuple[list[AuditLog], int]:
         q = select(AuditLog)
         count_q = select(func.count()).select_from(AuditLog)
@@ -38,6 +41,12 @@ class AuditService:
         if user_id:
             q = q.where(AuditLog.user_id == user_id)
             count_q = count_q.where(AuditLog.user_id == user_id)
+        if date_from:
+            q = q.where(AuditLog.created_at >= date_from)
+            count_q = count_q.where(AuditLog.created_at >= date_from)
+        if date_to:
+            q = q.where(AuditLog.created_at <= date_to)
+            count_q = count_q.where(AuditLog.created_at <= date_to)
 
         total = (await self.session.execute(count_q)).scalar() or 0
         q = q.order_by(AuditLog.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
