@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-main-refactor/02-04-PLAN.md
-last_updated: "2026-03-15T12:41:14.525Z"
+stopped_at: Completed 02-main-refactor/02-06-PLAN.md
+last_updated: "2026-03-15T13:03:56.975Z"
 last_activity: 2026-03-15 — Completed 01-02 M16 notification module decommission
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 33
 ---
 
@@ -58,6 +58,8 @@ Progress: [███░░░░░░░] 33%
 | Phase 02-main-refactor P03 | 20 | 2 tasks | 4 files |
 | Phase 02-main-refactor P06 | 7 | 2 tasks | 5 files |
 | Phase 02-main-refactor P04 | 9 | 2 tasks | 8 files |
+| Phase 02-main-refactor P05 | 30 | 2 tasks | 3 files |
+| Phase 02-main-refactor P06 | 7 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -85,6 +87,8 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 02-main-refactor]: CoverageTab returns null when visible=false to prevent hidden-tab API requests
 - [Phase 02-main-refactor]: TestPointGroupList uses button elements for rows (a11y) — div+onClick replaced
 - [Phase 02-main-refactor]: ProgressSteps extended with optional onStepClick prop (backward compat)
+- [Phase 02-main-refactor]: GenerationPanel 追加模式判断用 isAppend ref，避免 handleStartGenerate 更新快照后判断时序错误
+- [Phase 02-main-refactor]: AnalysisLeftPanel height: 100% (非 calc(100vh-49px)) — 由 page.tsx flex 容器决定高度，避免 AiConfigBanner 出现时高度溢出
 
 ### Pending Todos
 
@@ -99,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T12:41:14.523Z
-Stopped at: Completed 02-main-refactor/02-04-PLAN.md
+Last session: 2026-03-15T13:03:56.973Z
+Stopped at: Completed 02-main-refactor/02-06-PLAN.md
 Resume file: None

@@ -23,9 +23,9 @@
 - [x] **WRK-02**: Step1 中栏：AI 生成测试点草稿，按场景类型分组，每条显示名称/Badge/预估用例数
 - [x] **WRK-03**: Step1 支持勾选/取消/手动添加测试点，至少勾选1个「开始生成」才激活
 - [x] **WRK-04**: Step1 右栏：已选测试点汇总 + RAG 检索历史用例预览（top-5，相似度≥0.72）
-- [ ] **WRK-05**: Step2 中栏：SSE 流式输出 + AI 思考过程折叠块 + CaseCard 逐条渲染
-- [ ] **WRK-06**: Step2 右栏：已生成用例列表，实时计数，按测试点分组
-- [ ] **WRK-07**: Step2 完成后可点步骤条回到 Step1 补充测试点继续追加生成
+- [x] **WRK-05**: Step2 中栏：SSE 流式输出 + AI 思考过程折叠块 + CaseCard 逐条渲染
+- [x] **WRK-06**: Step2 右栏：已生成用例列表，实时计数，按测试点分组
+- [x] **WRK-07**: Step2 完成后可点步骤条回到 Step1 补充测试点继续追加生成
 
 ### 历史用例清洗与 RAG（M02 + M11）
 
@@ -166,9 +166,9 @@
 | WRK-02 | Phase 2 | Complete |
 | WRK-03 | Phase 2 | Complete |
 | WRK-04 | Phase 2 | Complete |
-| WRK-05 | Phase 2 | Pending |
-| WRK-06 | Phase 2 | Pending |
-| WRK-07 | Phase 2 | Pending |
+| WRK-05 | Phase 2 | Complete |
+| WRK-06 | Phase 2 | Complete |
+| WRK-07 | Phase 2 | Complete |
 | RAG-01 | Phase 3 | Pending |
 | RAG-02 | Phase 3 | Pending |
 | RAG-03 | Phase 3 | Pending |
