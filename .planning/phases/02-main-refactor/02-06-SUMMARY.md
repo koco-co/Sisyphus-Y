@@ -67,10 +67,10 @@ completed: 2026-03-15
 
 ## Task Commits
 
-1. **Task 1: 前端全局「诊断」→「分析」文案扫描与替换** - `c524e62` (feat)
+1. **Task 1: 前端全局「诊断」→「分析」文案扫描与替换** - `84ef3b6` (feat)
 2. **Task 2: 分析台收尾——空状态页、AiConfigBanner、TypeScript 最终检查** - `f2893ef` (feat)
 
-**Plan metadata:** (待 checkpoint 批准后提交)
+**Plan metadata:** `6cbfaa8` (docs: complete analysis copy-rename and polish plan)
 
 ## Files Created/Modified
 
@@ -108,7 +108,7 @@ completed: 2026-03-15
 
 ## Checkpoint Status
 
-本计划在 Task 2 完成后到达 `checkpoint:human-verify`，等待人工验收分析台完整体验。
+`checkpoint:human-verify` 已由用户批准（"approved"）。分析台完整体验验收通过。
 
 ## Next Phase Readiness
 
