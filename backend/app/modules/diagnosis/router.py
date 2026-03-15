@@ -114,6 +114,16 @@ async def complete_diagnosis(requirement_id: uuid.UUID, session: AsyncSessionDep
     return resp
 
 
+@router.patch("/risks/{risk_id}/confirm", response_model=DiagnosisRiskResponse)
+async def confirm_risk(risk_id: uuid.UUID, session: AsyncSessionDep) -> DiagnosisRiskResponse:
+    svc = DiagnosisService(session)
+    risk = await svc.get_risk(risk_id)
+    if not risk:
+        raise HTTPException(status_code=404, detail="DiagnosisRisk not found")
+    risk = await svc.confirm_risk(risk)
+    return DiagnosisRiskResponse.model_validate(risk)
+
+
 @router.patch("/{requirement_id}/risks/{risk_id}", response_model=DiagnosisRiskResponse)
 async def update_risk(
     requirement_id: uuid.UUID,

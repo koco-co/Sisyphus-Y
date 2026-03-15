@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,6 +27,7 @@ class DiagnosisRisk(BaseModel):
     title: Mapped[str] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     risk_status: Mapped[str] = mapped_column(String(20), default="pending")
+    confirmed: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false", default=False)
 
 
 class DiagnosisChatMessage(BaseModel):

@@ -49,6 +49,12 @@ class DiagnosisService:
         result = await self.session.execute(q)
         return result.scalar_one_or_none()
 
+    async def confirm_risk(self, risk: DiagnosisRisk) -> DiagnosisRisk:
+        risk.confirmed = True
+        await self.session.flush()
+        await self.session.refresh(risk)
+        return risk
+
     async def update_risk_status(self, risk: DiagnosisRisk, data: DiagnosisRiskUpdate) -> DiagnosisRisk:
         risk.risk_status = data.risk_status
         await self.session.commit()

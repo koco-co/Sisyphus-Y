@@ -9,6 +9,7 @@ class DiagnosisRiskResponse(BaseResponse):
     title: str
     description: str | None
     risk_status: str
+    confirmed: bool = False
 
 
 class DiagnosisRiskUpdate(BaseSchema):
