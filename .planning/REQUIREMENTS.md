@@ -13,15 +13,15 @@
 - [x] **ANA-02**: 分析台布局：左侧需求列表按迭代分组，每条需求显示状态 Badge（未分析/分析中/已完成）
 - [x] **ANA-03**: 右侧三 Tab 同页切换：需求详情 / AI 分析 / 覆盖追踪，切换不丢失状态
 - [x] **ANA-04**: AI 分析 Tab 内：上方广度扫描结果 + 下方苏格拉底追问对话框，上下布局
-- [ ] **ANA-05**: 覆盖追踪 Tab：需求点 × 场景类型矩阵视图，展示当前用例覆盖情况
+- [x] **ANA-05**: 覆盖追踪 Tab：需求点 × 场景类型矩阵视图，展示当前用例覆盖情况
 - [x] **ANA-06**: 分析结果刷新后完整恢复（持久化到 DB）
 - [x] **ANA-07**: 存在未处理高风险遗漏项时「进入工作台」按钮置灰，hover 提示文案
 
 ### 工作台（M05 重构）
 
-- [ ] **WRK-01**: 步骤条固定顶部，显示「Step 1 确认测试点 → Step 2 生成用例」，当前步骤高亮
-- [ ] **WRK-02**: Step1 中栏：AI 生成测试点草稿，按场景类型分组，每条显示名称/Badge/预估用例数
-- [ ] **WRK-03**: Step1 支持勾选/取消/手动添加测试点，至少勾选1个「开始生成」才激活
+- [x] **WRK-01**: 步骤条固定顶部，显示「Step 1 确认测试点 → Step 2 生成用例」，当前步骤高亮
+- [x] **WRK-02**: Step1 中栏：AI 生成测试点草稿，按场景类型分组，每条显示名称/Badge/预估用例数
+- [x] **WRK-03**: Step1 支持勾选/取消/手动添加测试点，至少勾选1个「开始生成」才激活
 - [x] **WRK-04**: Step1 右栏：已选测试点汇总 + RAG 检索历史用例预览（top-5，相似度≥0.72）
 - [ ] **WRK-05**: Step2 中栏：SSE 流式输出 + AI 思考过程折叠块 + CaseCard 逐条渲染
 - [ ] **WRK-06**: Step2 右栏：已生成用例列表，实时计数，按测试点分组
@@ -159,12 +159,12 @@
 | ANA-02 | Phase 2 | Complete |
 | ANA-03 | Phase 2 | Complete |
 | ANA-04 | Phase 2 | Complete |
-| ANA-05 | Phase 2 | Pending |
+| ANA-05 | Phase 2 | Complete |
 | ANA-06 | Phase 2 | Complete |
 | ANA-07 | Phase 2 | Complete |
-| WRK-01 | Phase 2 | Pending |
-| WRK-02 | Phase 2 | Pending |
-| WRK-03 | Phase 2 | Pending |
+| WRK-01 | Phase 2 | Complete |
+| WRK-02 | Phase 2 | Complete |
+| WRK-03 | Phase 2 | Complete |
 | WRK-04 | Phase 2 | Complete |
 | WRK-05 | Phase 2 | Pending |
 | WRK-06 | Phase 2 | Pending |

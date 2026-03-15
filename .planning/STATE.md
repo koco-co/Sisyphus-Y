@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Completed 02-main-refactor/02-06-PLAN.md — awaiting checkpoint:human-verify"
-last_updated: "2026-03-15T12:39:31.020Z"
+stopped_at: Completed 02-main-refactor/02-04-PLAN.md
+last_updated: "2026-03-15T12:41:14.525Z"
 last_activity: 2026-03-15 — Completed 01-02 M16 notification module decommission
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
   percent: 33
 ---
 
@@ -57,6 +57,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 02-main-refactor P02 | 25 | 3 tasks | 4 files |
 | Phase 02-main-refactor P03 | 20 | 2 tasks | 4 files |
 | Phase 02-main-refactor P06 | 7 | 2 tasks | 5 files |
+| Phase 02-main-refactor P04 | 9 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 02-main-refactor]: AnalysisTab: Enter workbench button inside component (not tab bar) — enables computed disabled state without prop drilling
 - [Phase 02-main-refactor]: AnalysisLeftPanel height: 100% (not calc(100vh-49px)) — flex parent controls height, prevents overflow when AiConfigBanner shown
 - [Phase 02-main-refactor]: ANA-01 copy rename: visible 诊断→分析 in UI text only; variable names/API paths unchanged
+- [Phase 02-main-refactor]: CoverageTab returns null when visible=false to prevent hidden-tab API requests
+- [Phase 02-main-refactor]: TestPointGroupList uses button elements for rows (a11y) — div+onClick replaced
+- [Phase 02-main-refactor]: ProgressSteps extended with optional onStepClick prop (backward compat)
 
 ### Pending Todos
 
@@ -95,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T12:39:31.018Z
-Stopped at: Completed 02-main-refactor/02-06-PLAN.md — awaiting checkpoint:human-verify
+Last session: 2026-03-15T12:41:14.523Z
+Stopped at: Completed 02-main-refactor/02-04-PLAN.md
 Resume file: None
