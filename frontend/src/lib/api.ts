@@ -174,21 +174,6 @@ export interface TestPoint {
   estimated_cases?: number;
 }
 
-// Notifications
-export interface NotificationRecord {
-  id: string;
-  user_id: string;
-  title: string;
-  message: string;
-  content?: string | null;
-  notification_type: string;
-  severity: string;
-  is_read: boolean;
-  related_type?: string | null;
-  related_id?: string | null;
-  created_at: string;
-}
-
 // Recycle
 export interface RecycleItemResponse {
   items: RecycleItem[];
@@ -381,18 +366,6 @@ export const sceneMapApi = {
   confirmPoint: (pointId: string) => api.post<void>(`/scene-map/test-points/${pointId}/confirm`),
   confirmAll: (reqId: string) => api.post<void>(`/scene-map/${reqId}/confirm`),
   deletePoint: (pointId: string) => api.delete<void>(`/scene-map/test-points/${pointId}`),
-};
-
-export const notificationsApi = {
-  list: (params: { userId: string; pageSize?: number }) =>
-    api.get<{ items: NotificationRecord[]; total: number }>(
-      `/notifications?user_id=${params.userId}&page_size=${params.pageSize ?? 20}`,
-    ),
-  unreadCount: (userId: string) =>
-    api.get<{ count: number }>(`/notifications/unread-count?user_id=${userId}`),
-  markRead: (notificationId: string) => api.post<void>(`/notifications/${notificationId}/read`),
-  markAllRead: (userId: string) => api.post<void>(`/notifications/mark-all-read?user_id=${userId}`),
-  delete: (notificationId: string) => api.delete<void>(`/notifications/${notificationId}`),
 };
 
 export const recycleApi = {
