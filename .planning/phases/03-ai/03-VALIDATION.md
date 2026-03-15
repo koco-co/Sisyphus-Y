@@ -38,18 +38,18 @@ created: 2026-03-15
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 3-01-01 | 01 | 0 | RAG-08 | unit | `uv run pytest tests/unit/test_rag/test_recreate.py -x` | ❌ Wave 0 | ⬜ pending |
-| 3-01-02 | 01 | 0 | RAG-07 | unit | `uv run pytest tests/unit/test_rag/test_csv_fields.py -x` | ❌ Wave 0 | ⬜ pending |
-| 3-01-03 | 01 | 1 | RAG-01 | unit | `uv run pytest tests/unit/test_rag/test_review_script.py -x` | ❌ Wave 0 | ⬜ pending |
-| 3-01-04 | 01 | 1 | RAG-02 | unit | `uv run pytest tests/unit/test_rag/test_review_rules.py -x` | ❌ Wave 0 | ⬜ pending |
-| 3-01-05 | 01 | 1 | RAG-03 | unit | `uv run pytest tests/unit/test_rag/test_review_verdict.py -x` | ❌ Wave 0 | ⬜ pending |
-| 3-01-06 | 01 | 1 | RAG-04 | unit | `uv run pytest tests/unit/test_rag/test_review_report.py -x` | ❌ Wave 0 | ⬜ pending |
-| 3-01-07 | 01 | 1 | RAG-05 | unit | `uv run pytest tests/unit/test_rag/ -k "retrieve" -x` | ✅ | ⬜ pending |
-| 3-02-01 | 02 | 2 | RAG-06 | manual | 手动验证 | manual-only | ⬜ pending |
-| 3-03-01 | 03 | 2 | PRM-01 | unit | `uv run pytest tests/unit/test_ai/test_prompts.py -x` | ✅ | ⬜ pending |
-| 3-03-02 | 03 | 2 | PRM-02 | unit | `uv run pytest tests/unit/test_ai/test_prompts.py -k "identity" -x` | ❌ Wave 0 | ⬜ pending |
-| 3-03-03 | 03 | 2 | PRM-03 | unit | `uv run pytest tests/unit/test_ai/test_prompts.py -k "fewshot" -x` | ❌ Wave 0 | ⬜ pending |
-| 3-04-01 | 04 | 3 | PRM-04 | unit | `uv run pytest tests/unit/test_core/ -k "config" -x` | ✅ | ⬜ pending |
+| 3-01-01 | 03-01 | 0 | RAG-08 | unit | `uv run pytest tests/unit/test_rag/test_recreate.py -x` | ❌ Wave 0 | ⬜ pending |
+| 3-01-02 | 03-01 | 0 | RAG-07 | unit | `uv run pytest tests/unit/test_rag/test_csv_fields.py -x` | ❌ Wave 0 | ⬜ pending |
+| 3-01-03 | 03-01 | 1 | RAG-01 | unit | `uv run pytest tests/unit/test_rag/test_review_script.py -x` | ❌ Wave 0 | ⬜ pending |
+| 3-01-04 | 03-01 | 1 | RAG-02 | unit | `uv run pytest tests/unit/test_rag/test_review_rules.py tests/unit/test_rag/test_review_verdict.py -x` | ❌ Wave 0 | ⬜ pending |
+| 3-01-05 | 03-01 | 1 | RAG-03 | unit | `uv run pytest tests/unit/test_rag/test_review_verdict.py -x` | ❌ Wave 0 | ⬜ pending |
+| 3-01-06 | 03-01 | 1 | RAG-04 | unit | `uv run pytest tests/unit/test_rag/test_review_report.py -x` | ❌ Wave 0 | ⬜ pending |
+| 3-02-01 | 03-02 | 1 | RAG-06 | manual | 手动验证 | manual-only | ⬜ pending |
+| 3-02-02 | 03-02 | 1 | PRM-01 | unit | `uv run pytest tests/unit/test_ai/test_prompts.py -x` | ✅ | ⬜ pending |
+| 3-02-03 | 03-02 | 1 | PRM-02 | unit | `uv run pytest tests/unit/test_ai/test_prompts.py -k "identity" -x` | ❌ Wave 0 | ⬜ pending |
+| 3-02-04 | 03-02 | 1 | PRM-03 | unit | `uv run pytest tests/unit/test_ai/test_prompts.py -k "fewshot" -x` | ❌ Wave 0 | ⬜ pending |
+| 3-02-05 | 03-02 | 1 | PRM-04 | unit | `uv run pytest tests/unit/test_core/ -k "config" -x` | ✅ | ⬜ pending |
+| 3-03-01 | 03-03 | 2 | RAG-05 | unit | `uv run pytest tests/unit/test_rag/ -k "retrieve" -x` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -58,8 +58,8 @@ created: 2026-03-15
 ## Wave 0 Requirements
 
 - [ ] `tests/unit/test_rag/test_review_script.py` — RAG-01 CSV 读取 + LLM mock 调用
-- [ ] `tests/unit/test_rag/test_review_rules.py` — RAG-02 审查规则判断逻辑
-- [ ] `tests/unit/test_rag/test_review_verdict.py` — RAG-03 三分支决策（pass/polish/discard）
+- [ ] `tests/unit/test_rag/test_review_rules.py` — RAG-02 审查规则 Prompt 文本验证
+- [ ] `tests/unit/test_rag/test_review_verdict.py` — RAG-02/03 判断逻辑 + 三分支决策（含 mock LLM 端到端）
 - [ ] `tests/unit/test_rag/test_review_report.py` — RAG-04 报告 JSON 格式验证
 - [ ] `tests/unit/test_rag/test_csv_fields.py` — RAG-07 CSV BOM 解析 + 字段名中文验证
 - [ ] `tests/unit/test_rag/test_recreate.py` — RAG-08 collection 清空 + 重建（mock Qdrant）
