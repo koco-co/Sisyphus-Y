@@ -1,9 +1,9 @@
 ---
 phase: 2
 slug: main-refactor
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: approved
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-15
 ---
 
@@ -41,7 +41,7 @@ created: 2026-03-15
 | 2-01-01 | 01 | 1 | ANA-01 | unit (smoke) | `uv run pytest tests/unit/test_diagnosis/test_diagnosis_api.py -x` | ✅ | ⬜ pending |
 | 2-01-02 | 01 | 1 | ANA-07 | unit | `uv run pytest tests/unit/test_diagnosis/test_diagnosis_service.py -x` | ✅ | ⬜ pending |
 | 2-01-03 | 01 | 1 | ANA-07 | unit | `uv run pytest tests/unit/test_diagnosis/test_diagnosis_api.py::test_confirm_risk -x` | ❌ W0 | ⬜ pending |
-| 2-02-01 | 02 | 2 | WRK-04 | unit | `uv run pytest tests/unit/test_scene_map/test_rag_preview.py -x` | ❌ W0 | ⬜ pending |
+| 2-02-01 | 01 | 1 | WRK-04 | unit | `uv run pytest tests/unit/test_scene_map/test_rag_preview.py -x` | ❌ W0 | ⬜ pending |
 | 2-03-01 | 03 | 3 | WRK-07 | unit (frontend) | `bun run test -- workbench` | ❌ W0 (optional) | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
@@ -69,11 +69,11 @@ created: 2026-03-15
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved
