@@ -150,19 +150,83 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ANA-01~07 | Phase 1 | Pending |
-| WRK-01~07 | Phase 2 | Pending |
-| RAG-01~08 | Phase 3 | Pending |
-| PRM-01~04 | Phase 3 | Pending |
-| INP-01~03 | Phase 4 | Pending |
-| TC-01~14 | Phase 4 | Pending |
-| KB-01~04 | Phase 5 | Pending |
-| DSH-01~06 | Phase 5 | Pending |
-| UX-01~08 | Phase 6 | Pending |
-| DIF-01~05 | Phase 6 | Pending |
-| MOD-01~05 | Phase 1 | Pending |
-| REC-01~03 | Phase 7 | Pending |
-| TPL-01~03 | Phase 7 | Pending |
+| MOD-01 | Phase 1 | Pending |
+| MOD-02 | Phase 1 | Pending |
+| MOD-03 | Phase 1 | Pending |
+| MOD-04 | Phase 1 | Pending |
+| MOD-05 | Phase 1 | Pending |
+| ANA-01 | Phase 2 | Pending |
+| ANA-02 | Phase 2 | Pending |
+| ANA-03 | Phase 2 | Pending |
+| ANA-04 | Phase 2 | Pending |
+| ANA-05 | Phase 2 | Pending |
+| ANA-06 | Phase 2 | Pending |
+| ANA-07 | Phase 2 | Pending |
+| WRK-01 | Phase 2 | Pending |
+| WRK-02 | Phase 2 | Pending |
+| WRK-03 | Phase 2 | Pending |
+| WRK-04 | Phase 2 | Pending |
+| WRK-05 | Phase 2 | Pending |
+| WRK-06 | Phase 2 | Pending |
+| WRK-07 | Phase 2 | Pending |
+| RAG-01 | Phase 3 | Pending |
+| RAG-02 | Phase 3 | Pending |
+| RAG-03 | Phase 3 | Pending |
+| RAG-04 | Phase 3 | Pending |
+| RAG-05 | Phase 3 | Pending |
+| RAG-06 | Phase 3 | Pending |
+| RAG-07 | Phase 3 | Pending |
+| RAG-08 | Phase 3 | Pending |
+| PRM-01 | Phase 3 | Pending |
+| PRM-02 | Phase 3 | Pending |
+| PRM-03 | Phase 3 | Pending |
+| PRM-04 | Phase 3 | Pending |
+| INP-01 | Phase 4 | Pending |
+| INP-02 | Phase 4 | Pending |
+| INP-03 | Phase 4 | Pending |
+| TC-01 | Phase 4 | Pending |
+| TC-02 | Phase 4 | Pending |
+| TC-03 | Phase 4 | Pending |
+| TC-04 | Phase 4 | Pending |
+| TC-05 | Phase 4 | Pending |
+| TC-06 | Phase 4 | Pending |
+| TC-07 | Phase 4 | Pending |
+| TC-08 | Phase 4 | Pending |
+| TC-09 | Phase 4 | Pending |
+| TC-10 | Phase 4 | Pending |
+| TC-11 | Phase 4 | Pending |
+| TC-12 | Phase 4 | Pending |
+| TC-13 | Phase 4 | Pending |
+| TC-14 | Phase 4 | Pending |
+| DSH-01 | Phase 4 | Pending |
+| DSH-02 | Phase 4 | Pending |
+| DSH-03 | Phase 4 | Pending |
+| DSH-04 | Phase 4 | Pending |
+| DSH-05 | Phase 4 | Pending |
+| DSH-06 | Phase 4 | Pending |
+| DIF-01 | Phase 4 | Pending |
+| DIF-02 | Phase 4 | Pending |
+| DIF-03 | Phase 4 | Pending |
+| DIF-04 | Phase 4 | Pending |
+| DIF-05 | Phase 4 | Pending |
+| KB-01 | Phase 4 | Pending |
+| KB-02 | Phase 4 | Pending |
+| KB-03 | Phase 4 | Pending |
+| KB-04 | Phase 4 | Pending |
+| UX-01 | Phase 5 | Pending |
+| UX-02 | Phase 5 | Pending |
+| UX-03 | Phase 5 | Pending |
+| UX-04 | Phase 5 | Pending |
+| UX-05 | Phase 5 | Pending |
+| UX-06 | Phase 5 | Pending |
+| UX-07 | Phase 5 | Pending |
+| UX-08 | Phase 5 | Pending |
+| REC-01 | Phase 5 | Pending |
+| REC-02 | Phase 5 | Pending |
+| REC-03 | Phase 5 | Pending |
+| TPL-01 | Phase 5 | Pending |
+| TPL-02 | Phase 5 | Pending |
+| TPL-03 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 68 total
@@ -171,4 +235,4 @@
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-15 after initial definition*
+*Last updated: 2026-03-15 — Traceability updated after roadmap finalized (5-phase structure)*
