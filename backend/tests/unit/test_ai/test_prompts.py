@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import re
+
 from app.ai.prompts import (
     _MODULE_PROMPTS,
+    DIAGNOSIS_FOLLOWUP_SYSTEM,
     DIAGNOSIS_SYSTEM,
     DIFF_SEMANTIC_SYSTEM,
+    EXPLORATORY_SYSTEM,
     GENERATION_SYSTEM,
     RULE_DATAPLAT,
     RULE_FORMAT,
@@ -119,3 +123,81 @@ class TestSystemPromptForEachModule:
         """所有系统规则不应为空。"""
         for rule in [RULE_FORMAT, RULE_QUALITY, RULE_DATAPLAT, RULE_SAFETY]:
             assert len(rule) > 50
+
+
+class TestPromptIdentityAndFewshot:
+    """PRM-02: 身份声明差异化测试 + PRM-03: Few-shot 存在性测试"""
+
+    def test_identity_unique(self):
+        """6 个模块的身份声明首句必须互不相同，且长度 > 30 字。"""
+        prompts = {
+            "diagnosis": DIAGNOSIS_SYSTEM,
+            "scene_map": SCENE_MAP_SYSTEM,
+            "generation": GENERATION_SYSTEM,
+            "diagnosis_followup": DIAGNOSIS_FOLLOWUP_SYSTEM,
+            "diff": DIFF_SEMANTIC_SYSTEM,
+            "exploratory": EXPLORATORY_SYSTEM,
+        }
+
+        # 提取每个身份声明段落的首句（## ① 身份声明 后的第一行非空内容）
+        identity_first_lines = []
+        for name, prompt in prompts.items():
+            match = re.search(r"## ① 身份声明\n(.+?)(?:\n\n|\n##)", prompt, re.DOTALL)
+            assert match, f"{name} 缺少身份声明段落"
+            first_line = match.group(1).strip().split("\n")[0].strip()
+            assert len(first_line) > 30, f"{name} 身份声明首句过短（{len(first_line)} 字）"
+            identity_first_lines.append((name, first_line))
+
+        # 断言 6 个首句两两不同
+        lines_only = [line for _, line in identity_first_lines]
+        assert len(set(lines_only)) == 6, f"身份声明首句存在重复: {lines_only}"
+
+    def test_fewshot_present(self):
+        """GENERATION_SYSTEM 已有 Few-shot，其余 5 个模块也必须包含正例+负例。"""
+        prompts_to_check = {
+            "diagnosis": DIAGNOSIS_SYSTEM,
+            "scene_map": SCENE_MAP_SYSTEM,
+            "diagnosis_followup": DIAGNOSIS_FOLLOWUP_SYSTEM,
+            "diff": DIFF_SEMANTIC_SYSTEM,
+            "exploratory": EXPLORATORY_SYSTEM,
+        }
+
+        # GENERATION_SYSTEM 作为基准必须包含 Few-Shot
+        assert "Few-Shot" in GENERATION_SYSTEM or "Few-shot" in GENERATION_SYSTEM or "正例" in GENERATION_SYSTEM
+
+        for name, prompt in prompts_to_check.items():
+            # 必须包含正例标记
+            has_positive = "正例" in prompt or "✅" in prompt
+            assert has_positive, f"{name} 缺少正例标记（正例 或 ✅）"
+
+            # 必须包含负例标记
+            has_negative = "负例" in prompt or "❌" in prompt
+            assert has_negative, f"{name} 缺少负例标记（负例 或 ❌）"
+
+    def test_four_section_structure(self):
+        """所有 6 个模块必须包含四段式结构标头。"""
+        prompts = {
+            "diagnosis": DIAGNOSIS_SYSTEM,
+            "scene_map": SCENE_MAP_SYSTEM,
+            "generation": GENERATION_SYSTEM,
+            "diagnosis_followup": DIAGNOSIS_FOLLOWUP_SYSTEM,
+            "diff": DIFF_SEMANTIC_SYSTEM,
+            "exploratory": EXPLORATORY_SYSTEM,
+        }
+
+        required_sections = ["## ① 身份声明", "## ② 任务边界", "## ③ 输出规范", "## ④ 质量红线"]
+
+        for name, prompt in prompts.items():
+            for section in required_sections:
+                assert section in prompt, f"{name} 缺少段落标头: {section}"
+
+
+class TestGLM5Config:
+    """PRM-04: GLM-5 配置验证"""
+
+    def test_glm5_config(self):
+        """Settings 中 zhipu_model 默认值为 glm-5。"""
+        from app.core.config import Settings
+
+        settings = Settings()
+        assert settings.zhipu_model == "glm-5", f"zhipu_model 期望 glm-5，实际为 {settings.zhipu_model}"
