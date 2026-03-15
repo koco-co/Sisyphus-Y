@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 planned — 3 plans ready
-last_updated: "2026-03-15T15:32:28.094Z"
-last_activity: 2026-03-15 — Completed 03-02 AI Prompt quality improvement with Few-shot examples
+stopped_at: Completed 03-01 historical testcase LLM review script
+last_updated: "2026-03-15T23:58:00.000Z"
+last_activity: 2026-03-15 — Completed 03-01 historical testcase LLM review script with TDD
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 13
-  completed_plans: 11
-  percent: 60
+  completed_plans: 12
+  percent: 62
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 3 of 5 (AI 质量提升)
-Plan: 2 of 3 in current phase
+Plan: 1 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-15 — Completed 03-02 AI Prompt 质量提升
+Last activity: 2026-03-15 — Completed 03-01 historical testcase LLM review script with TDD
 
-Progress: [██████░░░░] 60%
+Progress: [██████░░░░] 62%
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [██████░░░░] 60%
 | Phase 02-main-refactor P06 | 7 | 2 tasks | 5 files |
 | Phase 02-main-refactor P07 | 6 | 1 tasks | 1 files |
 | Phase 03-ai P02 | 35 | 2 tasks | 2 files |
+| Phase 03-ai P01 | 45 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,9 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 03-ai]: 5 个模块 Prompt 均使用四段式结构 + Few-shot 示例（2~3 正例 + 1 负例）
 - [Phase 03-ai]: SSE 换行渲染确认：AI 消息路径已使用 renderMarkdown，用户消息路径 whitespace-pre-wrap 足够
 - [Phase 03-ai]: GLM-5 配置验证通过，zhipu_model 默认值为 "glm-5"
+- [Phase 03-ai P01]: 使用 md5(filepath::row_index) 生成稳定 ID 实现幂等性
+- [Phase 03-ai P01]: utf-8-sig 编码处理带 BOM 的 CSV 文件
+- [Phase 03-ai P01]: 三分支 verdict 系统：pass/polish/discard
 
 ### Pending Todos
 
@@ -110,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T16:30:00.000Z
-Stopped at: Completed 03-02 AI Prompt 质量提升
-Resume file: .planning/phases/03-ai/03-02-SUMMARY.md
+Last session: 2026-03-15T23:58:00.000Z
+Stopped at: Completed 03-01 historical testcase LLM review script
+Resume file: .planning/phases/03-ai/03-01-SUMMARY.md

@@ -64,7 +64,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — 历史用例 LLM 审查脚本（TDD）：测试脚手架 + review_testcases.py（RAG-01, RAG-02, RAG-03, RAG-04, RAG-07, RAG-08）
+- [x] 03-01-PLAN.md — 历史用例 LLM 审查脚本（TDD）：测试脚手架 + review_testcases.py（RAG-01, RAG-02, RAG-03, RAG-04, RAG-07, RAG-08）
 - [ ] 03-02-PLAN.md — Prompt 体系重写：5 模块 Few-shot + SSE 换行修复 + GLM-5 验证（RAG-06, PRM-01, PRM-02, PRM-03, PRM-04）
 - [ ] 03-03-PLAN.md — RAG 检索参数确认 + Phase 3 端到端验收 checkpoint（RAG-05）
 
@@ -103,6 +103,6 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. 清场 | 3/3 | Complete    | 2026-03-15 |
 | 2. 主链路重构 | 6/6 | Complete   | 2026-03-15 |
-| 3. AI 质量提升 | 0/3 | Not started | - |
+| 3. AI 质量提升 | 1/3 | In progress | 2026-03-15 |
 | 4. 外围模块扩展 | 0/TBD | Not started | - |
 | 5. 体验收尾 | 0/TBD | Not started | - |
