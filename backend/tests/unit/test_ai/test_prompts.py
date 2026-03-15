@@ -73,7 +73,7 @@ class TestAssemblePromptReturnsMessages:
             output_preference={"key": "PREF_MARKER"},
             rag_context="RAG_MARKER",
         )
-        idx_system = result.index("测试健康诊断")
+        idx_system = result.index("需求质量分析")
         idx_rules = result.index("RULE-FORMAT")
         idx_team = result.index("TEAM_MARKER")
         idx_module = result.index("MODULE_RULES_MARKER")
