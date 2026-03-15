@@ -20,9 +20,10 @@ export default function WorkbenchStepBar({
     },
     {
       label: 'Step 2 生成用例',
-      status: (
-        currentStep === 2 ? 'active' : step2Completed ? 'done' : 'pending'
-      ) as 'active' | 'done' | 'pending',
+      status: (currentStep === 2 ? 'active' : step2Completed ? 'done' : 'pending') as
+        | 'active'
+        | 'done'
+        | 'pending',
     },
   ];
 
