@@ -41,7 +41,15 @@ Plans:
   3. AI 分析 Tab 内广度扫描结果在上、苏格拉底追问对话框在下，两区同屏可见
   4. 存在未处理高风险项时「进入工作台」按钮置灰，hover 显示提示文案
   5. 工作台步骤条固定顶部，Step1 可勾选/手动添加测试点并预览 RAG 历史用例，Step2 SSE 流式输出用例，完成后可回到 Step1 补充再生成
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — 后端基础层：DiagnosisRisk.confirmed 字段 + confirm 端点 + RAG 预览端点（ANA-07, WRK-04）
+- [ ] 02-02-PLAN.md — 分析台三栏布局骨架：重建 /analysis 页面 + 需求左栏 + 三 Tab 常驻 DOM（ANA-02, ANA-03, ANA-06）
+- [ ] 02-03-PLAN.md — AI 分析 Tab：上下拖拽分割 + 风险确认按钮 + 进入工作台置灰逻辑（ANA-04, ANA-06, ANA-07）
+- [ ] 02-04-PLAN.md — 覆盖追踪 Tab + 工作台 Step1 完整实现（ANA-05, WRK-01, WRK-02, WRK-03, WRK-04）
+- [ ] 02-05-PLAN.md — 工作台 Step2 流式生成 + 追加生成逻辑（WRK-05, WRK-06, WRK-07）
+- [ ] 02-06-PLAN.md — 全局「诊断」→「分析」文案替换 + 分析台收尾（ANA-01）
 
 ### Phase 3: AI 质量提升
 **Goal**: 向量库中存储经过审查的高质量历史用例，所有 AI 模块使用重写后的 Prompt，RAG 检索结果可信
@@ -89,7 +97,7 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 清场 | 3/3 | Complete    | 2026-03-15 |
-| 2. 主链路重构 | 0/TBD | Not started | - |
+| 2. 主链路重构 | 0/6 | Not started | - |
 | 3. AI 质量提升 | 0/TBD | Not started | - |
 | 4. 外围模块扩展 | 0/TBD | Not started | - |
 | 5. 体验收尾 | 0/TBD | Not started | - |
