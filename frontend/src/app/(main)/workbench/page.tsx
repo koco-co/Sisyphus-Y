@@ -12,12 +12,12 @@ import { useWorkbench } from '@/hooks/useWorkbench';
 import { type Requirement, requirementsApi } from '@/lib/api';
 import type { WorkbenchTestCase } from '@/stores/workspace-store';
 import { useWorkspaceStore } from '@/stores/workspace-store';
-import { TestPointList } from '../scene-map/_components/TestPointList';
 import { ContextPanel } from './_components/ContextPanel';
 import { GeneratedCases } from './_components/GeneratedCases';
 import { GeneratedCasesByPoint } from './_components/GeneratedCasesByPoint';
 import { GenerationPanel } from './_components/GenerationPanel';
 import { RequirementNav } from './_components/RequirementNav';
+import TestPointGroupList from './_components/TestPointGroupList';
 import WorkbenchStepBar from './_components/WorkbenchStepBar';
 import { getWorkbenchRequirementId } from './query';
 
@@ -264,31 +264,27 @@ function WorkbenchPageContent() {
                   )}
                   {sm.sse.isStreaming ? '生成中...' : 'AI 生成测试点'}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleStartGeneration}
-                  disabled={selectedPointCount === 0 || sm.sse.isStreaming}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-sy-accent px-3 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-sy-accent-2 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {store.lastGeneratedPointIds.size > 0 ? '追加生成' : '开始生成'}
-                </button>
               </div>
             </div>
           </div>
 
           <div className="min-h-0 flex-1 overflow-hidden bg-sy-bg">
-            <TestPointList
-              testPoints={sm.testPoints}
-              selectedPointId={sm.selectedPointId}
+            <TestPointGroupList
+              requirementId={wb.selectedReqId}
               checkedPointIds={sm.checkedPointIds}
-              searchQuery={sm.searchQuery}
-              isLocked={false}
-              stats={sm.stats}
-              onSelectPoint={sm.selectPoint}
-              onToggleCheck={sm.toggleCheckPoint}
-              onSearchChange={sm.setSearchQuery}
-              onAddPoint={sm.addPoint}
+              onToggle={sm.toggleCheckPoint}
+              onAdd={(groupName, title) =>
+                sm.addPoint({
+                  group_name: groupName,
+                  title,
+                  description: null,
+                  source: 'pending',
+                  status: 'pending',
+                  priority: 'medium',
+                  estimated_cases: 0,
+                })
+              }
+              onStartGenerate={handleStartGeneration}
             />
           </div>
         </>
