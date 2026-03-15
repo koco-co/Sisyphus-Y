@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-main-refactor/02-01-PLAN.md
-last_updated: "2026-03-15T12:15:52.275Z"
+stopped_at: Completed 02-main-refactor/02-02-PLAN.md
+last_updated: "2026-03-15T12:26:41.499Z"
 last_activity: 2026-03-15 — Completed 01-02 M16 notification module decommission
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 9
-  completed_plans: 4
+  completed_plans: 5
   percent: 33
 ---
 
@@ -54,6 +54,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 01-qingchang P03 | 8 | 2 tasks | 6 files |
 | Phase 01-qingchang P03 | 25 | 3 tasks | 6 files |
 | Phase 02-main-refactor P01 | 35 | 2 tasks | 9 files |
+| Phase 02-main-refactor P02 | 25 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,7 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 01-qingchang]: MOD-05: 审计日志 API 路径统一为 /audit，page_size 默认 100，支持 date_from/date_to 后端过滤
 - [Phase 02-main-refactor]: Alembic autogenerate migration trimmed: removed unrelated table-drop noise from Phase 1, kept only confirmed column addition
 - [Phase 02-main-refactor]: RAG preview endpoint catches all exceptions (not just ConnectionError) to guarantee graceful degradation against any Qdrant failure
+- [Phase 02-main-refactor]: useDiagnosis scoped inside RightPanelContent inner component — avoids hook call when selectedReqId is null
 
 ### Pending Todos
 
@@ -87,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T12:15:52.273Z
-Stopped at: Completed 02-main-refactor/02-01-PLAN.md
+Last session: 2026-03-15T12:26:41.497Z
+Stopped at: Completed 02-main-refactor/02-02-PLAN.md
 Resume file: None

@@ -10,11 +10,11 @@
 ### 分析台（M03 重构）
 
 - [ ] **ANA-01**: 「诊断」全局重命名为「分析」（页面/按钮/API路由/注释/数据库字段注释）
-- [ ] **ANA-02**: 分析台布局：左侧需求列表按迭代分组，每条需求显示状态 Badge（未分析/分析中/已完成）
-- [ ] **ANA-03**: 右侧三 Tab 同页切换：需求详情 / AI 分析 / 覆盖追踪，切换不丢失状态
+- [x] **ANA-02**: 分析台布局：左侧需求列表按迭代分组，每条需求显示状态 Badge（未分析/分析中/已完成）
+- [x] **ANA-03**: 右侧三 Tab 同页切换：需求详情 / AI 分析 / 覆盖追踪，切换不丢失状态
 - [ ] **ANA-04**: AI 分析 Tab 内：上方广度扫描结果 + 下方苏格拉底追问对话框，上下布局
 - [ ] **ANA-05**: 覆盖追踪 Tab：需求点 × 场景类型矩阵视图，展示当前用例覆盖情况
-- [ ] **ANA-06**: 分析结果刷新后完整恢复（持久化到 DB）
+- [x] **ANA-06**: 分析结果刷新后完整恢复（持久化到 DB）
 - [x] **ANA-07**: 存在未处理高风险遗漏项时「进入工作台」按钮置灰，hover 提示文案
 
 ### 工作台（M05 重构）
@@ -156,11 +156,11 @@
 | MOD-04 | Phase 1 | Complete |
 | MOD-05 | Phase 1 | Complete |
 | ANA-01 | Phase 2 | Pending |
-| ANA-02 | Phase 2 | Pending |
-| ANA-03 | Phase 2 | Pending |
+| ANA-02 | Phase 2 | Complete |
+| ANA-03 | Phase 2 | Complete |
 | ANA-04 | Phase 2 | Pending |
 | ANA-05 | Phase 2 | Pending |
-| ANA-06 | Phase 2 | Pending |
+| ANA-06 | Phase 2 | Complete |
 | ANA-07 | Phase 2 | Complete |
 | WRK-01 | Phase 2 | Pending |
 | WRK-02 | Phase 2 | Pending |
