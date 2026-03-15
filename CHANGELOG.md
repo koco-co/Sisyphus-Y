@@ -30,8 +30,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **GET /ai-config/prompts 空列表问题** — 首次安装无 DB 记录时，现在始终返回全部 6 个模块，默认值标注 `is_default: true`
 - **文案 typo** — 「需求需求分析时」→「需求分析时」
 - **历史记录缺少预览** — 历史面板每条记录新增 80 字符内容预览
+- **需求详情页关联用例运行时错误** — `useRequirement` 现会解包 `/api/testcases` 的分页 `items` 响应，修复 `requirements/:id` 页面 `testCases.map is not a function` 白屏，并恢复右侧关联面板与快捷入口
 
 ### Changed
+- **文档与执行基线对齐** — `sisyphus-y平台需求明确记录.md`、`README.md`、`CLAUDE.md`、`AGENTS.md` 统一补充 2026-03 改版主线，并明确 `process.json` 负责开发计划、`progress.json` 负责验收/回归记录
+- **工作台双步骤流首轮落地** — `workbench/page.tsx` 接入 Step 1 / Step 2 可切换视图；选中需求后在 Step 1 直接展示测试点草稿工具、AI 生成测试点入口和“至少勾选 1 个测试点后才能开始生成”的门槛；进入 Step 2 后可返回 Step 1 补充测试点
+- **生成上下文仅注入已确认测试点** — `GenerationService.chat_stream()` 组装“已确认测试点”上下文时只保留 `status == "confirmed"` 的测试点，并新增单元测试覆盖该行为
+- **分析台进入工作台状态承接** — 分析台“进入工作台”链接现在会带上当前需求 `reqId`；工作台兼容 `reqId` / `req` 查询参数并自动承接需求上下文，同时保留高风险遗漏项未处理时的进入拦截
+- **analysis 主入口与进度大盘回归收口** — 首页、帮助引导、搜索、需求详情和 dashboard pending items 的主要入口统一收敛到 `/analysis` hub；`/api/progress` 适配当前 `progress.json` schema，浏览器侧测试进度大盘不再显示“其他 0%”
+- **AI 模型配置切换到列表管理视图** — `AIModelSettings` 现在消费 `/ai-config/models/list` 与模型 CRUD 接口，支持区分多条模型配置、用途标签、模型级测试连接与默认模型同步，不再只暴露单一全局 LLM 表单
+- **AI 配置 API Key 更新改为合并写入** — `AiConfigService.update_config()` 更新单个 provider key 时不再覆盖整包 `api_keys`，避免多模型配置互相冲掉密钥
+- **Prompt reset / rollback 调用链对齐** — 后端新增 `POST /ai-config/prompts/{module}/reset` 与 `POST /ai-config/prompts/{module}/rollback/{history_id}` 兼容路由，并补上 Prompt 历史回滚服务逻辑，使前端 PromptManager 的默认值、历史版本与回滚链路重新可用
+- **Knowledge 搜索默认阈值统一到 0.72** — `KnowledgeSearchRequest`、`KnowledgeService.search()` 与 RAG retriever 默认阈值保持一致，并新增 API / service / retriever 测试锁定默认值与显式传参行为
+- **历史清洗用例 reviewer 批次结果落盘** — 对 `清洗后数据/` 下 7497 条历史用例执行结构化审查，生成 `清洗后数据/review_batches/iter03_t02_case_review_summary.csv` 与 `iter03_t02_batch_summary.csv`，并将通过 / 润色 / 丢弃统计回写到 `progress.json`
+- **知识库重建向量索引返回清理摘要** — `/api/knowledge/rebuild-vector-index` 现在会在重建前清理旧 collection，并返回 `deleted_points`、`docs_queued` 与摘要 message；后端补充了 collection 重建 helper 与对应测试
+- **帮助入口收敛为首次引导 + 常驻按钮** — 顶栏帮助入口已移除；`OnboardingGuideButton` 现在会在首次访问时自动弹出一次引导，并以右下角常驻帮助按钮形式保留随时唤起入口
+- **未配置 AI 模型时的主链路横幅提示** — 分析台与工作台现在会在未配置有效 AI 模型时展示固定横幅，并提供跳转到 `/settings` 的快捷入口
 - **全站「诊断」→「分析」文案替换** — 前端 progress、useDashboard、useDiagnosis 中 UI 文本；后端 diagnosis/search/dashboard 模块注释、日志、Prompt 文案（变量名/路由/类名保持不变）
 
 ## [2.0.0-rc] - 2026-03-13
@@ -57,10 +71,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **仪表盘补齐迭代视角** — 首页右上角新增迭代选择器，概览卡片展示需求总数 / 用例总数 / 平均覆盖率相对上一迭代的 delta；`/api/dashboard/stats`、`/pending-items`、`/activities`、`/quality` 现支持 `iteration_id` 范围过滤
 - **RAG 相似度阈值** — 默认 score_threshold 从 0.3 提升至 0.72
 - **文案标准化** — 「诊断」→「分析」全站替换，按钮文案「创建」→「新建」统一
 - **版本号** — v0.2 → v2.0
 - **错误处理** — 新增 getErrorMessage() 统一工具函数
+- **Workbench 构建兼容性** — `workbench` 页面使用 `Suspense` 包裹 `useSearchParams()` 消费逻辑，满足 Next.js 16 生产构建要求
 
 ### Removed
 
