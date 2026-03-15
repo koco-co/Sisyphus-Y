@@ -16,6 +16,7 @@ def _make_config(
     team_standard_prompt: str | None = None,
     module_rules: dict | None = None,
     output_preference: dict | None = None,
+    api_keys: dict | None = None,
 ):
     cfg = MagicMock()
     cfg.id = uuid.uuid4()
@@ -30,6 +31,7 @@ def _make_config(
     cfg.rag_config = None
     cfg.custom_checklist = None
     cfg.system_rules_version = "v1"
+    cfg.api_keys = api_keys
     cfg.deleted_at = None
     return cfg
 
@@ -171,3 +173,73 @@ class TestOverridePriority:
 
         assert result["llm_model"] == "qwen-max"
         assert result["llm_temperature"] == 0.5
+
+
+class TestApiKeysUpdate:
+    """测试 api_keys 更新行为。"""
+
+    async def test_update_config_merges_api_keys_with_existing_values(self):
+        """更新单个 provider key 时，应与已有 api_keys 合并，而不是整包覆盖。"""
+        existing = _make_config(
+            scope="global",
+            api_keys={"zhipu": "encrypted-old-zhipu"},
+        )
+
+        session = AsyncMock()
+        svc = _make_service(session)
+
+        from app.modules.ai_config.schemas import AiConfigUpdate
+
+        payload = AiConfigUpdate(api_keys={"dashscope": "new-secret"})
+
+        with (
+            patch.object(svc, "get_config", AsyncMock(return_value=existing)),
+            patch("app.modules.ai_config.service.encrypt_api_key", return_value="encrypted-new-dashscope"),
+        ):
+            result = await svc.update_config(existing.id, payload)
+
+        assert result is existing
+        assert existing.api_keys == {
+            "zhipu": "encrypted-old-zhipu",
+            "dashscope": "encrypted-new-dashscope",
+        }
+        session.commit.assert_awaited_once()
+        session.refresh.assert_awaited_once_with(existing)
+
+
+class TestPromptRollback:
+    """测试 Prompt 历史回滚行为。"""
+
+    async def test_rollback_prompt_restores_history_content_and_bumps_version(self):
+        """回滚时应恢复历史 Prompt，并将当前版本写入历史后递增版本号。"""
+        from app.modules.ai_config.service import PromptConfigService
+
+        history_id = uuid.uuid4()
+        existing = MagicMock()
+        existing.module = "diagnosis"
+        existing.system_prompt = "current prompt"
+        existing.version = 3
+        existing.deleted_at = None
+
+        history = MagicMock()
+        history.id = history_id
+        history.module = "diagnosis"
+        history.system_prompt = "history prompt"
+        history.deleted_at = None
+
+        session = AsyncMock()
+        session.get = AsyncMock(return_value=history)
+        svc = PromptConfigService(session)
+
+        with (
+            patch.object(svc, "get_prompt", AsyncMock(return_value=existing)),
+            patch.object(svc, "_save_history", AsyncMock()) as save_history,
+        ):
+            result = await svc.rollback_prompt("diagnosis", history_id)
+
+        assert result is existing
+        assert existing.system_prompt == "history prompt"
+        assert existing.version == 4
+        save_history.assert_awaited_once()
+        session.commit.assert_awaited_once()
+        session.refresh.assert_awaited_once_with(existing)

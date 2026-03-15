@@ -88,6 +88,28 @@ class TestCreateRequirement:
 
 
 class TestGetRequirementById:
+    async def test_get_requirement_returns_requirement_by_id(self):
+        requirement = _make_requirement(req_id="REQ-123", title="Hydrate Requirement")
+        session = AsyncMock()
+        session.get = AsyncMock(return_value=requirement)
+
+        svc = _make_service(session)
+        result = await svc.get_requirement(requirement.id)
+
+        assert result == requirement
+        session.get.assert_awaited_once()
+
+    async def test_get_requirement_raises_when_missing(self):
+        session = AsyncMock()
+        session.get = AsyncMock(return_value=None)
+
+        svc = _make_service(session)
+
+        with pytest.raises(HTTPException) as exc_info:
+            await svc.get_requirement(uuid.uuid4())
+
+        assert exc_info.value.status_code == 404
+
     async def test_get_requirement_by_id_via_list(self):
         """通过 list_all 获取需求并验证字段。"""
         req = _make_requirement(req_id="REQ-099", title="Specific Req")
