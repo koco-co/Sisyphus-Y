@@ -6,7 +6,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: 清场** - 裁剪废弃模块，为主链路重构扫清路由冲突和 UI 噪声
+- [x] **Phase 1: 清场** - 裁剪废弃模块，为主链路重构扫清路由冲突和 UI 噪声 (completed 2026-03-15)
 - [ ] **Phase 2: 主链路重构** - 分析台三 Tab 布局 + 工作台步骤条，核心流程端到端跑通
 - [ ] **Phase 3: AI 质量提升** - 历史用例审查入向量库 + Prompt 体系重写 + GLM-5 切换
 - [ ] **Phase 4: 外围模块扩展** - 需求录入优化、用例库完整能力、仪表盘重构、需求 Diff
@@ -88,7 +88,7 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 清场 | 2/3 | In Progress|  |
+| 1. 清场 | 3/3 | Complete   | 2026-03-15 |
 | 2. 主链路重构 | 0/TBD | Not started | - |
 | 3. AI 质量提升 | 0/TBD | Not started | - |
 | 4. 外围模块扩展 | 0/TBD | Not started | - |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 01-qingchang-01-PLAN.md
-last_updated: "2026-03-15T09:54:19.336Z"
-last_activity: 2026-03-15 — Roadmap created, 68 requirements mapped to 5 phases
+status: executing
+stopped_at: Completed 01-qingchang-03-PLAN.md (awaiting human-verify checkpoint)
+last_updated: "2026-03-15T10:09:25.958Z"
+last_activity: 2026-03-15 — Completed 01-02 M16 notification module decommission
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 3
   percent: 33
 ---
 
@@ -51,6 +51,7 @@ Progress: [███░░░░░░░] 33%
 
 *Updated after each plan completion*
 | Phase 01-qingchang P01 | 2 | 2 tasks | 2 files |
+| Phase 01-qingchang P03 | 8 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Arch]: Celery worker 任务均为 stub，Phase 4 长任务（批量导入/向量化）需注意
 - [Phase 01-qingchang]: 仅移除路由注册保留模块文件和DB表，模块裁剪不等于代码删除
 - [Phase 01-qingchang P02]: M16 通知模块整体裁剪，sonner toast() 满足通知需求，无需专用通知中心组件
+- [Phase 01-qingchang]: MOD-04: 全局搜索去噪由前端控制，后端不强制限制 entity_types
+- [Phase 01-qingchang]: MOD-05: 审计日志 API 路径统一为 /audit，page_size 默认 100，支持 date_from/date_to 后端过滤
 
 ### Pending Todos
 
@@ -78,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15
-Stopped at: Completed 01-qingchang-02-PLAN.md
+Last session: 2026-03-15T10:09:25.957Z
+Stopped at: Completed 01-qingchang-03-PLAN.md (awaiting human-verify checkpoint)
 Resume file: None

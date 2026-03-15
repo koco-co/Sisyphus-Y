@@ -108,8 +108,8 @@
 - [x] **MOD-01**: M09 迭代测试计划：删除前端入口和后端路由（保留DB表）
 - [x] **MOD-02**: M18 协作功能：删除前端入口，后端保留但不注册路由
 - [x] **MOD-03**: M16 通知：简化为 Toast + 长任务进度条，不做通知中心和消息列表
-- [ ] **MOD-04**: M17 全局搜索：Cmd+K 唤起，只搜用例（标题+步骤）和需求（标题+内容），结果按类型分组
-- [ ] **MOD-05**: M20 操作日志：设置页只读列表（最近100条，时间范围筛选）
+- [x] **MOD-04**: M17 全局搜索：Cmd+K 唤起，只搜用例（标题+步骤）和需求（标题+内容），结果按类型分组
+- [x] **MOD-05**: M20 操作日志：设置页只读列表（最近100条，时间范围筛选）
 
 ### 回收站与模板库
 
@@ -153,8 +153,8 @@
 | MOD-01 | Phase 1 | Complete |
 | MOD-02 | Phase 1 | Complete |
 | MOD-03 | Phase 1 | Complete |
-| MOD-04 | Phase 1 | Pending |
-| MOD-05 | Phase 1 | Pending |
+| MOD-04 | Phase 1 | Complete |
+| MOD-05 | Phase 1 | Complete |
 | ANA-01 | Phase 2 | Pending |
 | ANA-02 | Phase 2 | Pending |
 | ANA-03 | Phase 2 | Pending |
