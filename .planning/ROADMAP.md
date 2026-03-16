@@ -79,7 +79,20 @@ Plans:
   4. 仪表盘顶部 4 卡片、折线图、环形图、待处理事项列表均正常渲染，迭代选择器切换后全局同步
   5. 「发布新版本」触发 Diff，文本对比 Tab 和变更摘要 Tab 均可用，受影响用例自动打标，可一键推送到工作台
   6. 知识库支持四固定分类、分块预览、手动添加条目、文档版本管理（最多3版）
-**Plans**: TBD
+**Plans**: 11 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Wave 0 测试脚手架：DSH-02/KB-02~04 RED 基线（DSH-02, KB-02, KB-03, KB-04）
+- [ ] 04-02-PLAN.md — 后端补全：仪表盘趋势端点 + TestCase.change_impact 迁移 + Diff 推送端点（DSH-02, DIF-04, DIF-05）
+- [ ] 04-03-PLAN.md — 后端补全：知识库分块/手动条目/版本管理/分类 enum（KB-01, KB-02, KB-03, KB-04）
+- [ ] 04-04-PLAN.md — 需求录入：模板下载 + UDA 两步确认 + 置信度提示（INP-01, INP-02, INP-03）
+- [ ] 04-05-PLAN.md — 用例库目录树：重命名重名校验 + 右键「移动到…」Dialog（TC-01~06）
+- [ ] 04-06-PLAN.md — 用例库导入：ImportDialog 拆分 + 必填校验 + 重复处理 Toast（TC-07~11）
+- [ ] 04-07-PLAN.md — 用例库导出：四范围 + 自定义字段 ExportDialog + 后端 scope 扩展（TC-12~14）
+- [ ] 04-08-PLAN.md — 仪表盘：TrendChart 折线图 + SourcePieChart 环形图 + 迭代联动（DSH-01~06）
+- [ ] 04-09-PLAN.md — 需求 Diff：发布新版本入口 + 并排 DiffView + change_impact Badge + 推送按钮（DIF-01~05）
+- [ ] 04-10-PLAN.md — 知识库前端：分类 Tab + ChunkPreviewDrawer + ManualEntryDialog + 版本 UI（KB-01~04）
+- [ ] 04-11-PLAN.md — Phase 4 端到端验收 checkpoint（所有需求）
 
 ### Phase 5: 体验收尾
 **Goal**: 全平台 UI 规范统一、回收站软删除链路完整、模板库可用，整体体验无明显缺陷
@@ -104,5 +117,5 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 | 1. 清场 | 3/3 | Complete    | 2026-03-15 |
 | 2. 主链路重构 | 6/6 | Complete   | 2026-03-15 |
 | 3. AI 质量提升 | 3/3 | Complete   | 2026-03-15 |
-| 4. 外围模块扩展 | 0/TBD | Not started | - |
+| 4. 外围模块扩展 | 0/11 | Not started | - |
 | 5. 体验收尾 | 0/TBD | Not started | - |
