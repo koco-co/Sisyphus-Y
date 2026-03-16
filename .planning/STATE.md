@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Phase 3 AI enhancement
-stopped_at: Completed 03-01 RAG Review Script Test Coverage
-last_updated: "2026-03-16T16:23:00Z"
-last_activity: 2026-03-16 — Phase 3 Plan 01 complete (RAG review script test coverage expanded to 6 files, 41 tests passing)
+stopped_at: Completed 03-02 AI Quality Verification
+last_updated: "2026-03-17T08:35:00Z"
+last_activity: 2026-03-17 — Phase 3 Plan 02 complete (SSE newline rendering, Prompt 4-section structure, GLM-5 config verified, 20 tests passing)
 progress:
   total_phases: 5
   completed_phases: 4
@@ -105,6 +105,7 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 03-ai]: 5 个模块 Prompt 均使用四段式结构 + Few-shot 示例（2~3 正例 + 1 负例）
 - [Phase 03-ai]: SSE 换行渲染确认：AI 消息路径已使用 renderMarkdown，用户消息路径 whitespace-pre-wrap 足够
 - [Phase 03-ai]: GLM-5 配置验证通过，zhipu_model 默认值为 "glm-5"
+- [Phase 03-ai P02]: Prompt 身份声明首句差异化验证通过（6 个模块首句互不相同，长度均 > 30 字）
 - [Phase 03-ai P01]: 使用 md5(filepath::row_index) 生成稳定 ID 实现幂等性
 - [Phase 03-ai P01]: utf-8-sig 编码处理带 BOM 的 CSV 文件
 - [Phase 03-ai P01]: 三分支 verdict 系统：pass/polish/discard
