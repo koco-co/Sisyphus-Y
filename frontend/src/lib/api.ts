@@ -384,6 +384,10 @@ export const recycleApi = {
     api.post<void>('/recycle/batch-restore', { items }),
   permanentDelete: (entityType: string, id: string) =>
     api.delete<void>(`/recycle/${entityType}/${id}`),
+  cleanup: (retentionDays = 30) =>
+    api.post<{ deleted: number; retention_days: number }>(
+      `/recycle/cleanup?retention_days=${retentionDays}`,
+    ),
 };
 
 export const searchApi = {

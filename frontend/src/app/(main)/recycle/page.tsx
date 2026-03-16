@@ -14,6 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ApiError, type RecycleItem, recycleApi } from '@/lib/api';
@@ -110,9 +111,20 @@ export default function RecyclePage() {
   }, []);
 
   useEffect(() => {
-    setSelectedIds(new Set());
-    void loadItems(filter);
-  }, [filter, loadItems]);
+    const initPage = async () => {
+      setSelectedIds(new Set());
+      // 先调用 cleanup 清理过期数据（失败不阻塞列表加载）
+      try {
+        await recycleApi.cleanup();
+      } catch {
+        // cleanup 失败静默处理，不影响用户体验
+      }
+      // 然后加载列表
+      await loadItems(filter);
+    };
+    void initPage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
 
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
