@@ -1,8 +1,6 @@
 'use client';
 
 import { Cell, Legend, Pie, PieChart, Tooltip } from 'recharts';
-import { Skeleton } from '@/components/ui/skeleton';
-
 export interface SourceData {
   ai_generated: number;
   imported: number;
@@ -24,7 +22,10 @@ export default function SourcePieChart({ data, loading = false }: SourcePieChart
   if (loading) {
     return (
       <div className="flex items-center justify-center py-4">
-        <Skeleton className="w-40 h-40 rounded-full" />
+        <div
+          className="w-40 h-40 rounded-full animate-pulse"
+          style={{ background: 'var(--bg2)' }}
+        />
       </div>
     );
   }
@@ -66,7 +67,7 @@ export default function SourcePieChart({ data, loading = false }: SourcePieChart
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: number) => [`${value} 条`, '']}
+          formatter={(value) => [`${value} 条`, '']}
           contentStyle={{
             background: 'var(--bg1)',
             border: '1px solid var(--border)',

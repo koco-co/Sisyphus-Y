@@ -7,6 +7,8 @@ import { api } from '@/lib/api';
 import ActivityTimeline from './_components/ActivityTimeline';
 import PendingItems from './_components/PendingItems';
 import QuickActions from './_components/QuickActions';
+import SourcePieChart from './_components/SourcePieChart';
+import TrendChart, { type TrendDataPoint } from './_components/TrendChart';
 
 interface QualityStats {
   by_priority: Record<string, number>;
@@ -18,15 +20,7 @@ interface QualityStats {
   total_cases: number;
 }
 
-const fallbackQuality: QualityStats = {
-  by_priority: { P0: 42, P1: 186, P2: 412, P3: 207 },
-  by_type: { functional: 520, boundary: 156, exception: 98, performance: 43, security: 30 },
-  by_status: { approved: 487, review: 198, draft: 112, rejected: 50 },
-  by_source: { ai_generated: 640, manual: 142, imported: 65 },
-  avg_ai_score: 82.5,
-  coverage_rate: 94,
-  total_cases: 847,
-};
+// DSH-05: fallbackQuality removed — real API data only, null triggers loading state
 
 const priorityColors: Record<string, string> = {
   P0: 'var(--red)',
@@ -42,11 +36,7 @@ const statusLabels: Record<string, string> = {
   rejected: '已拒绝',
 };
 
-const sourceLabels: Record<string, string> = {
-  ai_generated: 'AI 生成',
-  manual: '手动创建',
-  imported: '导入',
-};
+// DSH-03: sourceLabels removed — source distribution now uses SourcePieChart (not BarChart)
 
 const typeLabels: Record<string, string> = {
   functional: '功能',
@@ -128,8 +118,10 @@ export default function DashboardPage() {
   const { stats, pendingItems, activities, loading, selectedIterationId, setIterationId, refresh } =
     useDashboard();
   const [activeTab, setActiveTab] = useState<'overview' | 'quality'>('overview');
-  const [quality, setQuality] = useState<QualityStats>(fallbackQuality);
+  const [quality, setQuality] = useState<QualityStats | null>(null);
   const [qualityLoading, setQualityLoading] = useState(false);
+  const [trendData, setTrendData] = useState<TrendDataPoint[]>([]);
+  const [trendLoading, setTrendLoading] = useState(false);
 
   const loadQuality = useCallback(async () => {
     setQualityLoading(true);
@@ -138,17 +130,36 @@ export default function DashboardPage() {
       const data = await api.get<QualityStats>(`/dashboard/quality${query}`);
       setQuality(data);
     } catch {
-      setQuality(fallbackQuality);
+      setQuality(null);
     } finally {
       setQualityLoading(false);
     }
   }, [selectedIterationId]);
 
+  const loadTrend = useCallback(async () => {
+    setTrendLoading(true);
+    try {
+      const data = await api.get<TrendDataPoint[]>('/dashboard/trend?limit=6');
+      setTrendData(data);
+    } catch {
+      setTrendData([]);
+    } finally {
+      setTrendLoading(false);
+    }
+  }, []);
+
+  // DSH-05: Load quality when tab is active or iteration changes
+  // loadQuality already depends on selectedIterationId via useCallback
   useEffect(() => {
     if (activeTab === 'quality') {
       loadQuality();
     }
   }, [activeTab, loadQuality]);
+
+  // DSH-02: Fetch trend on mount (trend spans all iterations, no iteration_id param)
+  useEffect(() => {
+    loadTrend();
+  }, [loadTrend]);
 
   const selectedIterationLabel =
     stats.selected_iteration_product_name && stats.selected_iteration_name
@@ -157,7 +168,7 @@ export default function DashboardPage() {
   const selectedIterationStatus = stats.selected_iteration_status
     ? (iterationStatusLabels[stats.selected_iteration_status] ?? stats.selected_iteration_status)
     : '暂无状态';
-  const qualityScore = quality.avg_ai_score ?? 0;
+  const qualityScore = quality?.avg_ai_score ?? 0;
 
   return (
     <div className="no-sidebar">
@@ -337,6 +348,14 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* ── Trend chart (DSH-02) ── */}
+            <div className="card" style={{ marginBottom: 24 }}>
+              <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
+                近6迭代质量趋势
+              </div>
+              <TrendChart data={trendData} loading={trendLoading} />
+            </div>
+
             {/* ── Quick actions ── */}
             <QuickActions />
 
@@ -359,7 +378,7 @@ export default function DashboardPage() {
                 {/* ── Quality stat cards ── */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="card" style={{ borderLeft: '3px solid var(--accent)' }}>
-                    <div className="stat-val">{quality.total_cases}</div>
+                    <div className="stat-val">{quality?.total_cases ?? '—'}</div>
                     <div className="stat-label">用例总数</div>
                   </div>
                   <div className="card" style={{ borderLeft: '3px solid var(--blue)' }}>
@@ -377,10 +396,11 @@ export default function DashboardPage() {
                     <div
                       className="stat-val"
                       style={{
-                        color: quality.coverage_rate >= 80 ? 'var(--accent)' : 'var(--amber)',
+                        color:
+                          (quality?.coverage_rate ?? 0) >= 80 ? 'var(--accent)' : 'var(--amber)',
                       }}
                     >
-                      {quality.coverage_rate}%
+                      {quality ? `${quality.coverage_rate}%` : '—'}
                     </div>
                     <div className="stat-label">需求覆盖率</div>
                   </div>
@@ -389,22 +409,42 @@ export default function DashboardPage() {
                 {/* ── Charts grid ── */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="card">
-                    <div className="text-[13px] font-medium text-text mb-4">按优先级分布</div>
-                    <BarChart data={quality.by_priority} colors={priorityColors} />
+                    <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
+                      按优先级分布
+                    </div>
+                    {quality && <BarChart data={quality.by_priority} colors={priorityColors} />}
                   </div>
                   <div className="card">
-                    <div className="text-[13px] font-medium text-text mb-4">按用例类型分布</div>
-                    <BarChart data={quality.by_type} labels={typeLabels} />
+                    <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
+                      按用例类型分布
+                    </div>
+                    {quality && <BarChart data={quality.by_type} labels={typeLabels} />}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="card">
-                    <div className="text-[13px] font-medium text-text mb-4">按审核状态分布</div>
-                    <BarChart data={quality.by_status} labels={statusLabels} />
+                    <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
+                      按审核状态分布
+                    </div>
+                    {quality && <BarChart data={quality.by_status} labels={statusLabels} />}
                   </div>
+                  {/* DSH-03: 来源分布替换为 SourcePieChart 环形图 */}
                   <div className="card">
-                    <div className="text-[13px] font-medium text-text mb-4">按来源分布</div>
-                    <BarChart data={quality.by_source} labels={sourceLabels} />
+                    <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
+                      按来源分布
+                    </div>
+                    <SourcePieChart
+                      data={
+                        quality?.by_source
+                          ? {
+                              ai_generated: quality.by_source.ai_generated ?? 0,
+                              imported: quality.by_source.imported ?? 0,
+                              manual: quality.by_source.manual ?? 0,
+                            }
+                          : null
+                      }
+                      loading={qualityLoading}
+                    />
                   </div>
                 </div>
               </>

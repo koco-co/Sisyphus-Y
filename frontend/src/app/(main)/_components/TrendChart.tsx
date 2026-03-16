@@ -10,8 +10,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Skeleton } from '@/components/ui/skeleton';
-
 export interface TrendDataPoint {
   iteration_name: string;
   testcase_count: number;
@@ -28,9 +26,13 @@ export default function TrendChart({ data, loading = false }: TrendChartProps) {
   if (loading) {
     return (
       <div className="flex flex-col gap-3 py-2">
-        <Skeleton className="w-3/4 h-4" />
-        <Skeleton className="w-full h-4" />
-        <Skeleton className="w-5/6 h-4" />
+        {[75, 100, 83].map((w) => (
+          <div
+            key={w}
+            className="h-4 rounded animate-pulse"
+            style={{ width: `${w}%`, background: 'var(--bg2)' }}
+          />
+        ))}
       </div>
     );
   }
