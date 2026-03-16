@@ -100,7 +100,7 @@ export function OnboardingGuideButton() {
   );
 }
 
-function OnboardingGuideModal({ onClose }: { onClose: () => void }) {
+export function OnboardingGuideModal({ onClose }: { onClose: () => void }) {
   const [selected, setSelected] = useState<string | null>(null);
   const selectedStep = STEPS.find((s) => s.id === selected);
 
