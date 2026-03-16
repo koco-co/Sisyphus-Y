@@ -1,0 +1,1 @@
+{"info": "用例导入 JSON 模板", "cases": [{"title": "示例用例标题", "precondition": "用户已登录", "steps": "1. 打开页面", "expected_result": "1. 页面正常显示", "priority": "P1", "case_type": "功能测试", "module_path": "示例模块"}]}
