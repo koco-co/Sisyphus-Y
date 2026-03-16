@@ -96,3 +96,98 @@ class TestRecreateCollection:
             "deleted_points": 12,
             "vector_size": 2048,
         }
+
+
+class TestRetrieveSimilarCases:
+    """RAG-05: retrieve_similar_cases 测试集。"""
+
+    async def test_retrieve_similar_cases_default_params(self):
+        """retrieve_similar_cases() 默认 top_k=5, score_threshold=0.72。"""
+        client = MagicMock()
+        client.get_collections.return_value = SimpleNamespace(
+            collections=[SimpleNamespace(name=retriever.TESTCASE_COLLECTION)]
+        )
+        client.query_points.return_value = SimpleNamespace(points=[])
+
+        with (
+            patch("app.engine.rag.retriever._get_client", return_value=client),
+            patch("app.engine.rag.retriever.embed_query", new=AsyncMock(return_value=[0.1, 0.2])),
+        ):
+            results = await retriever.retrieve_similar_cases("用户登录测试")
+
+        assert results == []
+        client.query_points.assert_called_once()
+        assert client.query_points.call_args.kwargs["limit"] == 5
+        assert client.query_points.call_args.kwargs["score_threshold"] == 0.72
+
+    async def test_retrieve_similar_cases_includes_score(self):
+        """检索结果应包含 score 字段。"""
+        client = MagicMock()
+        client.get_collections.return_value = SimpleNamespace(
+            collections=[SimpleNamespace(name=retriever.TESTCASE_COLLECTION)]
+        )
+        client.query_points.return_value = SimpleNamespace(
+            points=[
+                SimpleNamespace(
+                    id="point-1",
+                    score=0.85,
+                    payload={"title": "登录测试", "content": "步骤1..."},
+                )
+            ]
+        )
+
+        with (
+            patch("app.engine.rag.retriever._get_client", return_value=client),
+            patch("app.engine.rag.retriever.embed_query", new=AsyncMock(return_value=[0.1, 0.2])),
+        ):
+            results = await retriever.retrieve_similar_cases("用户登录测试")
+
+        assert len(results) == 1
+        assert results[0].score == 0.85
+
+    async def test_retrieve_similar_cases_includes_metadata(self):
+        """检索结果应包含 metadata 字段。"""
+        client = MagicMock()
+        client.get_collections.return_value = SimpleNamespace(
+            collections=[SimpleNamespace(name=retriever.TESTCASE_COLLECTION)]
+        )
+        client.query_points.return_value = SimpleNamespace(
+            points=[
+                SimpleNamespace(
+                    id="point-1",
+                    score=0.78,
+                    payload={
+                        "title": "登录测试",
+                        "content": "步骤1...",
+                        "testcase_id": "tc-001",
+                        "product": "数据中台",
+                        "module": "用户管理",
+                        "priority": "P0",
+                    },
+                )
+            ]
+        )
+
+        with (
+            patch("app.engine.rag.retriever._get_client", return_value=client),
+            patch("app.engine.rag.retriever.embed_query", new=AsyncMock(return_value=[0.1, 0.2])),
+        ):
+            results = await retriever.retrieve_similar_cases("用户登录测试")
+
+        assert len(results) == 1
+        assert results[0].metadata["testcase_id"] == "tc-001"
+        assert results[0].metadata["title"] == "登录测试"
+        assert results[0].metadata["product"] == "数据中台"
+        assert results[0].metadata["module"] == "用户管理"
+        assert results[0].metadata["priority"] == "P0"
+
+    async def test_retrieve_similar_cases_empty_on_missing_collection(self):
+        """collection 不存在时应返回空列表。"""
+        client = MagicMock()
+        client.get_collections.return_value = SimpleNamespace(collections=[])
+
+        with patch("app.engine.rag.retriever._get_client", return_value=client):
+            results = await retriever.retrieve_similar_cases("用户登录测试")
+
+        assert results == []
+        client.query_points.assert_not_called()
