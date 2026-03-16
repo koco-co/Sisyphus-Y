@@ -91,7 +91,7 @@ Plans:
 - [x] 04-07-PLAN.md — 用例库导出：四范围 + 自定义字段 ExportDialog + 后端 scope 扩展（TC-12~14）
 - [x] 04-08-PLAN.md — 仪表盘：TrendChart 折线图 + SourcePieChart 环形图 + 迭代联动（DSH-01~06）
 - [ ] 04-09-PLAN.md — 需求 Diff：发布新版本入口 + 并排 DiffView + change_impact Badge + 推送按钮（DIF-01~05）
-- [ ] 04-10-PLAN.md — 知识库前端：分类 Tab + ChunkPreviewDrawer + ManualEntryDialog + 版本 UI（KB-01~04）
+- [x] 04-10-PLAN.md — 知识库前端：分类 Tab + ChunkPreviewDrawer + ManualEntryDialog + 版本 UI（KB-01~04）
 - [ ] 04-11-PLAN.md — Phase 4 端到端验收 checkpoint（所有需求）
 
 ### Phase 5: 体验收尾
@@ -117,5 +117,5 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 | 1. 清场 | 3/3 | Complete    | 2026-03-15 |
 | 2. 主链路重构 | 6/6 | Complete   | 2026-03-15 |
 | 3. AI 质量提升 | 3/3 | Complete   | 2026-03-15 |
-| 4. 外围模块扩展 | 4/11 | In Progress|  |
+| 4. 外围模块扩展 | 10/11 | In Progress|  |
 | 5. 体验收尾 | 0/TBD | Not started | - |

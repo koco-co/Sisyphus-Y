@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-08 dashboard TrendChart + SourcePieChart + iteration-selector sync (DSH-01~06)
-last_updated: "2026-03-16T10:45:45Z"
-last_activity: 2026-03-16 — Phase 4 Plan 08 completed (dashboard chart refactor, 3 files)
+stopped_at: Completed 04-10 knowledge base frontend - KB-01~04
+last_updated: "2026-03-16T06:35:00Z"
+last_activity: 2026-03-16 — Phase 4 Plan 08 completed (TrendChart + SourcePieChart + iteration sync, 3 files)
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 24
-  completed_plans: 19
-  percent: 71
+  completed_plans: 24
+  percent: 75
 ---
 
 # Project State
@@ -69,6 +69,7 @@ Progress: [████████░░] 71%
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P02 | 8 | 2 tasks | 9 files |
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P07 | 10 | 2 tasks | 4 files |
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P08 | 5 | 2 tasks | 3 files |
+| Phase 04-wai-wei-mo-kuai-kuo-zhan P09 | 6 | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,8 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan P08]: fallbackQuality 静态数据移除，quality state 默认 null，区分加载中和无数据
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan P08]: Recharts 颜色必须用 CSS 变量字符串 'var(--token)'，不能用 Tailwind 类控制 SVG 属性
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan P08]: @/components/ui/skeleton 不存在，使用内联 animate-pulse div 替代
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan]: publish_version 使用 BackgroundTasks 异步触发 Diff，避免阻塞请求；Diff 失败静默处理
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan]: parseSideBySide 将相邻 del+add 合并为 modified 类型对齐渲染；AffectedCases 双字段兼容 change_impact/impact_type
 
 ### Pending Todos
 
@@ -134,6 +137,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T05:59:30.788Z
-Stopped at: Completed 04-02 dashboard trend + change_impact migration + diff push-to-workbench
+Last session: 2026-03-16T10:48:43.847Z
+Stopped at: Completed 04-09-PLAN.md Diff 完整链路
 Resume file: None
