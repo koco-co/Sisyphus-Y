@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Phase 5 in progress
-stopped_at: Completed 05-01 UI component spec extensions
-last_updated: "2026-03-16T14:00:00Z"
-last_activity: 2026-03-16 — Phase 5 Plan 01 complete (ConfirmDialog simple/cascade variants, EmptyState 48px verification, vitest infrastructure)
+stopped_at: Completed 05-04 User Guidance Components
+last_updated: "2026-03-16T15:15:00Z"
+last_activity: 2026-03-16 — Phase 5 Plan 04 complete (HelpFab floating button, AiConfigBanner responsive, OnboardingGuideModal export)
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 25
-  completed_plans: 27
-  percent: 88
+  completed_plans: 28
+  percent: 89
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 5 of 5 (体验收尾) — IN PROGRESS
-Phase 5: 3/6 plans (Wave 0 + Plan 01 + Plan 02 complete)
+Phase 5: 4/6 plans (Wave 0 + Plan 01 + Plan 02 + Plan 04 complete)
 Status: Phase 5 in progress
-Last activity: 2026-03-16 — Phase 5 Plan 01 complete (ConfirmDialog simple/cascade variants, EmptyState 48px verification, vitest infrastructure)
+Last activity: 2026-03-16 — Phase 5 Plan 04 complete (HelpFab floating button, AiConfigBanner responsive, OnboardingGuideModal export)
 
-Progress: [████████░░] 88%
+Progress: [████████░░] 89%
 
 ## Performance Metrics
 
@@ -132,6 +132,8 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 05-ti-yan-shou-wei P01]: 使用 Vitest 替代 bun:test 作为前端测试框架
 - [Phase 05-ti-yan-shou-wei P01]: ConfirmDialog variant 扩展为 simple | cascade，自动生成描述文案
 - [Phase 05-ti-yan-shou-wei P01]: simple 模式不显示警告图标，cascade 使用 sy-danger 样式
+- [Phase 05-ti-yan-shou-wei P04]: HelpFab menu 使用 CSS visibility 替代条件渲染以支持静态 HTML 测试
+- [Phase 05-ti-yan-shou-wei P04]: AiConfigBanner 通过 useAiConfig hook 检测 modelConfigs.is_enabled 判断 AI 配置状态
 
 ### Pending Todos
 
@@ -146,6 +148,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T14:00:00Z
-Stopped at: Completed 05-01 UI component spec extensions
-Resume file: .planning/phases/05-ti-yan-shou-wei/05-01-SUMMARY.md
+Last session: 2026-03-16T15:15:00Z
+Stopped at: Completed 05-04 User Guidance Components
+Resume file: .planning/phases/05-ti-yan-shou-wei/05-04-SUMMARY.md
