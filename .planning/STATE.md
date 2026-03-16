@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Phase 5 in progress
-stopped_at: Completed 05-02 recycle bin enhancements
-last_updated: "2026-03-16T13:55:00Z"
-last_activity: 2026-03-16 — Phase 5 Plan 02 complete (recycle bin cleanup API, skeleton loader, toast notifications)
+stopped_at: Completed 05-01 UI component spec extensions
+last_updated: "2026-03-16T14:00:00Z"
+last_activity: 2026-03-16 — Phase 5 Plan 01 complete (ConfirmDialog simple/cascade variants, EmptyState 48px verification, vitest infrastructure)
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 25
-  completed_plans: 26
-  percent: 84
+  completed_plans: 27
+  percent: 88
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 5 of 5 (体验收尾) — IN PROGRESS
-Phase 5: 2/6 plans (Wave 0 + Plan 02 complete)
+Phase 5: 3/6 plans (Wave 0 + Plan 01 + Plan 02 complete)
 Status: Phase 5 in progress
-Last activity: 2026-03-16 — Phase 5 Plan 02 complete (recycle bin cleanup API, skeleton loader, toast notifications)
+Last activity: 2026-03-16 — Phase 5 Plan 01 complete (ConfirmDialog simple/cascade variants, EmptyState 48px verification, vitest infrastructure)
 
-Progress: [████████░░] 84%
+Progress: [████████░░] 88%
 
 ## Performance Metrics
 
@@ -129,6 +129,9 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 05-ti-yan-shou-wei P02]: cleanup API 调用失败时静默处理，不阻塞回收站列表加载
 - [Phase 05-ti-yan-shou-wei P02]: 使用 TableSkeleton 组件替代 Loader2 作为首次加载骨架屏
 - [Phase 05-ti-yan-shou-wei P02]: DELETE 请求带 body 使用 api.deleteWithBody 辅助方法
+- [Phase 05-ti-yan-shou-wei P01]: 使用 Vitest 替代 bun:test 作为前端测试框架
+- [Phase 05-ti-yan-shou-wei P01]: ConfirmDialog variant 扩展为 simple | cascade，自动生成描述文案
+- [Phase 05-ti-yan-shou-wei P01]: simple 模式不显示警告图标，cascade 使用 sy-danger 样式
 
 ### Pending Todos
 
@@ -143,6 +146,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T13:55:00Z
-Stopped at: Completed 05-02 recycle bin enhancements
-Resume file: .planning/phases/05-ti-yan-shou-wei/05-02-SUMMARY.md
+Last session: 2026-03-16T14:00:00Z
+Stopped at: Completed 05-01 UI component spec extensions
+Resume file: .planning/phases/05-ti-yan-shou-wei/05-01-SUMMARY.md
