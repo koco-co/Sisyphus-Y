@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, File, Form, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, File, Form, UploadFile, status
 
 from app.core.dependencies import AsyncSessionDep
 from app.modules.products.schemas import (
@@ -12,6 +12,8 @@ from app.modules.products.schemas import (
     ProductCreate,
     ProductResponse,
     ProductUpdate,
+    PublishVersionRequest,
+    PublishVersionResponse,
     RequirementCreate,
     RequirementDetailResponse,
     RequirementResponse,
@@ -145,6 +147,38 @@ async def update_requirement(
 async def delete_requirement(requirement_id: uuid.UUID, session: AsyncSessionDep) -> None:
     service = RequirementService(session)
     await service.soft_delete_requirement(requirement_id)
+
+
+@router.post("/requirements/{requirement_id}/publish-version", response_model=PublishVersionResponse)
+async def publish_version(
+    requirement_id: uuid.UUID,
+    data: PublishVersionRequest,
+    session: AsyncSessionDep,
+    background_tasks: BackgroundTasks,
+) -> PublishVersionResponse:
+    """发布新版本：快照当前需求内容，版本号+1，并在后台触发 Diff 计算 (DIF-01)。"""
+    service = RequirementService(session)
+    old_version, new_version = await service.publish_version(requirement_id, data.version_note)
+
+    # 后台异步触发 Diff 计算（不阻塞请求）
+    async def _trigger_diff() -> None:
+        try:
+            from app.core.database import get_async_session_context
+            from app.modules.diff.service import DiffService
+
+            async with get_async_session_context() as diff_session:
+                diff_svc = DiffService(diff_session)
+                await diff_svc.compute_diff(requirement_id, old_version, new_version)
+        except Exception:
+            pass  # Diff 失败不影响发布
+
+    background_tasks.add_task(_trigger_diff)
+
+    return PublishVersionResponse(
+        requirement_id=requirement_id,
+        version_from=old_version,
+        version_to=new_version,
+    )
 
 
 @router.post("/upload-requirement", response_model=RequirementResponse, status_code=status.HTTP_201_CREATED)

@@ -72,3 +72,13 @@ class RequirementDetailResponse(RequirementResponse):
     frontmatter: dict | None = None
     product_name: str | None = None
     iteration_name: str | None = None
+
+
+class PublishVersionRequest(BaseSchema):
+    version_note: str | None = None
+
+
+class PublishVersionResponse(BaseSchema):
+    requirement_id: uuid.UUID
+    version_from: int
+    version_to: int

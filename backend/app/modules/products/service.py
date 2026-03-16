@@ -195,6 +195,24 @@ class RequirementService:
         await self.session.refresh(requirement)
         return requirement
 
+    async def publish_version(self, req_id: UUID, version_note: str | None) -> tuple[int, int]:
+        """发布新版本：快照当前内容，版本号+1，异步触发 Diff 计算。"""
+        requirement = await self.session.get(Requirement, req_id)
+        if not requirement or requirement.deleted_at is not None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Requirement not found")
+
+        old_version = requirement.version
+        version_snapshot = RequirementVersion(
+            requirement_id=requirement.id,
+            version=old_version,
+            content_ast=requirement.content_ast or {},
+            change_summary=version_note or f"Version {old_version} snapshot",
+        )
+        self.session.add(version_snapshot)
+        requirement.version = old_version + 1
+        await self.session.commit()
+        return (old_version, old_version + 1)
+
     async def soft_delete_requirement(self, requirement_id: UUID) -> None:
         requirement = await self.session.get(Requirement, requirement_id)
         if not requirement or requirement.deleted_at is not None:
