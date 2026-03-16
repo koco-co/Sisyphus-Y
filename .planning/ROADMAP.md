@@ -104,7 +104,13 @@ Plans:
   3. 首次访问平台弹出全屏引导弹窗（只弹一次），右下角「?」帮助浮动按钮常驻
   4. AI 未配置时分析台/工作台顶部显示固定警告横幅，含「前往配置」跳转链接
   5. 回收站支持 Tab 筛选、批量恢复、30天自动清理提示；模板库支持内置模板只读预览、复制另存、JSON 导出导入
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — UI 规范统一：ConfirmDialog 扩展 + EmptyState 验证 + 按钮文案统一（UX-01~04）
+- [ ] 05-02-PLAN.md — 回收站功能：cleanup API 调用 + 加载状态 + 恢复逻辑（UX-05, REC-01~03）
+- [ ] 05-03-PLAN.md — 模板库 Prompt Tab：列表展示 + 导出/导入 JSON（TPL-01~03）
+- [ ] 05-04-PLAN.md — Phase 5 端到端验收 checkpoint（UX-05~08 + 全部需求验证）
 
 ## Progress
 
@@ -118,4 +124,4 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 | 2. 主链路重构 | 6/6 | Complete   | 2026-03-15 |
 | 3. AI 质量提升 | 3/3 | Complete   | 2026-03-15 |
 | 4. 外围模块扩展 | 11/11 | Complete | 2026-03-16 |
-| 5. 体验收尾 | 0/TBD | Not started | - |
+| 5. 体验收尾 | 0/4 | Not started | - |
