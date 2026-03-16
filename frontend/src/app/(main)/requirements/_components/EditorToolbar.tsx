@@ -13,12 +13,16 @@ import {
   ListOrdered,
   Minus,
   Quote,
+  Tag,
 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import { PublishVersionDialog } from './PublishVersionDialog';
 
 interface EditorToolbarProps {
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   onContentChange?: (value: string) => void;
+  reqId?: string;
 }
 
 type FormatAction = {
@@ -47,7 +51,19 @@ const BLOCK_ACTIONS: FormatAction[] = [
   { icon: <Minus size={14} />, title: '分割线', prefix: '\n---\n', block: true },
 ];
 
-export function EditorToolbar({ textareaRef, onContentChange }: EditorToolbarProps) {
+export function EditorToolbar({ textareaRef, onContentChange, reqId }: EditorToolbarProps) {
+  const router = useRouter();
+  const [publishOpen, setPublishOpen] = useState(false);
+
+  const handlePublishSuccess = useCallback(
+    (versionFrom: number, versionTo: number) => {
+      if (reqId) {
+        router.push(`/diff?req_id=${reqId}&version_from=${versionFrom}&version_to=${versionTo}`);
+      }
+    },
+    [reqId, router],
+  );
+
   const applyFormat = useCallback(
     (action: FormatAction) => {
       const el = textareaRef.current;
@@ -81,34 +97,61 @@ export function EditorToolbar({ textareaRef, onContentChange }: EditorToolbarPro
   );
 
   return (
-    <div className="flex items-center gap-0.5 flex-wrap px-3 py-1.5 bg-bg1 border border-border rounded-t-lg border-b-0">
-      {/* Inline formatting */}
-      {ACTIONS.map((action) => (
-        <button
-          key={action.title}
-          type="button"
-          title={action.title}
-          onClick={() => applyFormat(action)}
-          className="p-1.5 rounded text-text3 hover:text-text hover:bg-bg2 transition-colors"
-        >
-          {action.icon}
-        </button>
-      ))}
+    <>
+      <div className="flex items-center gap-0.5 flex-wrap px-3 py-1.5 bg-bg1 border border-border rounded-t-lg border-b-0">
+        {/* Inline formatting */}
+        {ACTIONS.map((action) => (
+          <button
+            key={action.title}
+            type="button"
+            title={action.title}
+            onClick={() => applyFormat(action)}
+            className="p-1.5 rounded text-text3 hover:text-text hover:bg-bg2 transition-colors"
+          >
+            {action.icon}
+          </button>
+        ))}
 
-      <div className="w-px h-4 bg-border mx-1" />
+        <div className="w-px h-4 bg-border mx-1" />
 
-      {/* Block formatting */}
-      {BLOCK_ACTIONS.map((action) => (
-        <button
-          key={action.title}
-          type="button"
-          title={action.title}
-          onClick={() => applyFormat(action)}
-          className="p-1.5 rounded text-text3 hover:text-text hover:bg-bg2 transition-colors"
-        >
-          {action.icon}
-        </button>
-      ))}
-    </div>
+        {/* Block formatting */}
+        {BLOCK_ACTIONS.map((action) => (
+          <button
+            key={action.title}
+            type="button"
+            title={action.title}
+            onClick={() => applyFormat(action)}
+            className="p-1.5 rounded text-text3 hover:text-text hover:bg-bg2 transition-colors"
+          >
+            {action.icon}
+          </button>
+        ))}
+
+        {/* Publish version action */}
+        {reqId && (
+          <>
+            <div className="flex-1" />
+            <button
+              type="button"
+              title="发布新版本"
+              onClick={() => setPublishOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11.5px] font-medium text-sy-accent border border-sy-accent/40 hover:bg-sy-accent/10 transition-colors"
+            >
+              <Tag size={13} />
+              发布新版本
+            </button>
+          </>
+        )}
+      </div>
+
+      {reqId && (
+        <PublishVersionDialog
+          open={publishOpen}
+          reqId={reqId}
+          onClose={() => setPublishOpen(false)}
+          onSuccess={handlePublishSuccess}
+        />
+      )}
+    </>
   );
 }

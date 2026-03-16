@@ -133,7 +133,7 @@ export default function RequirementDetailPage() {
             <div className="text-[12px] font-semibold text-text3 uppercase tracking-wide mb-2">
               需求内容
             </div>
-            <EditorToolbar textareaRef={textareaRef} onContentChange={handleContentChange} />
+            <EditorToolbar textareaRef={textareaRef} onContentChange={handleContentChange} reqId={id} />
             <textarea
               ref={textareaRef}
               value={displayContent}
