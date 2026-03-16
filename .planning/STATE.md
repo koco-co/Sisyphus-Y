@@ -117,6 +117,9 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan]: Alembic autogenerate 噪声手动清理策略：只保留本次目标的 add_column，防止意外 drop_table
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan P07]: ExportJobCreate.scope 4种范围共用 scope_value 字段；iteration scope 通过 Requirement JOIN（TestCase 无 iteration_id 字段）
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan P07]: ExportDialog json 格式替换为 md，API 端点为 POST /export（router prefix + 空路径）
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan P08]: fallbackQuality 静态数据移除，quality state 默认 null，区分加载中和无数据
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan P08]: Recharts 颜色必须用 CSS 变量字符串 'var(--token)'，不能用 Tailwind 类控制 SVG 属性
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan P08]: @/components/ui/skeleton 不存在，使用内联 animate-pulse div 替代
 
 ### Pending Todos
 
