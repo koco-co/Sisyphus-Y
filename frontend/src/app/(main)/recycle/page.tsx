@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import { ApiError, type RecycleItem, recycleApi } from '@/lib/api';
 
 type RecycleType = 'product' | 'iteration' | 'requirement' | 'testcase' | 'template' | 'knowledge';
@@ -168,18 +169,26 @@ export default function RecyclePage() {
     try {
       if (targets.length === 1) {
         await recycleApi.restore(targets[0].entity_type, targets[0].id);
+        toast.success(`「${targets[0].name}」已恢复`);
       } else {
-        await recycleApi.batchRestore(
+        const result = await recycleApi.batchRestore(
           targets.map((item) => ({
             entity_type: item.entity_type,
             id: item.id,
           })),
         );
+        toast.success(`已恢复 ${result.restored} 项`);
       }
       setSelectedIds(new Set());
       await loadItems(filter);
     } catch (err) {
-      setError(getErrorMessage(err));
+      const errMsg = getErrorMessage(err);
+      // 检查是否是目录不存在错误
+      if (errMsg.includes('folder not found') || errMsg.includes('目录不存在')) {
+        toast.error('原目录已删除，无法恢复');
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setActing(false);
     }
@@ -310,9 +319,8 @@ export default function RecyclePage() {
       </div>
 
       {loading ? (
-        <div className="py-16 text-center">
-          <Loader2 className="w-8 h-8 text-text3 mx-auto mb-3 animate-spin" />
-          <p className="text-[13px] text-text3">正在加载已删除项目...</p>
+        <div className="card overflow-hidden">
+          <TableSkeleton rows={6} cols={6} />
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-16 text-center">
