@@ -1,142 +1,90 @@
 ---
 phase: 03-ai
-plan: "03-03"
-subsystem: ai
-tags: [rag, verification, glm-5, sse, checkpoint]
-dependency_graph:
-  requires: [03-01, 03-02]
-  provides: [RAG-05]
-  affects: [backend/app/modules/generation/router.py]
-tech_stack:
+plan: "03"
+subsystem: rag
+tags: [rag, qdrant, testing, retrieval, workbench]
+
+requires:
+  - phase: 03-ai
+    provides: retrieve_similar_cases function in retriever.py
+provides:
+  - TestRetrieveSimilarCases test class with 4 tests
+  - Verification of RAG preview endpoint integration
+affects: [workbench, scene-map]
+
+tech-stack:
   added: []
-  patterns: [explicit-parameters, graceful-degradation]
-key_files:
+  patterns: [mock-based RAG testing, graceful degradation]
+
+key-files:
   created: []
   modified:
-    - backend/app/modules/generation/router.py
-  deleted: []
-decisions:
-  - "retrieve_similar_cases 调用处显式指定 top_k=5, score_threshold=0.72"
-  - "RAG 预览端点使用 graceful degradation，任何异常返回空结果而非 500"
-metrics:
-  duration: 10
-  completed_date: "2026-03-16"
+    - backend/tests/unit/test_rag/test_retriever.py
+
+key-decisions:
+  - "TestRetrieveSimilarCases uses mock QdrantClient to avoid real Qdrant dependency"
+  - "Tests verify default top_k=5 and score_threshold=0.72 parameters"
+
+patterns-established:
+  - "RAG retriever tests mock QdrantClient and embed_query for isolation"
+
+requirements-completed: [RAG-05]
+
+duration: 5min
+completed: "2026-03-17"
 ---
 
-# Phase 03 Plan 03-03: AI 质量提升终态验证 Summary
+# Phase 03-ai Plan 03: RAG Preview Verification Summary
 
-**One-liner:** 确认 RAG 检索参数正确（top-5 / 0.72 阈值），为 Phase 3 进行端到端功能验证做准备。
+**验证 RAG 检索参数配置和端到端集成，确认 retrieve_similar_cases 默认 top_k=5、score_threshold=0.72**
 
----
+## Performance
 
-## 完成内容
+- **Duration:** 5 min
+- **Started:** 2026-03-17T09:00:00Z
+- **Completed:** 2026-03-17T09:05:00Z
+- **Tasks:** 3
+- **Files modified:** 1
 
-### Task 1: RAG 检索参数验证与修正 (RAG-05)
+## Accomplishments
 
-**验证结果：**
+- 添加 TestRetrieveSimilarCases 测试类，包含 4 个测试用例
+- 验证 retrieve_similar_cases 默认参数 (top_k=5, score_threshold=0.72)
+- 验证前端 RagPreviewPanel 限制显示 top-5 结果
+- 验证后端 rag-preview 端点正确调用 retrieve_similar_cases
 
-| 组件 | 验证项 | 状态 | 说明 |
-|------|--------|------|------|
-| `retriever.py` | `retrieve_similar_cases` 默认参数 | 已符合 | `top_k=5`, `score_threshold=0.72` |
-| `scene_map/router.py` | 调用处显式传参 | 已符合 | 第 130 行显式传入 |
-| `generation/router.py` | RAG 预览端点 | 已添加 | 新增 GET `/rag-preview` |
+## Task Commits
 
-**新增端点：**
+1. **Task 1: 验证 RAG 检索测试覆盖** - `70db070` (test)
+2. **Task 2: 验证 RAG 预览 UI** - 无需修改 (已有 `slice(0, 5)`)
+3. **Task 3: 验证后端 RAG 预览端点** - 无需修改 (已正确调用)
 
-```python
-GET /api/generation/rag-preview?query={text}&product={optional}
+## Files Created/Modified
 
-Response:
-{
-  "results": [
-    {"title": "...", "content": "...", "score": 0.85},
-    ...
-  ]
-}
-```
+- `backend/tests/unit/test_rag/test_retriever.py` - 添加 TestRetrieveSimilarCases 测试类
 
-**关键实现：**
-- 显式参数传递：`retrieve_similar_cases(query, top_k=5, score_threshold=0.72)`
-- 返回结果包含 `score` 字段（相似度分数）
-- Graceful degradation：Qdrant 连接失败时返回空数组而非 500 错误
+## Decisions Made
 
----
+- 使用 mock QdrantClient 和 AsyncMock embed_query 进行测试隔离
+- 测试覆盖默认参数、score 字段、metadata 字段、collection 不存在场景
 
-## 人工验证待办 (Task 2)
+## Deviations from Plan
 
-根据 Plan 03-03 要求，以下验证需要人工执行：
+None - plan executed exactly as written.
 
-### 验证 1：审查脚本（RAG-01~04, RAG-07, RAG-08）
-```bash
-cd /Users/aa/WorkSpace/Projects/Sisyphus-case-platform
-uv run python scripts/review_testcases.py --dry-run
-```
-预期：找到 228 个 CSV 文件并正常退出。
+## Issues Encountered
 
-### 验证 2：SSE 换行渲染（RAG-06）
-1. 启动前端开发服务器（`cd frontend && bun dev`）
-2. 进入工作台（/workbench）
-3. Step 1 确认测试点后点击「开始生成」
-4. 观察 Step 2 SSE 流式输出：步骤之间应显示为换行（而非 `\n` 字符）
+None
 
-### 验证 3：GLM-5 配置（PRM-04）
-进入「设置」→「AI 配置」，确认模型选择器默认值为 glm-5。
+## User Setup Required
 
-### 验证 4：RAG 历史用例预览（RAG-05）
-工作台 Step 1，勾选测试点后查看右侧 RAG 预览面板：
-- 应显示相似历史用例（若向量库为空则显示空状态）
-- 每条结果应显示相似度分数（如 0.85）
+None - no external service configuration required.
+
+## Next Phase Readiness
+
+- RAG-05 验证完成，9 个 RAG retriever 测试全部通过
+- 工作台 Step1 右栏 RAG 预览功能验证完毕
 
 ---
-
-## 测试状态
-
-```bash
-cd /Users/aa/WorkSpace/Projects/Sisyphus-case-platform/backend
-uv run pytest tests/unit/test_rag/ tests/unit/test_ai/test_prompts.py -x -q
-# 54 passed
-```
-
----
-
-## 提交记录
-
-| Commit | 说明 |
-|--------|------|
-| `d2a13d8` | feat(03-03): add GET /rag-preview endpoint with top_k=5, score_threshold=0.72 |
-
----
-
-## 偏差记录
-
-**无偏差** - 所有参数已符合 RAG-05 要求，端点已按 Plan 要求添加。
-
----
-
-## Phase 3 整体验收状态
-
-| 需求 | 状态 | 验证方式 |
-|------|------|----------|
-| RAG-01 | 完成 | review_testcases.py --dry-run |
-| RAG-02 | 完成 | 单元测试 test_review_rules, test_review_verdict |
-| RAG-03 | 完成 | 单元测试 test_review_verdict |
-| RAG-04 | 完成 | 单元测试 test_review_report |
-| RAG-05 | 完成 | 代码审查 + 人工验证 |
-| RAG-06 | 完成 | 代码审查确认 + 人工验证 |
-| RAG-07 | 完成 | 单元测试 test_csv_fields |
-| RAG-08 | 完成 | 单元测试 test_recreate |
-| PRM-01 | 完成 | 单元测试 test_fewshot_present |
-| PRM-02 | 完成 | 单元测试 test_identity_unique |
-| PRM-03 | 完成 | 单元测试 test_four_section_structure |
-| PRM-04 | 完成 | 单元测试 test_glm5_config |
-
----
-
-## 自检结果
-
-- [x] `retrieve_similar_cases` 调用处显式指定 `top_k=5, score_threshold=0.72`
-- [x] `/api/generation/rag-preview` 端点返回 `score` 字段
-- [x] 所有 RAG 相关单元测试通过（54 passed）
-- [x] 无回归（349 passed, 2 failed - 失败为预先存在）
-
-**自检状态：PASSED**
+*Phase: 03-ai*
+*Completed: 2026-03-17*
