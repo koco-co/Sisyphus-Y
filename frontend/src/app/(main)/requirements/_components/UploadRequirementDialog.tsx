@@ -1,21 +1,36 @@
 'use client';
 
-import { AlertTriangle, ArrowLeft, Download, Loader2, Plus, Trash2, Upload, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckSquare,
+  Download,
+  Loader2,
+  Plus,
+  Square,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { API_BASE } from '@/lib/api';
+
+const ALLOWED_EXTENSIONS = ['.docx', '.doc', '.pdf', '.md', '.txt'];
 
 interface ParsedItem {
   id: string;
   title: string;
   content: string;
+  checked: boolean;
 }
 
 interface ParseResponse {
-  items: Array<{ title: string; content: string }>;
+  items: Array<{ temp_id: string; title: string; content: string; level: number }>;
   confidence: number;
   confidence_reason: string;
   raw_text: string;
   file_type: string;
+  total_sections: number;
 }
 
 export interface UploadRequirementDialogProps {
@@ -68,6 +83,18 @@ export function UploadRequirementDialog({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
+    setParseError(null);
+    if (f) {
+      const ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        setParseError(
+          `不支持的文件格式 "${ext}"，请上传 ${ALLOWED_EXTENSIONS.join(' / ')} 格式的文件`,
+        );
+        setFile(null);
+        e.target.value = '';
+        return;
+      }
+    }
     setFile(f);
     if (f && !title) {
       setTitle(f.name.replace(/\.[^.]+$/, ''));
@@ -93,9 +120,10 @@ export function UploadRequirementDialog({
       setParseResult(data);
       setItems(
         (data.items ?? []).map((item, i) => ({
-          id: `item-${i}-${Date.now()}`,
+          id: item.temp_id ?? `item-${i}-${Date.now()}`,
           title: item.title ?? '',
           content: item.content ?? '',
+          checked: true,
         })),
       );
       setStep(2);
@@ -107,13 +135,14 @@ export function UploadRequirementDialog({
   };
 
   const handleSave = async () => {
-    if (!iterationId || !productId || items.length === 0) return;
+    const checkedItems = items.filter((it) => it.checked);
+    if (!iterationId || !productId || checkedItems.length === 0) return;
     setSaving(true);
     setSaveError(null);
     try {
       const ts = Date.now();
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
+      for (let i = 0; i < checkedItems.length; i++) {
+        const item = checkedItems[i];
         const reqId = `REQ-${ts}-${i + 1}`;
         const res = await fetch(
           `${API_BASE}/products/${productId}/iterations/${iterationId}/requirements`,
@@ -146,13 +175,22 @@ export function UploadRequirementDialog({
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, [field]: value } : it)));
   };
 
+  const toggleItem = (id: string) => {
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, checked: !it.checked } : it)));
+  };
+
   const deleteItem = (id: string) => {
     setItems((prev) => prev.filter((it) => it.id !== id));
   };
 
   const addItem = () => {
-    setItems((prev) => [...prev, { id: `item-new-${Date.now()}`, title: '', content: '' }]);
+    setItems((prev) => [
+      ...prev,
+      { id: `item-new-${Date.now()}`, title: '', content: '', checked: true },
+    ]);
   };
+
+  const checkedCount = items.filter((it) => it.checked).length;
 
   if (!open) return null;
 
@@ -209,16 +247,16 @@ export function UploadRequirementDialog({
               </p>
               <div className="flex items-center gap-3 mt-1.5">
                 <a
-                  href="/templates/需求文档模板.docx"
-                  download
+                  href="/templates/requirement-template.docx"
+                  download="requirement-template.docx"
                   className="inline-flex items-center gap-1 text-[11px] text-sy-text-2 hover:text-sy-accent underline underline-offset-2 transition-colors"
                 >
                   <Download className="w-3 h-3" />
                   下载 .docx 模板
                 </a>
                 <a
-                  href="/templates/需求文档模板.md"
-                  download
+                  href="/templates/requirement-template.md"
+                  download="requirement-template.md"
                   className="inline-flex items-center gap-1 text-[11px] text-sy-text-2 hover:text-sy-accent underline underline-offset-2 transition-colors"
                 >
                   <Download className="w-3 h-3" />
@@ -308,11 +346,14 @@ export function UploadRequirementDialog({
         <>
           <div className="px-5 py-3 flex flex-col gap-3 overflow-y-auto flex-1 min-h-0">
             {/* Low confidence warning */}
-            {parseResult && parseResult.confidence < 0.6 && (
-              <div className="flex items-start gap-2 rounded-lg bg-sy-warn/10 border border-sy-warn/30 px-3 py-2.5 flex-shrink-0">
+            {parseResult && parseResult.confidence < 0.7 && (
+              <div className="flex items-start gap-2 rounded-lg bg-sy-warn/10 border border-sy-warn/35 px-3 py-2.5 flex-shrink-0">
                 <AlertTriangle className="w-3.5 h-3.5 text-sy-warn mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-[12px] text-sy-warn font-medium">识别置信度较低</p>
+                  <p className="text-[12px] text-sy-warn font-medium">
+                    识别置信度较低（{(parseResult.confidence * 100).toFixed(0)}
+                    %），请仔细核对条目内容
+                  </p>
                   <p className="text-[11.5px] text-sy-warn/80 mt-0.5 leading-snug">
                     {parseResult.confidence_reason}
                   </p>
@@ -323,11 +364,34 @@ export function UploadRequirementDialog({
               </div>
             )}
 
+            {/* Items header */}
+            <div className="flex items-center justify-between flex-shrink-0">
+              <p className="text-[11.5px] text-sy-text-2">
+                共 {items.length} 条，已选 {checkedCount} 条
+              </p>
+            </div>
+
             {/* Items list */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 max-h-[52vh] overflow-y-auto pr-0.5">
               {items.map((item, idx) => (
-                <div key={item.id} className="rounded-lg border border-sy-border bg-sy-bg-2 p-3">
+                <div
+                  key={item.id}
+                  className={`rounded-lg border bg-sy-bg-2 p-3 transition-colors ${item.checked ? 'border-sy-border' : 'border-sy-border opacity-50'}`}
+                >
                   <div className="flex items-center gap-2 mb-2">
+                    {/* Checkbox toggle */}
+                    <button
+                      type="button"
+                      onClick={() => toggleItem(item.id)}
+                      className="flex-shrink-0 text-sy-accent hover:text-sy-accent-2 transition-colors"
+                      title={item.checked ? '取消勾选' : '勾选此条目'}
+                    >
+                      {item.checked ? (
+                        <CheckSquare className="w-4 h-4" />
+                      ) : (
+                        <Square className="w-4 h-4 text-sy-text-3" />
+                      )}
+                    </button>
                     <span className="text-[10px] font-mono text-sy-text-3 bg-sy-bg-3 px-1.5 py-0.5 rounded flex-shrink-0">
                       #{idx + 1}
                     </span>
@@ -342,6 +406,7 @@ export function UploadRequirementDialog({
                       type="button"
                       onClick={() => deleteItem(item.id)}
                       className="text-sy-text-3 hover:text-sy-danger transition-colors p-1 rounded flex-shrink-0"
+                      title="删除此条目"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -388,16 +453,16 @@ export function UploadRequirementDialog({
             <button
               type="button"
               onClick={handleSave}
-              disabled={saving || items.length === 0 || !iterationId || !productId}
+              disabled={saving || checkedCount === 0 || !iterationId || !productId}
               className="px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-sy-accent text-white hover:bg-sy-accent-2 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
             >
               {saving ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  保存中...
+                  导入中...
                 </>
               ) : (
-                `确认保存（${items.length} 条）`
+                `确认导入（${checkedCount} 条）`
               )}
             </button>
           </div>
