@@ -5,8 +5,11 @@ from typing import Annotated
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status
 
 from app.core.dependencies import AsyncSessionDep
+from app.engine.rag.retriever import scroll_by_doc_id
 from app.modules.knowledge.models import KnowledgeDocument
 from app.modules.knowledge.schemas import (
+    ChunkItem,
+    ChunksResponse,
     KnowledgeDocCreate,
     KnowledgeDocumentDetailResponse,
     KnowledgeDocumentResponse,
@@ -139,6 +142,32 @@ async def create_document(data: KnowledgeDocCreate, session: AsyncSessionDep) ->
         vector_status=data.vector_status,
     )
     return KnowledgeDocumentResponse.model_validate(_serialize_document(doc))
+
+
+@router.get("/{doc_id}/chunks", response_model=ChunksResponse)
+async def get_document_chunks(
+    doc_id: uuid.UUID,
+    limit: int = Query(default=50, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
+) -> ChunksResponse:
+    """返回指定文档的分块列表（含序号、内容前500字符、token粗略估算）。
+
+    文档不存在时返回空列表，不报 404。
+    """
+    chunks = await scroll_by_doc_id(str(doc_id), limit=limit, offset=offset)
+    items: list[ChunkItem] = []
+    for chunk in chunks:
+        raw_content: str = chunk.get("content", "")
+        truncated = raw_content[:500]
+        token_count = len(truncated.split())
+        items.append(
+            ChunkItem(
+                index=int(chunk.get("chunk_index", 0)),
+                content=truncated,
+                token_count=token_count,
+            )
+        )
+    return ChunksResponse(items=items, total=len(items))
 
 
 @router.post("/{doc_id}/reindex", response_model=KnowledgeDocumentResponse)

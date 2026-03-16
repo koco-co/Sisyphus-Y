@@ -1,4 +1,5 @@
 import uuid
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -68,3 +69,33 @@ class KnowledgeSearchResultResponse(BaseModel):
     score: float
     source_doc: str
     chunk_index: int
+
+
+# ── 分块预览 ──────────────────────────────────────────────────────
+
+KNOWLEDGE_CATEGORIES = Literal[
+    "enterprise_standard",
+    "business_knowledge",
+    "historical_cases",
+    "tech_reference",
+]
+
+
+class ChunkItem(BaseModel):
+    index: int
+    content: str  # 前 500 字符
+    token_count: int
+
+
+class ChunksResponse(BaseModel):
+    items: list[ChunkItem]
+    total: int
+
+
+# ── 手动条目创建 ──────────────────────────────────────────────────
+
+class ManualEntryCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    category: KNOWLEDGE_CATEGORIES
+    content: str = Field(..., min_length=1)
+    tags: list[str] = Field(default_factory=list)

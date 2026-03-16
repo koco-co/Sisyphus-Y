@@ -346,6 +346,64 @@ async def retrieve_similar_cases(
     ]
 
 
+# ═══════════════════════════════════════════════════════════════════
+# 分块预览（按文档 ID 滚动分页）
+# ═══════════════════════════════════════════════════════════════════
+
+
+async def scroll_by_doc_id(
+    doc_id: str,
+    limit: int = 50,
+    offset: int = 0,
+) -> list[dict]:
+    """按文档 ID 分页获取 Qdrant 中的分块列表。
+
+    Args:
+        doc_id: 知识库文档 ID。
+        limit: 每页返回数量（最大 50）。
+        offset: 偏移量，用于分页。
+
+    Returns:
+        包含 content 和 chunk_index 的字典列表。文档不存在时返回空列表。
+    """
+    ensure_collection()
+    client = _get_client()
+
+    try:
+        points, _ = client.scroll(
+            collection_name=COLLECTION_NAME,
+            scroll_filter=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="doc_id",
+                        match=models.MatchValue(value=doc_id),
+                    )
+                ]
+            ),
+            limit=limit,
+            offset=offset,
+            with_payload=True,
+        )
+    except Exception:
+        logger.exception("scroll_by_doc_id 失败: doc_id=%s", doc_id)
+        return []
+
+    result: list[dict] = []
+    for idx, point in enumerate(points):
+        payload = point.payload or {}
+        chunk_index = payload.get("chunk_index")
+        if chunk_index is None:
+            chunk_index = offset + idx
+        result.append(
+            {
+                "content": payload.get("content", ""),
+                "chunk_index": chunk_index,
+            }
+        )
+
+    return result
+
+
 async def retrieve_cases_as_context(
     query: str,
     *,
