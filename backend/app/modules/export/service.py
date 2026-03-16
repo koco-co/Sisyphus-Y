@@ -15,10 +15,126 @@ from app.modules.testcases.models import TestCase, TestCaseStep
 
 logger = logging.getLogger(__name__)
 
+# 所有可导出字段（含 key、列标题、取值函数）
+_ALL_FIELD_KEYS = [
+    "case_id", "title", "module_path", "precondition",
+    "priority", "case_type", "status", "steps", "tags",
+]
+_FIELD_LABELS: dict[str, str] = {
+    "case_id": "用例ID",
+    "title": "标题",
+    "module_path": "模块路径",
+    "precondition": "前置条件",
+    "priority": "优先级",
+    "case_type": "类型",
+    "status": "状态",
+    "steps": "步骤",
+    "tags": "标签",
+}
+
+
+def _apply_fields(case: dict, fields: list[str] | None) -> dict:
+    """按字段列表过滤 case dict；fields=None 时返回全字段。"""
+    if fields is None:
+        return case
+    return {k: v for k, v in case.items() if k in fields}
+
 
 class ExportService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    # ── 新增：scope 感知查询 ──────────────────────────────────────
+
+    async def _get_cases_by_scope(
+        self,
+        scope: str,
+        scope_value: str | None,
+        case_ids: list[str] | None,
+    ) -> list[TestCase]:
+        """按4种范围查询 TestCase ORM 对象列表。"""
+        q = select(TestCase).where(TestCase.deleted_at.is_(None))
+
+        if scope == "folder":
+            if scope_value:
+                folder_uuid = UUID(str(scope_value))
+                q = q.where(TestCase.folder_id == folder_uuid)
+        elif scope == "requirement":
+            if scope_value:
+                req_uuid = UUID(str(scope_value))
+                q = q.where(TestCase.requirement_id == req_uuid)
+        elif scope == "iteration":
+            if scope_value:
+                # 通过 requirements 表 JOIN 过滤（避免 TestCase 无 iteration_id 字段）
+                from app.modules.products.models import Requirement
+                iter_uuid = UUID(str(scope_value))
+                req_subq = (
+                    select(Requirement.id)
+                    .where(
+                        Requirement.iteration_id == iter_uuid,
+                        Requirement.deleted_at.is_(None),
+                    )
+                    .scalar_subquery()
+                )
+                q = q.where(TestCase.requirement_id.in_(req_subq))
+        elif scope == "selected":
+            if case_ids:
+                uuid_list = [UUID(cid) for cid in case_ids]
+                q = q.where(TestCase.id.in_(uuid_list))
+            else:
+                # 没有选中时返回空列表
+                return []
+
+        q = q.order_by(TestCase.created_at)
+        result = await self.session.execute(q)
+        return list(result.scalars().all())
+
+    async def _build_case_dicts(
+        self, cases: list[TestCase], fields: list[str] | None = None
+    ) -> list[dict]:
+        """将 ORM 对象转成 dict，加载 steps，按 fields 过滤。"""
+        output: list[dict] = []
+        for tc in cases:
+            step_q = (
+                select(TestCaseStep)
+                .where(
+                    TestCaseStep.test_case_id == tc.id,
+                    TestCaseStep.deleted_at.is_(None),
+                )
+                .order_by(TestCaseStep.step_num)
+            )
+            step_result = await self.session.execute(step_q)
+            steps = step_result.scalars().all()
+
+            full_case = {
+                "case_id": tc.case_id,
+                "title": tc.title,
+                "module_path": tc.module_path,
+                "precondition": tc.precondition,
+                "priority": tc.priority,
+                "case_type": tc.case_type,
+                "status": tc.status,
+                "steps": [
+                    {"step_num": s.step_num, "action": s.action, "expected_result": s.expected_result}
+                    for s in steps
+                ],
+                "tags": tc.tags if tc.tags else [],
+            }
+            output.append(_apply_fields(full_case, fields))
+        return output
+
+    async def export_cases_with_fields(
+        self,
+        scope: str,
+        scope_value: str | None,
+        case_ids: list[str] | None,
+        fields: list[str] | None = None,
+    ) -> list[dict]:
+        """按 scope 查询用例并按 fields 过滤，返回 dict 列表。"""
+        cases = await self._get_cases_by_scope(scope, scope_value, case_ids)
+        return await self._build_case_dicts(cases, fields)
+
+    # ── 旧版兼容方法 ──────────────────────────────────────────────
 
     async def export_cases_json(self, requirement_id: UUID | None = None) -> str:
         cases = await self._get_cases(requirement_id)
@@ -81,7 +197,12 @@ class ExportService:
             format=params.format,
             iteration_id=params.iteration_id,
             requirement_id=params.requirement_id,
-            filter_criteria=params.filter_criteria,
+            filter_criteria=params.filter_criteria or {
+                "scope": params.scope,
+                "scope_value": params.scope_value,
+                "case_ids": params.case_ids,
+                "fields": params.fields,
+            },
             created_by=params.created_by,
             status="pending",
         )
@@ -393,6 +514,15 @@ class ExportService:
         return job
 
     async def _get_filtered_cases(self, job: ExportJob) -> list[dict]:
+        # 优先从 filter_criteria 读取 scope 信息
+        if job.filter_criteria and job.filter_criteria.get("scope"):
+            scope = job.filter_criteria["scope"]
+            scope_value = job.filter_criteria.get("scope_value")
+            case_ids = job.filter_criteria.get("case_ids")
+            fields = job.filter_criteria.get("fields")
+            return await self.export_cases_with_fields(scope, scope_value, case_ids, fields)
+
+        # 旧版兼容：通过 requirement_id 直接过滤
         requirement_id = job.requirement_id
         if not requirement_id and job.filter_criteria:
             raw = job.filter_criteria.get("requirement_id")
