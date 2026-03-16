@@ -64,7 +64,7 @@ Plans:
 **Plans**: 3 plans (FORCE REDO - comprehensive coverage)
 
 Plans:
-- [ ] 03-01-PLAN.md — Wave 0 测试脚手架：6 个测试文件创建（RAG-01, RAG-02, RAG-03, RAG-04, RAG-07, RAG-08）
+- [x] 03-01-PLAN.md — Wave 0 测试脚手架：6 个测试文件创建（RAG-01, RAG-02, RAG-03, RAG-04, RAG-07, RAG-08）
 - [ ] 03-02-PLAN.md — Prompt 体系验证 + SSE 换行修复 + GLM-5 配置（RAG-06, PRM-01, PRM-02, PRM-03, PRM-04）
 - [ ] 03-03-PLAN.md — RAG 检索参数确认 + Phase 3 端到端验收 checkpoint（RAG-05）
 

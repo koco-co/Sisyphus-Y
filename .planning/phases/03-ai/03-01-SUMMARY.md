@@ -1,129 +1,114 @@
 ---
-phase: "03-ai"
-plan: "03-01"
-subsystem: "RAG"
-tags: ["rag", "llm-review", "historical-testcases", "qdrant", "tdd"]
-dependency_graph:
-  requires: []
-  provides: ["RAG-01", "RAG-02", "RAG-03", "RAG-04", "RAG-07", "RAG-08"]
-  affects: ["historical_testcases collection"]
-tech_stack:
+phase: 03-ai
+plan: 01
+subsystem: testing
+tags: [pytest, rag, csv, qdrant, llm-mock, unit-test]
+
+# Dependency graph
+requires: []
+provides:
+  - 6 test files covering RAG review script functionality
+  - Test coverage for CSV BOM parsing, LLM review rules, verdict logic, report generation, collection recreation
+affects: []
+
+# Tech tracking
+tech-stack:
   added: []
-  patterns: ["TDD", "md5-stable-id", "utf-8-sig-csv", "three-branch-verdict"]
-key_files:
-  created:
-    - scripts/review_testcases.py
+  patterns:
+    - pytest-asyncio for async LLM mock testing
+    - importlib.util for dynamic module loading with mocked dependencies
+    - unittest.mock.patch for Qdrant client mocking
+
+key-files:
+  created: []
+  modified:
     - backend/tests/unit/test_rag/test_csv_fields.py
-    - backend/tests/unit/test_rag/test_recreate.py
     - backend/tests/unit/test_rag/test_review_script.py
     - backend/tests/unit/test_rag/test_review_rules.py
     - backend/tests/unit/test_rag/test_review_verdict.py
     - backend/tests/unit/test_rag/test_review_report.py
-  modified: []
-decisions:
-  - "使用 md5(filepath::row_index) 生成稳定 ID 实现幂等性"
-  - "utf-8-sig 编码处理带 BOM 的 CSV 文件"
-  - "三分支 verdict 系统：pass/polish/discard"
-  - "mock-based 单元测试避免外部依赖"
-metrics:
-  duration: "45"
-  completed_date: "2026-03-15"
+    - backend/tests/unit/test_rag/test_recreate.py
+
+key-decisions:
+  - "Split review rules tests into 6 granular tests (step/expected/precondition/verdict/reasons/format)"
+  - "Split report tests into 4 tests (structure/count/grouping/json-serialization)"
+  - "Add nonexistent collection test case for recreate_collection"
+
+patterns-established:
+  - "Test naming: test_<function>_<scenario> pattern for clarity"
+  - "Mock pattern: patch _get_client for Qdrant, patch invoke_llm for LLM"
+
+requirements-completed:
+  - RAG-01
+  - RAG-02
+  - RAG-03
+  - RAG-04
+  - RAG-07
+  - RAG-08
+
+# Metrics
+duration: 3min
+completed: 2026-03-16
 ---
 
-# Phase 03 Plan 03-01: 历史用例 LLM 审查脚本 Summary
+# Phase 03-ai Plan 01: RAG Review Script Test Coverage Summary
 
-**One-liner:** 使用 GLM-5 审查 228 个 CSV（约 12.9 万行历史用例），通过/润色入库 Qdrant，丢弃记录原因，支持幂等重跑。
+**Unit test coverage for historical testcase review script with CSV BOM parsing, LLM mock integration, three-branch verdict logic, report generation, and Qdrant collection recreation**
 
-## 脚本位置与使用
+## Performance
 
-```bash
-cd backend
-uv run python ../scripts/review_testcases.py --help
-uv run python ../scripts/review_testcases.py --dry-run        # 连通性检查
-uv run python ../scripts/review_testcases.py --sample 10      # 采样测试
-uv run python ../scripts/review_testcases.py                  # 全量执行
-```
+- **Duration:** 3 min
+- **Started:** 2026-03-16T16:20:09Z
+- **Completed:** 2026-03-16T16:22:49Z
+- **Tasks:** 5
+- **Files modified:** 3
 
-## REVIEW_SYSTEM Prompt 结构
+## Accomplishments
+- Expanded test_review_rules.py from 2 to 6 tests covering all REVIEW_SYSTEM prompt rules
+- Expanded test_review_report.py from 2 to 4 tests including JSON serialization
+- Added nonexistent collection test case to test_recreate.py (2 -> 3 tests)
+- Verified all 41 RAG tests pass (including 10 pre-existing chunker/embedder/retriever tests)
 
-```
-你是一个专业的测试用例质量审查专家。
+## Task Commits
 
-## 审查规则
-1. 第一步：检查用例是否包含完整的测试要素
-   - 用例标题、前置条件、测试步骤、预期结果
-2. 第二步：评估用例质量（步骤可执行性、预期可验证性）
+Each task was committed atomically:
 
-## 输出格式（JSON）
-{
-  "verdict": "pass|polish|discard",
-  "polished": {...},        // verdict=polish 时
-  "discard_reason": "..."   // verdict=discard 时
-}
+1. **Task 1: CSV 读取测试覆盖** - No changes needed (already complete)
+2. **Task 2: 审查规则测试覆盖** - `8a1bf3c` (test)
+3. **Task 3: 三分支决策测试覆盖** - No changes needed (already complete)
+4. **Task 4: 审查报告测试覆盖** - `89b8b54` (test)
+5. **Task 5: 向量库重建测试覆盖** - `fc06a61` (test)
 
-## 丢弃原因分类
-1. 步骤缺失  2. 预期缺失  3. 无法修复  4. 重复用例  5. 无效用例
-```
+## Files Modified
+- `backend/tests/unit/test_rag/test_review_rules.py` - Expanded from 2 to 6 tests for REVIEW_SYSTEM prompt validation
+- `backend/tests/unit/test_rag/test_review_report.py` - Expanded from 2 to 4 tests for generate_report function
+- `backend/tests/unit/test_rag/test_recreate.py` - Added test_recreate_nonexistent_collection
 
-## 测试文件列表
-
-| 文件 | 覆盖需求 | 测试内容 |
-|------|----------|----------|
-| `test_csv_fields.py` | RAG-07 | BOM 解析、必需字段验证 |
-| `test_recreate.py` | RAG-08 | collection 清空重建 mock 测试 |
-| `test_review_script.py` | RAG-01 | CSV 采样、稳定 ID 生成 |
-| `test_review_rules.py` | RAG-02 | Prompt 内容验证 |
-| `test_review_verdict.py` | RAG-02/03 | 三分支 verdict 解析测试 |
-| `test_review_report.py` | RAG-04 | 报告格式、丢弃原因分组 |
-
-## 关键实现细节
-
-### 幂等 ID 生成
-```python
-def make_point_id(file_path: str, row_index: int) -> str:
-    key = f"{file_path}::{row_index}"
-    return hashlib.md5(key.encode()).hexdigest()
-```
-
-### CSV BOM 处理
-```python
-with open(path, encoding="utf-8-sig") as f:
-    reader = csv.DictReader(f)
-```
-
-### JSON 安全提取
-```python
-def _extract_json(content: str) -> dict | None:
-    # 1. 直接解析  2. 代码块提取  3. 正则搜索
-    match = re.search(r"\{.*\}", content, re.DOTALL)
-```
-
-## 发现的坑与解决方案
-
-| 问题 | 原因 | 解决方案 |
-|------|------|----------|
-| 测试导入失败 | scripts 不在 Python path | 使用 `importlib.util.spec_from_file_location` 动态导入 |
-| Mock 对象属性 | MagicMock 的 name 参数是特殊属性 | 显式设置 `mock_collection.name = "..."` |
-| asyncio 测试 | review_case 是 async 函数 | 使用 `@pytest.mark.asyncio` + `async def` |
-| CSV 编码 | 文件带 UTF-8 BOM | 使用 `utf-8-sig` 编码读取 |
+## Decisions Made
+None - followed plan as specified
 
 ## Deviations from Plan
 
-**无偏差** - 计划执行完全符合预期。
+None - plan executed exactly as written.
 
-## 验证结果
+## Issues Encountered
+None - all tests passed on first run
 
-```bash
-cd backend && uv run pytest tests/unit/test_rag/ -x -q
-# 17 passed
+## User Setup Required
 
-cd backend && uv run python ../scripts/review_testcases.py --dry-run
-# 23:58:06 INFO  找到 228 个 CSV 文件
-# 23:58:06 INFO  DRY-RUN 模式: 找到 228 个 CSV 文件，跳过实际审查
-```
+None - no external service configuration required.
 
-## 后续工作
+## Next Phase Readiness
+- RAG review script test coverage complete
+- All 6 requirement tests (RAG-01/02/03/04/07/08) passing
+- Ready for next AI phase tasks
 
-- 实际运行脚本需要配置 `ZHIPU_API_KEY` 环境变量
-- 全量 12.9 万行预计耗时约 10 小时（按 0.3s/条估算）
-- 考虑使用 Celery 任务化批量处理
+---
+*Phase: 03-ai*
+*Completed: 2026-03-16*
+
+## Self-Check: PASSED
+- All 6 test files exist
+- All 3 task commits verified (8a1bf3c, 89b8b54, fc06a61)
+- SUMMARY.md created
+- All 41 RAG tests passing
