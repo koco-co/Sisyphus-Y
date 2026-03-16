@@ -124,6 +124,8 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan P08]: @/components/ui/skeleton 不存在，使用内联 animate-pulse div 替代
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan]: publish_version 使用 BackgroundTasks 异步触发 Diff，避免阻塞请求；Diff 失败静默处理
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan]: parseSideBySide 将相邻 del+add 合并为 modified 类型对齐渲染；AffectedCases 双字段兼容 change_impact/impact_type
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan P05]: MoveFolderDialog/MoveCaseDialog 使用原生 overlay+div（不引入 shadcn/ui），与 deleteConfirm 风格一致
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan P05]: FolderTree 重名校验在前端 handleEditSubmit 完成，大小写不敏感，toast.error 提示并阻止提交
 
 ### Pending Todos
 

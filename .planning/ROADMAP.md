@@ -86,7 +86,7 @@ Plans:
 - [ ] 04-02-PLAN.md — 后端补全：仪表盘趋势端点 + TestCase.change_impact 迁移 + Diff 推送端点（DSH-02, DIF-04, DIF-05）
 - [ ] 04-03-PLAN.md — 后端补全：知识库分块/手动条目/版本管理/分类 enum（KB-01, KB-02, KB-03, KB-04）
 - [ ] 04-04-PLAN.md — 需求录入：模板下载 + UDA 两步确认 + 置信度提示（INP-01, INP-02, INP-03）
-- [ ] 04-05-PLAN.md — 用例库目录树：重命名重名校验 + 右键「移动到…」Dialog（TC-01~06）
+- [x] 04-05-PLAN.md — 用例库目录树：重命名重名校验 + 右键「移动到…」Dialog（TC-01~06）
 - [ ] 04-06-PLAN.md — 用例库导入：ImportDialog 拆分 + 必填校验 + 重复处理 Toast（TC-07~11）
 - [x] 04-07-PLAN.md — 用例库导出：四范围 + 自定义字段 ExportDialog + 后端 scope 扩展（TC-12~14）
 - [x] 04-08-PLAN.md — 仪表盘：TrendChart 折线图 + SourcePieChart 环形图 + 迭代联动（DSH-01~06）
