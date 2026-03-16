@@ -3,7 +3,9 @@
 import {
   Clock,
   Copy,
+  Download,
   Edit3,
+  ExternalLink,
   Eye,
   Filter,
   LayoutTemplate,
@@ -12,13 +14,17 @@ import {
   Search,
   Star,
   Trash2,
+  Upload,
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CustomSelect } from '@/components/ui/CustomSelect';
 import {
   ApiError,
+  type PromptConfigItem,
   type TemplateContentPayload,
   type TemplateDetailResponse,
   type TemplateListItem,
@@ -75,6 +81,15 @@ const categoryPills: Record<string, string> = {
   security: 'pill-red',
   compatibility: 'pill-blue',
   api: 'pill-purple',
+};
+
+const PROMPT_DISPLAY_NAMES: Record<string, string> = {
+  diagnosis: '需求诊断',
+  scene_map: '场景地图',
+  generation: '用例生成',
+  diagnosis_followup: '追问补充',
+  diff: '需求对比',
+  exploratory: '探索测试',
 };
 
 const templatePresets: Record<
@@ -284,6 +299,16 @@ export default function TemplatesPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const pendingDeleteTemplate = useRef<TemplateCardData | null>(null);
 
+  // Prompt Tab state
+  const [activeTab, setActiveTab] = useState<'case' | 'prompt'>('case');
+  const [prompts, setPrompts] = useState<PromptConfigItem[]>([]);
+  const [promptsLoading, setPromptsLoading] = useState(false);
+  const [promptsError, setPromptsError] = useState<string | null>(null);
+  const [promptSearch, setPromptSearch] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const router = useRouter();
+
   useEffect(() => {
     let cancelled = false;
 
@@ -326,6 +351,144 @@ export default function TemplatesPage() {
       return true;
     });
   }, [categoryFilter, search, templates]);
+
+  // Load prompts when switching to prompt tab
+  useEffect(() => {
+    if (activeTab !== 'prompt' || prompts.length > 0 || promptsLoading) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadPrompts() {
+      setPromptsLoading(true);
+      setPromptsError(null);
+      try {
+        const data = await templatesApi.listPrompts();
+        if (!cancelled) {
+          setPrompts(data);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setPromptsError(getErrorMessage(error));
+        }
+      } finally {
+        if (!cancelled) {
+          setPromptsLoading(false);
+        }
+      }
+    }
+
+    void loadPrompts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, prompts.length, promptsLoading]);
+
+  // Filter prompts by search
+  const filteredPrompts = useMemo(() => {
+    const keyword = promptSearch.trim().toLowerCase();
+    if (!keyword) return prompts;
+    return prompts.filter((p) => {
+      const displayName = PROMPT_DISPLAY_NAMES[p.module_key] || p.module_key;
+      return displayName.toLowerCase().includes(keyword) || p.module_key.toLowerCase().includes(keyword);
+    });
+  }, [promptSearch, prompts]);
+
+  // Navigate to settings for prompt editing
+  function handleViewPromptDetail(moduleKey: string) {
+    router.push(`/settings?tab=prompts&module=${moduleKey}`);
+  }
+
+  // Export prompts to Markdown
+  function handleExportPrompts() {
+    try {
+      const lines: string[] = [];
+      lines.push('# Prompt 模板导出');
+      lines.push('');
+      lines.push(`导出时间：${new Date().toISOString()}`);
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+
+      for (const prompt of prompts) {
+        const displayName = PROMPT_DISPLAY_NAMES[prompt.module_key] || prompt.module_key;
+        lines.push(`## ${displayName} (${prompt.module_key})`);
+        lines.push('');
+        lines.push(`**是否内置**: ${prompt.is_default ? '是' : '否'}`);
+        lines.push(`**是否自定义**: ${prompt.is_customized ? '是' : '否'}`);
+        lines.push('');
+        lines.push('### Prompt 内容');
+        lines.push('');
+        lines.push(prompt.prompt_text);
+        lines.push('');
+        lines.push('---');
+        lines.push('');
+      }
+
+      const markdown = lines.join('\n');
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `prompt-templates-${new Date().toISOString().slice(0, 10)}.md`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success(`已导出 ${prompts.length} 个 Prompt`);
+    } catch (error) {
+      toast.error(`导出失败: ${getErrorMessage(error)}`);
+    }
+  }
+
+  // Import prompts from Markdown
+  function handleImportPrompts(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.md') && !file.name.endsWith('.markdown') && !file.name.endsWith('.txt')) {
+      toast.error('文件格式无效，请使用 Markdown 格式（.md / .markdown / .txt）');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const content = reader.result as string;
+        const results: Array<{ module_key: string; prompt_text: string }> = [];
+        const sections = content.split(/^---$/m).filter(Boolean);
+
+        for (const section of sections) {
+          const headerMatch = section.match(/## .+ \((\w+)\)/);
+          if (headerMatch) {
+            const moduleKey = headerMatch[1];
+            const contentMatch = section.match(/### Prompt 内容\s*\n([\s\S]*?)(?=\n---|\n## |$)/);
+            if (contentMatch) {
+              results.push({
+                module_key: moduleKey,
+                prompt_text: contentMatch[1].trim(),
+              });
+            }
+          }
+        }
+
+        if (results.length === 0) {
+          toast.error('无法解析文件内容，请确保 Markdown 格式正确');
+          return;
+        }
+
+        sessionStorage.setItem('promptImportData', JSON.stringify(results));
+        toast.success(`已解析 ${results.length} 个 Prompt，正在跳转到设置页...`);
+        router.push('/settings?tab=prompts&action=import');
+      } catch (error) {
+        toast.error(`导入失败: ${getErrorMessage(error)}`);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
 
   async function openPreview(templateId: string) {
     setPreviewId(templateId);
@@ -460,8 +623,6 @@ export default function TemplatesPage() {
     }
   }
 
-  const [activeTab, setActiveTab] = useState<'case' | 'prompt'>('case');
-
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -501,12 +662,122 @@ export default function TemplatesPage() {
       </div>
 
       {activeTab === 'prompt' && (
-        <div className="card p-6 text-center">
-          <LayoutTemplate className="w-12 h-12 text-text3 mx-auto mb-3 opacity-20" />
-          <p className="text-[13px] text-text3">Prompt 模板功能即将上线</p>
-          <p className="text-[12px] text-text3/60 mt-1">
-            在「设置 → Prompt 管理」中可编辑系统级 Prompt
-          </p>
+        <div className="space-y-4">
+          {/* Toolbar */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text3" />
+              <input
+                type="text"
+                value={promptSearch}
+                onChange={(e) => setPromptSearch(e.target.value)}
+                placeholder="搜索 Prompt..."
+                className="input w-full pl-8"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={handleExportPrompts}
+                disabled={promptsLoading || prompts.length === 0}
+              >
+                <Download className="w-3.5 h-3.5" />
+                导出
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                导入
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".md,.markdown,.txt"
+                className="hidden"
+                onChange={handleImportPrompts}
+              />
+            </div>
+          </div>
+
+          {/* Loading State */}
+          {promptsLoading && (
+            <div className="card py-12 text-center text-text3">
+              <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin" />
+              <p className="text-[13px]">正在加载 Prompt 配置...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {promptsError && (
+            <div className="alert-banner mb-6">
+              <LayoutTemplate className="w-4 h-4" />
+              <span>{promptsError}</span>
+            </div>
+          )}
+
+          {/* Prompt Grid */}
+          {!promptsLoading && !promptsError && (
+            <div className="grid-3">
+              {filteredPrompts.length === 0 && promptSearch && (
+                <div className="card py-12 text-center text-text3" style={{ gridColumn: '1 / -1' }}>
+                  <Search className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                  <p className="text-[13px]">未找到匹配的 Prompt</p>
+                </div>
+              )}
+
+              {filteredPrompts.length === 0 && !promptSearch && (
+                <div className="card py-12 text-center text-text3" style={{ gridColumn: '1 / -1' }}>
+                  <LayoutTemplate className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                  <p className="text-[13px]">暂无 Prompt 配置</p>
+                </div>
+              )}
+
+              {filteredPrompts.map((prompt) => {
+                const displayName = PROMPT_DISPLAY_NAMES[prompt.module_key] || prompt.module_key;
+                return (
+                  <div key={prompt.module_key} className="card card-hover flex flex-col">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-text leading-tight flex-1">
+                        {displayName}
+                      </h4>
+                      {prompt.is_default && (
+                        <span className="pill pill-accent text-[10px] ml-2">内置</span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                      <span className="tag text-[10px]">{prompt.module_key}</span>
+                      {prompt.is_customized && (
+                        <span className="tag text-[10px] text-sy-warn">已自定义</span>
+                      )}
+                    </div>
+
+                    <p className="text-[11.5px] text-text3 leading-relaxed mb-3 flex-1 line-clamp-3">
+                      {prompt.prompt_text.slice(0, 120)}...
+                    </p>
+
+                    <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
+                      <div className="text-[11px] text-text3">
+                        {prompt.updated_at ? `更新于 ${formatDate(prompt.updated_at)}` : '从未更新'}
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => handleViewPromptDetail(prompt.module_key)}
+                        title="查看详情"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
