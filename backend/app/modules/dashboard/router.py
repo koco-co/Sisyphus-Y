@@ -49,6 +49,16 @@ async def get_products_overview(session: AsyncSessionDep) -> list[dict]:
     return await svc.get_products_overview()
 
 
+@router.get("/trend")
+async def get_trend_stats(
+    session: AsyncSessionDep,
+    product_id: uuid.UUID | None = None,
+    limit: int = 6,
+) -> list[dict]:
+    svc = DashboardService(session)
+    return await svc.get_trend_stats(product_id=product_id, limit=limit)
+
+
 @router.get("/quality", response_model=QualityStatsResponse)
 async def get_quality_stats(
     session: AsyncSessionDep,

@@ -608,6 +608,53 @@ class DashboardService:
         status_score = 1 if item.status == "active" else 0
         return (status_score, chronology_score, created_score)
 
+    async def get_trend_stats(self, product_id: UUID | None = None, limit: int = 6) -> list[dict]:
+        """返回最近 limit 个迭代的趋势数据（时间正序）。
+
+        每条数据格式:
+            iteration_name: str
+            testcase_count: int
+            p0_count: int
+            coverage_rate: float
+        """
+        iterations = await self._get_iteration_options()
+
+        if product_id is not None:
+            iterations = [it for it in iterations if it.product_id == product_id]
+
+        # _get_iteration_options 已按 sort_key desc（最新在前），取最新 limit 个再反转 → 时间正序
+        recent = iterations[:limit]
+        recent_asc = list(reversed(recent))
+
+        result: list[dict] = []
+        for it in recent_asc:
+            metrics = await self._get_iteration_metrics(it.id)
+            p0_count = await self._get_p0_count(it.id)
+            result.append(
+                {
+                    "iteration_name": it.name,
+                    "testcase_count": metrics.testcase_count,
+                    "p0_count": p0_count,
+                    "coverage_rate": metrics.coverage_rate,
+                }
+            )
+        return result
+
+    async def _get_p0_count(self, iteration_id: UUID) -> int:
+        """返回指定迭代下优先级为 P0 的用例数量。"""
+        q = (
+            select(func.count())
+            .select_from(TestCase)
+            .join(Requirement, TestCase.requirement_id == Requirement.id)
+            .where(
+                TestCase.deleted_at.is_(None),
+                Requirement.deleted_at.is_(None),
+                Requirement.iteration_id == iteration_id,
+                TestCase.priority == "P0",
+            )
+        )
+        return (await self.session.execute(q)).scalar() or 0
+
     def _map_priority(self, priority: str | None) -> Literal["high", "medium", "low"]:
         if priority == "P0":
             return "high"
