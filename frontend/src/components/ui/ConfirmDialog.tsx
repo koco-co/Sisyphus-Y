@@ -11,7 +11,9 @@ interface ConfirmDialogProps {
   description?: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: 'danger' | 'warning' | 'default';
+  variant?: 'danger' | 'warning' | 'default' | 'simple' | 'cascade';
+  impactCount?: number;
+  itemName?: string;
 }
 
 export function ConfirmDialog({
@@ -19,11 +21,28 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   title = '确认操作',
-  description = '此操作不可撤销，确认继续？',
+  description: descriptionProp,
   confirmText = '确认',
   cancelText = '取消',
   variant = 'default',
+  impactCount = 0,
+  itemName = '',
 }: ConfirmDialogProps) {
+  // Generate description based on variant
+  let description = descriptionProp;
+  if (!descriptionProp) {
+    if (variant === 'simple') {
+      description = itemName
+        ? `确定删除「${itemName}」？删除后可在回收站中找回。`
+        : '确定删除？删除后可在回收站中找回。';
+    } else if (variant === 'cascade') {
+      description = itemName
+        ? `确定删除「${itemName}」？将同时删除 ${impactCount} 条关联用例。此操作不可撤销。`
+        : `确定删除？将同时删除 ${impactCount} 条关联用例。此操作不可撤销。`;
+    } else {
+      description = '此操作不可撤销，确认继续？';
+    }
+  }
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -36,11 +55,11 @@ export function ConfirmDialog({
   if (!open) return null;
 
   const confirmClass =
-    variant === 'danger'
-      ? 'bg-red text-white hover:bg-red/90'
+    variant === 'danger' || variant === 'cascade'
+      ? 'bg-sy-danger text-white hover:bg-sy-danger/90'
       : variant === 'warning'
-        ? 'bg-amber text-white hover:bg-amber/90'
-        : 'bg-accent text-white hover:bg-accent2';
+        ? 'bg-sy-warn text-white hover:bg-sy-warn/90'
+        : 'bg-sy-accent text-white hover:bg-sy-accent-2';
 
   return (
     <dialog
@@ -50,9 +69,9 @@ export function ConfirmDialog({
     >
       <div className="p-5">
         <div className="flex items-start gap-3">
-          {variant !== 'default' && (
+          {variant !== 'default' && variant !== 'simple' && (
             <AlertTriangle
-              className={`w-5 h-5 shrink-0 mt-0.5 ${variant === 'danger' ? 'text-red' : 'text-amber'}`}
+              className={`w-5 h-5 shrink-0 mt-0.5 ${variant === 'danger' || variant === 'cascade' ? 'text-sy-danger' : 'text-sy-warn'}`}
             />
           )}
           <div className="flex-1">

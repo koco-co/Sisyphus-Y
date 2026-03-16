@@ -93,6 +93,7 @@ describe('ConfirmDialog', () => {
           variant="cascade"
           itemName="需求文档"
           impactCount={3}
+          confirmText="删除"
         />
       );
 
