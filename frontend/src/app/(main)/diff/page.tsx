@@ -289,11 +289,13 @@ function CenterColumn() {
 // ── Right Column ──
 
 function RightColumn() {
-  const { diffResult, regenerating, regenerateProgress, regenerateCases } = useDiff();
+  const { diffResult, regenerating, regenerateProgress, regenerateCases, requirementId } = useDiff();
 
   const cases = diffResult?.affected_test_cases?.items ?? [];
   const testPointCount = diffResult?.affected_test_points?.count ?? 0;
-  const rewriteCount = cases.filter((c) => c.impact_type === 'rewrite').length;
+  const rewriteCount = cases.filter(
+    (c) => c.change_impact === 'needs_rewrite' || (!c.change_impact && c.impact_type === 'rewrite'),
+  ).length;
 
   return (
     <div className="flex flex-col h-full">
@@ -307,7 +309,7 @@ function RightColumn() {
 
       <div className="flex-1 overflow-y-auto p-3">
         {diffResult ? (
-          <AffectedCases cases={cases} totalTestPoints={testPointCount} />
+          <AffectedCases cases={cases} totalTestPoints={testPointCount} requirementId={requirementId} />
         ) : (
           <EmptyState
             icon={<FileText className="w-8 h-8" />}

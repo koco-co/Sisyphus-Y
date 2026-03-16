@@ -10,170 +10,238 @@ interface DiffViewProps {
   className?: string;
 }
 
-interface DiffLine {
-  type: 'add' | 'del' | 'ctx';
-  content: string;
-  oldNum: number | null;
-  newNum: number | null;
+interface SideBySideLine {
+  type: 'add' | 'del' | 'ctx' | 'modified';
+  left: string | null;
+  right: string | null;
+  leftNum: number | null;
+  rightNum: number | null;
 }
 
-function getDiffLineKey(line: DiffLine, prefix = 'line'): string {
-  return `${prefix}-${line.type}-${line.oldNum ?? 'x'}-${line.newNum ?? 'y'}-${line.content}`;
+function getDiffLineKey(line: SideBySideLine, idx: number): string {
+  return `sbsl-${idx}-${line.type}-${line.leftNum ?? 'x'}-${line.rightNum ?? 'y'}`;
 }
 
-function parseDiffLines(text: string): DiffLine[] {
-  const raw = text.split('\n');
-  const lines: DiffLine[] = [];
+export function parseSideBySide(unifiedDiff: string): SideBySideLine[] {
+  const raw = unifiedDiff.split('\n');
+  const result: SideBySideLine[] = [];
   let oldNum = 0;
   let newNum = 0;
 
+  // Collect pending del/add pairs to merge as 'modified'
+  const pendingDels: { content: string; num: number }[] = [];
+  const pendingAdds: { content: string; num: number }[] = [];
+
+  const flushPending = () => {
+    const maxLen = Math.max(pendingDels.length, pendingAdds.length);
+    for (let i = 0; i < maxLen; i++) {
+      const del = pendingDels[i];
+      const add = pendingAdds[i];
+      if (del && add) {
+        result.push({
+          type: 'modified',
+          left: del.content,
+          right: add.content,
+          leftNum: del.num,
+          rightNum: add.num,
+        });
+      } else if (del) {
+        result.push({ type: 'del', left: del.content, right: null, leftNum: del.num, rightNum: null });
+      } else if (add) {
+        result.push({ type: 'add', left: null, right: add.content, leftNum: null, rightNum: add.num });
+      }
+    }
+    pendingDels.length = 0;
+    pendingAdds.length = 0;
+  };
+
   for (const line of raw) {
     if (line.startsWith('@@')) {
+      flushPending();
       const match = line.match(/@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
       if (match) {
         oldNum = Number.parseInt(match[1], 10) - 1;
         newNum = Number.parseInt(match[2], 10) - 1;
       }
-      lines.push({ type: 'ctx', content: line, oldNum: null, newNum: null });
-      continue;
-    }
-
-    if (line.startsWith('+')) {
+      result.push({ type: 'ctx', left: line, right: line, leftNum: null, rightNum: null });
+    } else if (line.startsWith('+')) {
       newNum++;
-      lines.push({ type: 'add', content: line, oldNum: null, newNum });
+      pendingAdds.push({ content: line.slice(1), num: newNum });
     } else if (line.startsWith('-')) {
       oldNum++;
-      lines.push({ type: 'del', content: line, oldNum, newNum: null });
+      pendingDels.push({ content: line.slice(1), num: oldNum });
     } else {
+      flushPending();
       oldNum++;
       newNum++;
-      lines.push({ type: 'ctx', content: line, oldNum, newNum });
+      result.push({ type: 'ctx', left: line.slice(1), right: line.slice(1), leftNum: oldNum, rightNum: newNum });
     }
   }
-  return lines;
+  flushPending();
+  return result;
 }
 
-function groupContextChunks(lines: DiffLine[], threshold = 6) {
-  const groups: { lines: DiffLine[]; collapsible: boolean }[] = [];
-  let contextBuffer: DiffLine[] = [];
+// Group consecutive ctx lines (not hunk headers) for collapsing
+function groupForCollapse(
+  lines: SideBySideLine[],
+  threshold = 3,
+): { lines: SideBySideLine[]; collapsible: boolean }[] {
+  const groups: { lines: SideBySideLine[]; collapsible: boolean }[] = [];
+  let ctxBuffer: SideBySideLine[] = [];
 
-  const flushContext = () => {
-    if (contextBuffer.length === 0) return;
-    if (contextBuffer.length > threshold) {
-      groups.push({ lines: contextBuffer, collapsible: true });
+  const flushCtx = () => {
+    if (ctxBuffer.length === 0) return;
+    // Only collapse non-hunk ctx runs longer than threshold
+    const isHunkOnly = ctxBuffer.every((l) => l.left?.startsWith('@@'));
+    if (!isHunkOnly && ctxBuffer.length > threshold) {
+      groups.push({ lines: ctxBuffer, collapsible: true });
     } else {
-      groups.push({ lines: contextBuffer, collapsible: false });
+      groups.push({ lines: ctxBuffer, collapsible: false });
     }
-    contextBuffer = [];
+    ctxBuffer = [];
   };
 
   for (const line of lines) {
     if (line.type === 'ctx') {
-      contextBuffer.push(line);
+      ctxBuffer.push(line);
     } else {
-      flushContext();
+      flushCtx();
       groups.push({ lines: [line], collapsible: false });
     }
   }
-  flushContext();
+  flushCtx();
   return groups;
 }
 
-function CollapsibleChunk({ lines }: { lines: DiffLine[] }) {
-  const [expanded, setExpanded] = useState(false);
+// ── Side-by-side row ──
 
-  if (!expanded) {
+function SbsRow({ line, idx }: { line: SideBySideLine; idx: number }) {
+  const leftBg =
+    line.type === 'del'
+      ? 'bg-sy-danger/10 border-l-2 border-sy-danger'
+      : line.type === 'modified'
+        ? 'bg-sy-warn/10'
+        : '';
+  const rightBg =
+    line.type === 'add'
+      ? 'bg-sy-accent/10 border-l-2 border-sy-accent'
+      : line.type === 'modified'
+        ? 'bg-sy-warn/10'
+        : '';
+
+  const leftText =
+    line.type === 'del' ? 'text-sy-danger' : line.type === 'modified' ? 'text-sy-warn' : 'text-sy-text-2';
+  const rightText =
+    line.type === 'add' ? 'text-sy-accent' : line.type === 'modified' ? 'text-sy-warn' : 'text-sy-text-2';
+
+  // Hunk header spans full width
+  if (line.type === 'ctx' && line.left?.startsWith('@@')) {
     return (
-      <button
-        type="button"
-        onClick={() => setExpanded(true)}
-        className="flex items-center gap-1.5 w-full px-3 py-1 text-[11px] text-text3 bg-bg2 hover:bg-bg3 transition-colors border-y border-border cursor-pointer"
-      >
-        <ChevronRight className="w-3 h-3" />
-        <span className="font-mono">展开 {lines.length} 行上下文...</span>
-      </button>
+      <div key={getDiffLineKey(line, idx)} className="col-span-2 flex font-mono text-[11px] bg-sy-bg-2 border-y border-sy-border/40 px-3 py-0.5 text-sy-text-3">
+        <span className="flex-1 truncate">{line.left}</span>
+      </div>
     );
   }
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setExpanded(false)}
-        className="flex items-center gap-1.5 w-full px-3 py-0.5 text-[11px] text-text3 bg-bg2 hover:bg-bg3 transition-colors cursor-pointer"
-      >
-        <ChevronDown className="w-3 h-3" />
-        <span className="font-mono">折叠</span>
-      </button>
-      {lines.map((line) => (
-        <DiffLineRow key={getDiffLineKey(line, 'ctx')} line={line} />
+      {/* Left cell */}
+      <div className={`flex items-baseline gap-1 min-w-0 ${leftBg} px-0`}>
+        <span className="w-8 shrink-0 text-right pr-1.5 text-sy-text-3/40 select-none text-[10px] font-mono">
+          {line.leftNum ?? ''}
+        </span>
+        <span className={`flex-1 font-mono text-[11.5px] leading-[1.7] whitespace-pre-wrap break-all py-px ${leftText}`}>
+          {line.left ?? ''}
+        </span>
+      </div>
+      {/* Right cell */}
+      <div className={`flex items-baseline gap-1 min-w-0 border-l border-sy-border/30 ${rightBg} px-0`}>
+        <span className="w-8 shrink-0 text-right pr-1.5 text-sy-text-3/40 select-none text-[10px] font-mono">
+          {line.rightNum ?? ''}
+        </span>
+        <span className={`flex-1 font-mono text-[11.5px] leading-[1.7] whitespace-pre-wrap break-all py-px ${rightText}`}>
+          {line.right ?? ''}
+        </span>
+      </div>
+    </>
+  );
+}
+
+function CollapsibleChunk({ lines }: { lines: SideBySideLine[] }) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!expanded) {
+    return (
+      <div className="col-span-2">
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="flex items-center gap-1.5 w-full px-3 py-1 text-[11px] text-sy-text-3 bg-sy-bg-2 hover:bg-sy-bg-3 transition-colors border-y border-sy-border cursor-pointer"
+        >
+          <ChevronRight className="w-3 h-3" />
+          <span className="font-mono">展开 {lines.length} 行未变更内容</span>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="col-span-2">
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          className="flex items-center gap-1.5 w-full px-3 py-0.5 text-[11px] text-sy-text-3 bg-sy-bg-2 hover:bg-sy-bg-3 transition-colors cursor-pointer"
+        >
+          <ChevronDown className="w-3 h-3" />
+          <span className="font-mono">折叠</span>
+        </button>
+      </div>
+      {lines.map((line, i) => (
+        <SbsRow key={getDiffLineKey(line, i)} line={line} idx={i} />
       ))}
     </>
   );
 }
 
-function DiffLineRow({ line }: { line: DiffLine }) {
-  const bgClass = line.type === 'add' ? 'bg-accent/8' : line.type === 'del' ? 'bg-red/8' : '';
-  const textClass =
-    line.type === 'add' ? 'text-accent' : line.type === 'del' ? 'text-red' : 'text-text3';
+export function DiffView({ diffText, additions = 0, deletions = 0, className = '' }: DiffViewProps) {
+  const parsed = useMemo(() => parseSideBySide(diffText), [diffText]);
+  const groups = useMemo(() => groupForCollapse(parsed), [parsed]);
 
   return (
-    <div className={`flex font-mono text-[12px] leading-[1.7] ${bgClass}`}>
-      <span className="w-10 shrink-0 text-right pr-2 text-text3/50 select-none text-[11px]">
-        {line.oldNum ?? ''}
-      </span>
-      <span className="w-10 shrink-0 text-right pr-2 text-text3/50 select-none text-[11px]">
-        {line.newNum ?? ''}
-      </span>
-      <span className={`flex-1 px-2 whitespace-pre-wrap break-all ${textClass}`}>
-        {line.content}
-      </span>
-    </div>
-  );
-}
-
-export function DiffView({
-  diffText,
-  additions = 0,
-  deletions = 0,
-  className = '',
-}: DiffViewProps) {
-  const parsed = useMemo(() => parseDiffLines(diffText), [diffText]);
-  const groups = useMemo(() => groupContextChunks(parsed), [parsed]);
-
-  return (
-    <div className={`border border-border rounded-lg overflow-hidden bg-bg1 ${className}`}>
+    <div className={`border border-sy-border rounded-lg overflow-hidden bg-sy-bg-1 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-bg1">
-        <span className="text-[12px] font-medium text-text2">Diff 详情</span>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-sy-border bg-sy-bg-1">
+        <span className="text-[12px] font-medium text-sy-text-2">Diff 详情（并排视图）</span>
         <div className="flex items-center gap-3 font-mono text-[11px]">
-          <span className="text-accent">+{additions}</span>
-          <span className="text-red">−{deletions}</span>
+          <span className="text-sy-accent">+{additions}</span>
+          <span className="text-sy-danger">−{deletions}</span>
         </div>
       </div>
 
-      {/* Line number header */}
-      <div className="flex font-mono text-[10px] text-text3/50 bg-bg2 border-b border-border px-0 py-0.5">
-        <span className="w-10 text-right pr-2">旧</span>
-        <span className="w-10 text-right pr-2">新</span>
-        <span className="flex-1 px-2" />
+      {/* Column header */}
+      <div className="grid grid-cols-2 border-b border-sy-border bg-sy-bg-2">
+        <div className="px-3 py-1 text-[10px] font-semibold text-sy-text-3 uppercase tracking-wider">
+          旧版本
+        </div>
+        <div className="px-3 py-1 text-[10px] font-semibold text-sy-text-3 uppercase tracking-wider border-l border-sy-border/30">
+          新版本
+        </div>
       </div>
 
       {/* Diff body */}
-      <div className="max-h-[480px] overflow-y-auto bg-bg">
-        {groups.map((group) => {
-          const firstLine = group.lines[0];
-          const groupKey = `${group.collapsible ? 'collapsed' : 'group'}-${getDiffLineKey(
-            firstLine,
-            'group',
-          )}-${group.lines.length}`;
-
-          if (group.collapsible) {
-            return <CollapsibleChunk key={groupKey} lines={group.lines} />;
-          }
-
-          return group.lines.map((line) => <DiffLineRow key={getDiffLineKey(line)} line={line} />);
-        })}
+      <div className="max-h-[480px] overflow-y-auto bg-sy-bg">
+        <div className="grid grid-cols-2">
+          {groups.map((group, gi) => {
+            const key = `group-${gi}`;
+            if (group.collapsible) {
+              return <CollapsibleChunk key={key} lines={group.lines} />;
+            }
+            return group.lines.map((line, li) => (
+              <SbsRow key={getDiffLineKey(line, gi * 1000 + li)} line={line} idx={gi * 1000 + li} />
+            ));
+          })}
+        </div>
       </div>
     </div>
   );

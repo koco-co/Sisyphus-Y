@@ -36,6 +36,7 @@ export interface AffectedTestCase {
   priority: string;
   status: string;
   impact_type: 'rewrite' | 'review' | 'none';
+  change_impact?: 'needs_rewrite' | 'needs_review' | 'not_affected' | null;
 }
 
 export interface DiffResult {
