@@ -196,8 +196,13 @@ class TestGLM5Config:
     """PRM-04: GLM-5 配置验证"""
 
     def test_glm5_config(self):
-        """Settings 中 zhipu_model 默认值为 glm-5。"""
+        """Settings 中 zhipu_model 默认值为 glm-5。
+
+        注意：此测试验证代码中定义的默认值，而非运行时被 .env 覆盖后的值。
+        通过 model_dump 获取字段默认值来避免环境变量干扰。
+        """
         from app.core.config import Settings
 
-        settings = Settings()
-        assert settings.zhipu_model == "glm-5", f"zhipu_model 期望 glm-5，实际为 {settings.zhipu_model}"
+        # 获取字段的默认值（而非被环境变量覆盖后的值）
+        field_info = Settings.model_fields["zhipu_model"]
+        assert field_info.default == "glm-5", f"zhipu_model 默认值期望 glm-5，实际为 {field_info.default}"
