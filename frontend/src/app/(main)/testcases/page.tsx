@@ -710,8 +710,8 @@ export default function TestCasesPage() {
           <ExportDialog
             open={exportOpen}
             onClose={() => setExportOpen(false)}
-            selectedCount={selectedIds.size}
-            currentFolder={selectedFolderName}
+            selectedCaseIds={Array.from(selectedIds)}
+            currentFolderId={selectedFolderId ?? undefined}
           />
         </>
       )}
