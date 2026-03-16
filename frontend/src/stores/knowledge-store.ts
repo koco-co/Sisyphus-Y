@@ -13,6 +13,12 @@ export interface KnowledgeDocument {
   tags: string[];
   uploaded_at: string;
   updated_at: string;
+  /** 文档版本号（整数），手动条目为 1 */
+  version?: number;
+  /** 条目来源类型：upload=文件上传，manual=手动添加 */
+  entry_type?: 'upload' | 'manual';
+  /** 同一文档已存在的历史版本数量 */
+  version_count?: number;
 }
 
 export interface RAGSearchResult {
