@@ -61,6 +61,10 @@ class TestCase(BaseModel):
         index=True,
     )
 
+    # v2.1: diff impact tracking
+    # 值域: "needs_rewrite" | "needs_review" | "not_affected" | None
+    change_impact: Mapped[str | None] = mapped_column(String(20), nullable=True)
+
 
 class TestCaseStep(BaseModel):
     __tablename__ = "test_case_steps"

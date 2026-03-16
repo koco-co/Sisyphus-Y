@@ -70,6 +70,16 @@ async def suggest_test_points(
     )
 
 
+@router.post("/{requirement_id}/push-to-workbench")
+async def push_to_workbench(
+    requirement_id: uuid.UUID,
+    session: AsyncSessionDep,
+) -> dict:
+    """将 change_impact='needs_rewrite' 的用例批量推送到工作台 (DIF-04, DIF-05)。"""
+    svc = DiffService(session)
+    return await svc.push_to_workbench(requirement_id)
+
+
 @router.post("/{requirement_id}/regenerate", response_model=RegenerateResponse)
 async def regenerate_cases(
     requirement_id: uuid.UUID,

@@ -157,6 +157,53 @@ class DiffService:
             self.session, requirement_id, test_point_ids, diff_summary=diff_summary
         )
 
+    async def push_to_workbench(self, requirement_id: UUID) -> dict:
+        """将 change_impact='needs_rewrite' 的用例批量推送到工作台。
+
+        更新 status='needs_regen'，返回 {"pushed_count": N}。
+        """
+        tc_q = select(TestCase).where(
+            TestCase.requirement_id == requirement_id,
+            TestCase.change_impact == "needs_rewrite",
+            TestCase.deleted_at.is_(None),
+        )
+        result = await self.session.execute(tc_q)
+        cases = list(result.scalars().all())
+
+        for tc in cases:
+            tc.status = "needs_regen"
+
+        await self.session.commit()
+        return {"pushed_count": len(cases)}
+
+    async def mark_affected_test_cases(
+        self,
+        requirement_id: UUID,
+        impact_map: dict[str, str],
+    ) -> None:
+        """根据 impact_map 批量设置用例的 change_impact 字段。
+
+        impact_map: {str(tc_id): impact_value}，值域：needs_rewrite | needs_review | not_affected
+        只更新 impact_map 中存在的用例，其他用例不受影响。
+        """
+        tc_ids = list(impact_map.keys())
+        if not tc_ids:
+            return
+
+        tc_q = select(TestCase).where(
+            TestCase.requirement_id == requirement_id,
+            TestCase.deleted_at.is_(None),
+        )
+        result = await self.session.execute(tc_q)
+        cases = list(result.scalars().all())
+
+        for tc in cases:
+            tc_id_str = str(tc.id)
+            if tc_id_str in impact_map:
+                tc.change_impact = impact_map[tc_id_str]
+
+        await self.session.commit()
+
     # ── 内部方法 ──────────────────────────────────────────────────
 
     async def _get_version_content(self, requirement_id: UUID, version: int) -> dict | None:
