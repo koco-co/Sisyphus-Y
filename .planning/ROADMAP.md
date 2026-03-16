@@ -109,7 +109,7 @@ Plans:
 Plans:
 - [x] 05-00-WAVE0-PLAN.md — Wave 0 测试脚手架：创建所有测试文件 RED 基线
 - [ ] 05-01-PLAN.md — UI 规范统一：ConfirmDialog 扩展 + EmptyState 验证 + 按钮文案统一（UX-01~04）
-- [ ] 05-02-PLAN.md — 回收站功能：cleanup API 调用 + 加载状态 + 恢复逻辑（UX-05, REC-01~03）
+- [x] 05-02-PLAN.md — 回收站功能：cleanup API 调用 + 加载状态 + 恢复逻辑（UX-05, REC-01~03）
 - [ ] 05-03-PLAN.md — 模板库 Prompt Tab：列表展示 + 导出/导入 **Markdown**（TPL-01~03）
 - [ ] 05-04-PLAN.md — 首次引导 + 帮助按钮 + AI 配置警告扩展（UX-06, UX-07, UX-08）
 - [ ] 05-05-PLAN.md — Phase 5 端到端验收 checkpoint（所有需求验证）
@@ -126,5 +126,5 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 | 2. 主链路重构 | 6/6 | Complete   | 2026-03-15 |
 | 3. AI 质量提升 | 3/3 | Complete   | 2026-03-15 |
 | 4. 外围模块扩展 | 11/11 | Complete | 2026-03-16 |
-| 5. 体验收尾 | 1/6 | In progress | - |
+| 5. 体验收尾 | 2/6 | In progress | - |
 

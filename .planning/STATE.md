@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Phase 5 in progress
-stopped_at: Completed 05-00-WAVE0 test scaffolds
-last_updated: "2026-03-16T13:50:00Z"
-last_activity: 2026-03-16 — Phase 5 Wave 0 test scaffolds complete (7 test files)
+stopped_at: Completed 05-02 recycle bin enhancements
+last_updated: "2026-03-16T13:55:00Z"
+last_activity: 2026-03-16 — Phase 5 Plan 02 complete (recycle bin cleanup API, skeleton loader, toast notifications)
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 25
-  completed_plans: 25
-  percent: 83
+  completed_plans: 26
+  percent: 84
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 5 of 5 (体验收尾) — IN PROGRESS
-Phase 5: 1/6 plans (Wave 0 complete)
+Phase 5: 2/6 plans (Wave 0 + Plan 02 complete)
 Status: Phase 5 in progress
-Last activity: 2026-03-16 — Phase 5 Wave 0 test scaffolds complete (7 test files)
+Last activity: 2026-03-16 — Phase 5 Plan 02 complete (recycle bin cleanup API, skeleton loader, toast notifications)
 
-Progress: [████████░░] 83%
+Progress: [████████░░] 84%
 
 ## Performance Metrics
 
@@ -126,6 +126,9 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan]: parseSideBySide 将相邻 del+add 合并为 modified 类型对齐渲染；AffectedCases 双字段兼容 change_impact/impact_type
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan P05]: MoveFolderDialog/MoveCaseDialog 使用原生 overlay+div（不引入 shadcn/ui），与 deleteConfirm 风格一致
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan P05]: FolderTree 重名校验在前端 handleEditSubmit 完成，大小写不敏感，toast.error 提示并阻止提交
+- [Phase 05-ti-yan-shou-wei P02]: cleanup API 调用失败时静默处理，不阻塞回收站列表加载
+- [Phase 05-ti-yan-shou-wei P02]: 使用 TableSkeleton 组件替代 Loader2 作为首次加载骨架屏
+- [Phase 05-ti-yan-shou-wei P02]: DELETE 请求带 body 使用 api.deleteWithBody 辅助方法
 
 ### Pending Todos
 
@@ -140,6 +143,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T13:50:00Z
-Stopped at: Completed 05-00-WAVE0 test scaffolds
-Resume file: .planning/phases/05-ti-yan-shou-wei/05-00-SUMMARY.md
+Last session: 2026-03-16T13:55:00Z
+Stopped at: Completed 05-02 recycle bin enhancements
+Resume file: .planning/phases/05-ti-yan-shou-wei/05-02-SUMMARY.md
