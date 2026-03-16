@@ -2,8 +2,19 @@
 
 import { Bot, Settings2 } from 'lucide-react';
 import Link from 'next/link';
+import { useAiConfig } from '@/hooks/useAiConfig';
 
 export function AiConfigBanner() {
+  const { modelConfigs, loading } = useAiConfig();
+
+  // 有启用的模型配置时不显示 Banner
+  const hasEnabledConfig = modelConfigs.some((config) => config.is_enabled);
+
+  // 加载中或已配置时不显示
+  if (loading || hasEnabledConfig) {
+    return null;
+  }
+
   return (
     <div className="flex items-center justify-between gap-3 border-b border-sy-warn/30 bg-sy-warn/10 px-4 py-2.5">
       <div className="flex items-center gap-2 text-[12px]">

@@ -3,6 +3,7 @@
 import { Archive, ClipboardList, Download, LayoutGrid, Table2, Trash, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { AiConfigBanner } from '@/components/ui/AiConfigBanner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
@@ -399,6 +400,9 @@ export default function TestCasesPage() {
 
   return (
     <div className="no-sidebar">
+      {/* ── AI Config Banner ── */}
+      <AiConfigBanner />
+
       {/* ── Header ── */}
       <div className="flex items-center gap-3 mb-5">
         <ClipboardList className="w-5 h-5 text-sy-accent" />
