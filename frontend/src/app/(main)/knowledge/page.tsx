@@ -1,25 +1,51 @@
 'use client';
 
-import { BookOpen, FileCode2, FolderOpen, GraduationCap, History, RefreshCw, Search, Upload } from 'lucide-react';
+import {
+  BookOpen,
+  FileCode2,
+  FolderOpen,
+  GraduationCap,
+  History,
+  Plus,
+  RefreshCw,
+  Search,
+  Upload,
+} from 'lucide-react';
 import { useState } from 'react';
 import { CustomSelect } from '@/components/ui/CustomSelect';
 import { useKnowledge } from '@/hooks/useKnowledge';
+import ChunkPreviewDrawer from './_components/ChunkPreviewDrawer';
 import DocTable from './_components/DocTable';
+import ManualEntryDialog from './_components/ManualEntryDialog';
 import RAGBanner from './_components/RAGBanner';
 import RAGTestPanel from './_components/RAGTestPanel';
 import UploadDialog from './_components/UploadDialog';
 
-const categories = [
+type CategoryKey =
+  | ''
+  | 'enterprise_standard'
+  | 'business_knowledge'
+  | 'historical_cases'
+  | 'tech_reference';
+
+const CATEGORIES: {
+  key: CategoryKey;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
   { key: '', label: '全部', icon: FolderOpen },
-  { key: 'standard', label: '企业测试规范', icon: GraduationCap },
-  { key: 'domain', label: '业务领域知识', icon: BookOpen },
-  { key: 'historical', label: '历史用例', icon: History },
-  { key: 'reference', label: '技术参考', icon: FileCode2 },
+  { key: 'enterprise_standard', label: '企业测试规范', icon: GraduationCap },
+  { key: 'business_knowledge', label: '业务领域知识', icon: BookOpen },
+  { key: 'historical_cases', label: '历史用例', icon: History },
+  { key: 'tech_reference', label: '技术参考', icon: FileCode2 },
 ];
 
 export default function KnowledgePage() {
   const [showUpload, setShowUpload] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [showManual, setShowManual] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<CategoryKey>('');
+  const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const [selectedDocTitle, setSelectedDocTitle] = useState('');
 
   const {
     documents,
@@ -45,6 +71,16 @@ export default function KnowledgePage() {
     searchRAG,
   } = useKnowledge();
 
+  const handlePreviewChunks = (docId: string, docTitle: string) => {
+    setSelectedDocId(docId);
+    setSelectedDocTitle(docTitle);
+  };
+
+  const handleCloseDrawer = () => {
+    setSelectedDocId(null);
+    setSelectedDocTitle('');
+  };
+
   return (
     <div className="no-sidebar">
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
@@ -63,9 +99,9 @@ export default function KnowledgePage() {
         {/* RAG Banner */}
         <RAGBanner />
 
-        {/* Category Navigation */}
+        {/* Category Tabs */}
         <div className="flex items-center gap-1.5 mb-4">
-          {categories.map((cat) => {
+          {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             return (
               <button
@@ -151,6 +187,12 @@ export default function KnowledgePage() {
             刷新
           </button>
 
+          {/* 手动添加条目 */}
+          <button type="button" className="btn" onClick={() => setShowManual(true)}>
+            <Plus size={14} />
+            手动添加条目
+          </button>
+
           <button type="button" className="btn btn-primary" onClick={() => setShowUpload(true)}>
             <Upload size={14} />
             上传文档
@@ -177,6 +219,8 @@ export default function KnowledgePage() {
           loading={loading}
           onDelete={deleteDocument}
           onRebuildIndex={rebuildIndex}
+          onPreviewChunks={handlePreviewChunks}
+          onVersionUploaded={fetchDocuments}
         />
 
         {/* RAG Test Panel */}
@@ -196,6 +240,21 @@ export default function KnowledgePage() {
           isUploading={isUploading}
           uploadProgress={uploadProgress}
           uploadError={error}
+        />
+
+        {/* Manual Entry Dialog */}
+        <ManualEntryDialog
+          open={showManual}
+          onClose={() => setShowManual(false)}
+          onSuccess={fetchDocuments}
+        />
+
+        {/* Chunk Preview Drawer */}
+        <ChunkPreviewDrawer
+          open={selectedDocId !== null}
+          docId={selectedDocId}
+          docTitle={selectedDocTitle}
+          onClose={handleCloseDrawer}
         />
       </div>
     </div>

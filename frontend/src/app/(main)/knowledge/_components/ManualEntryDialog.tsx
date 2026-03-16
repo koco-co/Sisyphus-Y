@@ -37,22 +37,15 @@ const INITIAL_FORM: FormState = {
   tags: '',
 };
 
-export default function ManualEntryDialog({
-  open,
-  onClose,
-  onSuccess,
-}: ManualEntryDialogProps) {
+export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEntryDialogProps) {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const updateField = useCallback(
-    <K extends keyof FormState>(key: K, value: FormState[K]) => {
-      setForm((prev) => ({ ...prev, [key]: value }));
-      setErrors((prev) => ({ ...prev, [key]: undefined }));
-    },
-    [],
-  );
+  const updateField = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
+  }, []);
 
   const validate = useCallback((): boolean => {
     const nextErrors: Partial<Record<keyof FormState, string>> = {};
@@ -143,11 +136,15 @@ export default function ManualEntryDialog({
         <div className="px-5 py-4 space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-[12px] font-medium text-text2 mb-1.5">
+            <label
+              htmlFor="manual-title"
+              className="block text-[12px] font-medium text-text2 mb-1.5"
+            >
               标题
               <span className="text-red ml-0.5">*</span>
             </label>
             <input
+              id="manual-title"
               type="text"
               value={form.title}
               onChange={(e) => updateField('title', e.target.value)}
@@ -155,22 +152,22 @@ export default function ManualEntryDialog({
               disabled={submitting}
               className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 focus:outline-none focus:border-accent/60 disabled:opacity-50 transition-colors"
             />
-            {errors.title && (
-              <p className="mt-1 text-[11px] text-red">{errors.title}</p>
-            )}
+            {errors.title && <p className="mt-1 text-[11px] text-red">{errors.title}</p>}
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-[12px] font-medium text-text2 mb-1.5">
+            <label
+              htmlFor="manual-category"
+              className="block text-[12px] font-medium text-text2 mb-1.5"
+            >
               分类
               <span className="text-red ml-0.5">*</span>
             </label>
             <select
+              id="manual-category"
               value={form.category}
-              onChange={(e) =>
-                updateField('category', e.target.value as KnowledgeCategory | '')
-              }
+              onChange={(e) => updateField('category', e.target.value as KnowledgeCategory | '')}
               disabled={submitting}
               className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text focus:outline-none focus:border-accent/60 disabled:opacity-50 transition-colors appearance-none cursor-pointer"
             >
@@ -183,18 +180,20 @@ export default function ManualEntryDialog({
                 </option>
               ))}
             </select>
-            {errors.category && (
-              <p className="mt-1 text-[11px] text-red">{errors.category}</p>
-            )}
+            {errors.category && <p className="mt-1 text-[11px] text-red">{errors.category}</p>}
           </div>
 
           {/* Content */}
           <div>
-            <label className="block text-[12px] font-medium text-text2 mb-1.5">
+            <label
+              htmlFor="manual-content"
+              className="block text-[12px] font-medium text-text2 mb-1.5"
+            >
               内容
               <span className="text-red ml-0.5">*</span>
             </label>
             <textarea
+              id="manual-content"
               value={form.content}
               onChange={(e) => updateField('content', e.target.value)}
               placeholder="输入知识条目内容..."
@@ -203,18 +202,20 @@ export default function ManualEntryDialog({
               className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 focus:outline-none focus:border-accent/60 disabled:opacity-50 transition-colors resize-none leading-relaxed"
               style={{ minHeight: 120 }}
             />
-            {errors.content && (
-              <p className="mt-1 text-[11px] text-red">{errors.content}</p>
-            )}
+            {errors.content && <p className="mt-1 text-[11px] text-red">{errors.content}</p>}
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-[12px] font-medium text-text2 mb-1.5">
+            <label
+              htmlFor="manual-tags"
+              className="block text-[12px] font-medium text-text2 mb-1.5"
+            >
               标签
               <span className="text-[11px] text-text3 ml-1.5">（可选，用逗号分隔）</span>
             </label>
             <input
+              id="manual-tags"
               type="text"
               value={form.tags}
               onChange={(e) => updateField('tags', e.target.value)}
