@@ -1,6 +1,7 @@
 """RAG-04: 报告格式测试。"""
 
 import importlib.util
+import json
 import os
 import sys
 from unittest.mock import patch
@@ -28,7 +29,7 @@ generate_report = review_module.generate_report
 class TestReportJsonFields:
     """测试报告 JSON 字段。"""
 
-    def test_report_json_fields(self):
+    def test_report_structure(self):
         """生成的 report dict 包含 total, passed, polished, discarded, discard_reasons 字段。"""
         # 模拟审查结果
         review_results = [
@@ -49,13 +50,26 @@ class TestReportJsonFields:
         assert "discarded" in report
         assert "discard_reasons" in report
 
+    def test_report_count_accuracy(self):
+        """给定 3 pass + 2 polish + 1 discard，验证计数正确。"""
+        review_results = [
+            {"verdict": "pass"},
+            {"verdict": "pass"},
+            {"verdict": "pass"},
+            {"verdict": "polish", "polished": {"title": "test1"}},
+            {"verdict": "polish", "polished": {"title": "test2"}},
+            {"verdict": "discard", "discard_reason": "步骤缺失"},
+        ]
+
+        report = generate_report(review_results)
+
         # 验证数值正确
         assert report["total"] == 6
-        assert report["passed"] == 2
-        assert report["polished"] == 1
-        assert report["discarded"] == 3
+        assert report["passed"] == 3
+        assert report["polished"] == 2
+        assert report["discarded"] == 1
 
-    def test_discard_reasons_are_grouped(self):
+    def test_report_discard_reasons_grouping(self):
         """相同原因被计数（{"步骤缺失": 3, "无法修复": 1}）。"""
         review_results = [
             {"verdict": "discard", "discard_reason": "步骤缺失"},
@@ -71,3 +85,24 @@ class TestReportJsonFields:
         assert report["discard_reasons"]["步骤缺失"] == 3
         assert report["discard_reasons"]["无法修复"] == 1
         assert report["discarded"] == 4
+
+    def test_report_json_serializable(self):
+        """报告格式可序列化为 JSON。"""
+        review_results = [
+            {"verdict": "pass"},
+            {"verdict": "polish", "polished": {"title": "test"}},
+            {"verdict": "discard", "discard_reason": "步骤缺失"},
+        ]
+
+        report = generate_report(review_results)
+
+        # 验证可以序列化为 JSON
+        json_str = json.dumps(report, ensure_ascii=False)
+        assert isinstance(json_str, str)
+
+        # 验证可以反序列化
+        parsed = json.loads(json_str)
+        assert parsed["total"] == 3
+        assert parsed["passed"] == 1
+        assert parsed["polished"] == 1
+        assert parsed["discarded"] == 1
