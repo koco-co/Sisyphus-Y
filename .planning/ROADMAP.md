@@ -9,7 +9,7 @@
 - [x] **Phase 1: 清场** - 裁剪废弃模块，为主链路重构扫清路由冲突和 UI 噪声 (completed 2026-03-15)
 - [x] **Phase 2: 主链路重构** - 分析台三 Tab 布局 + 工作台步骤条，核心流程端到端跑通 (completed 2026-03-15)
 - [x] **Phase 3: AI 质量提升** - 历史用例审查入向量库 + Prompt 体系重写 + GLM-5 切换 (completed 2026-03-15)
-- [ ] **Phase 4: 外围模块扩展** - 需求录入优化、用例库完整能力、仪表盘重构、需求 Diff
+- [x] **Phase 4: 外围模块扩展** - 需求录入优化、用例库完整能力、仪表盘重构、需求 Diff (completed 2026-03-16)
 - [ ] **Phase 5: 体验收尾** - 全局 UI 规范统一、回收站、模板库、知识库增强
 
 ## Phase Details
@@ -92,7 +92,7 @@ Plans:
 - [x] 04-08-PLAN.md — 仪表盘：TrendChart 折线图 + SourcePieChart 环形图 + 迭代联动（DSH-01~06）
 - [ ] 04-09-PLAN.md — 需求 Diff：发布新版本入口 + 并排 DiffView + change_impact Badge + 推送按钮（DIF-01~05）
 - [x] 04-10-PLAN.md — 知识库前端：分类 Tab + ChunkPreviewDrawer + ManualEntryDialog + 版本 UI（KB-01~04）
-- [ ] 04-11-PLAN.md — Phase 4 端到端验收 checkpoint（所有需求）
+- [x] 04-11-PLAN.md — Phase 4 端到端验收 checkpoint（所有需求）
 
 ### Phase 5: 体验收尾
 **Goal**: 全平台 UI 规范统一、回收站软删除链路完整、模板库可用，整体体验无明显缺陷
@@ -117,5 +117,5 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 | 1. 清场 | 3/3 | Complete    | 2026-03-15 |
 | 2. 主链路重构 | 6/6 | Complete   | 2026-03-15 |
 | 3. AI 质量提升 | 3/3 | Complete   | 2026-03-15 |
-| 4. 外围模块扩展 | 10/11 | In Progress|  |
+| 4. 外围模块扩展 | 11/11 | Complete | 2026-03-16 |
 | 5. 体验收尾 | 0/TBD | Not started | - |

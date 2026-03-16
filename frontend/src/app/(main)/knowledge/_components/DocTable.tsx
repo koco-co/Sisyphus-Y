@@ -69,7 +69,7 @@ export default function DocTable({
     setConfirmVersion({
       docId: doc.id,
       docTitle: doc.file_name,
-      versionCount: doc.version_count ?? (doc.version ?? 1),
+      versionCount: doc.version_count ?? doc.version ?? 1,
     });
   }, []);
 
@@ -159,7 +159,7 @@ export default function DocTable({
               const ext = doc.file_name.split('.').pop()?.toLowerCase() || '';
               const statusCfg = STATUS_CONFIG[doc.vector_status] || STATUS_CONFIG.pending;
               const isManual = doc.entry_type === 'manual';
-              const versionCount = doc.version_count ?? (doc.version ?? 1);
+              const versionCount = doc.version_count ?? doc.version ?? 1;
               const isUploadingVersion = uploadingVersionId === doc.id;
 
               return (
@@ -199,14 +199,11 @@ export default function DocTable({
                   </td>
                   <td>
                     <span className="pill pill-gray">
-                      {isManual ? '条目' : (TYPE_LABELS[ext] || ext.toUpperCase())}
+                      {isManual ? '条目' : TYPE_LABELS[ext] || ext.toUpperCase()}
                     </span>
                   </td>
                   <td>
-                    <span
-                      className="font-mono"
-                      style={{ fontSize: 11, color: 'var(--text3)' }}
-                    >
+                    <span className="font-mono" style={{ fontSize: 11, color: 'var(--text3)' }}>
                       v{doc.version ?? 1}
                     </span>
                   </td>

@@ -26,7 +26,8 @@ const PAGE_SIZE = 50;
 function ChunkCard({ chunk }: { chunk: ChunkItem }) {
   const [expanded, setExpanded] = useState(false);
   const shouldTruncate = chunk.content.length > 120;
-  const displayText = expanded || !shouldTruncate ? chunk.content : `${chunk.content.slice(0, 120)}...`;
+  const displayText =
+    expanded || !shouldTruncate ? chunk.content : `${chunk.content.slice(0, 120)}...`;
 
   return (
     <div className="border border-border rounded-md overflow-hidden">
@@ -34,14 +35,10 @@ function ChunkCard({ chunk }: { chunk: ChunkItem }) {
         <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-bg3 text-text2 border border-border min-w-[36px] text-center">
           #{String(chunk.index + 1).padStart(2, '0')}
         </span>
-        <span className="text-[11px] text-text3">
-          约 {chunk.token_count} 词
-        </span>
+        <span className="text-[11px] text-text3">约 {chunk.token_count} 词</span>
       </div>
       <div className="bg-bg2 px-3 py-2.5">
-        <p className="text-[12.5px] text-text leading-relaxed whitespace-pre-wrap">
-          {displayText}
-        </p>
+        <p className="text-[12.5px] text-text leading-relaxed whitespace-pre-wrap">{displayText}</p>
         {shouldTruncate && (
           <button
             type="button"
@@ -97,35 +94,32 @@ export default function ChunkPreviewDrawer({
   const prevDocId = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const fetchChunks = useCallback(
-    async (id: string, currentOffset: number, append = false) => {
+  const fetchChunks = useCallback(async (id: string, currentOffset: number, append = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      setError(null);
+    }
+    try {
+      const res = await fetch(
+        `/api/knowledge/${id}/chunks?limit=${PAGE_SIZE}&offset=${currentOffset}`,
+      );
+      if (!res.ok) throw new Error(`请求失败 (${res.status})`);
+      const data: ChunksResponse = await res.json();
       if (append) {
-        setLoadingMore(true);
+        setChunks((prev) => [...prev, ...data.items]);
       } else {
-        setLoading(true);
-        setError(null);
+        setChunks(data.items);
       }
-      try {
-        const res = await fetch(
-          `/api/knowledge/${id}/chunks?limit=${PAGE_SIZE}&offset=${currentOffset}`,
-        );
-        if (!res.ok) throw new Error(`请求失败 (${res.status})`);
-        const data: ChunksResponse = await res.json();
-        if (append) {
-          setChunks((prev) => [...prev, ...data.items]);
-        } else {
-          setChunks(data.items);
-        }
-        setTotal(data.total);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '加载分块失败');
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [],
-  );
+      setTotal(data.total);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '加载分块失败');
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (open && docId && docId !== prevDocId.current) {
@@ -172,11 +166,7 @@ export default function ChunkPreviewDrawer({
             <FileText className="w-4 h-4 text-accent shrink-0" />
             <div className="min-w-0">
               <h3 className="text-[14px] font-semibold text-text truncate">{docTitle}</h3>
-              {!loading && (
-                <p className="text-[11px] text-text3 mt-0.5">
-                  共 {total} 个分块
-                </p>
-              )}
+              {!loading && <p className="text-[11px] text-text3 mt-0.5">共 {total} 个分块</p>}
             </div>
           </div>
           <button
@@ -199,9 +189,7 @@ export default function ChunkPreviewDrawer({
           )}
 
           {!loading && error && (
-            <div className="text-center py-8 text-[12.5px] text-red">
-              {error}
-            </div>
+            <div className="text-center py-8 text-[12.5px] text-red">{error}</div>
           )}
 
           {!loading && !error && chunks.length === 0 && (
@@ -211,9 +199,7 @@ export default function ChunkPreviewDrawer({
             </div>
           )}
 
-          {!loading && chunks.map((chunk) => (
-            <ChunkCard key={chunk.index} chunk={chunk} />
-          ))}
+          {!loading && chunks.map((chunk) => <ChunkCard key={chunk.index} chunk={chunk} />)}
 
           {/* Load more */}
           {!loading && hasMore && (

@@ -17,6 +17,23 @@ import { FrontmatterPanel } from '../_components/FrontmatterPanel';
 import { RelationPanel } from '../_components/RelationPanel';
 import { VersionHistory } from '../_components/VersionHistory';
 
+function extractTextFromAst(node: Record<string, unknown>): string {
+  if (typeof node.text === 'string') return node.text;
+  if (Array.isArray(node.content)) {
+    const children = node.content as Record<string, unknown>[];
+    const separator = node.type === 'doc' ? '\n' : '';
+    return children.map(extractTextFromAst).join(separator);
+  }
+  return '';
+}
+
+function getDisplayContent(contentAst: Record<string, unknown> | undefined): string {
+  if (!contentAst) return '';
+  if (typeof contentAst.raw_text === 'string') return contentAst.raw_text;
+  if (typeof contentAst.content === 'string') return contentAst.content;
+  return extractTextFromAst(contentAst);
+}
+
 const statusConfig: Record<
   string,
   { variant: 'green' | 'amber' | 'gray' | 'blue'; label: string }
@@ -51,8 +68,7 @@ export default function RequirementDetailPage() {
 
   const status = statusConfig[req?.status ?? 'draft'] ?? statusConfig.draft;
   const priority = (req?.frontmatter?.priority as string) ?? 'P1';
-  const rawContent =
-    (req?.content_ast?.content as string) ?? (req?.content_ast?.raw_text as string) ?? '';
+  const rawContent = getDisplayContent(req?.content_ast);
   const displayContent = localContent ?? rawContent;
 
   const handleContentChange = useCallback((value: string) => {

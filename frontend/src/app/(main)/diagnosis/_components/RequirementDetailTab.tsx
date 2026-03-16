@@ -23,11 +23,22 @@ export function RequirementDetailTab({ reqId, onStartAnalysis }: RequirementDeta
   const [dirty, setDirty] = useState(false);
   const [savedOnce, setSavedOnce] = useState(false);
 
-  const rawContent =
-    (req?.content_ast?.content as string) ??
-    (req?.content_ast?.raw_text as string) ??
-    req?.content ??
-    '';
+  function extractAstText(node: Record<string, unknown>): string {
+    if (typeof node.text === 'string') return node.text;
+    if (Array.isArray(node.content)) {
+      const sep = node.type === 'doc' ? '\n' : '';
+      return (node.content as Record<string, unknown>[]).map(extractAstText).join(sep);
+    }
+    return '';
+  }
+
+  const rawContent = (() => {
+    const ast = req?.content_ast;
+    if (!ast) return (req as Record<string, unknown> | undefined)?.content as string ?? '';
+    if (typeof ast.raw_text === 'string') return ast.raw_text;
+    if (typeof ast.content === 'string') return ast.content;
+    return extractAstText(ast as Record<string, unknown>);
+  })();
 
   // Sync rawContent when requirement changes or edit mode reset
   useEffect(() => {
