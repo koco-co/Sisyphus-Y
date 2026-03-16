@@ -8,7 +8,7 @@
 
 - [x] **Phase 1: 清场** - 裁剪废弃模块，为主链路重构扫清路由冲突和 UI 噪声 (completed 2026-03-15)
 - [x] **Phase 2: 主链路重构** - 分析台三 Tab 布局 + 工作台步骤条，核心流程端到端跑通 (completed 2026-03-15)
-- [x] **Phase 3: AI 质量提升** - 历史用例审查入向量库 + Prompt 体系重写 + GLM-5 切换 (completed 2026-03-15)
+- [ ] **Phase 3: AI 质量提升** - 历史用例审查入向量库 + Prompt 体系重写 + GLM-5 切换 (FORCE REDO)
 - [x] **Phase 4: 外围模块扩展** - 需求录入优化、用例库完整能力、仪表盘重构、需求 Diff (completed 2026-03-16)
 - [ ] **Phase 5: 体验收尾** - 全局 UI 规范统一、回收站、模板库、知识库增强
 
@@ -57,15 +57,15 @@ Plans:
 **Requirements**: RAG-01, RAG-02, RAG-03, RAG-04, RAG-05, RAG-06, RAG-07, RAG-08, PRM-01, PRM-02, PRM-03, PRM-04
 **Success Criteria** (what must be TRUE):
   1. 历史用例审查完成后可查看报告（通过/润色/丢弃数量及丢弃原因汇总）
-  2. 工作台 Step1 右栏 RAG 历史用例预览显示 top-5 结果，每条附相似度分数，且分数 ≥ 0.72
+  2. 工作台 Step1 右栏 RAG 历史用例预览显示 top-5 结果，每条附相似度分数，且分数 >= 0.72
   3. SSE 流式输出中换行符正确渲染为换行（而非显示 `\n` 字符）
   4. 设置页模型配置中可选择 `glm-5`，选择后 AI 分析和工作台均使用新模型
   5. 各 AI 模块使用差异化身份声明的 Prompt，含 Few-shot 正负例，输出结构稳定
-**Plans**: 3 plans
+**Plans**: 3 plans (FORCE REDO - comprehensive coverage)
 
 Plans:
-- [x] 03-01-PLAN.md — 历史用例 LLM 审查脚本（TDD）：测试脚手架 + review_testcases.py（RAG-01, RAG-02, RAG-03, RAG-04, RAG-07, RAG-08）
-- [ ] 03-02-PLAN.md — Prompt 体系重写：5 模块 Few-shot + SSE 换行修复 + GLM-5 验证（RAG-06, PRM-01, PRM-02, PRM-03, PRM-04）
+- [ ] 03-01-PLAN.md — Wave 0 测试脚手架：6 个测试文件创建（RAG-01, RAG-02, RAG-03, RAG-04, RAG-07, RAG-08）
+- [ ] 03-02-PLAN.md — Prompt 体系验证 + SSE 换行修复 + GLM-5 配置（RAG-06, PRM-01, PRM-02, PRM-03, PRM-04）
 - [ ] 03-03-PLAN.md — RAG 检索参数确认 + Phase 3 端到端验收 checkpoint（RAG-05）
 
 ### Phase 4: 外围模块扩展
@@ -124,7 +124,6 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. 清场 | 3/3 | Complete    | 2026-03-15 |
 | 2. 主链路重构 | 6/6 | Complete   | 2026-03-15 |
-| 3. AI 质量提升 | 3/3 | Complete   | 2026-03-15 |
+| 3. AI 质量提升 | 0/3 | **FORCE REDO** | - |
 | 4. 外围模块扩展 | 11/11 | Complete | 2026-03-16 |
 | 5. 体验收尾 | 4/6 | In progress | - |
-
