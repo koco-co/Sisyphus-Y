@@ -8,7 +8,7 @@ import pytest
 class TestRecreateCollection:
     """测试 recreate_collection 函数。"""
 
-    def test_recreate_collection_mock(self):
+    def test_recreate_existing_collection(self):
         """mock QdrantClient，调用 recreate_collection 后 delete_collection 和 create_collection 均被调用。"""
         # 需要导入被测函数
         from app.engine.rag.retriever import recreate_collection
@@ -71,3 +71,31 @@ class TestRecreateCollection:
             assert "collection" in result
             assert "existed" in result
             assert "vector_size" in result
+
+    def test_recreate_nonexistent_collection(self):
+        """collection 不存在时不报错，直接创建新 collection。"""
+        from app.engine.rag.retriever import recreate_collection
+
+        with patch("app.engine.rag.retriever._get_client") as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+
+            # 模拟 collection 不存在
+            mock_collections = MagicMock()
+            mock_collections.collections = []  # 空列表
+            mock_client.get_collections.return_value = mock_collections
+
+            # 执行
+            result = recreate_collection(collection_name="new_collection", vector_size=1024)
+
+            # 验证 delete_collection 未被调用
+            mock_client.delete_collection.assert_not_called()
+
+            # 验证 create_collection 被调用
+            mock_client.create_collection.assert_called_once()
+            call_kwargs = mock_client.create_collection.call_args.kwargs
+            assert call_kwargs["collection_name"] == "new_collection"
+
+            # 验证返回结构
+            assert result["deleted_points"] == 0
+            assert result["existed"] is False
