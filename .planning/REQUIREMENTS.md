@@ -47,9 +47,9 @@
 
 ### 需求录入优化（M00 + M01）
 
-- [ ] **INP-01**: 上传需求入口旁添加「下载模板」按钮，提供 docx/md 格式（放 public/templates/）
-- [ ] **INP-02**: UDA 解析后按章节/功能点自动拆分为独立需求条目，用户确认结构后保存
-- [ ] **INP-03**: 非标准文档给出「识别置信度较低」提示，不阻断，用户可选择继续
+- [x] **INP-01**: 上传需求入口旁添加「下载模板」按钮，提供 docx/md 格式（放 public/templates/）
+- [x] **INP-02**: UDA 解析后按章节/功能点自动拆分为独立需求条目，用户确认结构后保存
+- [x] **INP-03**: 非标准文档给出「识别置信度较低」提示，不阻断，用户可选择继续
 
 ### 用例库增强（M06）
 
@@ -181,9 +181,9 @@
 | PRM-02 | Phase 3 | Pending |
 | PRM-03 | Phase 3 | Pending |
 | PRM-04 | Phase 3 | Pending |
-| INP-01 | Phase 4 | Pending |
-| INP-02 | Phase 4 | Pending |
-| INP-03 | Phase 4 | Pending |
+| INP-01 | Phase 4 | Complete |
+| INP-02 | Phase 4 | Complete |
+| INP-03 | Phase 4 | Complete |
 | TC-01 | Phase 4 | Pending |
 | TC-02 | Phase 4 | Pending |
 | TC-03 | Phase 4 | Pending |

@@ -11,12 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.engine.rag.chunker import chunk_by_headers, chunk_by_paragraphs
 from app.engine.rag.retriever import delete_by_doc_id, index_chunks, recreate_collection, retrieve
 from app.modules.knowledge.models import KnowledgeDocument
+from app.modules.knowledge.schemas import ManualEntryCreate
 from app.modules.uda.parsers import parse_document
 
 logger = logging.getLogger(__name__)
 
 
 class KnowledgeService:
+    MAX_VERSIONS: int = 3
+
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
@@ -294,6 +297,166 @@ class KnowledgeService:
             doc.hit_count += hit_counts.get(str(doc.id), 0)
 
         await self.session.commit()
+
+    async def create_manual_entry(self, data: ManualEntryCreate) -> KnowledgeDocument:
+        """创建手动知识条目，立即向量化，chunk_count=1。
+
+        Args:
+            data: 手动条目创建 schema（title, category, content, tags）。
+
+        Returns:
+            已创建并向量化的 KnowledgeDocument。
+        """
+        from app.engine.rag.chunker import Chunk
+
+        doc = KnowledgeDocument(
+            title=data.title[:200],
+            file_name=data.title[:200],
+            doc_type="manual",
+            file_size=len(data.content.encode("utf-8")),
+            content=data.content,
+            content_ast=None,
+            tags=list(data.tags),
+            source="manual",
+            version=1,
+            vector_status="processing",
+            hit_count=0,
+            chunk_count=0,
+            error_message=None,
+            entry_type="manual",
+            category=data.category,
+            is_active=True,
+        )
+        self.session.add(doc)
+        await self.session.flush()
+
+        try:
+            manual_chunk = Chunk(
+                content=data.content,
+                index=0,
+                metadata={"source_id": str(doc.id), "section_path": data.title},
+            )
+            await index_chunks([manual_chunk], doc_id=str(doc.id))
+            doc.vector_status = "completed"
+            doc.chunk_count = 1
+            doc.error_message = None
+            await self.session.commit()
+            await self.session.refresh(doc)
+            return doc
+        except Exception as exc:
+            logger.exception("Failed to create manual knowledge entry: %s", data.title)
+            doc.vector_status = "failed"
+            doc.error_message = str(exc)
+            await self.session.commit()
+            await self.session.refresh(doc)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"手动知识条目向量化失败: {exc}",
+            ) from exc
+
+    async def upload_new_version(self, doc_id: UUID, file: UploadFile) -> KnowledgeDocument:
+        """上传文档新版本，管理版本限额（MAX_VERSIONS=3）。
+
+        流程：
+        1. 查找 doc_id 对应文档的 title
+        2. 查询同 title 下所有未删除文档（按 version 升序）
+        3. 将所有旧版本 is_active 设为 False
+        4. 若版本数 >= MAX_VERSIONS，软删除最旧版本并清除向量
+        5. 创建新版本（version = max + 1，is_active=True）
+
+        Args:
+            doc_id: 基准文档 ID（用于查找 title）。
+            file: 新版本文件。
+
+        Returns:
+            新创建的 KnowledgeDocument。
+        """
+        base_doc = await self.get_document(doc_id)
+        if not base_doc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+        title = base_doc.title
+        result = await self.session.execute(
+            select(KnowledgeDocument)
+            .where(
+                KnowledgeDocument.title == title,
+                KnowledgeDocument.deleted_at.is_(None),
+            )
+            .order_by(KnowledgeDocument.version.asc())
+        )
+        versions = list(result.scalars().all())
+
+        # 旧版本全部设为非活跃
+        for version_doc in versions:
+            version_doc.is_active = False
+
+        # 版本数达到限额时软删除最旧版本
+        if len(versions) >= self.MAX_VERSIONS:
+            oldest = versions[0]
+            oldest.deleted_at = datetime.now(UTC)
+            delete_by_doc_id(str(oldest.id))
+            logger.info(
+                "版本限额触发：软删除最旧版本 doc_id=%s version=%d",
+                oldest.id,
+                oldest.version,
+            )
+
+        max_version = max((v.version for v in versions), default=0)
+        raw_bytes = await file.read()
+        filename = file.filename or "knowledge.txt"
+        ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "txt"
+        if ext not in {"md", "docx", "pdf", "txt", "manual"}:
+            ext = "txt"
+
+        new_doc = KnowledgeDocument(
+            title=title,
+            file_name=filename,
+            doc_type=ext,
+            file_size=len(raw_bytes),
+            content=None,
+            content_ast=None,
+            tags=list(getattr(base_doc, "tags", []) or []),
+            source="upload",
+            version=max_version + 1,
+            vector_status="processing",
+            hit_count=0,
+            chunk_count=0,
+            error_message=None,
+            entry_type=getattr(base_doc, "entry_type", "file"),
+            category=getattr(base_doc, "category", "business_knowledge"),
+            is_active=True,
+        )
+        self.session.add(new_doc)
+        await self.session.flush()
+
+        try:
+            full_text, content_ast = parse_document(filename, raw_bytes)
+            new_doc.content = full_text
+            new_doc.content_ast = content_ast
+
+            chunks = self._build_chunks(new_doc)
+            if not chunks:
+                raise ValueError("解析结果为空，无法建立向量索引")
+
+            await index_chunks(chunks, doc_id=str(new_doc.id))
+            new_doc.vector_status = "completed"
+            new_doc.chunk_count = len(chunks)
+            new_doc.error_message = None
+            await self.session.commit()
+            await self.session.refresh(new_doc)
+            return new_doc
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.exception("Failed to upload new version for document: %s", doc_id)
+            new_doc.vector_status = "failed"
+            new_doc.error_message = str(exc)
+            await self.session.commit()
+            await self.session.refresh(new_doc)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"新版本索引失败: {exc}",
+            ) from exc
 
     async def reset_all_vector_status(
         self,

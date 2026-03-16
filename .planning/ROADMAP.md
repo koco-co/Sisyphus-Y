@@ -117,5 +117,5 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5
 | 1. 清场 | 3/3 | Complete    | 2026-03-15 |
 | 2. 主链路重构 | 6/6 | Complete   | 2026-03-15 |
 | 3. AI 质量提升 | 3/3 | Complete   | 2026-03-15 |
-| 4. 外围模块扩展 | 0/11 | Planned | - |
+| 4. 外围模块扩展 | 1/11 | In Progress|  |
 | 5. 体验收尾 | 0/TBD | Not started | - |
