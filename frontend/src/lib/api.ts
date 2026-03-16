@@ -50,6 +50,8 @@ export const api = {
   patch: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  deleteWithBody: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'DELETE', body: body ? JSON.stringify(body) : undefined }),
 };
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
@@ -379,11 +381,11 @@ export const recycleApi = {
     return api.get<RecycleItemResponse>(`/recycle/?${qs.toString()}`);
   },
   restore: (entityType: string, id: string) =>
-    api.post<void>(`/recycle/${entityType}/${id}/restore`),
+    api.post<{ ok: boolean }>('/recycle/restore', { entity_type: entityType, entity_id: id }),
   batchRestore: (items: { entity_type: string; id: string }[]) =>
-    api.post<void>('/recycle/batch-restore', { items }),
+    api.post<{ restored: number }>('/recycle/batch-restore', { items }),
   permanentDelete: (entityType: string, id: string) =>
-    api.delete<void>(`/recycle/${entityType}/${id}`),
+    api.deleteWithBody<void>('/recycle/permanent', { entity_type: entityType, entity_id: id }),
   cleanup: (retentionDays = 30) =>
     api.post<{ deleted: number; retention_days: number }>(
       `/recycle/cleanup?retention_days=${retentionDays}`,
