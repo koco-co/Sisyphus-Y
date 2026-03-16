@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-02 dashboard trend + change_impact migration + diff push-to-workbench
-last_updated: "2026-03-16T05:59:30.789Z"
-last_activity: 2026-03-16 — Phase 4 Plan 01 completed (Wave 0 TDD test scaffold, 6 files, 25 tests)
+stopped_at: Completed 04-08 dashboard TrendChart + SourcePieChart + iteration-selector sync (DSH-01~06)
+last_updated: "2026-03-16T10:45:45Z"
+last_activity: 2026-03-16 — Phase 4 Plan 08 completed (dashboard chart refactor, 3 files)
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 24
-  completed_plans: 17
-  percent: 65
+  completed_plans: 19
+  percent: 71
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 4 of 5 (外围模块扩展)
-Plan: 1 of 11 in current phase
-Status: Executing — Wave 0 test scaffold complete
-Last activity: 2026-03-16 — Phase 4 Plan 01 completed (Wave 0 TDD test scaffold, 6 files, 25 tests)
+Plan: 8 of 11 in current phase
+Status: Executing — Plan 08 dashboard chart refactor complete
+Last activity: 2026-03-16 — Phase 4 Plan 08 completed (TrendChart + SourcePieChart + iteration sync, 3 files)
 
-Progress: [███████░░░] 65%
+Progress: [████████░░] 71%
 
 ## Performance Metrics
 
@@ -67,6 +67,8 @@ Progress: [███████░░░] 65%
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P04 | 15 | 2 tasks | 4 files |
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P03 | 7 | 2 tasks | 7 files |
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P02 | 8 | 2 tasks | 9 files |
+| Phase 04-wai-wei-mo-kuai-kuo-zhan P07 | 10 | 2 tasks | 4 files |
+| Phase 04-wai-wei-mo-kuai-kuo-zhan P08 | 5 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -113,6 +115,8 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan]: 版本管理测试 patch.object(svc, get_document) 规避 SQLAlchemy select(MagicMock) ArgumentError
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan]: change_impact 值域 needs_rewrite/needs_review/not_affected，push_to_workbench 设置 status=needs_regen
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan]: Alembic autogenerate 噪声手动清理策略：只保留本次目标的 add_column，防止意外 drop_table
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan P07]: ExportJobCreate.scope 4种范围共用 scope_value 字段；iteration scope 通过 Requirement JOIN（TestCase 无 iteration_id 字段）
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan P07]: ExportDialog json 格式替换为 md，API 端点为 POST /export（router prefix + 空路径）
 
 ### Pending Todos
 

@@ -88,7 +88,7 @@ Plans:
 - [ ] 04-04-PLAN.md — 需求录入：模板下载 + UDA 两步确认 + 置信度提示（INP-01, INP-02, INP-03）
 - [ ] 04-05-PLAN.md — 用例库目录树：重命名重名校验 + 右键「移动到…」Dialog（TC-01~06）
 - [ ] 04-06-PLAN.md — 用例库导入：ImportDialog 拆分 + 必填校验 + 重复处理 Toast（TC-07~11）
-- [ ] 04-07-PLAN.md — 用例库导出：四范围 + 自定义字段 ExportDialog + 后端 scope 扩展（TC-12~14）
+- [x] 04-07-PLAN.md — 用例库导出：四范围 + 自定义字段 ExportDialog + 后端 scope 扩展（TC-12~14）
 - [ ] 04-08-PLAN.md — 仪表盘：TrendChart 折线图 + SourcePieChart 环形图 + 迭代联动（DSH-01~06）
 - [ ] 04-09-PLAN.md — 需求 Diff：发布新版本入口 + 并排 DiffView + change_impact Badge + 推送按钮（DIF-01~05）
 - [ ] 04-10-PLAN.md — 知识库前端：分类 Tab + ChunkPreviewDrawer + ManualEntryDialog + 版本 UI（KB-01~04）
