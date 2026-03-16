@@ -18,11 +18,14 @@ import {
   FolderOpen,
   GripVertical,
   Inbox,
+  MoveRight,
   Plus,
   Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { ApiError, api } from '@/lib/api';
+import { MoveFolderDialog } from './MoveFolderDialog';
 
 export interface FolderNode {
   id: string;
@@ -77,6 +80,7 @@ function SortableFolderItem({
   onEditCancel,
   onDeleteClick,
   onContextMenu,
+  onMoveClick,
   onInlineCreateConfirm,
   onInlineCreateCancel,
   onInlineCreateChange,
@@ -96,6 +100,7 @@ function SortableFolderItem({
   onEditCancel: () => void;
   onDeleteClick: (node: FolderNode) => void;
   onContextMenu: (e: React.MouseEvent, node: FolderNode) => void;
+  onMoveClick: (node: FolderNode) => void;
   onInlineCreateConfirm: () => void;
   onInlineCreateCancel: () => void;
   onInlineCreateChange: (v: string) => void;
@@ -269,6 +274,7 @@ function SortableFolderItem({
           onEditCancel={onEditCancel}
           onDeleteClick={onDeleteClick}
           onContextMenu={onContextMenu}
+          onMoveClick={onMoveClick}
           onInlineCreateConfirm={onInlineCreateConfirm}
           onInlineCreateCancel={onInlineCreateCancel}
           onInlineCreateChange={onInlineCreateChange}
@@ -298,6 +304,7 @@ function SortableFolderLevel({
   onEditCancel,
   onDeleteClick,
   onContextMenu,
+  onMoveClick,
   onInlineCreateConfirm,
   onInlineCreateCancel,
   onInlineCreateChange,
@@ -319,6 +326,7 @@ function SortableFolderLevel({
   onEditCancel: () => void;
   onDeleteClick: (node: FolderNode) => void;
   onContextMenu: (e: React.MouseEvent, node: FolderNode) => void;
+  onMoveClick: (node: FolderNode) => void;
   onInlineCreateConfirm: () => void;
   onInlineCreateCancel: () => void;
   onInlineCreateChange: (v: string) => void;
@@ -354,6 +362,7 @@ function SortableFolderLevel({
           onEditCancel={onEditCancel}
           onDeleteClick={onDeleteClick}
           onContextMenu={onContextMenu}
+          onMoveClick={onMoveClick}
           onInlineCreateConfirm={onInlineCreateConfirm}
           onInlineCreateCancel={onInlineCreateCancel}
           onInlineCreateChange={onInlineCreateChange}
@@ -401,6 +410,7 @@ function SortableFolderLevel({
           onEditCancel={onEditCancel}
           onDeleteClick={onDeleteClick}
           onContextMenu={onContextMenu}
+          onMoveClick={onMoveClick}
           onInlineCreateConfirm={onInlineCreateConfirm}
           onInlineCreateCancel={onInlineCreateCancel}
           onInlineCreateChange={onInlineCreateChange}
@@ -440,6 +450,9 @@ export function FolderTree({
   // Delete confirm dialog
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirm | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Move folder dialog
+  const [movingFolderId, setMovingFolderId] = useState<string | null>(null);
 
   // DnD - active drag item
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -502,10 +515,34 @@ export function FolderTree({
 
   const handleEditSubmit = async () => {
     if (!editingId) return;
-    const name = editName.trim();
+    const name = editName.trim().slice(0, 20);
     if (!name) {
       setEditError('名称不能为空');
       return;
+    }
+    // Check for duplicate name among siblings
+    const editingNode = nodeMap.current.get(editingId);
+    if (editingNode) {
+      const getSiblings = (nodes: FolderNode[], targetId: string): FolderNode[] => {
+        for (const n of nodes) {
+          if (n.children.some((c) => c.id === targetId)) {
+            return n.children;
+          }
+          const found = getSiblings(n.children, targetId);
+          if (found.length > 0) return found;
+        }
+        return [];
+      };
+      const siblings = allNodes.some((n) => n.id === editingId)
+        ? allNodes
+        : getSiblings(allNodes, editingId);
+      const isDuplicate = siblings.some(
+        (s) => s.id !== editingId && s.name.toLowerCase() === name.toLowerCase(),
+      );
+      if (isDuplicate) {
+        toast.error('目录名称已存在');
+        return;
+      }
     }
     try {
       await api.patch(`/testcases/folders/${editingId}`, { name });
@@ -598,6 +635,12 @@ export function FolderTree({
   const handleContextMenu = (e: React.MouseEvent, node: FolderNode) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, folderId: node.id, folderName: node.name });
+  };
+
+  // Move folder handler
+  const handleMoveClick = (node: FolderNode) => {
+    setContextMenu(null);
+    setMovingFolderId(node.id);
   };
 
   // DnD sensor (require 4px move to start)
@@ -741,6 +784,7 @@ export function FolderTree({
               onEditCancel={handleEditCancel}
               onDeleteClick={handleDeleteClick}
               onContextMenu={handleContextMenu}
+              onMoveClick={handleMoveClick}
               onInlineCreateConfirm={handleInlineCreateConfirm}
               onInlineCreateCancel={handleInlineCreateCancel}
               onInlineCreateChange={setInlineCreateName}
@@ -783,7 +827,7 @@ export function FolderTree({
         <div
           ref={contextMenuRef}
           role="menu"
-          className="fixed z-50 min-w-[120px] bg-sy-bg-1 border border-sy-border rounded-md shadow-lg py-1"
+          className="fixed z-50 min-w-[140px] bg-sy-bg-1 border border-sy-border rounded-md shadow-lg py-1"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           <button
@@ -796,6 +840,17 @@ export function FolderTree({
             }}
           >
             重命名
+          </button>
+          <button
+            type="button"
+            className="w-full px-3 py-1.5 text-left text-[12.5px] text-sy-text-2 hover:bg-sy-bg-2 hover:text-sy-text transition-colors flex items-center gap-1.5"
+            onClick={() => {
+              const node = nodeMap.current.get(contextMenu.folderId);
+              if (node) handleMoveClick(node);
+            }}
+          >
+            <MoveRight className="w-3.5 h-3.5 shrink-0" />
+            移动到…
           </button>
           <button
             type="button"
@@ -853,6 +908,35 @@ export function FolderTree({
             </div>
           </div>
         </>
+      )}
+
+      {/* Move folder dialog */}
+      {movingFolderId && (
+        <MoveFolderDialog
+          open={!!movingFolderId}
+          folderId={movingFolderId}
+          currentParentId={
+            allNodes.some((n) => n.id === movingFolderId)
+              ? null
+              : (() => {
+                  const findParent = (nodes: FolderNode[], targetId: string): string | null => {
+                    for (const n of nodes) {
+                      if (n.children.some((c) => c.id === targetId)) return n.id;
+                      const found = findParent(n.children, targetId);
+                      if (found !== null) return found;
+                    }
+                    return null;
+                  };
+                  return findParent(allNodes, movingFolderId);
+                })()
+          }
+          folders={allNodes}
+          onClose={() => setMovingFolderId(null)}
+          onSuccess={() => {
+            setMovingFolderId(null);
+            fetchFolders();
+          }}
+        />
       )}
     </div>
   );
