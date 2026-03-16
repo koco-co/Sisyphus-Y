@@ -17,6 +17,7 @@ from app.modules.knowledge.schemas import (
     KnowledgeListResponse,
     KnowledgeSearchRequest,
     KnowledgeSearchResultResponse,
+    ManualEntryCreate,
 )
 from app.modules.knowledge.service import KnowledgeService
 
@@ -127,6 +128,21 @@ async def search_documents(
     return [KnowledgeSearchResultResponse.model_validate(item) for item in results]
 
 
+@router.post(
+    "/manual",
+    response_model=KnowledgeDocumentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_manual_entry(
+    data: ManualEntryCreate,
+    session: AsyncSessionDep,
+) -> KnowledgeDocumentResponse:
+    """创建手动知识条目，entry_type='manual'，立即向量化。"""
+    svc = KnowledgeService(session)
+    doc = await svc.create_manual_entry(data)
+    return KnowledgeDocumentResponse.model_validate(_serialize_document(doc))
+
+
 @router.post("/", response_model=KnowledgeDocumentResponse, status_code=status.HTTP_201_CREATED)
 async def create_document(data: KnowledgeDocCreate, session: AsyncSessionDep) -> KnowledgeDocumentResponse:
     svc = KnowledgeService(session)
@@ -168,6 +184,22 @@ async def get_document_chunks(
             )
         )
     return ChunksResponse(items=items, total=len(items))
+
+
+@router.post(
+    "/{doc_id}/new-version",
+    response_model=KnowledgeDocumentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_new_version(
+    doc_id: uuid.UUID,
+    file: Annotated[UploadFile, File(...)],
+    session: AsyncSessionDep,
+) -> KnowledgeDocumentResponse:
+    """上传文档新版本，触发版本限额管理（超过3版本时软删除最旧版本）。"""
+    svc = KnowledgeService(session)
+    doc = await svc.upload_new_version(doc_id, file)
+    return KnowledgeDocumentResponse.model_validate(_serialize_document(doc))
 
 
 @router.post("/{doc_id}/reindex", response_model=KnowledgeDocumentResponse)
