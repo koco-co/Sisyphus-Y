@@ -97,9 +97,9 @@
 
 ### 需求 Diff（M07）
 
-- [ ] **DIF-01**: 「发布新版本」按钮在需求编辑器右上角，点击填写版本说明（选填）后触发 Diff
-- [ ] **DIF-02**: 文本对比 Tab：左旧右新，删除红/新增绿/修改黄，支持折叠未变更段落
-- [ ] **DIF-03**: 变更摘要 Tab：卡片列表，每卡显示变更类型+摘要+业务影响
+- [x] **DIF-01**: 「发布新版本」按钮在需求编辑器右上角，点击填写版本说明（选填）后触发 Diff
+- [x] **DIF-02**: 文本对比 Tab：左旧右新，删除红/新增绿/修改黄，支持折叠未变更段落
+- [x] **DIF-03**: 变更摘要 Tab：卡片列表，每卡显示变更类型+摘要+业务影响
 - [x] **DIF-04**: Diff 后自动影响分析，受影响用例打标（需重写/需复核/不受影响）
 - [x] **DIF-05**: 「一键推送到工作台」将「需重写」用例批量推送，用例列表同步显示对应 Badge
 
@@ -204,9 +204,9 @@
 | DSH-04 | Phase 4 | Pending |
 | DSH-05 | Phase 4 | Pending |
 | DSH-06 | Phase 4 | Pending |
-| DIF-01 | Phase 4 | Pending |
-| DIF-02 | Phase 4 | Pending |
-| DIF-03 | Phase 4 | Pending |
+| DIF-01 | Phase 4 | Complete |
+| DIF-02 | Phase 4 | Complete |
+| DIF-03 | Phase 4 | Complete |
 | DIF-04 | Phase 4 | Complete |
 | DIF-05 | Phase 4 | Complete |
 | KB-01 | Phase 4 | Complete |
