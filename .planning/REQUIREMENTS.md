@@ -70,7 +70,7 @@
 
 ### 知识库增强（M11）
 
-- [ ] **KB-01**: 四固定分类：企业测试规范/业务领域知识/历史用例/技术参考
+- [x] **KB-01**: 四固定分类：企业测试规范/业务领域知识/历史用例/技术参考
 - [x] **KB-02**: 文档分块预览抽屉（序号/token数/内容），支持删除单个 chunk
 - [x] **KB-03**: 手动添加知识条目（标题/分类/内容/标签），直接向量化入库，显示「手动」Badge
 - [x] **KB-04**: 文档版本管理：新版本上传弹确认，旧版本停用不参与检索，最多保留3版，超限自动删除最旧
@@ -209,7 +209,7 @@
 | DIF-03 | Phase 4 | Pending |
 | DIF-04 | Phase 4 | Complete |
 | DIF-05 | Phase 4 | Complete |
-| KB-01 | Phase 4 | Pending |
+| KB-01 | Phase 4 | Complete |
 | KB-02 | Phase 4 | Complete |
 | KB-03 | Phase 4 | Complete |
 | KB-04 | Phase 4 | Complete |

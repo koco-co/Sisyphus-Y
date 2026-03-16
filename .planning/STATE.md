@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-04 requirement upload optimization (templates + dialog upgrade)
-last_updated: "2026-03-16T05:58:13.913Z"
+stopped_at: Completed 04-02 dashboard trend + change_impact migration + diff push-to-workbench
+last_updated: "2026-03-16T05:59:30.789Z"
 last_activity: 2026-03-16 — Phase 4 Plan 01 completed (Wave 0 TDD test scaffold, 6 files, 25 tests)
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 24
-  completed_plans: 15
+  completed_plans: 17
   percent: 65
 ---
 
@@ -65,6 +65,8 @@ Progress: [███████░░░] 65%
 | Phase 03-ai P01 | 45 | 2 tasks | 7 files |
 | Phase 03-ai P03 | 10 | 1 tasks | 1 files |
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P04 | 15 | 2 tasks | 4 files |
+| Phase 04-wai-wei-mo-kuai-kuo-zhan P03 | 7 | 2 tasks | 7 files |
+| Phase 04-wai-wei-mo-kuai-kuo-zhan P02 | 8 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -106,6 +108,11 @@ Decisions logged in PROJECT.md Key Decisions table. Key ones affecting current w
 - [Phase 03-ai P03]: RAG 预览端点使用 graceful degradation，任何异常返回空结果而非 500
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan]: INP: UploadRequirementDialog checkbox confirm flow — per-item confidence not in API, overall threshold 0.7, file format validation client-side
 - [Phase 04-wai-wei-mo-kuai-kuo-zhan]: Wave 0 测试脚手架：DSH-02/KB-02 已先行实现，KB-03/KB-04 由 hook 自动实现，DIF-04/05 和 TC-12/14 保持 RED 等待 Wave 1
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan]: scroll_by_doc_id 在 retriever 层返回完整 content，500字符截断在 router 层（关注点分离）
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan]: KB ManualEntryCreate.category 使用 Pydantic Literal 约束四固定分类，非法值 schema 层即拦截
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan]: 版本管理测试 patch.object(svc, get_document) 规避 SQLAlchemy select(MagicMock) ArgumentError
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan]: change_impact 值域 needs_rewrite/needs_review/not_affected，push_to_workbench 设置 status=needs_regen
+- [Phase 04-wai-wei-mo-kuai-kuo-zhan]: Alembic autogenerate 噪声手动清理策略：只保留本次目标的 add_column，防止意外 drop_table
 
 ### Pending Todos
 
@@ -120,6 +127,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T05:55:00.966Z
-Stopped at: Completed 04-04 requirement upload optimization (templates + dialog upgrade)
+Last session: 2026-03-16T05:59:30.788Z
+Stopped at: Completed 04-02 dashboard trend + change_impact migration + diff push-to-workbench
 Resume file: None
