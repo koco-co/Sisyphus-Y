@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-10 knowledge base frontend - KB-01~04
-last_updated: "2026-03-16T06:35:00Z"
-last_activity: 2026-03-16 — Phase 4 Plan 08 completed (TrendChart + SourcePieChart + iteration sync, 3 files)
+stopped_at: Completed 04-06-PLAN.md ImportDialog 拆分重构 + TC-07~11
+last_updated: "2026-03-16T10:59:00Z"
+last_activity: 2026-03-16 — Phase 4 Plan 06 completed (ImportDialog refactor 1001→333 lines, 5 sub-components, TC-07~11)
 progress:
   total_phases: 5
   completed_phases: 3
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 4 of 5 (外围模块扩展)
-Plan: 8 of 11 in current phase
-Status: Executing — Plan 08 dashboard chart refactor complete
-Last activity: 2026-03-16 — Phase 4 Plan 08 completed (TrendChart + SourcePieChart + iteration sync, 3 files)
+Plan: 5 of 11 in current phase (04-05 complete)
+Status: Executing — Plan 05 FolderTree 目录管理完整
+Last activity: 2026-03-16 — Phase 4 Plan 05 completed (FolderTree 移动 Dialog + 重名校验, 3 files)
 
 Progress: [████████░░] 71%
 
@@ -70,6 +70,7 @@ Progress: [████████░░] 71%
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P07 | 10 | 2 tasks | 4 files |
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P08 | 5 | 2 tasks | 3 files |
 | Phase 04-wai-wei-mo-kuai-kuo-zhan P09 | 6 | 3 tasks | 10 files |
+| Phase 04-wai-wei-mo-kuai-kuo-zhan P06 | 18 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -133,7 +134,7 @@ None yet.
 - Celery tasks 全部为 stub，批量向量化（RAG-01~04）若数据量大会阻塞请求线程
 - DB 连接池未限制，Phase 2 SSE 并发场景需关注（pool_size 默认 ~5）
 - RAG 向量维度校验缺失，Phase 3 切换 GLM-5 时需确认 embedding 维度兼容性
-- ImportDialog 为 1000 行组件（CONCERNS.md 标记为 Fragile），Phase 4 修改时需格外小心
+- ImportDialog 重构完成（04-06），Fragile 问题已解决
 
 ## Session Continuity
 
