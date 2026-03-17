@@ -130,8 +130,8 @@ Plans:
 
 Plans:
 - [x] 06-00-WAVE0-PLAN.md — Wave 0 测试脚手架：Markdown 渲染测试 + files API 测试 RED 基线 (completed 2026-03-17)
-- [ ] 06-01-PLAN.md — Markdown 渲染：RequirementDetailTab 使用 ReactMarkdown 渲染需求内容（E2E-TEST-01）
-- [ ] 06-02-PLAN.md — Files API：创建 /api/files/{bucket}/{path} 端点代理 MinIO 访问（E2E-TEST-03）
+- [x] 06-01-PLAN.md — Markdown 渲染：RequirementDetailTab 使用 ReactMarkdown 渲染需求内容（E2E-TEST-01）(completed 2026-03-17)
+- [x] 06-02-PLAN.md — Files API：创建 /api/files/{bucket}/{path} 端点代理 MinIO 访问（E2E-TEST-03）(completed 2026-03-17)
 - [ ] 06-03-PLAN.md — E2E 测试：Chrome DevTools MCP 主链路端到端验证（E2E-TEST-02, E2E-TEST-04）
 
 ## Progress
@@ -147,4 +147,4 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. AI 质量提升 | 0/3 | **FORCE REDO** | - |
 | 4. 外围模块扩展 | 11/11 | Complete | 2026-03-16 |
 | 5. 体验收尾 | 6/6 | Complete | 2026-03-17 |
-| 6. 浏览器全量测试 | 1/4 | In Progress | - |
+| 6. 浏览器全量测试 | 3/4 | In Progress | - |
