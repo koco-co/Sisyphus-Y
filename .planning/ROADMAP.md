@@ -10,7 +10,7 @@
 - [x] **Phase 2: 主链路重构** - 分析台三 Tab 布局 + 工作台步骤条，核心流程端到端跑通 (completed 2026-03-15)
 - [ ] **Phase 3: AI 质量提升** - 历史用例审查入向量库 + Prompt 体系重写 + GLM-5 切换 (FORCE REDO)
 - [x] **Phase 4: 外围模块扩展** - 需求录入优化、用例库完整能力、仪表盘重构、需求 Diff (completed 2026-03-16)
-- [ ] **Phase 5: 体验收尾** - 全局 UI 规范统一、回收站、模板库、知识库增强
+- [x] **Phase 5: 体验收尾** - 全局 UI 规范统一、回收站、模板库、知识库增强 (completed 2026-03-17)
 - [ ] **Phase 6: 浏览器全量测试** - Markdown 渲染修复 + 图片显示 + Chrome DevTools MCP E2E 测试
 
 ## Phase Details
@@ -113,7 +113,7 @@ Plans:
 - [x] 05-02-PLAN.md — 回收站功能：cleanup API 调用 + 加载状态 + 恢复逻辑（UX-05, REC-01~03）
 - [x] 05-03-PLAN.md — 模板库 Prompt Tab：列表展示 + 导出/导入 **Markdown**（TPL-01~03）
 - [x] 05-04-PLAN.md — 首次引导 + 帮助按钮 + AI 配置警告扩展（UX-06, UX-07, UX-08）
-- [ ] 05-05-PLAN.md — Phase 5 端到端验收 checkpoint（所有需求验证）
+- [x] 05-05-PLAN.md — Phase 5 端到端验收 checkpoint（所有需求验证）
 
 ### Phase 6: 浏览器全量测试
 **Goal**: 修复需求模块的 Markdown 渲染和图片显示问题，使用 Chrome DevTools MCP 对平台主链路进行端到端测试
@@ -129,7 +129,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 06-00-WAVE0-PLAN.md — Wave 0 测试脚手架：Markdown 渲染测试 + files API 测试 RED 基线
+- [x] 06-00-WAVE0-PLAN.md — Wave 0 测试脚手架：Markdown 渲染测试 + files API 测试 RED 基线 (completed 2026-03-17)
 - [ ] 06-01-PLAN.md — Markdown 渲染：RequirementDetailTab 使用 ReactMarkdown 渲染需求内容（E2E-TEST-01）
 - [ ] 06-02-PLAN.md — Files API：创建 /api/files/{bucket}/{path} 端点代理 MinIO 访问（E2E-TEST-03）
 - [ ] 06-03-PLAN.md — E2E 测试：Chrome DevTools MCP 主链路端到端验证（E2E-TEST-02, E2E-TEST-04）
@@ -146,5 +146,5 @@ Phases execute in order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. 主链路重构 | 6/6 | Complete   | 2026-03-15 |
 | 3. AI 质量提升 | 0/3 | **FORCE REDO** | - |
 | 4. 外围模块扩展 | 11/11 | Complete | 2026-03-16 |
-| 5. 体验收尾 | 4/6 | In progress | - |
-| 6. 浏览器全量测试 | 0/4 | Pending | - |
+| 5. 体验收尾 | 6/6 | Complete | 2026-03-17 |
+| 6. 浏览器全量测试 | 1/4 | In Progress | - |
