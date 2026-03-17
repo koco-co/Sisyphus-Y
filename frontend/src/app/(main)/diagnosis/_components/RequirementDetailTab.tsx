@@ -2,6 +2,7 @@
 
 import { AlertCircle, Edit3, FileText, Loader2, Play, Save, Tag, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useRequirement } from '@/hooks/useRequirement';
 
 interface RequirementDetailTabProps {
@@ -34,7 +35,7 @@ export function RequirementDetailTab({ reqId, onStartAnalysis }: RequirementDeta
 
   const rawContent = (() => {
     const ast = req?.content_ast;
-    if (!ast) return (req as Record<string, unknown> | undefined)?.content as string ?? '';
+    if (!ast) return ((req as Record<string, unknown> | undefined)?.content as string) ?? '';
     if (typeof ast.raw_text === 'string') return ast.raw_text;
     if (typeof ast.content === 'string') return ast.content;
     return extractAstText(ast as Record<string, unknown>);
@@ -200,8 +201,27 @@ export function RequirementDetailTab({ reqId, onStartAnalysis }: RequirementDeta
               placeholder="输入需求内容（支持 Markdown）..."
             />
           ) : (
-            <div className="text-[13px] text-text leading-relaxed whitespace-pre-wrap">
-              {rawContent || (
+            <div
+              className="text-[13px] text-text leading-relaxed
+              prose prose-sm prose-invert max-w-none
+              [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:text-text
+              [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2 [&_h2]:text-text
+              [&_h3]:text-sm [&_h3]:font-medium [&_h3]:mt-4 [&_h3]:mb-2 [&_h3]:text-text
+              [&_ul]:pl-5 [&_ul]:list-disc [&_ul]:my-2 [&_li]:mb-1 [&_li]:text-text2
+              [&_ol]:pl-5 [&_ol]:list-decimal [&_ol]:my-2
+              [&_code]:font-mono [&_code]:text-accent [&_code]:bg-bg3 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[12px]
+              [&_pre]:bg-bg2 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:my-3
+              [&_pre_code]:bg-transparent [&_pre_code]:p-0
+              [&_blockquote]:border-l-2 [&_blockquote]:border-accent [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-text3
+              [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_a]:hover:text-accent2
+              [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-border [&_img]:my-3
+              [&_p]:mb-2 [&_p]:text-text2
+              [&_strong]:font-semibold [&_strong]:text-text
+              [&_em]:italic"
+            >
+              {rawContent ? (
+                <ReactMarkdown>{rawContent}</ReactMarkdown>
+              ) : (
                 <span className="text-text3 italic">暂无需求内容，点击「编辑」添加</span>
               )}
             </div>
