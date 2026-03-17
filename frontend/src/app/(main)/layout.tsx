@@ -72,7 +72,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   return (
-    <>
+    <div className="min-w-[1280px]">
       <nav className="top-nav" aria-label="主导航">
         <span className="nav-title">Sisyphus</span>
         <span className="pill pill-green" style={{ marginRight: 8, fontSize: 10 }}>
@@ -80,7 +80,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </span>
 
         {navGroups.map((group, gi) => {
-          const groupKey = group.items[0].href;
+          const groupKey = group.items[0]?.href ?? `group-${gi.toString()}`;
           const items = group.items.map((t) => {
             const Icon = t.icon;
             const isActive =
@@ -127,6 +127,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <OnboardingGuideButton />
       <ProgressDashboard />
       <GlobalSearch />
-    </>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Archive, ChevronDown, ChevronRight, Database, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Database, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 
@@ -153,7 +153,7 @@ function RecordRow({
           </span>
         </td>
         <td className="px-2 py-2.5 text-[11px] text-sy-text-3 whitespace-nowrap">
-          {record.raw_data.case_type as string || '功能测试'}
+          {(record.raw_data.case_type as string) || '功能测试'}
         </td>
         <td className="px-2 py-2.5 whitespace-nowrap">
           <span className="font-mono text-[10px] px-1.5 py-0.5 rounded border bg-sy-bg-3 border-sy-border text-sy-text-3">
@@ -229,7 +229,9 @@ export function ImportedCasesTab() {
         <div className="flex items-center gap-2 px-3 py-1.5 bg-sy-bg-1 border border-sy-border rounded-md">
           <Database className="w-3.5 h-3.5 text-sy-accent" />
           <span className="text-[12px] text-sy-text-2">
-            共 <span className="font-mono text-sy-accent font-semibold">{total.toLocaleString()}</span> 条历史用例
+            共{' '}
+            <span className="font-mono text-sy-accent font-semibold">{total.toLocaleString()}</span>{' '}
+            条历史用例
           </span>
         </div>
         <div className="flex-1" />

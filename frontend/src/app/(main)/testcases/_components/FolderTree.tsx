@@ -188,11 +188,11 @@ function SortableFolderItem({
           />
         ) : expanded && hasChildren ? (
           <FolderOpen
-            className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-sy-accent' : 'text-amber-400/70'}`}
+            className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-sy-accent' : 'text-sy-warn/70'}`}
           />
         ) : (
           <Folder
-            className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-sy-accent' : 'text-amber-400/70'}`}
+            className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-sy-accent' : 'text-sy-warn/70'}`}
           />
         )}
 
@@ -376,7 +376,7 @@ function SortableFolderLevel({
           className="flex items-center gap-1.5 py-1"
           style={{ paddingLeft: `${padLeft + 20}px` }}
         >
-          <Folder className="w-3.5 h-3.5 shrink-0 text-amber-400/60" />
+          <Folder className="w-3.5 h-3.5 shrink-0 text-sy-warn/60" />
           <input
             ref={internalCreateRef}
             value={inlineCreateName}
@@ -794,7 +794,7 @@ export function FolderTree({
             {/* Root-level inline create */}
             {inlineCreate?.parentId === null && (
               <div className="flex items-center gap-1.5 py-1 px-2">
-                <Folder className="w-3.5 h-3.5 shrink-0 text-amber-400/60" />
+                <Folder className="w-3.5 h-3.5 shrink-0 text-sy-warn/60" />
                 <input
                   ref={rootCreateInputRef}
                   value={inlineCreateName}
@@ -813,7 +813,7 @@ export function FolderTree({
             <DragOverlay>
               {activeNode && (
                 <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-sy-bg-3 border border-sy-border text-sy-text-2 shadow-lg text-[12.5px]">
-                  <Folder className="w-3.5 h-3.5 text-amber-400/70" />
+                  <Folder className="w-3.5 h-3.5 text-sy-warn/70" />
                   {activeNode.name}
                 </div>
               )}

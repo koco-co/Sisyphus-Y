@@ -61,7 +61,7 @@ function FolderOption({ node, depth, selectedId, excludeIds, onSelect }: FolderO
         {isSelected ? (
           <FolderOpen className="w-3.5 h-3.5 shrink-0 text-sy-accent" />
         ) : (
-          <Folder className="w-3.5 h-3.5 shrink-0 text-amber-400/70" />
+          <Folder className="w-3.5 h-3.5 shrink-0 text-sy-warn/70" />
         )}
         <span className="truncate">{node.name}</span>
         {isOverDepth && (

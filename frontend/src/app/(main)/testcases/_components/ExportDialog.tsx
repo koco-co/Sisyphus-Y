@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 interface ExportDialogProps {
   open: boolean;
@@ -97,7 +97,13 @@ export default function ExportDialog({
     if (open) {
       setFormat('xlsx');
       setScope(
-        selectedCaseIds.length > 0 ? 'selected' : currentFolderId ? 'folder' : iterationId ? 'iteration' : 'folder'
+        selectedCaseIds.length > 0
+          ? 'selected'
+          : currentFolderId
+            ? 'folder'
+            : iterationId
+              ? 'iteration'
+              : 'folder',
       );
       setFields(new Set(DEFAULT_FIELDS));
       setReqScopeValue('');
@@ -182,7 +188,13 @@ export default function ExportDialog({
     { value: 'requirement', label: '按需求' },
     { value: 'iteration', label: '按迭代' },
     ...(selectedCaseIds.length > 0
-      ? [{ value: 'selected' as ExportScope, label: '已勾选用例', badge: `${selectedCaseIds.length}` }]
+      ? [
+          {
+            value: 'selected' as ExportScope,
+            label: '已勾选用例',
+            badge: `${selectedCaseIds.length}`,
+          },
+        ]
       : [{ value: 'selected' as ExportScope, label: '自由勾选', disabled: true }]),
   ];
 
@@ -293,7 +305,9 @@ export default function ExportDialog({
                       >
                         {active && <div className="w-1.5 h-1.5 rounded-full bg-sy-accent" />}
                       </div>
-                      <span className={`text-[12.5px] ${active ? 'text-sy-text' : 'text-sy-text-2'}`}>
+                      <span
+                        className={`text-[12.5px] ${active ? 'text-sy-text' : 'text-sy-text-2'}`}
+                      >
                         {opt.label}
                       </span>
                       {opt.badge && (

@@ -74,7 +74,7 @@ export function UserMenu() {
             </Link>
             <button
               type="button"
-              className="flex items-center gap-2.5 px-4 py-2 text-[12.5px] text-red hover:bg-red/5 transition-colors w-full text-left"
+              className="flex items-center gap-2.5 px-4 py-2 text-[12.5px] text-sy-danger hover:bg-sy-danger/5 transition-colors w-full text-left"
               role="menuitem"
               onClick={() => {
                 setOpen(false);

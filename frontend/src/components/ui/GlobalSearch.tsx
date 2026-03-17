@@ -54,7 +54,7 @@ export function GlobalSearch() {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [_searching, setSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const router = useRouter();
@@ -76,7 +76,9 @@ export function GlobalSearch() {
           (data.items ?? []).map((item) => ({
             id: item.id,
             title: item.title,
-            type: (validTypes.includes(item.type as ValidType) ? item.type : 'requirement') as ValidType,
+            type: (validTypes.includes(item.type as ValidType)
+              ? item.type
+              : 'requirement') as ValidType,
             description: item.content ?? item.summary ?? item.highlight ?? '',
             url: `/${item.type}s`,
           })),

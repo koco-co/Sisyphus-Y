@@ -117,7 +117,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
   if (!open) return null;
 
   const inputClass =
-    'w-full px-3 py-2 text-[12.5px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 outline-none focus:border-accent transition-colors';
+    'w-full px-3 py-2 text-[12.5px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 outline-none focus:border-sy-accent transition-colors';
   const labelClass = 'block text-[11.5px] font-semibold text-text3 uppercase tracking-wider mb-1.5';
   const titleId = 'testcase-edit-title';
   const priorityId = 'testcase-edit-priority';
@@ -238,7 +238,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
               <button
                 type="button"
                 onClick={handleAddStep}
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-accent hover:bg-accent/10 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-sy-accent hover:bg-sy-accent/10 transition-colors"
               >
                 <Plus className="w-3 h-3" />
                 添加步骤
@@ -268,14 +268,14 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
                         value={step.action}
                         onChange={(e) => handleStepChange(idx, 'action', e.target.value)}
                         placeholder="操作步骤..."
-                        className="w-full px-2.5 py-1.5 text-[12px] bg-bg1 border border-border rounded text-text placeholder:text-text3 outline-none focus:border-accent transition-colors"
+                        className="w-full px-2.5 py-1.5 text-[12px] bg-bg1 border border-border rounded text-text placeholder:text-text3 outline-none focus:border-sy-accent transition-colors"
                       />
                       <input
                         type="text"
                         value={step.expected_result}
                         onChange={(e) => handleStepChange(idx, 'expected_result', e.target.value)}
                         placeholder="预期结果..."
-                        className="w-full px-2.5 py-1.5 text-[12px] bg-bg1 border border-border rounded text-accent/80 placeholder:text-text3 outline-none focus:border-accent transition-colors"
+                        className="w-full px-2.5 py-1.5 text-[12px] bg-bg1 border border-border rounded text-sy-accent/80 placeholder:text-text3 outline-none focus:border-sy-accent transition-colors"
                       />
                     </div>
 
@@ -300,7 +300,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
                       <button
                         type="button"
                         onClick={() => handleRemoveStep(idx)}
-                        className="p-1 rounded text-text3 hover:text-red hover:bg-red/10 transition-colors"
+                        className="p-1 rounded text-text3 hover:text-sy-danger hover:bg-sy-danger/10 transition-colors"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -315,9 +315,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
         {/* Footer */}
         <div className="border-t border-border shrink-0">
           {saveError && (
-            <div className="px-5 py-2 text-[12px] text-red-500 bg-red-50 dark:bg-red/10 dark:text-sy-danger">
-              {saveError}
-            </div>
+            <div className="px-5 py-2 text-[12px] text-sy-danger bg-sy-danger/10">{saveError}</div>
           )}
           <div className="flex justify-end gap-2 px-5 py-4">
             <button
@@ -331,7 +329,7 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
               type="button"
               onClick={handleSubmit}
               disabled={!title.trim() || saving}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-accent text-white hover:bg-accent2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-sy-accent text-white hover:bg-sy-accent-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {saving ? '保存中...' : '保存'}

@@ -13,16 +13,16 @@ import { FormField } from '@/components/ui/FormField';
 import { Pagination } from '@/components/ui/Pagination';
 import { TableSkeleton } from '@/components/ui/TableSkeleton';
 
-/* ── Inline API client ── */
+/* ── Inline API client (uses Next.js rewrite proxy → backend) ── */
 
 const apiClient = {
   async get<T>(url: string): Promise<T> {
-    const res = await fetch(`http://localhost:8000/api${url}`);
+    const res = await fetch(`/api${url}`);
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json();
   },
   async post<T>(url: string, data?: unknown): Promise<T> {
-    const res = await fetch(`http://localhost:8000/api${url}`, {
+    const res = await fetch(`/api${url}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: data ? JSON.stringify(data) : undefined,
@@ -31,7 +31,7 @@ const apiClient = {
     return res.json();
   },
   async patch<T>(url: string, data?: unknown): Promise<T> {
-    const res = await fetch(`http://localhost:8000/api${url}`, {
+    const res = await fetch(`/api${url}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: data ? JSON.stringify(data) : undefined,
@@ -40,7 +40,7 @@ const apiClient = {
     return res.json();
   },
   async delete(url: string): Promise<void> {
-    const res = await fetch(`http://localhost:8000/api${url}`, { method: 'DELETE' });
+    const res = await fetch(`/api${url}`, { method: 'DELETE' });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
   },
 };
@@ -109,8 +109,12 @@ function IterationsContent() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (values: { name: string; product_id: string; start_date?: string; end_date?: string }) =>
-      apiClient.post(`/products/${productId}/iterations`, values),
+    mutationFn: (values: {
+      name: string;
+      product_id: string;
+      start_date?: string;
+      end_date?: string;
+    }) => apiClient.post(`/products/${productId}/iterations`, values),
     onSuccess: () => {
       toast.success('迭代创建成功');
       closeCreateDialog();
@@ -304,10 +308,7 @@ function IterationsContent() {
           {isLoading ? (
             <TableSkeleton rows={5} cols={5} />
           ) : items.length === 0 ? (
-            <EmptyState
-              title="暂无迭代"
-              description="点击右上角「新建迭代」开始"
-            />
+            <EmptyState title="暂无迭代" description="点击右上角「新建迭代」开始" />
           ) : (
             <>
               <table className="tbl w-full">
@@ -332,7 +333,7 @@ function IterationsContent() {
                         <td>
                           <button
                             type="button"
-                            className="font-semibold text-accent hover:text-accent2 transition-colors"
+                            className="font-semibold text-sy-accent hover:text-sy-accent-2 transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();
                               router.push(`/requirements?iterationId=${item.id}`);
@@ -373,7 +374,7 @@ function IterationsContent() {
                             </button>
                             <button
                               type="button"
-                              className="btn btn-ghost btn-sm text-red"
+                              className="btn btn-ghost btn-sm text-sy-danger"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setDeleteTarget(item);
