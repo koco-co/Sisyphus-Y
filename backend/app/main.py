@@ -35,6 +35,7 @@ _MODULE_NAMES = [
     "recycle",
     "ai_config",
     "tasks",
+    "files",
 ]
 
 
