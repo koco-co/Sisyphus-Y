@@ -69,29 +69,29 @@ Always respond to me in Simplified Chinese (简体中文). This applies to code 
 
 ## 模块对照表
 
-| 编号 | 后端 `modules/`  | 前端 `(main)/`                            | 职责                     |
-| ---- | ---------------- | ----------------------------------------- | ------------------------ |
-| M00  | `products/`      | `products/` `iterations/` `requirements/` | 子产品/迭代/需求三级管理 |
-| M01  | `uda/`           | —                                         | 文档解析引擎，UDA 层     |
-| M02  | `import_clean/`  | —                                         | 历史数据导入清洗         |
-| M03  | `diagnosis/`     | `analysis/diagnosis/`                     | 需求分析（原健康诊断）   |
-| M04  | `scene_map/`     | `analysis/scene-map/`                     | 测试点分析 & 场景地图    |
-| M05  | `generation/`    | `workbench/`                              | 对话式用例生成工作台     |
-| M06  | `testcases/`     | `testcases/`                              | 用例管理中心             |
-| M07  | `diff/`          | `diff/`                                   | 需求 Diff & 变更影响     |
-| M08  | `coverage/`      | `analysis/coverage/`                      | 需求覆盖度矩阵           |
-| M09  | ~~`test_plan/`~~ | —                                         | ~~迭代测试计划（已裁剪）~~ |
-| M10  | `templates/`     | —                                         | 用例模板库               |
-| M11  | `knowledge/`     | `knowledge/`                              | 知识库管理（RAG）        |
-| M12  | `export/`        | —                                         | 用例导出与集成           |
-| M13  | `execution/`     | —                                         | 执行结果回流             |
-| M14  | `analytics/`     | —（已合并至仪表盘）                       | 质量分析（合并至 M19）   |
-| M16  | `notification/`  | —                                         | 通知系统                 |
-| M17  | `search/`        | —                                         | 全局搜索                 |
-| M18  | ~~`collaboration/`~~ | —                                    | ~~协作功能（已裁剪）~~   |
-| M19  | `dashboard/`     | `(main)/`                                 | 首页仪表盘（含质量分析） |
-| M20  | `audit/`         | —                                         | 操作审计日志             |
-| M21  | `recycle/`       | —                                         | 回收站（软删除）         |
+| 编号 | 后端 `modules/`      | 前端 `(main)/`                            | 职责                       |
+| ---- | -------------------- | ----------------------------------------- | -------------------------- |
+| M00  | `products/`          | `products/` `iterations/` `requirements/` | 子产品/迭代/需求三级管理   |
+| M01  | `uda/`               | —                                         | 文档解析引擎，UDA 层       |
+| M02  | `import_clean/`      | —                                         | 历史数据导入清洗           |
+| M03  | `diagnosis/`         | `analysis/diagnosis/`                     | 需求分析（原健康诊断）     |
+| M04  | `scene_map/`         | `analysis/scene-map/`                     | 测试点分析 & 场景地图      |
+| M05  | `generation/`        | `workbench/`                              | 对话式用例生成工作台       |
+| M06  | `testcases/`         | `testcases/`                              | 用例管理中心               |
+| M07  | `diff/`              | `diff/`                                   | 需求 Diff & 变更影响       |
+| M08  | `coverage/`          | `analysis/coverage/`                      | 需求覆盖度矩阵             |
+| M09  | ~~`test_plan/`~~     | —                                         | ~~迭代测试计划（已裁剪）~~ |
+| M10  | `templates/`         | —                                         | 用例模板库                 |
+| M11  | `knowledge/`         | `knowledge/`                              | 知识库管理（RAG）          |
+| M12  | `export/`            | —                                         | 用例导出与集成             |
+| M13  | `execution/`         | —                                         | 执行结果回流               |
+| M14  | `analytics/`         | —（已合并至仪表盘）                       | 质量分析（合并至 M19）     |
+| M16  | `notification/`      | —                                         | 通知系统                   |
+| M17  | `search/`            | —                                         | 全局搜索                   |
+| M18  | ~~`collaboration/`~~ | —                                         | ~~协作功能（已裁剪）~~     |
+| M19  | `dashboard/`         | `(main)/`                                 | 首页仪表盘（含质量分析）   |
+| M20  | `audit/`             | —                                         | 操作审计日志               |
+| M21  | `recycle/`           | —                                         | 回收站（软删除）           |
 
 ---
 
@@ -229,9 +229,9 @@ animation: { blink: 'blink 0.8s infinite' },
 | `CaseCard`       | `components/workspace/CaseCard.tsx`     | steps 数组逐条渲染，**绝对禁止 JSON.stringify**            |
 | `StreamCursor`   | `components/workspace/StreamCursor.tsx` | `w-0.5 h-3.5 bg-sy-warn animate-blink`                     |
 | `ThreeColLayout` | `components/layout/ThreeColLayout.tsx`  | 三栏固定高布局，各列独立滚动                               |
-| `FormDialog`     | `components/ui/FormDialog.tsx`              | 可复用模态表单对话框                                        |
-| `FormField`      | `components/ui/FormField.tsx`               | 表单字段包装器（label + error）                             |
-| `TableSkeleton`  | `components/ui/TableSkeleton.tsx`           | 表格骨架屏加载动画                                          |
+| `FormDialog`     | `components/ui/FormDialog.tsx`          | 可复用模态表单对话框                                       |
+| `FormField`      | `components/ui/FormField.tsx`           | 表单字段包装器（label + error）                            |
+| `TableSkeleton`  | `components/ui/TableSkeleton.tsx`       | 表格骨架屏加载动画                                         |
 
 ### 场景节点颜色编码
 
@@ -323,17 +323,17 @@ QDRANT_URL=http://localhost:6333
 
 9 个顶级菜单项，由顶部水平导航栏承载：
 
-| 菜单项   | 路由            | 子Tab/说明                                       |
-| -------- | --------------- | ------------------------------------------------ |
-| 仪表盘   | `/`             | 项目概览 + 质量分析 双Tab                         |
-| 分析台   | `/analysis`     | 需求列表 / AI分析 / 场景地图 / 覆盖追踪 四子Tab   |
-| 工作台   | `/workbench`    | 确认测试点 + 生成用例                             |
-| 需求Diff | `/diff`         | 文本对比 + 变更摘要 双Tab                         |
-| 用例库   | `/testcases`    | 3级目录树 + 用例列表 + 导入/导出                  |
-| 模板库   | `/templates`    | 用例结构模板 + Prompt模板 双Tab                   |
-| 知识库   | `/knowledge`    | 4分类：企业规范/业务知识/历史用例/技术参考         |
-| 回收站   | `/recycle`      | 30天自动清理 + 到期倒计时                         |
-| 设置     | `/settings`     | AI配置 + Prompt管理 + 测试标准 + 操作日志          |
+| 菜单项   | 路由         | 子Tab/说明                                      |
+| -------- | ------------ | ----------------------------------------------- |
+| 仪表盘   | `/`          | 项目概览 + 质量分析 双Tab                       |
+| 分析台   | `/analysis`  | 需求列表 / AI分析 / 场景地图 / 覆盖追踪 四子Tab |
+| 工作台   | `/workbench` | 确认测试点 + 生成用例                           |
+| 需求Diff | `/diff`      | 文本对比 + 变更摘要 双Tab                       |
+| 用例库   | `/testcases` | 3级目录树 + 用例列表 + 导入/导出                |
+| 模板库   | `/templates` | 用例结构模板 + Prompt模板 双Tab                 |
+| 知识库   | `/knowledge` | 4分类：企业规范/业务知识/历史用例/技术参考      |
+| 回收站   | `/recycle`   | 30天自动清理 + 到期倒计时                       |
+| 设置     | `/settings`  | AI配置 + Prompt管理 + 测试标准 + 操作日志       |
 
 ---
 
