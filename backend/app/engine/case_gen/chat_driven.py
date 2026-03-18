@@ -189,10 +189,11 @@ async def chat_driven_generate(
     full_sse = "".join(chunks)
     full_text = _extract_content_from_sse(full_sse)
 
-    standardized = await generate_cases_structured(
+    cases = await generate_cases_structured(
         messages_with_sys,
         fallback_text=full_text,
     )
+    standardized = [{**c, "source": "ai"} for c in cases]
 
     if standardized:
         logger.info(

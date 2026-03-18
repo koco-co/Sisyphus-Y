@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 
 class TestChatDrivenBuild:
@@ -64,7 +64,12 @@ class TestChatDrivenGenerate:
                 return_value=fake_stream(),
             ),
             patch("app.engine.case_gen.chat_driven.assemble_prompt", return_value="system"),
-            patch("app.engine.case_gen.chat_driven.parse_test_cases", return_value=parsed_cases),
+            patch("app.engine.case_gen.chat_driven.retrieve_as_context", new_callable=AsyncMock, return_value=None),
+            patch(
+                "app.engine.case_gen.chat_driven.generate_cases_structured",
+                new_callable=AsyncMock,
+                return_value=parsed_cases,
+            ),
         ):
             from app.engine.case_gen.chat_driven import chat_driven_generate
 
@@ -92,7 +97,12 @@ class TestChatDrivenGenerate:
                 return_value=fake_stream(),
             ),
             patch("app.engine.case_gen.chat_driven.assemble_prompt", return_value="system"),
-            patch("app.engine.case_gen.chat_driven.parse_test_cases", return_value=[]),
+            patch("app.engine.case_gen.chat_driven.retrieve_as_context", new_callable=AsyncMock, return_value=None),
+            patch(
+                "app.engine.case_gen.chat_driven.generate_cases_structured",
+                new_callable=AsyncMock,
+                return_value=[],
+            ),
         ):
             from app.engine.case_gen.chat_driven import chat_driven_generate
 
