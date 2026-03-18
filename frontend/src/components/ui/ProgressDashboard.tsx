@@ -323,6 +323,10 @@ export default function ProgressDashboard() {
   }, []);
 
   useEffect(() => {
+    fetchProgress();
+  }, [fetchProgress]);
+
+  useEffect(() => {
     if (open) {
       fetchProgress();
       const interval = setInterval(fetchProgress, 30000);

@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ThreeColLayout } from '@/components/layout/ThreeColLayout';
@@ -294,7 +295,23 @@ function WorkbenchPageContent() {
           <EmptyState
             icon={<Sparkles className="w-12 h-12" />}
             title="请从左侧选择需求"
-            description="对话式 AI 测试用例生成"
+            description="先进入需求录入或用例库选择可用需求，再回来完成 Step 1 测试点确认与 Step 2 用例生成。"
+            action={
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Link
+                  href="/requirements"
+                  className="inline-flex items-center rounded-md border border-sy-accent/35 bg-sy-accent/10 px-3 py-1.5 text-[12px] font-medium text-sy-accent transition-colors hover:bg-sy-accent/15"
+                >
+                  前往需求录入
+                </Link>
+                <Link
+                  href="/testcases"
+                  className="inline-flex items-center rounded-md border border-sy-border bg-sy-bg-2 px-3 py-1.5 text-[12px] font-medium text-sy-text transition-colors hover:border-sy-border-2 hover:text-sy-accent"
+                >
+                  查看示例用例
+                </Link>
+              </div>
+            }
           />
         </div>
       )}

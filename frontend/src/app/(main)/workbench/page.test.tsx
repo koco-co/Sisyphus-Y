@@ -129,6 +129,13 @@ const mockAiConfigState = {
   loading: false,
 };
 
+const mockWorkspaceStore = {
+  lastGeneratedPointIds: new Set<string>(),
+  setLastGeneratedPointIds: () => {},
+  appendTestCases: () => {},
+  setTestCases: () => {},
+};
+
 mock.module('@/hooks/useWorkbench', () => ({
   useWorkbench: () => mockWorkbenchState,
 }));
@@ -143,6 +150,10 @@ mock.module('@/hooks/useAiConfig', () => ({
 
 mock.module('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
+}));
+
+mock.module('@/stores/workspace-store', () => ({
+  useWorkspaceStore: () => mockWorkspaceStore,
 }));
 
 mock.module('next/link', () => ({
@@ -199,8 +210,8 @@ mock.module('./_components/GeneratedCases', () => ({
   GeneratedCases: () => <div>GeneratedCases</div>,
 }));
 
-mock.module('../scene-map/_components/TestPointList', () => ({
-  TestPointList: () => <div>TestPointList</div>,
+mock.module('./_components/TestPointGroupList', () => ({
+  default: () => <div>TestPointGroupList</div>,
 }));
 
 mock.module('./_components/ModeSelector', () => ({
@@ -216,6 +227,7 @@ test('workbench page renders step 1 and step 2 progress labels', async () => {
   mockWorkbenchState.activeSessionId = null;
   mockSceneMapState.selectedReqId = null;
   mockSceneMapState.checkedPointIds = new Set();
+  mockWorkspaceStore.lastGeneratedPointIds = new Set();
 
   const module = await import('./page');
   const WorkbenchPage = module.default;
@@ -226,19 +238,21 @@ test('workbench page renders step 1 and step 2 progress labels', async () => {
   expect(html).toContain('Step 2');
 });
 
-test('workbench page shows start generation action after selecting a requirement', async () => {
+test('workbench page shows step 1 guidance after selecting a requirement', async () => {
   mockWorkbenchState.selectedReqId = 'req-001';
   mockWorkbenchState.activeSessionId = null;
   mockSceneMapState.selectedReqId = 'req-001';
   mockSceneMapState.checkedPointIds = new Set();
+  mockWorkspaceStore.lastGeneratedPointIds = new Set();
 
   const module = await import('./page');
   const WorkbenchPage = module.default;
 
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
-  expect(html).toContain('开始生成');
-  expect(html).not.toContain('新建会话');
+  expect(html).toContain('Step 1：确认测试点');
+  expect(html).toContain('勾选至少 1 个测试点后，才能进入 Step 2 生成用例。');
+  expect(html).not.toContain('请从左侧选择需求');
 });
 
 test('workbench page renders test point draft tools in step 1', async () => {
@@ -246,6 +260,7 @@ test('workbench page renders test point draft tools in step 1', async () => {
   mockWorkbenchState.activeSessionId = null;
   mockSceneMapState.selectedReqId = 'req-001';
   mockSceneMapState.checkedPointIds = new Set();
+  mockWorkspaceStore.lastGeneratedPointIds = new Set();
 
   const module = await import('./page');
   const WorkbenchPage = module.default;
@@ -253,36 +268,22 @@ test('workbench page renders test point draft tools in step 1', async () => {
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
   expect(html).toContain('AI 生成测试点');
-  expect(html).toContain('TestPointList');
+  expect(html).toContain('TestPointGroupList');
 });
 
-test('workbench page disables start generation until at least one test point is checked', async () => {
+test('workbench page shows append-generation guidance after existing generation history', async () => {
   mockWorkbenchState.selectedReqId = 'req-001';
   mockWorkbenchState.activeSessionId = null;
   mockSceneMapState.selectedReqId = 'req-001';
-  mockSceneMapState.checkedPointIds = new Set();
-
-  const module = await import('./page');
-  const WorkbenchPage = module.default;
-
-  const html = renderToStaticMarkup(<WorkbenchPage />);
-  const startButton = html.match(/<button[\s\S]*?开始生成<\/button>/)?.[0] ?? '';
-
-  expect(startButton).toContain('disabled');
-});
-
-test('workbench page provides a way back to step 1 while in step 2', async () => {
-  mockWorkbenchState.selectedReqId = 'req-001';
-  mockWorkbenchState.activeSessionId = 'session-001';
-  mockSceneMapState.selectedReqId = 'req-001';
   mockSceneMapState.checkedPointIds = new Set(['tp-001']);
+  mockWorkspaceStore.lastGeneratedPointIds = new Set(['tp-001']);
 
   const module = await import('./page');
   const WorkbenchPage = module.default;
 
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
-  expect(html).toContain('返回 Step 1');
+  expect(html).toContain('可继续勾选新测试点，点「追加生成」只生成新增部分。');
 });
 
 test('workbench page shows AI config banner when no model is configured', async () => {
@@ -290,6 +291,7 @@ test('workbench page shows AI config banner when no model is configured', async 
   mockWorkbenchState.activeSessionId = null;
   mockSceneMapState.selectedReqId = 'req-001';
   mockSceneMapState.checkedPointIds = new Set();
+  mockWorkspaceStore.lastGeneratedPointIds = new Set();
   mockAiConfigState.effectiveConfig = {
     llm_model: '',
   };
@@ -300,6 +302,5 @@ test('workbench page shows AI config banner when no model is configured', async 
 
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
-  expect(html).toContain('尚未配置可用 AI 模型');
-  expect(html).toContain('href="/settings"');
+  expect(html).toContain('AiConfigBanner');
 });
