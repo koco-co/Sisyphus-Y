@@ -9,6 +9,7 @@
 自动选择对应的嵌入后端。
 """
 
+import asyncio
 import logging
 from typing import TYPE_CHECKING
 
@@ -111,7 +112,8 @@ async def _embed_dashscope(texts: list[str]) -> list[list[float]]:
 
 
 async def _embed_zhipu(texts: list[str]) -> list[list[float]]:
-    """智谱 embedding-3。"""
+    """智谱 embedding-3 — 同步 SDK 用 to_thread 包裹，避免阻塞事件循环。"""
+    import httpx
     from zhipuai import ZhipuAI
 
     client = ZhipuAI(
@@ -119,12 +121,14 @@ async def _embed_zhipu(texts: list[str]) -> list[list[float]]:
         http_client=httpx.Client(proxy=None, trust_env=False),
     )
 
-    vectors: list[list[float]] = []
-    for text in texts:
-        resp = client.embeddings.create(model="embedding-3", input=text)
-        vectors.append(resp.data[0].embedding)
+    def _call_sync() -> list[list[float]]:
+        vectors: list[list[float]] = []
+        for text in texts:
+            resp = client.embeddings.create(model="embedding-3", input=text)
+            vectors.append(resp.data[0].embedding)
+        return vectors
 
-    return vectors
+    return await asyncio.to_thread(_call_sync)
 
 
 async def _embed_openai(texts: list[str]) -> list[list[float]]:
