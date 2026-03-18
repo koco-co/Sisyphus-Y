@@ -38,9 +38,9 @@ function SortIcon({
       <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/th:opacity-50 transition-opacity" />
     );
   return direction === 'asc' ? (
-    <ArrowUp className="w-3 h-3 text-accent" />
+    <ArrowUp className="w-3 h-3 text-sy-accent" />
   ) : (
-    <ArrowDown className="w-3 h-3 text-accent" />
+    <ArrowDown className="w-3 h-3 text-sy-accent" />
   );
 }
 
@@ -79,10 +79,10 @@ export function CaseTable({
                 onClick={onToggleSelectAll}
                 className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                   allSelected
-                    ? 'bg-accent border-accent text-white'
+                    ? 'bg-sy-accent border-sy-accent text-white'
                     : someSelected
-                      ? 'bg-bg3 border-accent text-accent'
-                      : 'bg-bg2 border-border2 hover:border-accent'
+                      ? 'bg-bg3 border-sy-accent text-sy-accent'
+                      : 'bg-bg2 border-border2 hover:border-sy-accent'
                 }`}
               >
                 {allSelected ? (
@@ -135,8 +135,8 @@ export function CaseTable({
                     }}
                     className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
                       selectedIds.has(tc.id)
-                        ? 'bg-accent border-accent text-white'
-                        : 'bg-bg2 border-border2 group-hover/row:border-accent/50'
+                        ? 'bg-sy-accent border-sy-accent text-white'
+                        : 'bg-bg2 border-border2 group-hover/row:border-sy-accent/50'
                     }`}
                   >
                     {selectedIds.has(tc.id) && <Check className="w-2.5 h-2.5" />}
@@ -146,7 +146,7 @@ export function CaseTable({
                 {/* case id + title */}
                 <td className="px-3 py-2.5 border-b border-border/50">
                   <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-[11px] text-accent">{tc.case_id}</span>
+                    <span className="font-mono text-[11px] text-sy-accent">{tc.case_id}</span>
                     <span className="text-[12.5px] text-text2 group-hover/row:text-text truncate max-w-[360px]">
                       {tc.title}
                     </span>

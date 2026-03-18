@@ -1,18 +1,6 @@
 'use client';
 
-import {
-  Bot,
-  Check,
-  ChevronDown,
-  Eye,
-  EyeOff,
-  Key,
-  Loader2,
-  Plus,
-  Save,
-  Sparkles,
-  Trash2,
-} from 'lucide-react';
+import { Bot, Check, ChevronDown, Key, Loader2, Plus, Save, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ConnectionTestButton } from '@/components/ui/ConnectionTestButton';
 import { useAiConfig } from '@/hooks/useAiConfig';
@@ -161,7 +149,6 @@ export function AIModelSettings() {
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('edit');
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [draft, setDraft] = useState<ModelDraft>(() => buildEmptyDraft());
-  const [keyVisible, setKeyVisible] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -240,21 +227,12 @@ export function AIModelSettings() {
       setSelectedModelId(resolvedModel.id);
     }
     setDraft(buildDraftFromModel(resolvedModel));
-  }, [
-    defaultProvider,
-    draft.provider,
-    editorMode,
-    effectiveConfig,
-    modelConfigs,
-    providers,
-    selectedModelId,
-  ]);
+  }, [defaultProvider, editorMode, effectiveConfig, modelConfigs, providers, selectedModelId]);
 
   const handleSelectExisting = (model: ModelConfigRecord) => {
     setEditorMode('edit');
     setSelectedModelId(model.id);
     setDraft(buildDraftFromModel(model));
-    setKeyVisible(false);
     setSaved(false);
   };
 
@@ -262,7 +240,6 @@ export function AIModelSettings() {
     setEditorMode('create');
     setSelectedModelId(null);
     setDraft(buildEmptyDraft(activeProvider ?? defaultProvider, effectiveConfig));
-    setKeyVisible(false);
     setSaved(false);
   };
 
@@ -351,7 +328,6 @@ export function AIModelSettings() {
     setEditorMode('edit');
     setSelectedModelId(result.id);
     setDraft(buildDraftFromModel(result));
-    setKeyVisible(false);
     setSaved(true);
     window.setTimeout(() => setSaved(false), 2000);
   };
@@ -371,7 +347,6 @@ export function AIModelSettings() {
     setSelectedModelId(null);
     setEditorMode('edit');
     setSaved(false);
-    setKeyVisible(false);
   };
 
   return (
@@ -623,25 +598,14 @@ export function AIModelSettings() {
                   <div className="relative flex-1">
                     <input
                       id="model-config-api-key"
-                      type={keyVisible ? 'text' : 'password'}
+                      type="text"
                       value={draft.apiKey}
                       onChange={(event) =>
                         setDraft((prev) => ({ ...prev, apiKey: event.target.value }))
                       }
-                      className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 pr-9 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                      className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
                       placeholder={activeProvider?.api_key_placeholder || 'sk-xxxxxxxx'}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setKeyVisible((prev) => !prev)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-sy-text-3 transition-colors hover:text-sy-text-2"
-                    >
-                      {keyVisible ? (
-                        <EyeOff className="h-3.5 w-3.5" />
-                      ) : (
-                        <Eye className="h-3.5 w-3.5" />
-                      )}
-                    </button>
                   </div>
                   <Key className="h-4 w-4 text-sy-text-3" />
                 </div>

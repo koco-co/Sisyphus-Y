@@ -53,7 +53,7 @@ export function VersionHistory({
   return (
     <div className="bg-bg1 border border-border rounded-[10px] p-4">
       <div className="flex items-center gap-2 mb-3">
-        <History size={14} className="text-accent" />
+        <History size={14} className="text-sy-accent" />
         <span className="text-[12px] font-semibold text-text2">版本历史</span>
         <span className="text-[10px] font-mono text-text3 ml-auto">当前 v{currentVersion}</span>
       </div>
@@ -73,14 +73,14 @@ export function VersionHistory({
             >
               {/* Version marker */}
               <div className="flex flex-col items-center shrink-0">
-                <div className="w-2 h-2 rounded-full bg-accent/50" />
+                <div className="w-2 h-2 rounded-full bg-sy-accent/50" />
                 <div className="w-px h-full bg-border" />
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[12px] font-mono font-semibold text-accent">
+                  <span className="text-[12px] font-mono font-semibold text-sy-accent">
                     v{v.version}
                   </span>
                   <span className="text-[10.5px] text-text3 font-mono">
@@ -99,7 +99,7 @@ export function VersionHistory({
                     type="button"
                     onClick={() => onCompare(v.id)}
                     title="版本对比"
-                    className="p-1 rounded text-text3 hover:text-blue hover:bg-blue/10 transition-colors"
+                    className="p-1 rounded text-text3 hover:text-sy-info hover:bg-sy-info/10 transition-colors"
                   >
                     <GitCompare size={13} />
                   </button>
@@ -109,7 +109,7 @@ export function VersionHistory({
                     type="button"
                     onClick={() => setRollbackTarget({ id: v.id, version: v.version })}
                     title="回滚到此版本"
-                    className="p-1 rounded text-text3 hover:text-amber hover:bg-amber/10 transition-colors"
+                    className="p-1 rounded text-text3 hover:text-sy-warn hover:bg-sy-warn/10 transition-colors"
                   >
                     <RotateCcw size={13} />
                   </button>

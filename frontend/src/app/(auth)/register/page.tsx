@@ -63,7 +63,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-2xl font-bold text-accent tracking-wide">Sisyphus</h1>
+          <h1 className="font-display text-2xl font-bold text-sy-accent tracking-wide">Sisyphus</h1>
           <p className="text-text3 text-[13px] mt-2">AI 驱动的智能测试用例平台</p>
         </div>
 
@@ -72,7 +72,7 @@ export default function RegisterPage() {
           <h2 className="text-[15px] font-semibold text-text mb-5">注册</h2>
 
           {error && (
-            <div className="mb-4 px-3 py-2 rounded-md bg-red/8 border border-red/20 text-red text-[12.5px]">
+            <div className="mb-4 px-3 py-2 rounded-md bg-sy-danger/8 border border-sy-danger/20 text-sy-danger text-[12.5px]">
               {error}
             </div>
           )}
@@ -178,7 +178,7 @@ export default function RegisterPage() {
 
           <div className="mt-5 text-center text-[12px] text-text3">
             已有账号？{' '}
-            <Link href="/login" className="text-accent hover:text-accent2 transition-colors">
+            <Link href="/login" className="text-sy-accent hover:text-sy-accent-2 transition-colors">
               立即登录
             </Link>
           </div>

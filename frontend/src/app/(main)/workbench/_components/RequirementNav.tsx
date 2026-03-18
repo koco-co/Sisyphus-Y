@@ -24,8 +24,8 @@ interface RequirementNavProps {
 }
 
 function statusDot(status: string) {
-  if (status === 'generated') return 'bg-accent';
-  if (status === 'partial') return 'bg-amber';
+  if (status === 'generated') return 'bg-sy-accent';
+  if (status === 'partial') return 'bg-sy-warn';
   return 'bg-text3/40';
 }
 
@@ -43,7 +43,7 @@ export function RequirementNav({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-accent" />
+        <Sparkles className="w-4 h-4 text-sy-accent" />
         <h3 className="text-[13px] font-semibold text-text">生成工作台</h3>
       </div>
 
@@ -64,7 +64,7 @@ export function RequirementNav({
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-text3 shrink-0" />
               )}
-              <FolderOpen className="w-3.5 h-3.5 text-accent shrink-0" />
+              <FolderOpen className="w-3.5 h-3.5 text-sy-accent shrink-0" />
               <span className="truncate">{product.name}</span>
             </button>
 
@@ -103,7 +103,7 @@ export function RequirementNav({
                             onClick={() => onSelectRequirement(req)}
                             className={`w-full flex items-center gap-1.5 pl-8 pr-2.5 py-1.5 rounded-md text-[12px] transition-colors ${
                               selectedReqId === req.id
-                                ? 'bg-accent/10 text-accent'
+                                ? 'bg-sy-accent/10 text-sy-accent'
                                 : 'text-text2 hover:bg-bg2'
                             }`}
                           >
@@ -132,7 +132,7 @@ export function RequirementNav({
             <button
               type="button"
               onClick={onCreateSession}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-accent hover:bg-accent/10 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-sy-accent hover:bg-sy-accent/10 transition-colors"
             >
               <Plus className="w-3 h-3" />
               新建
@@ -145,7 +145,7 @@ export function RequirementNav({
               onClick={() => onSelectSession(session.id)}
               className={`w-full flex items-center gap-1.5 px-2.5 py-2 rounded-md text-[12px] mb-0.5 transition-colors ${
                 activeSessionId === session.id
-                  ? 'bg-accent/10 text-accent'
+                  ? 'bg-sy-accent/10 text-sy-accent'
                   : 'text-text2 hover:bg-bg2'
               }`}
             >

@@ -28,7 +28,7 @@ function ToggleGroup({
           onClick={() => onChange(value === opt ? null : opt)}
           className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium border transition-colors ${
             value === opt
-              ? 'bg-accent/12 text-accent border-accent/30'
+              ? 'bg-sy-accent/12 text-sy-accent border-sy-accent/30'
               : 'bg-bg2 text-text3 border-border hover:border-border2 hover:text-text2'
           }`}
         >

@@ -192,7 +192,7 @@ export default function SearchPage() {
         <Link href="/" className="text-text3 hover:text-text2 transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <Search className="w-5 h-5 text-accent" />
+        <Search className="w-5 h-5 text-sy-accent" />
         <h1 className="font-display text-lg font-bold text-text">搜索结果</h1>
       </div>
 
@@ -217,7 +217,7 @@ export default function SearchPage() {
             key={item.value}
             className={`px-3 py-1 rounded-full text-[11.5px] font-medium transition-colors ${
               filter === item.value
-                ? 'bg-accent/10 text-accent border border-accent/25'
+                ? 'bg-sy-accent/10 text-sy-accent border border-sy-accent/25'
                 : 'text-text3 hover:text-text2 hover:bg-bg2 border border-transparent'
             }`}
             onClick={() => setFilter(item.value)}

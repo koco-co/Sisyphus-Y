@@ -149,7 +149,7 @@ export default function DiagnosisPage() {
               type="button"
               onClick={runDiagnosis}
               disabled={isStreaming}
-              className="text-[11px] px-2.5 py-1 rounded-md bg-accent text-black font-medium disabled:opacity-50"
+              className="text-[11px] px-2.5 py-1 rounded-md bg-sy-accent text-black font-medium disabled:opacity-50"
             >
               {isStreaming ? '分析中...' : '开始分析'}
             </button>
@@ -213,7 +213,7 @@ export default function DiagnosisPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-              className="flex-1 bg-bg2 border border-border rounded-md px-3 py-1.5 text-[13px] text-text outline-none focus:border-accent placeholder:text-text3"
+              className="flex-1 bg-bg2 border border-border rounded-md px-3 py-1.5 text-[13px] text-text outline-none focus:border-sy-accent placeholder:text-text3"
               placeholder="输入补充说明或提问..."
               disabled={isStreaming}
             />
@@ -221,7 +221,7 @@ export default function DiagnosisPage() {
               type="button"
               onClick={sendMessage}
               disabled={isStreaming || !input.trim()}
-              className="px-4 py-1.5 rounded-md text-[12px] font-semibold bg-accent text-black disabled:opacity-50"
+              className="px-4 py-1.5 rounded-md text-[12px] font-semibold bg-sy-accent text-black disabled:opacity-50"
             >
               发送
             </button>

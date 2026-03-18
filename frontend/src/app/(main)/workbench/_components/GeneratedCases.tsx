@@ -52,7 +52,9 @@ export function GeneratedCases({
       <div className="px-3 py-3 border-b border-border flex items-center gap-2">
         <ClipboardList className="w-4 h-4 text-text2" />
         <h4 className="text-[13px] font-semibold text-text flex-1">已生成用例</h4>
-        <span className="text-[11px] font-mono text-accent font-semibold">{testCases.length}</span>
+        <span className="text-[11px] font-mono text-sy-accent font-semibold">
+          {testCases.length}
+        </span>
       </div>
 
       {/* Filters */}
@@ -98,15 +100,15 @@ export function GeneratedCases({
       {testCases.length > 0 && (
         <div className="px-3 py-2 border-t border-border grid grid-cols-3 text-center">
           <div>
-            <div className="text-[14px] font-bold font-mono text-accent">{stats.total}</div>
+            <div className="text-[14px] font-bold font-mono text-sy-accent">{stats.total}</div>
             <div className="text-[10px] text-text3">总计</div>
           </div>
           <div>
-            <div className="text-[14px] font-bold font-mono text-accent">{stats.ai}</div>
+            <div className="text-[14px] font-bold font-mono text-sy-accent">{stats.ai}</div>
             <div className="text-[10px] text-text3">AI 生成</div>
           </div>
           <div>
-            <div className="text-[14px] font-bold font-mono text-amber">{stats.manual}</div>
+            <div className="text-[14px] font-bold font-mono text-sy-warn">{stats.manual}</div>
             <div className="text-[10px] text-text3">手动</div>
           </div>
         </div>

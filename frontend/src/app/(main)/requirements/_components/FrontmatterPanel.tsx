@@ -30,9 +30,9 @@ const STATUS_OPTIONS = [
 ];
 
 const priorityColor: Record<string, string> = {
-  P0: 'text-red',
-  P1: 'text-amber',
-  P2: 'text-blue',
+  P0: 'text-sy-danger',
+  P1: 'text-sy-warn',
+  P2: 'text-sy-info',
   P3: 'text-text3',
 };
 
@@ -106,7 +106,7 @@ export function FrontmatterPanel({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium bg-accent text-black hover:bg-accent2 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium bg-sy-accent text-black hover:bg-sy-accent-2 transition-colors disabled:opacity-50"
           >
             {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
             保存

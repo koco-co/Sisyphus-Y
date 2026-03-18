@@ -120,7 +120,7 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border">
           <div className="flex items-center gap-2">
-            <Plus className="w-4 h-4 text-accent" />
+            <Plus className="w-4 h-4 text-sy-accent" />
             <h3 className="text-[14px] font-semibold text-text">手动添加知识条目</h3>
           </div>
           <button
@@ -141,7 +141,7 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
               className="block text-[12px] font-medium text-text2 mb-1.5"
             >
               标题
-              <span className="text-red ml-0.5">*</span>
+              <span className="text-sy-danger ml-0.5">*</span>
             </label>
             <input
               id="manual-title"
@@ -150,9 +150,9 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
               onChange={(e) => updateField('title', e.target.value)}
               placeholder="输入条目标题"
               disabled={submitting}
-              className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 focus:outline-none focus:border-accent/60 disabled:opacity-50 transition-colors"
+              className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 focus:outline-none focus:border-sy-accent/60 disabled:opacity-50 transition-colors"
             />
-            {errors.title && <p className="mt-1 text-[11px] text-red">{errors.title}</p>}
+            {errors.title && <p className="mt-1 text-[11px] text-sy-danger">{errors.title}</p>}
           </div>
 
           {/* Category */}
@@ -162,14 +162,14 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
               className="block text-[12px] font-medium text-text2 mb-1.5"
             >
               分类
-              <span className="text-red ml-0.5">*</span>
+              <span className="text-sy-danger ml-0.5">*</span>
             </label>
             <select
               id="manual-category"
               value={form.category}
               onChange={(e) => updateField('category', e.target.value as KnowledgeCategory | '')}
               disabled={submitting}
-              className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text focus:outline-none focus:border-accent/60 disabled:opacity-50 transition-colors appearance-none cursor-pointer"
+              className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text focus:outline-none focus:border-sy-accent/60 disabled:opacity-50 transition-colors appearance-none cursor-pointer"
             >
               <option value="" disabled>
                 选择分类...
@@ -180,7 +180,9 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
                 </option>
               ))}
             </select>
-            {errors.category && <p className="mt-1 text-[11px] text-red">{errors.category}</p>}
+            {errors.category && (
+              <p className="mt-1 text-[11px] text-sy-danger">{errors.category}</p>
+            )}
           </div>
 
           {/* Content */}
@@ -190,7 +192,7 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
               className="block text-[12px] font-medium text-text2 mb-1.5"
             >
               内容
-              <span className="text-red ml-0.5">*</span>
+              <span className="text-sy-danger ml-0.5">*</span>
             </label>
             <textarea
               id="manual-content"
@@ -199,10 +201,10 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
               placeholder="输入知识条目内容..."
               rows={5}
               disabled={submitting}
-              className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 focus:outline-none focus:border-accent/60 disabled:opacity-50 transition-colors resize-none leading-relaxed"
+              className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 focus:outline-none focus:border-sy-accent/60 disabled:opacity-50 transition-colors resize-none leading-relaxed"
               style={{ minHeight: 120 }}
             />
-            {errors.content && <p className="mt-1 text-[11px] text-red">{errors.content}</p>}
+            {errors.content && <p className="mt-1 text-[11px] text-sy-danger">{errors.content}</p>}
           </div>
 
           {/* Tags */}
@@ -221,7 +223,7 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
               onChange={(e) => updateField('tags', e.target.value)}
               placeholder="例：接口测试, 回归, smoke"
               disabled={submitting}
-              className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 focus:outline-none focus:border-accent/60 disabled:opacity-50 transition-colors"
+              className="w-full px-3 py-2 text-[13px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 focus:outline-none focus:border-sy-accent/60 disabled:opacity-50 transition-colors"
             />
           </div>
         </div>
@@ -240,7 +242,7 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
             type="button"
             onClick={handleSubmit}
             disabled={submitting}
-            className="px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-accent text-white hover:bg-accent2 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-sy-accent text-black hover:bg-sy-accent-2 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
           >
             {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             {submitting ? '提交中...' : '添加条目'}

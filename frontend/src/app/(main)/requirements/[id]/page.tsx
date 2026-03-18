@@ -124,7 +124,7 @@ export default function RequirementDetailPage() {
               type="button"
               onClick={handleSaveContent}
               disabled={updating}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-md text-[12.5px] font-medium border border-accent text-accent hover:bg-accent/10 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-md text-[12.5px] font-medium border border-sy-accent text-sy-accent hover:bg-sy-accent/10 transition-colors disabled:opacity-50"
             >
               {updating ? <Loader2 size={14} className="animate-spin" /> : null}
               保存内容
@@ -133,7 +133,7 @@ export default function RequirementDetailPage() {
           <Link href={getAnalysisDiagnosisHref(id)}>
             <button
               type="button"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-accent text-black hover:bg-accent2 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold bg-sy-accent text-black hover:bg-sy-accent-2 transition-colors"
             >
               <Stethoscope size={14} /> 开始需求分析
             </button>
@@ -149,13 +149,17 @@ export default function RequirementDetailPage() {
             <div className="text-[12px] font-semibold text-text3 uppercase tracking-wide mb-2">
               需求内容
             </div>
-            <EditorToolbar textareaRef={textareaRef} onContentChange={handleContentChange} reqId={id} />
+            <EditorToolbar
+              textareaRef={textareaRef}
+              onContentChange={handleContentChange}
+              reqId={id}
+            />
             <textarea
               ref={textareaRef}
               value={displayContent}
               onChange={(e) => handleContentChange(e.target.value)}
               placeholder="输入需求描述（支持 Markdown）..."
-              className="w-full min-h-[360px] bg-bg1 border border-border rounded-b-lg p-4 text-[13px] text-text leading-relaxed resize-y outline-none font-mono focus:border-accent transition-colors"
+              className="w-full min-h-[360px] bg-bg1 border border-border rounded-b-lg p-4 text-[13px] text-text leading-relaxed resize-y outline-none font-mono focus:border-sy-accent transition-colors"
             />
           </div>
 

@@ -51,14 +51,14 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: ChatInputPr
           placeholder="输入指令生成测试用例... (Shift+Enter 换行)"
           disabled={disabled}
           rows={1}
-          className="flex-1 resize-none bg-bg2 border border-border rounded-lg px-3 py-2.5 text-[13px] text-text placeholder:text-text3 outline-none focus:border-accent transition-colors disabled:opacity-50"
+          className="flex-1 resize-none bg-bg2 border border-border rounded-lg px-3 py-2.5 text-[13px] text-text placeholder:text-text3 outline-none focus:border-sy-accent transition-colors disabled:opacity-50"
           style={{ minHeight: '42px', maxHeight: '150px' }}
         />
         {isStreaming ? (
           <button
             type="button"
             onClick={onStop}
-            className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red text-white font-semibold hover:opacity-90 transition-opacity"
+            className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg bg-sy-danger text-white font-semibold hover:opacity-90 transition-opacity"
             title="停止生成"
           >
             <Square className="w-4 h-4" />
@@ -68,7 +68,7 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: ChatInputPr
             type="button"
             onClick={handleSend}
             disabled={disabled || !text.trim()}
-            className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg bg-accent text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent2 transition-colors"
+            className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg bg-sy-accent text-black font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-sy-accent-2 transition-colors"
           >
             {disabled ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>

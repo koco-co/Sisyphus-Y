@@ -51,10 +51,7 @@ export default function TrendChart({ data, loading = false }: TrendChartProps) {
     <ResponsiveContainer width="100%" height={240}>
       <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-        <XAxis
-          dataKey="iteration_name"
-          tick={{ fill: 'var(--text2)', fontSize: 11 }}
-        />
+        <XAxis dataKey="iteration_name" tick={{ fill: 'var(--text2)', fontSize: 11 }} />
         <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} />
         <Tooltip
           contentStyle={{
@@ -72,13 +69,7 @@ export default function TrendChart({ data, loading = false }: TrendChartProps) {
           dot={false}
           strokeWidth={2}
         />
-        <Line
-          dataKey="p0_count"
-          name="P0 数量"
-          stroke="var(--red)"
-          dot={false}
-          strokeWidth={2}
-        />
+        <Line dataKey="p0_count" name="P0 数量" stroke="var(--red)" dot={false} strokeWidth={2} />
         <Line
           dataKey="coverage_rate"
           name="覆盖率%"

@@ -51,12 +51,12 @@ export function TestStandardEditor() {
   return (
     <div>
       <div className="sec-header">
-        <FileText className="w-4 h-4 text-accent" />
+        <FileText className="w-4 h-4 text-sy-accent" />
         <span className="sec-title">企业测试规范</span>
       </div>
 
       {error && (
-        <div className="mb-4 px-3 py-2 rounded-md bg-red/8 border border-red/20 text-red text-[12.5px]">
+        <div className="mb-4 px-3 py-2 rounded-md bg-sy-danger/8 border border-sy-danger/20 text-sy-danger text-[12.5px]">
           {error}
         </div>
       )}
@@ -103,12 +103,12 @@ export function TestStandardEditor() {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full min-h-[400px] p-4 bg-bg2 border border-border rounded-lg text-text font-mono text-[13px] leading-relaxed outline-none resize-y focus:border-accent transition-colors"
+            className="w-full min-h-[400px] p-4 bg-bg2 border border-border rounded-lg text-text font-mono text-[13px] leading-relaxed outline-none resize-y focus:border-sy-accent transition-colors"
             placeholder="输入 Markdown 格式的测试规范..."
             disabled={loading || saving}
           />
         ) : (
-          <div className="p-4 bg-bg2 border border-border rounded-lg min-h-[400px] prose-sm text-text2 text-[13px] leading-relaxed [&_h1]:text-text [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-text [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2 [&_ul]:pl-5 [&_ul]:list-disc [&_li]:mb-1 [&_code]:font-mono [&_code]:text-accent [&_code]:bg-bg3 [&_code]:px-1 [&_code]:rounded">
+          <div className="p-4 bg-bg2 border border-border rounded-lg min-h-[400px] prose-sm text-text2 text-[13px] leading-relaxed [&_h1]:text-text [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-text [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2 [&_ul]:pl-5 [&_ul]:list-disc [&_li]:mb-1 [&_code]:font-mono [&_code]:text-sy-accent [&_code]:bg-bg3 [&_code]:px-1 [&_code]:rounded">
             <ReactMarkdown>{content}</ReactMarkdown>
           </div>
         )}

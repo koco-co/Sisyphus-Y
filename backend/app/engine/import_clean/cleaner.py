@@ -28,7 +28,7 @@ from app.engine.import_clean.prompt_rules import (
 logger = logging.getLogger(__name__)
 
 # Quality score routing thresholds（从 prompt_rules 同步）
-SCORE_HIGH = SCORE_THRESHOLDS["high"]      # ≥ 4.5: 直接入库
+SCORE_HIGH = SCORE_THRESHOLDS["high"]  # ≥ 4.5: 直接入库
 SCORE_REVIEW = SCORE_THRESHOLDS["review"]  # 3.5–4.49: 入库，标记 needs_review
 SCORE_POLISH = SCORE_THRESHOLDS["polish"]  # 2.0–3.49: LLM 润色后再评分
 # < 2.0: 丢弃
@@ -68,8 +68,21 @@ def normalize_empty_values(value: str) -> str:
         return ""
     stripped = value.strip()
     empty_markers = {
-        "无", "无。", "N/A", "n/a", "NA", "na", "-", "--", "——",
-        "/", "null", "NULL", "None", "none", "空",
+        "无",
+        "无。",
+        "N/A",
+        "n/a",
+        "NA",
+        "na",
+        "-",
+        "--",
+        "——",
+        "/",
+        "null",
+        "NULL",
+        "None",
+        "none",
+        "空",
     }
     if stripped in empty_markers:
         return ""
@@ -176,19 +189,16 @@ def _build_clean_prompt(case: dict) -> str:
     steps: list[dict] = case.get("steps", [])
     module_path = case.get("module_path", "")
 
-    steps_text = "\n".join(
-        f"{s.get('no', i + 1)}. 操作：{strip_html_tags(s.get('action', ''))} "
-        f"| 预期：{strip_html_tags(s.get('expected_result', ''))}"
-        for i, s in enumerate(steps)
-    ) or "（无步骤）"
-
-    return (
-        f"## 待清洗用例\n"
-        f"所属模块：{module_path}\n"
-        f"标题：{title}\n"
-        f"前置条件：{precondition}\n"
-        f"步骤：\n{steps_text}"
+    steps_text = (
+        "\n".join(
+            f"{s.get('no', i + 1)}. 操作：{strip_html_tags(s.get('action', ''))} "
+            f"| 预期：{strip_html_tags(s.get('expected_result', ''))}"
+            for i, s in enumerate(steps)
+        )
+        or "（无步骤）"
     )
+
+    return f"## 待清洗用例\n所属模块：{module_path}\n标题：{title}\n前置条件：{precondition}\n步骤：\n{steps_text}"
 
 
 def _safe_json_extract(content: str, fallback: dict) -> dict:

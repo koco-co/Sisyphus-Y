@@ -28,7 +28,7 @@ export function UncoveredList({ iterations }: UncoveredListProps) {
     return (
       <div className="card mt-4">
         <div className="flex items-center gap-2 mb-3">
-          <ShieldAlert className="w-4 h-4 text-accent" />
+          <ShieldAlert className="w-4 h-4 text-sy-accent" />
           <span className="sec-title text-[13px]">未覆盖需求</span>
         </div>
         <div className="flex flex-col items-center py-8 text-text3">
@@ -43,7 +43,7 @@ export function UncoveredList({ iterations }: UncoveredListProps) {
     <div className="card mt-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-red" />
+          <AlertTriangle className="w-4 h-4 text-sy-danger" />
           <span className="sec-title text-[13px]">未覆盖需求</span>
         </div>
         <span className="pill pill-red">{uncovered.length} 个</span>
@@ -57,7 +57,9 @@ export function UncoveredList({ iterations }: UncoveredListProps) {
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="font-mono text-[11px] text-red font-medium">{req.req_id}</span>
+                <span className="font-mono text-[11px] text-sy-danger font-medium">
+                  {req.req_id}
+                </span>
                 <span className="text-[10px] text-text3 bg-bg3 rounded px-1.5 py-0.5">
                   {iterationName}
                 </span>

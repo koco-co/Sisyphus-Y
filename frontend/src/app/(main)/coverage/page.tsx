@@ -17,7 +17,7 @@ export default function CoveragePage() {
     <div>
       {/* ── Header ── */}
       <div className="flex items-center gap-3 mb-6">
-        <Grid3x3 className="w-5 h-5 text-accent" />
+        <Grid3x3 className="w-5 h-5 text-sy-accent" />
         <h1 className="font-display text-[20px] font-bold text-text">需求覆盖度矩阵</h1>
         <span className="text-[12px] text-text3">Coverage Matrix</span>
         <div className="flex-1" />
@@ -46,7 +46,7 @@ export default function CoveragePage() {
       {loading && (
         <div className="card">
           <div className="flex flex-col items-center justify-center py-12 text-text3">
-            <Loader2 className="w-8 h-8 animate-spin text-accent mb-3" />
+            <Loader2 className="w-8 h-8 animate-spin text-sy-accent mb-3" />
             <span className="text-[13px]">加载覆盖度数据...</span>
           </div>
         </div>

@@ -39,9 +39,9 @@ export function FlowSteps({ currentStep }: FlowStepsProps) {
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
                   status === 'done'
-                    ? 'bg-accent/15 text-accent'
+                    ? 'bg-sy-accent/15 text-sy-accent'
                     : status === 'active'
-                      ? 'bg-accent text-white dark:text-black'
+                      ? 'bg-sy-accent text-white dark:text-black'
                       : 'bg-bg3 text-text3'
                 }`}
               >
@@ -49,7 +49,7 @@ export function FlowSteps({ currentStep }: FlowStepsProps) {
               </div>
               {i < steps.length - 1 && (
                 <div
-                  className={`w-px h-5 my-0.5 ${status === 'done' ? 'bg-accent/30' : 'bg-border'}`}
+                  className={`w-px h-5 my-0.5 ${status === 'done' ? 'bg-sy-accent/30' : 'bg-border'}`}
                 />
               )}
             </div>
@@ -57,7 +57,7 @@ export function FlowSteps({ currentStep }: FlowStepsProps) {
               <span
                 className={`text-[12px] font-medium ${
                   status === 'done'
-                    ? 'text-accent'
+                    ? 'text-sy-accent'
                     : status === 'active'
                       ? 'text-text'
                       : 'text-text3'

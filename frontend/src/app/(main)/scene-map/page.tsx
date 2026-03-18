@@ -164,6 +164,7 @@ export default function SceneMapPage() {
                 onConfirm={sm.confirmPoint}
                 onIgnore={sm.ignorePoint}
                 onSelect={(id) => sm.selectPoint(id)}
+                onBatchConfirm={sm.confirmMissing}
               />
 
               {/* Stream output */}

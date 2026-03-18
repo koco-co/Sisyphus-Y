@@ -114,7 +114,7 @@ export default function SceneMapPage() {
           type="button"
           onClick={generateTestPoints}
           disabled={isStreaming}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[12.5px] font-semibold bg-accent text-black disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[12.5px] font-semibold bg-sy-accent text-black disabled:opacity-50"
         >
           {isStreaming ? (
             <>
@@ -153,7 +153,7 @@ export default function SceneMapPage() {
                     key={tp.id}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-[12px] mb-0.5 transition-all border ${
                       selectedTP?.id === tp.id
-                        ? 'bg-accent-d text-accent border-[rgba(0,217,163,0.2)]'
+                        ? 'bg-accent-d text-sy-accent border-[rgba(0,217,163,0.2)]'
                         : 'text-text2 border-transparent hover:bg-bg2'
                     }`}
                   >
@@ -263,7 +263,7 @@ export default function SceneMapPage() {
           </div>
           <div className="grid grid-cols-2 gap-2 mb-4">
             <div className="bg-bg2 rounded-md p-2.5 border border-border text-center">
-              <div className="font-mono text-[18px] font-semibold text-accent">
+              <div className="font-mono text-[18px] font-semibold text-sy-accent">
                 {testPoints.length}
               </div>
               <div className="text-[10px] text-text3">测试点</div>
@@ -288,7 +288,7 @@ export default function SceneMapPage() {
                   .map((tp, i, arr) => (
                     <div key={tp.id} className="flex items-center gap-1.5 ml-3 text-[11px]">
                       <span className="text-border2">{i === arr.length - 1 ? '└' : '├'}</span>
-                      <span className={tp.status === 'confirmed' ? 'text-accent' : 'text-text3'}>
+                      <span className={tp.status === 'confirmed' ? 'text-sy-accent' : 'text-text3'}>
                         {tp.title}
                       </span>
                     </div>

@@ -41,6 +41,7 @@ export function GenerationPanel({ requirementId, testPointIds, onComplete }: Gen
   const sse = useSSE();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
@@ -48,6 +49,7 @@ export function GenerationPanel({ requirementId, testPointIds, onComplete }: Gen
   const startGeneration = useCallback(async () => {
     if (!requirementId || testPointIds.length === 0) return;
 
+    setIsStarting(true);
     setHasStarted(true);
     setIsCompleted(false);
 
@@ -66,15 +68,18 @@ export function GenerationPanel({ requirementId, testPointIds, onComplete }: Gen
         body: { message },
         onDone: () => {
           setIsCompleted(true);
+          setIsStarting(false);
         },
         onError: (err) => {
           toast.error(`生成失败：${err.message}`);
+          setIsStarting(false);
         },
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : '请求失败';
       toast.error(`创建生成会话失败：${msg}`);
       setHasStarted(false);
+      setIsStarting(false);
     }
   }, [requirementId, testPointIds, sse]);
 
@@ -89,6 +94,7 @@ export function GenerationPanel({ requirementId, testPointIds, onComplete }: Gen
   const handleRetry = useCallback(() => {
     setHasStarted(false);
     setIsCompleted(false);
+    setIsStarting(false);
     setSessionId(null);
     startGeneration();
   }, [startGeneration]);
@@ -112,9 +118,11 @@ export function GenerationPanel({ requirementId, testPointIds, onComplete }: Gen
         <button
           type="button"
           onClick={startGeneration}
-          className="inline-flex items-center gap-2 rounded-md bg-sy-accent px-4 py-2 text-[13px] font-semibold text-black hover:bg-sy-accent-2 transition-colors"
+          disabled={isStarting}
+          className="inline-flex items-center gap-2 rounded-md bg-sy-accent px-4 py-2 text-[13px] font-semibold text-black hover:bg-sy-accent-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
-          开始生成
+          {isStarting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          {isStarting ? '准备中...' : '开始生成'}
         </button>
       </div>
     );

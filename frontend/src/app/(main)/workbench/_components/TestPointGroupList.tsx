@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronRight, Plus, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronRight, Minus, Plus, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useSceneMap } from '@/hooks/useSceneMap';
@@ -12,6 +12,7 @@ interface TestPointGroupListProps {
   requirementId: string | null;
   checkedPointIds: Set<string>;
   onToggle: (id: string) => void;
+  onBulkToggle: (ids: string[], checked: boolean) => void;
   onAdd: (groupName: string, title: string) => void;
   onStartGenerate: () => void;
 }
@@ -33,10 +34,18 @@ interface GroupSectionProps {
   points: TestPointItem[];
   checkedPointIds: Set<string>;
   onToggle: (id: string) => void;
+  onBulkToggle: (ids: string[], checked: boolean) => void;
   onAdd: (groupName: string, title: string) => void;
 }
 
-function GroupSection({ groupName, points, checkedPointIds, onToggle, onAdd }: GroupSectionProps) {
+function GroupSection({
+  groupName,
+  points,
+  checkedPointIds,
+  onToggle,
+  onBulkToggle,
+  onAdd,
+}: GroupSectionProps) {
   const [expanded, setExpanded] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [addingPoint, setAddingPoint] = useState(false);
@@ -50,6 +59,8 @@ function GroupSection({ groupName, points, checkedPointIds, onToggle, onAdd }: G
   }, [addingPoint]);
 
   const checkedCount = points.filter((p) => checkedPointIds.has(p.id)).length;
+  const allChecked = points.length > 0 && checkedCount === points.length;
+  const someChecked = checkedCount > 0 && !allChecked;
   const visiblePoints = showAll ? points : points.slice(0, FOLD_THRESHOLD);
   const hiddenCount = points.length - FOLD_THRESHOLD;
 
@@ -62,24 +73,62 @@ function GroupSection({ groupName, points, checkedPointIds, onToggle, onAdd }: G
     setAddingPoint(false);
   }, [groupName, newTitle, onAdd]);
 
+  const handleGroupToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const ids = points.map((p) => p.id);
+      onBulkToggle(ids, !allChecked);
+    },
+    [points, allChecked, onBulkToggle],
+  );
+
   return (
     <div className="mb-3">
       {/* Group header */}
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="flex items-center gap-1.5 w-full px-3 py-1.5 text-left hover:bg-sy-bg-2 transition-colors rounded-md"
-      >
-        {expanded ? (
-          <ChevronDown className="w-3.5 h-3.5 text-sy-text-3 flex-shrink-0" />
-        ) : (
-          <ChevronRight className="w-3.5 h-3.5 text-sy-text-3 flex-shrink-0" />
-        )}
-        <span className="text-[12px] font-semibold text-sy-text flex-1">{groupName}</span>
+      <div className="flex items-center gap-1.5 w-full px-3 py-1.5 hover:bg-sy-bg-2 transition-colors rounded-md">
+        <button type="button" onClick={() => setExpanded((v) => !v)} className="flex-shrink-0">
+          {expanded ? (
+            <ChevronDown className="w-3.5 h-3.5 text-sy-text-3" />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5 text-sy-text-3" />
+          )}
+        </button>
+
+        {/* Group checkbox */}
+        <button
+          type="button"
+          onClick={handleGroupToggle}
+          className={`w-3.5 h-3.5 flex-shrink-0 rounded border transition-colors flex items-center justify-center ${
+            allChecked
+              ? 'bg-sy-accent border-sy-accent'
+              : someChecked
+                ? 'bg-sy-bg-3 border-sy-accent'
+                : 'border-sy-border-2 bg-transparent hover:border-sy-accent/50'
+          }`}
+          aria-label={allChecked ? '取消全选' : '全选'}
+        >
+          {allChecked ? (
+            <svg viewBox="0 0 14 14" fill="none" className="w-full h-full" aria-hidden="true">
+              <path
+                d="M2.5 7L5.5 10L11.5 4"
+                stroke="black"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ) : someChecked ? (
+            <Minus className="w-2.5 h-2.5 text-sy-accent" />
+          ) : null}
+        </button>
+
+        <button type="button" onClick={() => setExpanded((v) => !v)} className="flex-1 text-left">
+          <span className="text-[12px] font-semibold text-sy-text">{groupName}</span>
+        </button>
         <span className="text-[11px] text-sy-text-3 font-mono">
           {checkedCount}/{points.length}
         </span>
-      </button>
+      </div>
 
       {expanded && (
         <div className="ml-2 space-y-1 mt-1">
@@ -125,11 +174,16 @@ function GroupSection({ groupName, points, checkedPointIds, onToggle, onAdd }: G
                   <StatusBadge variant={sceneTypeToBadgeVariant(point.source)}>
                     {point.source}
                   </StatusBadge>
-                  {point.estimated_cases > 0 && (
+                  {point.source_risk_id && <StatusBadge variant="purple">源自诊断</StatusBadge>}
+                  {point.actual_cases_count != null && point.actual_cases_count > 0 ? (
+                    <span className="text-[10px] text-sy-accent font-mono">
+                      {point.actual_cases_count} 用例
+                    </span>
+                  ) : point.estimated_cases > 0 ? (
                     <span className="text-[10px] text-sy-text-3 font-mono">
                       ~{point.estimated_cases} 用例
                     </span>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </button>
@@ -189,6 +243,7 @@ export default function TestPointGroupList({
   requirementId,
   checkedPointIds,
   onToggle,
+  onBulkToggle,
   onAdd,
   onStartGenerate,
 }: TestPointGroupListProps) {
@@ -229,6 +284,7 @@ export default function TestPointGroupList({
             points={grouped[name]}
             checkedPointIds={checkedPointIds}
             onToggle={onToggle}
+            onBulkToggle={onBulkToggle}
             onAdd={onAdd}
           />
         ))}

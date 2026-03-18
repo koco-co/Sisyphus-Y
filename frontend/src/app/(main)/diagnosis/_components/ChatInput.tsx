@@ -90,14 +90,14 @@ export function ChatInput({ onSend, isStreaming, disabled }: ChatInputProps) {
           placeholder="输入分析问题，如：请对这个需求进行需求分析..."
           disabled={isStreaming || disabled}
           rows={1}
-          className="flex-1 resize-none bg-bg2 border border-border rounded-lg px-3 py-2 text-[13px] text-text placeholder:text-text3 outline-none focus:border-accent transition-colors disabled:opacity-50"
+          className="flex-1 resize-none bg-bg2 border border-border rounded-lg px-3 py-2 text-[13px] text-text placeholder:text-text3 outline-none focus:border-sy-accent transition-colors disabled:opacity-50"
           style={{ minHeight: '40px', maxHeight: '120px' }}
         />
         <button
           type="button"
           onClick={handleSend}
           disabled={isStreaming || disabled || !text.trim()}
-          className="flex-shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg bg-accent text-white dark:text-black font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent2 transition-colors"
+          className="flex-shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg bg-sy-accent text-white dark:text-black font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-sy-accent-2 transition-colors"
         >
           {isStreaming ? (
             <Loader2 className="w-4 h-4 animate-spin" />

@@ -29,23 +29,23 @@ const severityConfig: Record<
   high: {
     label: '高风险',
     icon: ShieldAlert,
-    textClass: 'text-red',
-    bgClass: 'bg-red/8',
-    borderClass: 'border-red/30',
+    textClass: 'text-sy-danger',
+    bgClass: 'bg-sy-danger/8',
+    borderClass: 'border-sy-danger/30',
   },
   medium: {
     label: '中风险',
     icon: AlertTriangle,
-    textClass: 'text-amber',
-    bgClass: 'bg-amber/8',
-    borderClass: 'border-amber/30',
+    textClass: 'text-sy-warn',
+    bgClass: 'bg-sy-warn/8',
+    borderClass: 'border-sy-warn/30',
   },
   low: {
     label: '低风险',
     icon: Info,
-    textClass: 'text-blue',
-    bgClass: 'bg-blue/8',
-    borderClass: 'border-blue/30',
+    textClass: 'text-sy-info',
+    bgClass: 'bg-sy-info/8',
+    borderClass: 'border-sy-info/30',
   },
 };
 
@@ -93,7 +93,7 @@ function RiskItem({ risk }: { risk: DiagnosisRisk }) {
           )}
           {risk.suggestion && (
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-3 h-3 text-accent flex-shrink-0 mt-0.5" />
+              <CheckCircle className="w-3 h-3 text-sy-accent flex-shrink-0 mt-0.5" />
               <p className="text-[11.5px] text-text3 leading-relaxed">
                 <span className="font-medium text-text2">建议：</span>
                 {risk.suggestion}
@@ -137,19 +137,19 @@ export function ScanResultsList({ report, loading }: ScanResultsListProps) {
       <div className="flex items-center gap-3 px-0.5 mb-2">
         <span className="text-[11px] text-text3">扫描结果</span>
         {highRisks.length > 0 && (
-          <span className="flex items-center gap-1 text-[11px] text-red font-mono">
+          <span className="flex items-center gap-1 text-[11px] text-sy-danger font-mono">
             <ShieldAlert className="w-3 h-3" />
             {highRisks.length} 高
           </span>
         )}
         {mediumRisks.length > 0 && (
-          <span className="flex items-center gap-1 text-[11px] text-amber font-mono">
+          <span className="flex items-center gap-1 text-[11px] text-sy-warn font-mono">
             <AlertTriangle className="w-3 h-3" />
             {mediumRisks.length} 中
           </span>
         )}
         {lowRisks.length > 0 && (
-          <span className="flex items-center gap-1 text-[11px] text-blue font-mono">
+          <span className="flex items-center gap-1 text-[11px] text-sy-info font-mono">
             <Info className="w-3 h-3" />
             {lowRisks.length} 低
           </span>
@@ -158,10 +158,10 @@ export function ScanResultsList({ report, loading }: ScanResultsListProps) {
           <span
             className={`ml-auto font-mono text-[12px] font-semibold ${
               report.overall_score >= 70
-                ? 'text-accent'
+                ? 'text-sy-accent'
                 : report.overall_score >= 50
-                  ? 'text-amber'
-                  : 'text-red'
+                  ? 'text-sy-warn'
+                  : 'text-sy-danger'
             }`}
           >
             健康分 {report.overall_score}

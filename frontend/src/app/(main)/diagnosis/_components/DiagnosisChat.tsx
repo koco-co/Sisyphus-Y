@@ -144,7 +144,7 @@ export function DiagnosisChat({
               className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold ${
                 msg.role === 'user'
                   ? 'bg-bg3 border border-border text-text2'
-                  : 'bg-[linear-gradient(135deg,var(--accent-d),rgba(59,130,246,0.15))] border border-accent/30 text-accent'
+                  : 'bg-[linear-gradient(135deg,var(--accent-d),rgba(59,130,246,0.15))] border border-sy-accent/30 text-sy-accent'
               }`}
             >
               {msg.role === 'user' ? 'U' : 'AI'}
@@ -156,7 +156,7 @@ export function DiagnosisChat({
                 </div>
               ) : (
                 <div
-                  className="rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed bg-accent/4 border border-accent/20 text-text chat-bubble ai-bubble markdown-body"
+                  className="rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed bg-sy-accent/4 border border-sy-accent/20 text-text chat-bubble ai-bubble markdown-body"
                   // biome-ignore lint/security/noDangerouslySetInnerHtml: renderMarkdown sanitizes AI content
                   dangerouslySetInnerHTML={{
                     __html: renderMarkdown(msg.content),
@@ -179,7 +179,7 @@ export function DiagnosisChat({
         {isStreaming && streamThinking && !streamContent && (
           <div className="mb-3 rounded-lg border border-border overflow-hidden">
             <div className="flex items-center gap-2 px-3 py-2 bg-bg2 text-[11.5px] text-text3">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-sy-accent animate-pulse" />
               <span>思考中...</span>
             </div>
             <div className="px-3 py-2 bg-bg text-text3 text-[12px] font-mono leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto">
@@ -192,12 +192,12 @@ export function DiagnosisChat({
         {/* Streaming content */}
         {isStreaming && streamContent && (
           <div className="flex gap-2.5 mb-3.5">
-            <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold bg-[linear-gradient(135deg,var(--accent-d),rgba(59,130,246,0.15))] border border-accent/30 text-accent">
+            <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold bg-[linear-gradient(135deg,var(--accent-d),rgba(59,130,246,0.15))] border border-sy-accent/30 text-sy-accent">
               AI
             </div>
             <div>
               <div
-                className="rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed bg-accent/4 border border-accent/20 text-text chat-bubble ai-bubble markdown-body"
+                className="rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed bg-sy-accent/4 border border-sy-accent/20 text-text chat-bubble ai-bubble markdown-body"
                 // biome-ignore lint/security/noDangerouslySetInnerHtml: renderMarkdown sanitizes AI content
                 dangerouslySetInnerHTML={{
                   __html: renderMarkdown(streamContent),
@@ -211,11 +211,11 @@ export function DiagnosisChat({
         {/* Loading indicator */}
         {isStreaming && !streamContent && !streamThinking && (
           <div className="flex gap-2.5 mb-3.5">
-            <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold bg-[linear-gradient(135deg,var(--accent-d),rgba(59,130,246,0.15))] border border-accent/30 text-accent">
+            <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold bg-[linear-gradient(135deg,var(--accent-d),rgba(59,130,246,0.15))] border border-sy-accent/30 text-sy-accent">
               AI
             </div>
-            <div className="rounded-lg px-3 py-2.5 bg-accent/4 border border-accent/20 flex items-center gap-2">
-              <Loader2 className="w-4 h-4 text-accent animate-spin" />
+            <div className="rounded-lg px-3 py-2.5 bg-sy-accent/4 border border-sy-accent/20 flex items-center gap-2">
+              <Loader2 className="w-4 h-4 text-sy-accent animate-spin" />
               <span className="text-[13px] text-text3">AI 正在分析...</span>
             </div>
           </div>

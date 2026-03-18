@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { EmptyState } from './EmptyState';
 import { Inbox } from 'lucide-react';
+import { describe, expect, it } from 'vitest';
+import { EmptyState } from './EmptyState';
 
 describe('EmptyState', () => {
   describe('default rendering', () => {
@@ -42,9 +42,7 @@ describe('EmptyState', () => {
     });
 
     it('renders action button when provided', () => {
-      render(
-        <EmptyState action={<button type="button">新建用例</button>} />
-      );
+      render(<EmptyState action={<button type="button">新建用例</button>} />);
 
       expect(screen.getByRole('button', { name: '新建用例' })).toBeInTheDocument();
     });

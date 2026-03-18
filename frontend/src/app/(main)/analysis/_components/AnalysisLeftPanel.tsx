@@ -1,11 +1,18 @@
 'use client';
 
-import { ChevronDown, ChevronRight, FileText, Loader2, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, Filter, Loader2, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useRequirementTree } from '@/hooks/useRequirementTree';
 import type { Requirement } from '@/lib/api';
+
+const PRIORITY_OPTIONS = ['P0', 'P1', 'P2', 'P3'] as const;
+const STATUS_OPTIONS = [
+  { value: 'completed', label: '已完成' },
+  { value: 'processing', label: '分析中' },
+  { value: 'pending', label: '未分析' },
+] as const;
 
 interface AnalysisLeftPanelProps {
   selectedReqId: string | null;
@@ -27,9 +34,32 @@ function getStatusLabel(status: string): string {
 export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: AnalysisLeftPanelProps) {
   const [panelWidth, setPanelWidth] = useState(260);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [priorityFilter, setPriorityFilter] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
   const isDragging = useRef(false);
   const startX = useRef(0);
   const startWidth = useRef(0);
+
+  const hasActiveFilters = priorityFilter.size > 0 || statusFilter.size > 0;
+
+  const togglePriority = useCallback((p: string) => {
+    setPriorityFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(p)) next.delete(p);
+      else next.add(p);
+      return next;
+    });
+  }, []);
+
+  const toggleStatus = useCallback((s: string) => {
+    setStatusFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(s)) next.delete(s);
+      else next.add(s);
+      return next;
+    });
+  }, []);
 
   const {
     products,
@@ -75,10 +105,19 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
 
   const matchesSearch = useCallback(
     (req: Requirement) => {
-      if (!searchQuery) return true;
-      return req.title.toLowerCase().includes(searchQuery.toLowerCase());
+      if (searchQuery && !req.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (priorityFilter.size > 0) {
+        const priority = (req as Requirement & { priority?: string }).priority ?? '';
+        if (!priorityFilter.has(priority)) return false;
+      }
+      if (statusFilter.size > 0) {
+        const status =
+          (req as Requirement & { analysis_status?: string }).analysis_status ?? 'pending';
+        if (!statusFilter.has(status)) return false;
+      }
+      return true;
     },
-    [searchQuery],
+    [searchQuery, priorityFilter, statusFilter],
   );
 
   return (
@@ -97,7 +136,51 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent text-[12px] text-sy-text placeholder:text-sy-text-3 outline-none min-w-0"
           />
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            className={`p-0.5 rounded transition-colors ${hasActiveFilters ? 'text-sy-accent' : 'text-sy-text-3 hover:text-sy-text-2'}`}
+            title="筛选"
+          >
+            <Filter className="w-3.5 h-3.5" />
+          </button>
         </div>
+        {showFilters && (
+          <div className="mt-2 space-y-1.5">
+            <div className="flex flex-wrap gap-1">
+              {PRIORITY_OPTIONS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => togglePriority(p)}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono transition-colors ${
+                    priorityFilter.has(p)
+                      ? 'bg-sy-accent/15 text-sy-accent border border-sy-accent/40'
+                      : 'bg-sy-bg-3 text-sy-text-3 border border-sy-border hover:border-sy-border-2'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {STATUS_OPTIONS.map((s) => (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => toggleStatus(s.value)}
+                  className={`px-2 py-0.5 rounded-full text-[10px] transition-colors ${
+                    statusFilter.has(s.value)
+                      ? 'bg-sy-accent/15 text-sy-accent border border-sy-accent/40'
+                      : 'bg-sy-bg-3 text-sy-text-3 border border-sy-border hover:border-sy-border-2'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tree list */}

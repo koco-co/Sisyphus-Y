@@ -34,18 +34,23 @@ const sourceLabels: Record<string, string> = {
 
 const sourceClasses: Record<string, { bg: string; text: string; border: string; dot: string }> = {
   document: {
-    bg: 'bg-accent/10',
-    text: 'text-accent',
-    border: 'border-accent/30',
-    dot: 'bg-accent',
+    bg: 'bg-sy-accent/10',
+    text: 'text-sy-accent',
+    border: 'border-sy-accent/30',
+    dot: 'bg-sy-accent',
   },
   supplemented: {
-    bg: 'bg-amber/10',
-    text: 'text-amber',
-    border: 'border-amber/30',
-    dot: 'bg-amber',
+    bg: 'bg-sy-warn/10',
+    text: 'text-sy-warn',
+    border: 'border-sy-warn/30',
+    dot: 'bg-sy-warn',
   },
-  missing: { bg: 'bg-red/10', text: 'text-red', border: 'border-red/40', dot: 'bg-red' },
+  missing: {
+    bg: 'bg-sy-danger/10',
+    text: 'text-sy-danger',
+    border: 'border-sy-danger/40',
+    dot: 'bg-sy-danger',
+  },
   pending: { bg: 'bg-bg3', text: 'text-text3', border: 'border-border2', dot: 'bg-text3' },
 };
 
@@ -129,30 +134,30 @@ export function CoverageMatrix({ reqId }: CoverageMatrixProps) {
       <div className="flex-shrink-0 px-4 py-3 border-b border-border bg-bg1">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-accent" />
+            <div className="w-2 h-2 rounded-full bg-sy-accent" />
             <span className="text-[11px] text-text3">
-              已覆盖 <span className="text-accent font-mono font-semibold">{totalCovered}</span>
+              已覆盖 <span className="text-sy-accent font-mono font-semibold">{totalCovered}</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red" />
+            <div className="w-2 h-2 rounded-full bg-sy-danger" />
             <span className="text-[11px] text-text3">
-              缺失 <span className="text-red font-mono font-semibold">{totalMissing}</span>
+              缺失 <span className="text-sy-danger font-mono font-semibold">{totalMissing}</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] text-text3">覆盖率</span>
             <span
-              className={`font-mono text-[13px] font-semibold ${coverageRate >= 70 ? 'text-accent' : coverageRate >= 40 ? 'text-amber' : 'text-red'}`}
+              className={`font-mono text-[13px] font-semibold ${coverageRate >= 70 ? 'text-sy-accent' : coverageRate >= 40 ? 'text-sy-warn' : 'text-sy-danger'}`}
             >
               {coverageRate}%
             </span>
           </div>
           {testCases.length > 0 && (
             <div className="ml-auto flex items-center gap-1.5">
-              <CheckCircle className="w-3 h-3 text-accent" />
+              <CheckCircle className="w-3 h-3 text-sy-accent" />
               <span className="text-[11px] text-text3">
-                已生成用例 <span className="text-accent font-mono">{testCases.length}</span> 条
+                已生成用例 <span className="text-sy-accent font-mono">{testCases.length}</span> 条
               </span>
             </div>
           )}
@@ -167,13 +172,13 @@ export function CoverageMatrix({ reqId }: CoverageMatrixProps) {
               <th className="text-left py-2 px-3 text-[11px] text-text3 font-medium bg-bg2 rounded-tl-lg border-b border-border w-[40%]">
                 需求域 / 场景
               </th>
-              <th className="py-2 px-2 text-center text-[11px] font-medium bg-accent/8 text-accent border-b border-border">
+              <th className="py-2 px-2 text-center text-[11px] font-medium bg-sy-accent/8 text-sy-accent border-b border-border">
                 已覆盖
               </th>
-              <th className="py-2 px-2 text-center text-[11px] font-medium bg-amber/8 text-amber border-b border-border">
+              <th className="py-2 px-2 text-center text-[11px] font-medium bg-sy-warn/8 text-sy-warn border-b border-border">
                 AI补全
               </th>
-              <th className="py-2 px-2 text-center text-[11px] font-medium bg-red/8 text-red border-b border-border">
+              <th className="py-2 px-2 text-center text-[11px] font-medium bg-sy-danger/8 text-sy-danger border-b border-border">
                 缺失
               </th>
               <th className="py-2 px-2 text-center text-[11px] font-medium bg-bg3 text-text3 border-b border-border rounded-tr-lg">
@@ -196,7 +201,7 @@ export function CoverageMatrix({ reqId }: CoverageMatrixProps) {
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <div className="h-1 flex-1 bg-bg3 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all ${groupCoveredRate >= 70 ? 'bg-accent' : groupCoveredRate >= 40 ? 'bg-amber' : 'bg-red'}`}
+                          className={`h-full rounded-full transition-all ${groupCoveredRate >= 70 ? 'bg-sy-accent' : groupCoveredRate >= 40 ? 'bg-sy-warn' : 'bg-sy-danger'}`}
                           style={{ width: `${groupCoveredRate}%` }}
                         />
                       </div>
@@ -207,7 +212,7 @@ export function CoverageMatrix({ reqId }: CoverageMatrixProps) {
                   </td>
                   <td className="py-2.5 px-2 text-center">
                     {counts.document > 0 ? (
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent/15 text-accent font-mono text-[12px] font-semibold">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-sy-accent/15 text-sy-accent font-mono text-[12px] font-semibold">
                         {counts.document}
                       </span>
                     ) : (
@@ -216,7 +221,7 @@ export function CoverageMatrix({ reqId }: CoverageMatrixProps) {
                   </td>
                   <td className="py-2.5 px-2 text-center">
                     {counts.supplemented > 0 ? (
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber/15 text-amber font-mono text-[12px] font-semibold">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-sy-warn/15 text-sy-warn font-mono text-[12px] font-semibold">
                         {counts.supplemented}
                       </span>
                     ) : (
@@ -225,7 +230,7 @@ export function CoverageMatrix({ reqId }: CoverageMatrixProps) {
                   </td>
                   <td className="py-2.5 px-2 text-center">
                     {counts.missing > 0 ? (
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red/15 text-red font-mono text-[12px] font-semibold">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-sy-danger/15 text-sy-danger font-mono text-[12px] font-semibold">
                         {counts.missing}
                       </span>
                     ) : (
@@ -271,9 +276,9 @@ export function CoverageMatrix({ reqId }: CoverageMatrixProps) {
                       <span
                         className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
                           tp.priority === 'P0'
-                            ? 'bg-red/10 text-red'
+                            ? 'bg-sy-danger/10 text-sy-danger'
                             : tp.priority === 'P1'
-                              ? 'bg-amber/10 text-amber'
+                              ? 'bg-sy-warn/10 text-sy-warn'
                               : 'bg-bg3 text-text3'
                         }`}
                       >

@@ -86,7 +86,7 @@ export function AdvancedSettings() {
   return (
     <div>
       <div className="sec-header">
-        <Wrench className="w-4 h-4 text-accent" />
+        <Wrench className="w-4 h-4 text-sy-accent" />
         <span className="sec-title">高级配置</span>
         <div className="ml-auto">
           <button type="button" className="btn btn-sm btn-primary" onClick={handleSave}>

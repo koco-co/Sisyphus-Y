@@ -17,8 +17,15 @@ logger = logging.getLogger(__name__)
 
 # 所有可导出字段（含 key、列标题、取值函数）
 _ALL_FIELD_KEYS = [
-    "case_id", "title", "module_path", "precondition",
-    "priority", "case_type", "status", "steps", "tags",
+    "case_id",
+    "title",
+    "module_path",
+    "precondition",
+    "priority",
+    "case_type",
+    "status",
+    "steps",
+    "tags",
 ]
 _FIELD_LABELS: dict[str, str] = {
     "case_id": "用例ID",
@@ -67,6 +74,7 @@ class ExportService:
             if scope_value:
                 # 通过 requirements 表 JOIN 过滤（避免 TestCase 无 iteration_id 字段）
                 from app.modules.products.models import Requirement
+
                 iter_uuid = UUID(str(scope_value))
                 req_subq = (
                     select(Requirement.id)
@@ -89,9 +97,7 @@ class ExportService:
         result = await self.session.execute(q)
         return list(result.scalars().all())
 
-    async def _build_case_dicts(
-        self, cases: list[TestCase], fields: list[str] | None = None
-    ) -> list[dict]:
+    async def _build_case_dicts(self, cases: list[TestCase], fields: list[str] | None = None) -> list[dict]:
         """将 ORM 对象转成 dict，加载 steps，按 fields 过滤。"""
         output: list[dict] = []
         for tc in cases:
@@ -115,8 +121,7 @@ class ExportService:
                 "case_type": tc.case_type,
                 "status": tc.status,
                 "steps": [
-                    {"step_num": s.step_num, "action": s.action, "expected_result": s.expected_result}
-                    for s in steps
+                    {"step_num": s.step_num, "action": s.action, "expected_result": s.expected_result} for s in steps
                 ],
                 "tags": tc.tags if tc.tags else [],
             }
@@ -197,7 +202,8 @@ class ExportService:
             format=params.format,
             iteration_id=params.iteration_id,
             requirement_id=params.requirement_id,
-            filter_criteria=params.filter_criteria or {
+            filter_criteria=params.filter_criteria
+            or {
                 "scope": params.scope,
                 "scope_value": params.scope_value,
                 "case_ids": params.case_ids,

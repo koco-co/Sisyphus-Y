@@ -67,7 +67,7 @@ export function CaseDetailDrawer({
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-border shrink-0">
           <div className="flex-1 min-w-0">
-            <span className="font-mono text-[12px] text-accent font-semibold">
+            <span className="font-mono text-[12px] text-sy-accent font-semibold">
               {testCase.case_id}
             </span>
             <h2 className="text-[15px] font-semibold text-text mt-0.5 truncate">
@@ -77,7 +77,7 @@ export function CaseDetailDrawer({
           <button
             type="button"
             onClick={() => onEdit(testCase)}
-            className="p-1.5 rounded-md text-text3 hover:text-accent hover:bg-accent/10 transition-colors"
+            className="p-1.5 rounded-md text-text3 hover:text-sy-accent hover:bg-sy-accent/10 transition-colors"
             title="编辑"
           >
             <Edit3 className="w-4 h-4" />
@@ -95,7 +95,7 @@ export function CaseDetailDrawer({
           <button
             type="button"
             onClick={() => onDelete(testCase.id)}
-            className="p-1.5 rounded-md text-text3 hover:text-red hover:bg-red/10 transition-colors"
+            className="p-1.5 rounded-md text-text3 hover:text-sy-danger hover:bg-sy-danger/10 transition-colors"
             title="删除"
           >
             <Trash2 className="w-4 h-4" />
@@ -145,7 +145,7 @@ export function CaseDetailDrawer({
             {testCase.ai_score !== null && (
               <span>
                 AI 评分:{' '}
-                <span className="font-mono text-accent font-semibold">{testCase.ai_score}</span>
+                <span className="font-mono text-sy-accent font-semibold">{testCase.ai_score}</span>
               </span>
             )}
           </div>
@@ -169,7 +169,7 @@ export function CaseDetailDrawer({
                 关联需求
               </h3>
               <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bg2 border border-border text-[12.5px]">
-                <FileText className="w-3.5 h-3.5 text-accent shrink-0" />
+                <FileText className="w-3.5 h-3.5 text-sy-accent shrink-0" />
                 <span className="text-text2 truncate">{testCase.requirement_title}</span>
               </div>
             </section>
@@ -182,7 +182,7 @@ export function CaseDetailDrawer({
                 关联测试点
               </h3>
               <div className="flex items-center gap-2 p-2.5 rounded-lg bg-bg2 border border-border text-[12.5px]">
-                <GitBranch className="w-3.5 h-3.5 text-accent shrink-0" />
+                <GitBranch className="w-3.5 h-3.5 text-sy-accent shrink-0" />
                 <span className="text-text2 truncate">{testCase.test_point_title}</span>
               </div>
             </section>
@@ -203,7 +203,7 @@ export function CaseDetailDrawer({
                     <span className="font-mono text-text3 shrink-0 w-5 text-right">{step.no}.</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-text2 leading-relaxed">{step.action}</p>
-                      <p className="flex items-start gap-1 mt-1 text-[11.5px] text-accent/80">
+                      <p className="flex items-start gap-1 mt-1 text-[11.5px] text-sy-accent/80">
                         <ArrowRight className="w-3 h-3 mt-0.5 shrink-0" />
                         <span>{step.expected_result}</span>
                       </p>

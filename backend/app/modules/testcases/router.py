@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from app.core.dependencies import AsyncSessionDep
 from app.modules.testcases.import_service import TestCaseImportService
 from app.modules.testcases.schemas import (
+    FeedbackRequest,
     FolderCreate,
     FolderReorderRequest,
     FolderResponse,
@@ -258,6 +259,17 @@ async def reject_case(case_id: uuid.UUID, data: ReviewRequest, session: AsyncSes
 
 
 # ── Traceability (B-M06-07) ───────────────────────────────────────
+
+
+@router.post("/{case_id}/feedback", response_model=TestCaseResponse)
+async def submit_feedback(
+    case_id: uuid.UUID,
+    body: FeedbackRequest,
+    session: AsyncSessionDep,
+) -> TestCaseResponse:
+    svc = TestCaseService(session)
+    tc = await svc.submit_feedback(case_id, body.feedback, body.reason)
+    return TestCaseResponse.model_validate(tc)
 
 
 @router.get("/{case_id}/traceability", response_model=TraceabilityResponse)

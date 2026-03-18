@@ -73,7 +73,10 @@ function LegacyChangeItem({ change }: { change: SemanticChange }) {
 
 // ── New format: change_summary item ──
 
-const changeSummaryTypeConfig: Record<string, { label: string; icon: typeof Plus; badgeClass: string }> = {
+const changeSummaryTypeConfig: Record<
+  string,
+  { label: string; icon: typeof Plus; badgeClass: string }
+> = {
   added: {
     label: '新增',
     icon: Plus,
@@ -153,10 +156,7 @@ export function SemanticAnalysis({ impact, changeSummary, className = '' }: Sema
         {/* New format: change_summary cards */}
         {hasChangeSummary &&
           changeSummary.map((item, i) => (
-            <ChangeSummaryCard
-              key={`cs-${item.change_type}-${i}`}
-              item={item}
-            />
+            <ChangeSummaryCard key={`cs-${item.change_type}-${i}`} item={item} />
           ))}
 
         {/* Legacy format: SemanticChange cards */}

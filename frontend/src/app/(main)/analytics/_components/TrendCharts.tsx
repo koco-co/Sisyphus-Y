@@ -30,7 +30,7 @@ function ChartCard({
   return (
     <div className="card">
       <div className="flex items-center gap-2 mb-4">
-        <Icon className="w-3.5 h-3.5 text-accent" />
+        <Icon className="w-3.5 h-3.5 text-sy-accent" />
         <span className="sec-title text-[13px]">{title}</span>
       </div>
       <div className="h-[220px]">{children}</div>

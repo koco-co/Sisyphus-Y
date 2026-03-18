@@ -126,7 +126,7 @@ export default function RagPreviewPanel({
                       result.score >= 0.8
                         ? 'bg-sy-accent/10 text-sy-accent'
                         : result.score >= 0.6
-                          ? 'bg-amber/10 text-amber'
+                          ? 'bg-sy-warn/10 text-sy-warn'
                           : 'bg-sy-bg-3 text-sy-text-3'
                     }`}
                   >

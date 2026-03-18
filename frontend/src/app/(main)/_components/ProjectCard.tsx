@@ -43,8 +43,8 @@ export function ProjectCard({
         <div className="grid grid-cols-3 gap-2 mb-3">
           {[
             { val: totalCases, label: '用例总数' },
-            { val: `${coverage}%`, label: '覆盖率', color: 'text-accent' },
-            { val: pending, label: '待处理', color: pending > 0 ? 'text-amber' : undefined },
+            { val: `${coverage}%`, label: '覆盖率', color: 'text-sy-accent' },
+            { val: pending, label: '待处理', color: pending > 0 ? 'text-sy-warn' : undefined },
           ].map((stat) => (
             <div key={stat.label} className="text-center p-2 bg-bg2 rounded-md">
               <div className={`font-mono text-[18px] font-semibold ${stat.color ?? 'text-text'}`}>

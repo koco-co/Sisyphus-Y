@@ -21,16 +21,16 @@ const rateColor = (rate: number) =>
 const rateFillClass = (rate: number) => (rate >= 80 ? '' : rate >= 50 ? 'amber' : 'red');
 
 function StatusIcon({ rate }: { rate: number }) {
-  if (rate >= 80) return <CheckCircle2 className="w-4 h-4 text-accent" />;
-  if (rate >= 50) return <AlertCircle className="w-4 h-4 text-amber" />;
-  return <XCircle className="w-4 h-4 text-red" />;
+  if (rate >= 80) return <CheckCircle2 className="w-4 h-4 text-sy-accent" />;
+  if (rate >= 50) return <AlertCircle className="w-4 h-4 text-sy-warn" />;
+  return <XCircle className="w-4 h-4 text-sy-danger" />;
 }
 
 function CoverageCellBadge({ status }: { status: 'full' | 'partial' | 'none' }) {
   const config = {
-    full: { label: '全覆盖', cls: 'bg-accent/10 border-accent/30 text-accent' },
-    partial: { label: '部分', cls: 'bg-amber/10 border-amber/30 text-amber' },
-    none: { label: '未覆盖', cls: 'bg-red/10 border-red/30 text-red' },
+    full: { label: '全覆盖', cls: 'bg-sy-accent/10 border-sy-accent/30 text-sy-accent' },
+    partial: { label: '部分', cls: 'bg-sy-warn/10 border-sy-warn/30 text-sy-warn' },
+    none: { label: '未覆盖', cls: 'bg-sy-danger/10 border-sy-danger/30 text-sy-danger' },
   };
   const c = config[status];
   return (
@@ -106,7 +106,7 @@ function IterationRow({ iter }: { iter: IterationCoverage }) {
           <tr key={req.id} className="bg-bg2/50 hover:bg-bg2 transition-colors">
             <td className="px-3 py-2 border-b border-border pl-10">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[11px] text-accent">{req.req_id}</span>
+                <span className="font-mono text-[11px] text-sy-accent">{req.req_id}</span>
                 <span className="text-[12px] text-text2 truncate max-w-[260px]">{req.title}</span>
               </div>
             </td>
@@ -127,7 +127,7 @@ function IterationRow({ iter }: { iter: IterationCoverage }) {
               {req.coverage_status === 'none' && (
                 <a
                   href={`/workbench?req=${req.id}`}
-                  className="inline-flex items-center gap-1 text-[11px] text-accent hover:text-accent2 transition-colors"
+                  className="inline-flex items-center gap-1 text-[11px] text-sy-accent hover:text-sy-accent-2 transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLink className="w-3 h-3" />

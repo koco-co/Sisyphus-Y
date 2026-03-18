@@ -169,7 +169,7 @@ export function PromptManager() {
             type="button"
             className={`px-3 py-1.5 rounded-md text-[12px] transition-colors ${
               activeModule === m.key
-                ? 'bg-accent/10 text-accent font-medium border border-accent/25'
+                ? 'bg-sy-accent/10 text-sy-accent font-medium border border-sy-accent/25'
                 : 'text-text3 hover:text-text2 hover:bg-bg2 border border-transparent'
             }`}
             onClick={() => {
@@ -241,7 +241,7 @@ export function PromptManager() {
 
         <div className="flex items-center justify-between mt-2">
           <span className="text-[11px] text-text3">{currentText.length} 字符</span>
-          {hasChanges && <span className="text-[11px] text-amber">有未保存的修改</span>}
+          {hasChanges && <span className="text-[11px] text-sy-warn">有未保存的修改</span>}
         </div>
       </div>
 

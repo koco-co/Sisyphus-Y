@@ -11,18 +11,18 @@ interface ScenePreviewProps {
 const sourceConfig: Record<string, { label: string; dotClass: string; nodeClass: string }> = {
   document: {
     label: '已覆盖',
-    dotClass: 'bg-accent',
-    nodeClass: 'bg-accent/10 border-accent/35 text-accent',
+    dotClass: 'bg-sy-accent',
+    nodeClass: 'bg-sy-accent/10 border-sy-accent/35 text-sy-accent',
   },
   supplemented: {
     label: 'AI 补全',
-    dotClass: 'bg-amber',
-    nodeClass: 'bg-amber/10 border-amber/35 text-amber',
+    dotClass: 'bg-sy-warn',
+    nodeClass: 'bg-sy-warn/10 border-sy-warn/35 text-sy-warn',
   },
   missing: {
     label: '缺失',
-    dotClass: 'bg-red',
-    nodeClass: 'bg-red/10 border-red text-red font-semibold',
+    dotClass: 'bg-sy-danger',
+    nodeClass: 'bg-sy-danger/10 border-sy-danger text-sy-danger font-semibold',
   },
   pending: {
     label: '待确认',
@@ -60,22 +60,22 @@ export function ScenePreview({ sceneMap, loading }: ScenePreviewProps) {
       label: '已覆盖',
       count: counts.document,
       icon: CheckCircle,
-      color: 'text-accent',
-      bg: 'bg-accent/10',
+      color: 'text-sy-accent',
+      bg: 'bg-sy-accent/10',
     },
     {
       label: 'AI 补全',
       count: counts.supplemented,
       icon: AlertTriangle,
-      color: 'text-amber',
-      bg: 'bg-amber/10',
+      color: 'text-sy-warn',
+      bg: 'bg-sy-warn/10',
     },
     {
       label: '缺失',
       count: counts.missing,
       icon: XCircle,
-      color: 'text-red',
-      bg: 'bg-red/10',
+      color: 'text-sy-danger',
+      bg: 'bg-sy-danger/10',
     },
     {
       label: '待确认',
@@ -89,7 +89,7 @@ export function ScenePreview({ sceneMap, loading }: ScenePreviewProps) {
   return (
     <div className="p-4">
       <div className="flex items-center gap-2 mb-4">
-        <MapPinned className="w-3.5 h-3.5 text-accent" />
+        <MapPinned className="w-3.5 h-3.5 text-sy-accent" />
         <span className="text-[12px] font-semibold text-text2">场景地图预览</span>
       </div>
 
@@ -133,9 +133,9 @@ export function ScenePreview({ sceneMap, loading }: ScenePreviewProps) {
                 <span
                   className={`flex-shrink-0 text-[10px] font-mono px-1.5 py-0.5 rounded ${
                     tp.priority === 'P0'
-                      ? 'bg-red/10 text-red'
+                      ? 'bg-sy-danger/10 text-sy-danger'
                       : tp.priority === 'P1'
-                        ? 'bg-amber/10 text-amber'
+                        ? 'bg-sy-warn/10 text-sy-warn'
                         : 'bg-bg3 text-text3'
                   }`}
                 >

@@ -30,8 +30,7 @@ export default function SourcePieChart({ data, loading = false }: SourcePieChart
     );
   }
 
-  const isEmpty =
-    !data || (data.ai_generated === 0 && data.imported === 0 && data.manual === 0);
+  const isEmpty = !data || (data.ai_generated === 0 && data.imported === 0 && data.manual === 0);
 
   if (isEmpty) {
     return (
@@ -54,13 +53,7 @@ export default function SourcePieChart({ data, loading = false }: SourcePieChart
   return (
     <div className="relative flex items-center justify-center">
       <PieChart width={220} height={220}>
-        <Pie
-          data={pieData}
-          innerRadius={55}
-          outerRadius={85}
-          dataKey="value"
-          paddingAngle={2}
-        >
+        <Pie data={pieData} innerRadius={55} outerRadius={85} dataKey="value" paddingAngle={2}>
           {pieData.map((entry, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: stable index for pie cells
             <Cell key={i} fill={entry.color} />

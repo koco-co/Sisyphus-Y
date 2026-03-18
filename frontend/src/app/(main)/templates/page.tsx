@@ -17,8 +17,8 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CustomSelect } from '@/components/ui/CustomSelect';
@@ -392,7 +392,9 @@ export default function TemplatesPage() {
     if (!keyword) return prompts;
     return prompts.filter((p) => {
       const displayName = PROMPT_DISPLAY_NAMES[p.module_key] || p.module_key;
-      return displayName.toLowerCase().includes(keyword) || p.module_key.toLowerCase().includes(keyword);
+      return (
+        displayName.toLowerCase().includes(keyword) || p.module_key.toLowerCase().includes(keyword)
+      );
     });
   }, [promptSearch, prompts]);
 
@@ -448,7 +450,11 @@ export default function TemplatesPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.name.endsWith('.md') && !file.name.endsWith('.markdown') && !file.name.endsWith('.txt')) {
+    if (
+      !file.name.endsWith('.md') &&
+      !file.name.endsWith('.markdown') &&
+      !file.name.endsWith('.txt')
+    ) {
       toast.error('文件格式无效，请使用 Markdown 格式（.md / .markdown / .txt）');
       return;
     }
@@ -627,7 +633,7 @@ export default function TemplatesPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <LayoutTemplate className="w-5 h-5 text-accent" />
+          <LayoutTemplate className="w-5 h-5 text-sy-accent" />
           <h1 className="font-display text-lg font-bold text-text">模板库</h1>
           <span className="pill pill-gray text-[10px]">{totalCount} 个模板</span>
           <div className="flex items-center bg-bg2 rounded-lg p-0.5 ml-2">
@@ -782,401 +788,411 @@ export default function TemplatesPage() {
       )}
 
       {activeTab === 'case' && (
-      <>
-      {pageError && (
-        <div className="alert-banner mb-6">
-          <LayoutTemplate className="w-4 h-4" />
-          <span>{pageError}</span>
-        </div>
-      )}
-
-      {showForm && (
-        <div className="card p-4 mb-6">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div>
-              <h2 className="text-[14px] font-semibold text-text">
-                {editingId ? '编辑模板' : '新建模板'}
-              </h2>
-              <p className="text-[12px] text-text3 mt-1">
-                {editingId
-                  ? '可调整模板名称、分类与描述，模板内容将保留现有结构。'
-                  : '新建模板会自动生成一份可预览的基础步骤草稿，便于后续补充。'}
-              </p>
+        <>
+          {pageError && (
+            <div className="alert-banner mb-6">
+              <LayoutTemplate className="w-4 h-4" />
+              <span>{pageError}</span>
             </div>
-            <button
-              type="button"
-              className="text-text3 hover:text-text transition-colors"
-              onClick={() => {
-                setShowForm(false);
-                resetForm();
-              }}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+          )}
 
-          <div className="flex gap-3 mb-3">
-            <input
-              value={formState.name}
-              onChange={(event) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  name: event.target.value,
-                }))
-              }
-              placeholder="模板名称"
-              className="input flex-1"
-            />
-            <CustomSelect
-              value={formState.category}
-              onChange={(value) =>
-                setFormState((prev) => ({
-                  ...prev,
-                  category: value,
-                }))
-              }
-              options={Object.entries(categoryLabels).map(([key, label]) => ({
-                value: key,
-                label,
-              }))}
-              className="min-w-[120px]"
-            />
-          </div>
-
-          <textarea
-            value={formState.description}
-            onChange={(event) =>
-              setFormState((prev) => ({
-                ...prev,
-                description: event.target.value,
-              }))
-            }
-            placeholder="模板描述..."
-            rows={3}
-            className="input w-full resize-y mb-3"
-          />
-
-          {formError && <p className="text-[12px] text-red mb-3">{formError}</p>}
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={submitForm}
-              disabled={saving}
-            >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-              {editingId ? '保存修改' : '新建模板'}
-            </button>
-            <button
-              type="button"
-              className="btn btn-sm"
-              onClick={() => {
-                setShowForm(false);
-                resetForm();
-              }}
-            >
-              取消
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="flex items-center gap-3 mb-4">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text3" />
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="搜索模板..."
-            className="input w-full pl-8"
-          />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Filter className="w-3.5 h-3.5 text-text3" />
-          <button
-            type="button"
-            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-              !categoryFilter
-                ? 'bg-accent/10 text-accent border border-accent/25'
-                : 'text-text3 hover:bg-bg2 border border-transparent'
-            }`}
-            onClick={() => setCategoryFilter('')}
-          >
-            全部
-          </button>
-          {Object.entries(categoryLabels).map(([key, label]) => (
-            <button
-              type="button"
-              key={key}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                categoryFilter === key
-                  ? 'bg-accent/10 text-accent border border-accent/25'
-                  : 'text-text3 hover:bg-bg2 border border-transparent'
-              }`}
-              onClick={() => setCategoryFilter(key)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex gap-6">
-        <div className="flex-1">
-          <div className="grid-3">
-            {loading && (
-              <div className="card py-12 text-center text-text3" style={{ gridColumn: '1 / -1' }}>
-                <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin" />
-                <p className="text-[13px]">正在加载模板数据...</p>
-              </div>
-            )}
-
-            {!loading &&
-              filtered.map((template) => (
-                <div key={template.id} className="card card-hover flex flex-col">
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="text-sm font-semibold text-text leading-tight flex-1">
-                      {template.name}
-                    </h4>
-                    <span
-                      className="shrink-0 ml-2"
-                      title={template.isBuiltin ? '内置模板' : '自定义模板'}
-                    >
-                      <Star
-                        className={`w-3.5 h-3.5 ${
-                          template.isBuiltin ? 'text-amber fill-amber' : 'text-text3'
-                        }`}
-                      />
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                    <span
-                      className={`pill ${categoryPills[template.category] || 'pill-gray'} text-[10px] self-start`}
-                    >
-                      {categoryLabels[template.category] || template.category}
-                    </span>
-                    <span className="tag text-[10px]">
-                      {template.isBuiltin ? '内置' : '自定义'}
-                    </span>
-                  </div>
-
-                  {template.description && (
-                    <p className="text-[11.5px] text-text3 leading-relaxed mb-3 line-clamp-2 flex-1">
-                      {template.description}
-                    </p>
-                  )}
-
-                  {!template.description && (
-                    <p className="text-[11.5px] text-text3 leading-relaxed mb-3 flex-1">
-                      暂无描述，可通过编辑补充模板适用范围与关键约束。
-                    </p>
-                  )}
-
-                  <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
-                    <div className="flex items-center gap-3 text-[11px] text-text3">
-                      <span className="flex items-center gap-1">
-                        <Copy className="w-3 h-3" />
-                        {template.usageCount}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {formatDate(template.createdAt)}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-ghost"
-                        onClick={() => void openPreview(template.id)}
-                        title="预览"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-ghost"
-                        title="编辑"
-                        onClick={() => openEditForm(template)}
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-ghost text-red disabled:opacity-40"
-                        onClick={() => void handleDelete(template)}
-                        title={template.isBuiltin ? '内置模板不可删除' : '删除'}
-                        disabled={template.isBuiltin || deletingId === template.id}
-                      >
-                        {deletingId === template.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
+          {showForm && (
+            <div className="card p-4 mb-6">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <div>
+                  <h2 className="text-[14px] font-semibold text-text">
+                    {editingId ? '编辑模板' : '新建模板'}
+                  </h2>
+                  <p className="text-[12px] text-text3 mt-1">
+                    {editingId
+                      ? '可调整模板名称、分类与描述，模板内容将保留现有结构。'
+                      : '新建模板会自动生成一份可预览的基础步骤草稿，便于后续补充。'}
+                  </p>
                 </div>
-              ))}
-
-            {!loading && filtered.length === 0 && (
-              <div className="card py-12 text-center text-text3" style={{ gridColumn: '1 / -1' }}>
-                <LayoutTemplate className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p className="text-[13px]">暂无匹配模板</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {(previewId || previewLoading || previewError) && (
-          <div className="w-80 shrink-0">
-            <div className="card sticky top-16">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[13px] font-semibold text-text">模板预览</h3>
                 <button
                   type="button"
-                  className="text-text3 hover:text-text2 transition-colors"
+                  className="text-text3 hover:text-text transition-colors"
                   onClick={() => {
-                    setPreviewId(null);
-                    setPreviewTemplate(null);
-                    setPreviewError(null);
+                    setShowForm(false);
+                    resetForm();
                   }}
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {previewLoading && (
-                <div className="py-12 text-center text-text3">
-                  <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin" />
-                  <p className="text-[12px]">正在加载模板详情...</p>
-                </div>
-              )}
+              <div className="flex gap-3 mb-3">
+                <input
+                  value={formState.name}
+                  onChange={(event) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      name: event.target.value,
+                    }))
+                  }
+                  placeholder="模板名称"
+                  className="input flex-1"
+                />
+                <CustomSelect
+                  value={formState.category}
+                  onChange={(value) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      category: value,
+                    }))
+                  }
+                  options={Object.entries(categoryLabels).map(([key, label]) => ({
+                    value: key,
+                    label,
+                  }))}
+                  className="min-w-[120px]"
+                />
+              </div>
 
-              {!previewLoading && previewError && (
-                <div className="text-[12px] text-red leading-relaxed">{previewError}</div>
-              )}
+              <textarea
+                value={formState.description}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    description: event.target.value,
+                  }))
+                }
+                placeholder="模板描述..."
+                rows={3}
+                className="input w-full resize-y mb-3"
+              />
 
-              {!previewLoading && !previewError && previewTemplate && (
-                <>
-                  <h4 className="text-sm font-semibold text-text mb-2">{previewTemplate.name}</h4>
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    <span
-                      className={`pill ${
-                        categoryPills[previewTemplate.category] || 'pill-gray'
-                      } text-[10px]`}
-                    >
-                      {categoryLabels[previewTemplate.category] || previewTemplate.category}
-                    </span>
-                    <span className="tag text-[10px]">
-                      {previewTemplate.isBuiltin ? '内置模板' : '自定义模板'}
-                    </span>
-                  </div>
+              {formError && <p className="text-[12px] text-sy-danger mb-3">{formError}</p>}
 
-                  <p className="text-[12px] text-text3 leading-relaxed mb-4">
-                    {previewTemplate.description || '暂无模板描述。'}
-                  </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={submitForm}
+                  disabled={saving}
+                >
+                  {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                  {editingId ? '保存修改' : '新建模板'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => {
+                    setShowForm(false);
+                    resetForm();
+                  }}
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          )}
 
-                  {previewTemplate.precondition && (
-                    <>
-                      <div className="text-[11px] font-semibold text-text2 mb-2 uppercase tracking-wider">
-                        前置条件
-                      </div>
-                      <div className="p-2.5 bg-bg2 border border-border rounded-lg text-[11px] text-text3 mb-4 leading-relaxed">
-                        {previewTemplate.precondition}
-                      </div>
-                    </>
-                  )}
-
-                  {previewTemplate.tags.length > 0 && (
-                    <>
-                      <div className="text-[11px] font-semibold text-text2 mb-2 uppercase tracking-wider">
-                        标签
-                      </div>
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {previewTemplate.tags.map((tag) => (
-                          <span key={tag} className="tag text-[10px]">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {previewTemplate.variableNames.length > 0 && (
-                    <>
-                      <div className="text-[11px] font-semibold text-text2 mb-2 uppercase tracking-wider">
-                        可替换变量
-                      </div>
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {previewTemplate.variableNames.map((variable) => (
-                          <span key={variable} className="tag text-[10px]">
-                            {variable}
-                          </span>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  <div className="text-[11px] font-semibold text-text2 mb-2 uppercase tracking-wider">
-                    步骤预览
-                  </div>
-                  <div className="flex flex-col gap-2 mb-4">
-                    {previewTemplate.steps.length > 0 ? (
-                      previewTemplate.steps.map((step) => (
-                        <div
-                          key={`${step.step}-${step.action}`}
-                          className="p-2.5 bg-bg2 border border-border rounded-lg"
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="w-5 h-5 rounded-full bg-accent/15 text-accent text-[10px] font-mono font-bold flex items-center justify-center shrink-0">
-                              {step.step}
-                            </span>
-                            <span className="text-[12px] text-text">{step.action}</span>
-                          </div>
-                          <div className="pl-7 text-[11px] text-accent/80">→ {step.expected}</div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-3 bg-bg2 border border-dashed border-border rounded-lg text-[12px] text-text3">
-                        当前模板还没有配置步骤内容。
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm w-full justify-center"
-                    onClick={() => void handleCopyTemplateId()}
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    {copiedTemplateId === previewTemplate.id ? '模板 ID 已复制' : '复制模板 ID'}
-                  </button>
-                  <p className="text-[11px] text-text3 mt-2 leading-relaxed">
-                    可将模板 ID 用于模板驱动接口联调，或后续工作台模板生成链路。
-                  </p>
-                </>
-              )}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text3" />
+              <input
+                type="text"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="搜索模板..."
+                className="input w-full pl-8"
+              />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-text3" />
+              <button
+                type="button"
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                  !categoryFilter
+                    ? 'bg-sy-accent/10 text-sy-accent border border-sy-accent/25'
+                    : 'text-text3 hover:bg-bg2 border border-transparent'
+                }`}
+                onClick={() => setCategoryFilter('')}
+              >
+                全部
+              </button>
+              {Object.entries(categoryLabels).map(([key, label]) => (
+                <button
+                  type="button"
+                  key={key}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    categoryFilter === key
+                      ? 'bg-sy-accent/10 text-sy-accent border border-sy-accent/25'
+                      : 'text-text3 hover:bg-bg2 border border-transparent'
+                  }`}
+                  onClick={() => setCategoryFilter(key)}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
-        )}
-      </div>
-      <ConfirmDialog
-        open={deleteConfirmOpen}
-        onConfirm={() => void executeDelete()}
-        onCancel={() => {
-          setDeleteConfirmOpen(false);
-          pendingDeleteTemplate.current = null;
-        }}
-        title="删除模板"
-        description={`确认删除模板\u201c${pendingDeleteTemplate.current?.name ?? ''}\u201d吗？`}
-        confirmText="删除"
-        variant="danger"
-      />
-      </>
+
+          <div className="flex gap-6">
+            <div className="flex-1">
+              <div className="grid-3">
+                {loading && (
+                  <div
+                    className="card py-12 text-center text-text3"
+                    style={{ gridColumn: '1 / -1' }}
+                  >
+                    <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin" />
+                    <p className="text-[13px]">正在加载模板数据...</p>
+                  </div>
+                )}
+
+                {!loading &&
+                  filtered.map((template) => (
+                    <div key={template.id} className="card card-hover flex flex-col">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="text-sm font-semibold text-text leading-tight flex-1">
+                          {template.name}
+                        </h4>
+                        <span
+                          className="shrink-0 ml-2"
+                          title={template.isBuiltin ? '内置模板' : '自定义模板'}
+                        >
+                          <Star
+                            className={`w-3.5 h-3.5 ${
+                              template.isBuiltin ? 'text-sy-warn fill-amber' : 'text-text3'
+                            }`}
+                          />
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                        <span
+                          className={`pill ${categoryPills[template.category] || 'pill-gray'} text-[10px] self-start`}
+                        >
+                          {categoryLabels[template.category] || template.category}
+                        </span>
+                        <span className="tag text-[10px]">
+                          {template.isBuiltin ? '内置' : '自定义'}
+                        </span>
+                      </div>
+
+                      {template.description && (
+                        <p className="text-[11.5px] text-text3 leading-relaxed mb-3 line-clamp-2 flex-1">
+                          {template.description}
+                        </p>
+                      )}
+
+                      {!template.description && (
+                        <p className="text-[11.5px] text-text3 leading-relaxed mb-3 flex-1">
+                          暂无描述，可通过编辑补充模板适用范围与关键约束。
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/50">
+                        <div className="flex items-center gap-3 text-[11px] text-text3">
+                          <span className="flex items-center gap-1">
+                            <Copy className="w-3 h-3" />
+                            {template.usageCount}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {formatDate(template.createdAt)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-ghost"
+                            onClick={() => void openPreview(template.id)}
+                            title="预览"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-ghost"
+                            title="编辑"
+                            onClick={() => openEditForm(template)}
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-ghost text-sy-danger disabled:opacity-40"
+                            onClick={() => void handleDelete(template)}
+                            title={template.isBuiltin ? '内置模板不可删除' : '删除'}
+                            disabled={template.isBuiltin || deletingId === template.id}
+                          >
+                            {deletingId === template.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                {!loading && filtered.length === 0 && (
+                  <div
+                    className="card py-12 text-center text-text3"
+                    style={{ gridColumn: '1 / -1' }}
+                  >
+                    <LayoutTemplate className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <p className="text-[13px]">暂无匹配模板</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {(previewId || previewLoading || previewError) && (
+              <div className="w-80 shrink-0">
+                <div className="card sticky top-16">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-[13px] font-semibold text-text">模板预览</h3>
+                    <button
+                      type="button"
+                      className="text-text3 hover:text-text2 transition-colors"
+                      onClick={() => {
+                        setPreviewId(null);
+                        setPreviewTemplate(null);
+                        setPreviewError(null);
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {previewLoading && (
+                    <div className="py-12 text-center text-text3">
+                      <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin" />
+                      <p className="text-[12px]">正在加载模板详情...</p>
+                    </div>
+                  )}
+
+                  {!previewLoading && previewError && (
+                    <div className="text-[12px] text-sy-danger leading-relaxed">{previewError}</div>
+                  )}
+
+                  {!previewLoading && !previewError && previewTemplate && (
+                    <>
+                      <h4 className="text-sm font-semibold text-text mb-2">
+                        {previewTemplate.name}
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        <span
+                          className={`pill ${
+                            categoryPills[previewTemplate.category] || 'pill-gray'
+                          } text-[10px]`}
+                        >
+                          {categoryLabels[previewTemplate.category] || previewTemplate.category}
+                        </span>
+                        <span className="tag text-[10px]">
+                          {previewTemplate.isBuiltin ? '内置模板' : '自定义模板'}
+                        </span>
+                      </div>
+
+                      <p className="text-[12px] text-text3 leading-relaxed mb-4">
+                        {previewTemplate.description || '暂无模板描述。'}
+                      </p>
+
+                      {previewTemplate.precondition && (
+                        <>
+                          <div className="text-[11px] font-semibold text-text2 mb-2 uppercase tracking-wider">
+                            前置条件
+                          </div>
+                          <div className="p-2.5 bg-bg2 border border-border rounded-lg text-[11px] text-text3 mb-4 leading-relaxed">
+                            {previewTemplate.precondition}
+                          </div>
+                        </>
+                      )}
+
+                      {previewTemplate.tags.length > 0 && (
+                        <>
+                          <div className="text-[11px] font-semibold text-text2 mb-2 uppercase tracking-wider">
+                            标签
+                          </div>
+                          <div className="flex flex-wrap gap-1 mb-4">
+                            {previewTemplate.tags.map((tag) => (
+                              <span key={tag} className="tag text-[10px]">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </>
+                      )}
+
+                      {previewTemplate.variableNames.length > 0 && (
+                        <>
+                          <div className="text-[11px] font-semibold text-text2 mb-2 uppercase tracking-wider">
+                            可替换变量
+                          </div>
+                          <div className="flex flex-wrap gap-1 mb-4">
+                            {previewTemplate.variableNames.map((variable) => (
+                              <span key={variable} className="tag text-[10px]">
+                                {variable}
+                              </span>
+                            ))}
+                          </div>
+                        </>
+                      )}
+
+                      <div className="text-[11px] font-semibold text-text2 mb-2 uppercase tracking-wider">
+                        步骤预览
+                      </div>
+                      <div className="flex flex-col gap-2 mb-4">
+                        {previewTemplate.steps.length > 0 ? (
+                          previewTemplate.steps.map((step) => (
+                            <div
+                              key={`${step.step}-${step.action}`}
+                              className="p-2.5 bg-bg2 border border-border rounded-lg"
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="w-5 h-5 rounded-full bg-sy-accent/15 text-sy-accent text-[10px] font-mono font-bold flex items-center justify-center shrink-0">
+                                  {step.step}
+                                </span>
+                                <span className="text-[12px] text-text">{step.action}</span>
+                              </div>
+                              <div className="pl-7 text-[11px] text-sy-accent/80">
+                                → {step.expected}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-3 bg-bg2 border border-dashed border-border rounded-lg text-[12px] text-text3">
+                            当前模板还没有配置步骤内容。
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm w-full justify-center"
+                        onClick={() => void handleCopyTemplateId()}
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        {copiedTemplateId === previewTemplate.id ? '模板 ID 已复制' : '复制模板 ID'}
+                      </button>
+                      <p className="text-[11px] text-text3 mt-2 leading-relaxed">
+                        可将模板 ID 用于模板驱动接口联调，或后续工作台模板生成链路。
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <ConfirmDialog
+            open={deleteConfirmOpen}
+            onConfirm={() => void executeDelete()}
+            onCancel={() => {
+              setDeleteConfirmOpen(false);
+              pendingDeleteTemplate.current = null;
+            }}
+            title="删除模板"
+            description={`确认删除模板\u201c${pendingDeleteTemplate.current?.name ?? ''}\u201d吗？`}
+            confirmText="删除"
+            variant="danger"
+          />
+        </>
       )}
     </div>
   );

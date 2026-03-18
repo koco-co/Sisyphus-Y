@@ -323,7 +323,7 @@ export function UploadRequirementDialog({
               type="button"
               onClick={handleParse}
               disabled={!file || parsing}
-              className="px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-sy-accent text-white hover:bg-sy-accent-2 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-sy-accent text-black hover:bg-sy-accent-2 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
             >
               {parsing ? (
                 <>
@@ -454,7 +454,7 @@ export function UploadRequirementDialog({
               type="button"
               onClick={handleSave}
               disabled={saving || checkedCount === 0 || !iterationId || !productId}
-              className="px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-sy-accent text-white hover:bg-sy-accent-2 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-sy-accent text-black hover:bg-sy-accent-2 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
             >
               {saving ? (
                 <>

@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, ChevronDown, Download, FileSpreadsheet, Loader2, Upload } from 'lucide-react';
-import type { FlatFolder, FileFormat } from './types';
+import type { FileFormat, FlatFolder } from './types';
 import { ACCEPT_EXTENSIONS } from './types';
 
 /* ------------------------------------------------------------------ */

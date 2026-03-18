@@ -16,7 +16,7 @@ export function ExportButtons({ onExport, disabled }: ExportButtonsProps) {
         type="button"
         onClick={() => onExport('excel')}
         disabled={disabled}
-        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-bg2 border border-border text-text2 hover:border-accent hover:text-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-bg2 border border-border text-text2 hover:border-sy-accent hover:text-sy-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <FileSpreadsheet className="w-3 h-3" />
         Excel
@@ -25,7 +25,7 @@ export function ExportButtons({ onExport, disabled }: ExportButtonsProps) {
         type="button"
         onClick={() => onExport('json')}
         disabled={disabled}
-        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-bg2 border border-border text-text2 hover:border-accent hover:text-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-bg2 border border-border text-text2 hover:border-sy-accent hover:text-sy-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <FileJson className="w-3 h-3" />
         JSON

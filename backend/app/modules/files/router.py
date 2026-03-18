@@ -7,6 +7,8 @@ from app.engine.uda.image_handler import get_image_url
 
 router = APIRouter(prefix="/files", tags=["files"])
 
+ALLOWED_BUCKETS = {"sisyphus-images", "sisyphus-docs"}
+
 
 @router.get("/{bucket}/{path:path}")
 async def serve_file(bucket: str, path: str):
@@ -21,8 +23,12 @@ async def serve_file(bucket: str, path: str):
         302 redirect to presigned URL
 
     Raises:
+        403: Bucket not in whitelist
         404: File not found or unable to generate URL
     """
+    if bucket not in ALLOWED_BUCKETS:
+        raise HTTPException(status_code=403, detail="Access denied: bucket not allowed")
+
     object_path = f"{bucket}/{path}"
     try:
         url = get_image_url(object_path, expires_hours=24)

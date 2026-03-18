@@ -13,7 +13,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDiagnosis } from '@/hooks/useDiagnosis';
 import { API_BASE } from '@/lib/api';
 import { ChatInput } from '../../diagnosis/_components/ChatInput';
@@ -22,6 +22,8 @@ import { DiagnosisChat } from '../../diagnosis/_components/DiagnosisChat';
 interface AnalysisTabProps {
   requirementId: string | null;
   visible: boolean;
+  autoStart?: boolean;
+  onAutoStartConsumed?: () => void;
 }
 
 const levelConfig: Record<
@@ -155,7 +157,12 @@ function RiskCard({ risk, onConfirm, confirming }: RiskCardProps) {
   );
 }
 
-export function AnalysisTab({ requirementId, visible }: AnalysisTabProps) {
+export function AnalysisTab({
+  requirementId,
+  visible,
+  autoStart,
+  onAutoStartConsumed,
+}: AnalysisTabProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [splitRatio, setSplitRatio] = useState(0.5);
@@ -164,6 +171,14 @@ export function AnalysisTab({ requirementId, visible }: AnalysisTabProps) {
   const { report, messages, sse, loading, sendMessage, startDiagnosis } = useDiagnosis(
     visible && requirementId ? requirementId : null,
   );
+
+  // Auto-start diagnosis when tab becomes visible via "开始分析" button
+  useEffect(() => {
+    if (autoStart && visible && requirementId && !sse.isStreaming) {
+      startDiagnosis();
+      onAutoStartConsumed?.();
+    }
+  }, [autoStart, visible, requirementId, sse.isStreaming, startDiagnosis, onAutoStartConsumed]);
 
   // Local optimistic confirmed state (augments server state)
   const [localConfirmed, setLocalConfirmed] = useState<Set<string>>(new Set());
@@ -263,7 +278,8 @@ export function AnalysisTab({ requirementId, visible }: AnalysisTabProps) {
               <button
                 type="button"
                 onClick={startDiagnosis}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sy-accent text-white text-[11.5px] font-semibold hover:bg-sy-accent-2 transition-colors"
+                disabled={sse.isStreaming}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sy-accent text-black text-[11.5px] font-semibold hover:bg-sy-accent-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Play className="w-3 h-3" />
                 开始分析

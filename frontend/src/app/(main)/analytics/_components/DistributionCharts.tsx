@@ -150,7 +150,7 @@ export function DistributionCharts({
       {/* Priority - Donut */}
       <div className="card">
         <div className="flex items-center gap-2 mb-3">
-          <PieChartIcon className="w-3.5 h-3.5 text-accent" />
+          <PieChartIcon className="w-3.5 h-3.5 text-sy-accent" />
           <span className="sec-title text-[13px]">优先级分布</span>
         </div>
         <DonutChart data={priority} labelKey="priority" labelMap={PRIORITY_LABELS} />
@@ -165,7 +165,7 @@ export function DistributionCharts({
       {/* Status - Donut */}
       <div className="card">
         <div className="flex items-center gap-2 mb-3">
-          <TrendingUp className="w-3.5 h-3.5 text-accent" />
+          <TrendingUp className="w-3.5 h-3.5 text-sy-accent" />
           <span className="sec-title text-[13px]">状态分布</span>
         </div>
         <DonutChart data={status} labelKey="status" labelMap={STATUS_LABELS} />
@@ -175,7 +175,7 @@ export function DistributionCharts({
       {/* Source - Donut */}
       <div className="card">
         <div className="flex items-center gap-2 mb-3">
-          <BarChart3 className="w-3.5 h-3.5 text-accent" />
+          <BarChart3 className="w-3.5 h-3.5 text-sy-accent" />
           <span className="sec-title text-[13px]">来源分布</span>
         </div>
         <DonutChart data={source} labelKey="source" labelMap={SOURCE_LABELS} />

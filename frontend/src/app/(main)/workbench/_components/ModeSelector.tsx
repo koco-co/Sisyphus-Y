@@ -27,13 +27,15 @@ export function ModeSelector({ value, onChange }: ModeSelectorProps) {
             type="button"
             onClick={() => onChange(mode.value)}
             className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12.5px] font-medium transition-colors ${
-              isActive ? 'text-accent bg-accent/8' : 'text-text3 hover:text-text2 hover:bg-bg2'
+              isActive
+                ? 'text-sy-accent bg-sy-accent/8'
+                : 'text-text3 hover:text-text2 hover:bg-bg2'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />
             {mode.label}
             {isActive && (
-              <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-accent rounded-full" />
+              <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-sy-accent rounded-full" />
             )}
           </button>
         );

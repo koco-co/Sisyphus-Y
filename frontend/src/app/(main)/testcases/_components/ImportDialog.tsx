@@ -21,11 +21,11 @@ import type {
   StepId,
 } from './import/types';
 import {
-  REQUIRED_FIELDS,
-  STEP_LABELS,
   buildSteps,
   detectFormat,
   flattenFolderTree,
+  REQUIRED_FIELDS,
+  STEP_LABELS,
 } from './import/types';
 
 /* ------------------------------------------------------------------ */
@@ -82,8 +82,10 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
 
   const canNext = useMemo(() => {
     if (currentStep === 'upload') return file !== null && format !== null && !uploading;
-    if (currentStep === 'mapping') return REQUIRED_FIELDS.every((f) => mappings.some((m) => m.target === f));
-    if (currentStep === 'duplicate') return duplicates.every((d) => perCaseStrategies[d.index] !== undefined);
+    if (currentStep === 'mapping')
+      return REQUIRED_FIELDS.every((f) => mappings.some((m) => m.target === f));
+    if (currentStep === 'duplicate')
+      return duplicates.every((d) => perCaseStrategies[d.index] !== undefined);
     return false; // preview and result have inline actions
   }, [currentStep, file, format, uploading, mappings, duplicates, perCaseStrategies]);
 
@@ -102,11 +104,20 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
   }, [open]);
 
   const handleClose = useCallback(() => {
-    setFile(null); setFormat(null); setUploading(false);
-    setParseResult(null); setFolderId(null); setFolderList([]);
-    setFolderOpen(false); setMappings([]); setDuplicates([]);
-    setPerCaseStrategies({}); setCheckingDuplicates(false);
-    setImporting(false); setImportResult(null); setStepIndex(0);
+    setFile(null);
+    setFormat(null);
+    setUploading(false);
+    setParseResult(null);
+    setFolderId(null);
+    setFolderList([]);
+    setFolderOpen(false);
+    setMappings([]);
+    setDuplicates([]);
+    setPerCaseStrategies({});
+    setCheckingDuplicates(false);
+    setImporting(false);
+    setImportResult(null);
+    setStepIndex(0);
     onClose();
   }, [onClose]);
 
@@ -127,7 +138,10 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
     };
     el.addEventListener('dragover', prevent);
     el.addEventListener('drop', drop);
-    return () => { el.removeEventListener('dragover', prevent); el.removeEventListener('drop', drop); };
+    return () => {
+      el.removeEventListener('dragover', prevent);
+      el.removeEventListener('drop', drop);
+    };
   }, [handleFileSelect]);
 
   const handleUploadAndParse = useCallback(async () => {
@@ -136,11 +150,16 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
     try {
       const fd = new FormData();
       fd.append('file', file);
-      const res = await fetch(`${API_BASE}/testcases/import/parse-file`, { method: 'POST', body: fd });
+      const res = await fetch(`${API_BASE}/testcases/import/parse-file`, {
+        method: 'POST',
+        body: fd,
+      });
       if (!res.ok) throw new Error(await res.text());
       const result: ParseResult = await res.json();
       setParseResult(result);
-      setMappings(result.columns.map((col) => ({ source: col, target: result.auto_mapping[col] ?? null })));
+      setMappings(
+        result.columns.map((col) => ({ source: col, target: result.auto_mapping[col] ?? null })),
+      );
       setStepIndex(1);
     } catch {
       toast.error('文件解析失败，请检查文件格式');
@@ -193,8 +212,14 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
   }, [mappedCases, folderId, perCaseStrategies, onImportComplete, steps]);
 
   const handleNext = useCallback(async () => {
-    if (currentStep === 'upload') { await handleUploadAndParse(); return; }
-    if (currentStep === 'duplicate') { await handleImport(); return; }
+    if (currentStep === 'upload') {
+      await handleUploadAndParse();
+      return;
+    }
+    if (currentStep === 'duplicate') {
+      await handleImport();
+      return;
+    }
     setStepIndex((s) => s + 1);
   }, [currentStep, handleUploadAndParse, handleImport]);
 
@@ -225,15 +250,17 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
       {/* biome-ignore lint/a11y/noStaticElementInteractions: backdrop overlay */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
       <div className="relative z-10 flex h-[680px] w-[760px] flex-col rounded-xl border border-sy-border bg-sy-bg-1 shadow-2xl">
-
         {/* Header */}
         <div className="flex items-center justify-between border-b border-sy-border px-6 py-4">
           <div>
             <h2 className="font-display text-base font-semibold text-sy-text">导入用例</h2>
             <p className="mt-0.5 text-[11px] text-sy-text-3">支持 Excel、CSV、XMind、JSON 格式</p>
           </div>
-          <button type="button" onClick={handleClose}
-            className="rounded-lg p-1.5 text-sy-text-3 transition-colors hover:bg-sy-bg-2 hover:text-sy-text">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="rounded-lg p-1.5 text-sy-text-3 transition-colors hover:bg-sy-bg-2 hover:text-sy-text"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -243,15 +270,24 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
           {steps.map((stepId, idx) => (
             <div key={stepId} className="flex items-center">
               <div className="flex items-center gap-2">
-                <div className={[
-                  'flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-mono font-bold',
-                  idx < stepIndex ? 'bg-sy-accent text-sy-bg'
-                    : idx === stepIndex ? 'bg-sy-accent/20 text-sy-accent ring-1 ring-sy-accent'
-                    : 'bg-sy-bg-3 text-sy-text-3',
-                ].join(' ')}>
+                <div
+                  className={[
+                    'flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-mono font-bold',
+                    idx < stepIndex
+                      ? 'bg-sy-accent text-sy-bg'
+                      : idx === stepIndex
+                        ? 'bg-sy-accent/20 text-sy-accent ring-1 ring-sy-accent'
+                        : 'bg-sy-bg-3 text-sy-text-3',
+                  ].join(' ')}
+                >
                   {idx < stepIndex ? <Check className="h-2.5 w-2.5" /> : idx + 1}
                 </div>
-                <span className={['text-[12px]', idx === stepIndex ? 'font-medium text-sy-text' : 'text-sy-text-3'].join(' ')}>
+                <span
+                  className={[
+                    'text-[12px]',
+                    idx === stepIndex ? 'font-medium text-sy-text' : 'text-sy-text-3',
+                  ].join(' ')}
+                >
                   {STEP_LABELS[stepId]}
                 </span>
               </div>
@@ -264,17 +300,27 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
         <div className="flex-1 overflow-y-auto p-6">
           {currentStep === 'upload' && (
             <FormatSelectStep
-              file={file} format={format} uploading={uploading}
-              folderId={folderId} folderList={folderList} folderOpen={folderOpen}
+              file={file}
+              format={format}
+              uploading={uploading}
+              folderId={folderId}
+              folderList={folderList}
+              folderOpen={folderOpen}
               selectedFolderName={selectedFolderName}
               onFolderToggle={() => setFolderOpen((v) => !v)}
-              onFolderSelect={(id) => { setFolderId(id); setFolderOpen(false); }}
-              fileInputRef={fileInputRef} dropRef={dropRef} onFileSelect={handleFileSelect}
+              onFolderSelect={(id) => {
+                setFolderId(id);
+                setFolderOpen(false);
+              }}
+              fileInputRef={fileInputRef}
+              dropRef={dropRef}
+              onFileSelect={handleFileSelect}
             />
           )}
           {currentStep === 'mapping' && parseResult && (
             <FieldMappingStep
-              columns={parseResult.columns} mappings={mappings}
+              columns={parseResult.columns}
+              mappings={mappings}
               onMappingChange={(idx, target) =>
                 setMappings((prev) => prev.map((m, i) => (i === idx ? { ...m, target } : m)))
               }
@@ -282,15 +328,19 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
           )}
           {currentStep === 'preview' && parseResult && (
             <PreviewStep
-              columns={parseResult.columns} previewRows={parseResult.preview_rows}
-              mappings={mappings} totalRows={parseResult.total_rows}
-              onConfirm={handleConfirmImport} onBack={handleBack}
+              columns={parseResult.columns}
+              previewRows={parseResult.preview_rows}
+              mappings={mappings}
+              totalRows={parseResult.total_rows}
+              onConfirm={handleConfirmImport}
+              onBack={handleBack}
               isImporting={importing || checkingDuplicates}
             />
           )}
           {currentStep === 'duplicate' && (
             <DuplicateStep
-              checking={checkingDuplicates} duplicates={duplicates}
+              checking={checkingDuplicates}
+              duplicates={duplicates}
               perCaseStrategies={perCaseStrategies}
               onStrategyChange={(index, strategy) =>
                 setPerCaseStrategies((prev) => ({ ...prev, [index]: strategy }))
@@ -306,20 +356,31 @@ export function ImportDialog({ open, onClose, onImportComplete }: ImportDialogPr
         {/* Footer — hidden on preview/result (inline actions) */}
         {showFooter && (
           <div className="flex items-center justify-between border-t border-sy-border px-6 py-4">
-            <button type="button" onClick={handleClose}
-              className="text-[12.5px] text-sy-text-3 transition-colors hover:text-sy-text">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="text-[12.5px] text-sy-text-3 transition-colors hover:text-sy-text"
+            >
               取消
             </button>
             <div className="flex items-center gap-2">
               {stepIndex > 0 && currentStep !== 'duplicate' && (
-                <button type="button" onClick={handleBack} disabled={isLoading}
-                  className="flex items-center gap-1.5 rounded-lg border border-sy-border px-3 py-1.5 text-[12.5px] text-sy-text-2 transition-colors hover:border-sy-border-2 hover:text-sy-text disabled:opacity-40">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  disabled={isLoading}
+                  className="flex items-center gap-1.5 rounded-lg border border-sy-border px-3 py-1.5 text-[12.5px] text-sy-text-2 transition-colors hover:border-sy-border-2 hover:text-sy-text disabled:opacity-40"
+                >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   上一步
                 </button>
               )}
-              <button type="button" onClick={handleNext} disabled={!canNext || isLoading}
-                className="flex items-center gap-1.5 rounded-lg bg-sy-accent px-4 py-1.5 text-[12.5px] font-medium text-sy-bg transition-colors hover:bg-sy-accent-2 disabled:cursor-not-allowed disabled:opacity-40">
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={!canNext || isLoading}
+                className="flex items-center gap-1.5 rounded-lg bg-sy-accent px-4 py-1.5 text-[12.5px] font-medium text-sy-bg transition-colors hover:bg-sy-accent-2 disabled:cursor-not-allowed disabled:opacity-40"
+              >
                 {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 {currentStep === 'duplicate' ? '开始导入' : '下一步'}
                 {!isLoading && <ArrowRight className="h-3.5 w-3.5" />}

@@ -19,6 +19,39 @@ from app.modules.testcases.models import TestCase
 logger = logging.getLogger(__name__)
 
 
+async def _backfill_actual_cases_count(
+    session: AsyncSession,
+    requirement_id: UUID,
+) -> None:
+    """Update actual_cases_count on each test point by counting linked cases."""
+    map_q = select(SceneMap).where(
+        SceneMap.requirement_id == requirement_id,
+        SceneMap.deleted_at.is_(None),
+    )
+    scene_map = (await session.execute(map_q)).scalar_one_or_none()
+    if not scene_map:
+        return
+
+    tp_q = select(TestPoint).where(
+        TestPoint.scene_map_id == scene_map.id,
+        TestPoint.deleted_at.is_(None),
+    )
+    test_points = list((await session.execute(tp_q)).scalars().all())
+
+    from sqlalchemy import func as sa_func
+
+    for tp in test_points:
+        count_q = select(sa_func.count(TestCase.id)).where(
+            TestCase.scene_node_id == tp.id,
+            TestCase.deleted_at.is_(None),
+        )
+        count = (await session.execute(count_q)).scalar() or 0
+        if tp.actual_cases_count != count:
+            tp.actual_cases_count = count
+
+    await session.commit()
+
+
 async def _save_and_parse_response(
     session_id: UUID,
     requirement_id: UUID,
@@ -37,6 +70,7 @@ async def _save_and_parse_response(
             return
 
         tc_svc = TestCaseService(new_session)
+        saved_case_ids: list[UUID] = []
         for case in parsed:
             try:
                 steps = [
@@ -61,9 +95,14 @@ async def _save_and_parse_response(
                     source="ai_generated",
                     steps=steps,
                 )
-                await tc_svc.create_case(data)
+                tc = await tc_svc.create_case(data)
+                saved_case_ids.append(tc.id)
             except Exception:
                 logger.warning("Failed to save parsed test case: %s", case.get("title", ""))
+
+        # TASK-162: backfill actual_cases_count on test points
+        if saved_case_ids:
+            await _backfill_actual_cases_count(new_session, requirement_id)
 
 
 class GenerationService:

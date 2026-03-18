@@ -14,6 +14,8 @@ export interface TestPointItem {
   estimated_cases: number;
   source: TestPointSource;
   category?: string;
+  source_risk_id?: string | null;
+  actual_cases_count?: number | null;
 }
 
 export interface GranularityWarning {
@@ -40,6 +42,7 @@ interface SceneMapState {
   selectPoint: (id: string | null) => void;
   toggleCheckPoint: (id: string) => void;
   checkAllPoints: () => void;
+  bulkCheckPoints: (ids: string[], checked: boolean) => void;
   updatePoint: (id: string, updates: Partial<TestPointItem>) => void;
   addPoint: (point: TestPointItem) => void;
   removePoint: (id: string) => void;
@@ -89,6 +92,15 @@ export const useSceneMapStore = create<SceneMapState>((set) => ({
     set((s) => ({
       checkedPointIds: new Set(s.testPoints.map((p) => p.id)),
     })),
+  bulkCheckPoints: (ids, checked) =>
+    set((s) => {
+      const next = new Set(s.checkedPointIds);
+      for (const id of ids) {
+        if (checked) next.add(id);
+        else next.delete(id);
+      }
+      return { checkedPointIds: next };
+    }),
   updatePoint: (id, updates) =>
     set((s) => ({
       testPoints: s.testPoints.map((p) => (p.id === id ? { ...p, ...updates } : p)),

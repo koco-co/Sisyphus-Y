@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { DM_Sans, JetBrains_Mono, Syne } from 'next/font/google';
+import { Toaster } from 'sonner';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
-import { Toaster } from 'sonner';
 import './globals.css';
 
 const dmSans = DM_Sans({

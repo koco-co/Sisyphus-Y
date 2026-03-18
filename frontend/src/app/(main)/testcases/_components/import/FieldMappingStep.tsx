@@ -45,8 +45,7 @@ export function FieldMappingStep({ columns, mappings, onMappingChange }: FieldMa
           <tbody>
             {columns.map((col, idx) => {
               const mapping = mappings[idx];
-              const isMappedRequired =
-                mapping?.target && REQUIRED_FIELDS.includes(mapping.target);
+              const isMappedRequired = mapping?.target && REQUIRED_FIELDS.includes(mapping.target);
               return (
                 <tr key={col} className="border-b border-sy-border last:border-0">
                   <td className="px-4 py-2.5 font-mono text-sy-text">{col}</td>
@@ -101,9 +100,7 @@ export function FieldMappingStep({ columns, mappings, onMappingChange }: FieldMa
               key={rf}
               className={[
                 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px]',
-                isMapped
-                  ? 'bg-sy-accent/10 text-sy-accent'
-                  : 'bg-sy-danger/10 text-sy-danger',
+                isMapped ? 'bg-sy-accent/10 text-sy-accent' : 'bg-sy-danger/10 text-sy-danger',
               ].join(' ')}
             >
               {isMapped ? <Check className="h-2.5 w-2.5" /> : <span className="font-bold">*</span>}

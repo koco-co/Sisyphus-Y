@@ -34,6 +34,8 @@ class TestPointResponse(BaseResponse):
     status: str
     estimated_cases: int
     source: str
+    source_risk_id: uuid.UUID | None = None
+    actual_cases_count: int | None = None
 
 
 class SceneMapResponse(BaseResponse):

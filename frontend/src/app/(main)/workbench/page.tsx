@@ -273,6 +273,7 @@ function WorkbenchPageContent() {
               requirementId={wb.selectedReqId}
               checkedPointIds={sm.checkedPointIds}
               onToggle={sm.toggleCheckPoint}
+              onBulkToggle={sm.bulkCheckPoints}
               onAdd={(groupName, title) =>
                 sm.addPoint({
                   group_name: groupName,

@@ -159,6 +159,21 @@ export function useSceneMap() {
     }
   }, [store]);
 
+  const confirmMissing = useCallback(async () => {
+    const missingPoints = store.testPoints.filter(
+      (p) => p.source === 'missing' && p.status !== 'confirmed' && p.status !== 'ignored',
+    );
+    if (missingPoints.length === 0) return;
+    try {
+      await Promise.all(missingPoints.map((p) => sceneMapApi.confirmPoint(p.id)));
+      for (const p of missingPoints) {
+        store.confirmPoint(p.id);
+      }
+    } catch (e) {
+      console.error('Failed to batch confirm missing points:', e);
+    }
+  }, [store]);
+
   // Derived stats
   const stats = {
     total: store.testPoints.length,
@@ -184,6 +199,7 @@ export function useSceneMap() {
     updatePoint,
     addPoint,
     confirmAll,
+    confirmMissing,
     loadTestPoints,
   };
 }

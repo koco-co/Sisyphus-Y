@@ -177,6 +177,8 @@ export interface TestPoint {
   risk_level?: string;
   preconditions?: string;
   estimated_cases?: number;
+  source_risk_id?: string | null;
+  actual_cases_count?: number | null;
 }
 
 // Recycle
@@ -306,6 +308,18 @@ export interface TemplateContentPayload {
   preconditions?: string;
   precondition?: string;
   tags?: string[];
+}
+
+// Prompt Configuration
+export interface PromptConfigItem {
+  id: string | null;
+  module_key: string;
+  prompt_text: string;
+  is_default: boolean;
+  is_customized: boolean;
+  version: number;
+  updated_at: string | null;
+  created_at: string | null;
 }
 
 // Collaboration / Review
@@ -448,6 +462,7 @@ export const templatesApi = {
     }>,
   ) => api.put<TemplateDetailResponse>(`/templates/${id}`, data),
   delete: (id: string) => api.delete<void>(`/templates/${id}`),
+  listPrompts: () => api.get<PromptConfigItem[]>('/ai-config/prompts'),
 };
 
 export const collaborationApi = {

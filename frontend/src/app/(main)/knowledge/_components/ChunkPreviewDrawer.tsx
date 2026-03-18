@@ -43,7 +43,7 @@ function ChunkCard({ chunk }: { chunk: ChunkItem }) {
           <button
             type="button"
             onClick={() => setExpanded((prev) => !prev)}
-            className="mt-1.5 flex items-center gap-1 text-[11px] text-accent hover:text-accent2 transition-colors"
+            className="mt-1.5 flex items-center gap-1 text-[11px] text-sy-accent hover:text-sy-accent-2 transition-colors"
           >
             {expanded ? (
               <>
@@ -163,7 +163,7 @@ export default function ChunkPreviewDrawer({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <FileText className="w-4 h-4 text-accent shrink-0" />
+            <FileText className="w-4 h-4 text-sy-accent shrink-0" />
             <div className="min-w-0">
               <h3 className="text-[14px] font-semibold text-text truncate">{docTitle}</h3>
               {!loading && <p className="text-[11px] text-text3 mt-0.5">共 {total} 个分块</p>}
@@ -189,7 +189,7 @@ export default function ChunkPreviewDrawer({
           )}
 
           {!loading && error && (
-            <div className="text-center py-8 text-[12.5px] text-red">{error}</div>
+            <div className="text-center py-8 text-[12.5px] text-sy-danger">{error}</div>
           )}
 
           {!loading && !error && chunks.length === 0 && (

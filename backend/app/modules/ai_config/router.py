@@ -296,27 +296,31 @@ async def list_prompt_configs(session: AsyncSessionDep) -> list[dict]:
     for module_key in _MODULE_PROMPTS:
         if module_key in db_map:
             r = db_map[module_key]
-            result.append({
-                "id": str(r.id),
-                "module_key": r.module,
-                "prompt_text": r.system_prompt,
-                "is_default": False,
-                "is_customized": r.is_customized,
-                "version": r.version,
-                "updated_at": r.updated_at.isoformat() if r.updated_at else None,
-                "created_at": r.created_at.isoformat() if r.created_at else None,
-            })
+            result.append(
+                {
+                    "id": str(r.id),
+                    "module_key": r.module,
+                    "prompt_text": r.system_prompt,
+                    "is_default": False,
+                    "is_customized": r.is_customized,
+                    "version": r.version,
+                    "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+                    "created_at": r.created_at.isoformat() if r.created_at else None,
+                }
+            )
         else:
-            result.append({
-                "id": None,
-                "module_key": module_key,
-                "prompt_text": get_system_prompt(module_key),
-                "is_default": True,
-                "is_customized": False,
-                "version": 0,
-                "updated_at": None,
-                "created_at": None,
-            })
+            result.append(
+                {
+                    "id": None,
+                    "module_key": module_key,
+                    "prompt_text": get_system_prompt(module_key),
+                    "is_default": True,
+                    "is_customized": False,
+                    "version": 0,
+                    "updated_at": None,
+                    "created_at": None,
+                }
+            )
     return result
 
 
@@ -358,9 +362,7 @@ async def get_prompt_history(module: str, session: AsyncSessionDep) -> list[Prom
 
 
 @router.post("/prompts/{module}/rollback/{history_id}", response_model=PromptConfigResponse)
-async def rollback_prompt_config(
-    module: str, history_id: uuid.UUID, session: AsyncSessionDep
-) -> PromptConfigResponse:
+async def rollback_prompt_config(module: str, history_id: uuid.UUID, session: AsyncSessionDep) -> PromptConfigResponse:
     svc = PromptConfigService(session)
     item = await svc.rollback_prompt(module, history_id)
     return PromptConfigResponse.model_validate(item)

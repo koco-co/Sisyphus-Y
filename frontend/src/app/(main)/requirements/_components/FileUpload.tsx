@@ -161,15 +161,15 @@ export function FileUpload({ onUpload, accept = ACCEPT_DEFAULT, maxSizeMB = 20 }
           flex flex-col items-center justify-center gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors
           ${
             dragging
-              ? 'border-accent bg-accent/5'
+              ? 'border-sy-accent bg-sy-accent/5'
               : 'border-border hover:border-border2 hover:bg-bg2'
           }
         `}
       >
-        <Upload size={24} className={dragging ? 'text-accent' : 'text-text3'} />
+        <Upload size={24} className={dragging ? 'text-sy-accent' : 'text-text3'} />
         <div className="text-center">
           <p className="text-[12.5px] text-text2">
-            拖拽文件到此处，或 <span className="text-accent font-medium">点击上传</span>
+            拖拽文件到此处，或 <span className="text-sy-accent font-medium">点击上传</span>
           </p>
           <p className="text-[11px] text-text3 mt-1">
             支持 docx、pdf、md、txt、图片，最大 {maxSizeMB}MB
@@ -226,21 +226,21 @@ export function FileUpload({ onUpload, accept = ACCEPT_DEFAULT, maxSizeMB = 20 }
                   </div>
                 )}
                 {f.status === 'error' && (
-                  <p className="text-[10.5px] text-red mt-0.5">{f.errorMsg}</p>
+                  <p className="text-[10.5px] text-sy-danger mt-0.5">{f.errorMsg}</p>
                 )}
               </div>
 
               {/* Status icon */}
               <div className="shrink-0">
                 {f.status === 'uploading' && (
-                  <Loader2 size={14} className="text-accent animate-spin" />
+                  <Loader2 size={14} className="text-sy-accent animate-spin" />
                 )}
-                {f.status === 'done' && <CheckCircle size={14} className="text-accent" />}
+                {f.status === 'done' && <CheckCircle size={14} className="text-sy-accent" />}
                 {f.status === 'error' && (
                   <button
                     type="button"
                     onClick={() => removeFile(f.id)}
-                    className="text-text3 hover:text-red transition-colors"
+                    className="text-text3 hover:text-sy-danger transition-colors"
                   >
                     <X size={14} />
                   </button>

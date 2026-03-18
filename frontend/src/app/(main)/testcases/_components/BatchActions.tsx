@@ -29,8 +29,8 @@ export function BatchActions({
   const [showStatusMenu, setShowStatusMenu] = useState(false);
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 mb-3 rounded-lg bg-accent/6 border border-accent/20 text-[12.5px]">
-      <div className="flex items-center gap-1.5 text-accent font-medium">
+    <div className="flex items-center gap-3 px-4 py-2.5 mb-3 rounded-lg bg-sy-accent/6 border border-sy-accent/20 text-[12.5px]">
+      <div className="flex items-center gap-1.5 text-sy-accent font-medium">
         <CheckSquare className="w-3.5 h-3.5" />
         <span>已选 {selectedCount} 项</span>
       </div>
@@ -88,7 +88,7 @@ export function BatchActions({
       <button
         type="button"
         onClick={onDelete}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-red hover:bg-red/10 transition-colors"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-sy-danger hover:bg-sy-danger/10 transition-colors"
       >
         <Trash2 className="w-3 h-3" />
         删除

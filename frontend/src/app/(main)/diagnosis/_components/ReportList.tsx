@@ -10,16 +10,16 @@ interface ReportListProps {
 
 function scoreColor(score: number | null): string {
   if (!score) return 'text-text3';
-  if (score >= 80) return 'text-accent';
-  if (score >= 60) return 'text-amber';
-  return 'text-red';
+  if (score >= 80) return 'text-sy-accent';
+  if (score >= 60) return 'text-sy-warn';
+  return 'text-sy-danger';
 }
 
 function scoreBorderColor(score: number | null): string {
   if (!score) return 'border-border2';
-  if (score >= 80) return 'border-accent';
-  if (score >= 60) return 'border-amber';
-  return 'border-red';
+  if (score >= 80) return 'border-sy-accent';
+  if (score >= 60) return 'border-sy-warn';
+  return 'border-sy-danger';
 }
 
 export function ReportList({ report, loading }: ReportListProps) {
@@ -44,25 +44,25 @@ export function ReportList({ report, loading }: ReportListProps) {
     {
       level: '高风险',
       count: report.risk_count_high,
-      color: 'text-red',
-      bgColor: 'bg-red/10',
-      borderColor: 'border-red/25',
+      color: 'text-sy-danger',
+      bgColor: 'bg-sy-danger/10',
+      borderColor: 'border-sy-danger/25',
       icon: ShieldAlert,
     },
     {
       level: '中风险',
       count: report.risk_count_medium,
-      color: 'text-amber',
-      bgColor: 'bg-amber/10',
-      borderColor: 'border-amber/25',
+      color: 'text-sy-warn',
+      bgColor: 'bg-sy-warn/10',
+      borderColor: 'border-sy-warn/25',
       icon: AlertTriangle,
     },
     {
       level: '低风险',
       count: 0,
-      color: 'text-blue',
-      bgColor: 'bg-blue/10',
-      borderColor: 'border-blue/25',
+      color: 'text-sy-info',
+      bgColor: 'bg-sy-info/10',
+      borderColor: 'border-sy-info/25',
       icon: ShieldCheck,
     },
   ];
@@ -109,8 +109,8 @@ export function ReportList({ report, loading }: ReportListProps) {
         <span
           className={`ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium font-mono ${
             report.status === 'completed'
-              ? 'bg-accent/12 text-accent border border-accent/25'
-              : 'bg-amber/10 text-amber border border-amber/25'
+              ? 'bg-sy-accent/12 text-sy-accent border border-sy-accent/25'
+              : 'bg-sy-warn/10 text-sy-warn border border-sy-warn/25'
           }`}
         >
           {report.status === 'completed' ? '已完成' : '进行中'}

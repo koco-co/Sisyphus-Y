@@ -37,21 +37,21 @@ export function AnalysisTab({
       <div className="flex-shrink-0 border-b border-border" style={{ maxHeight: '44%' }}>
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/60 bg-bg1">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-accent" />
+            <Sparkles className="w-3.5 h-3.5 text-sy-accent" />
             <span className="text-[12px] font-semibold text-text2">广度扫描结果</span>
           </div>
           {canStartScan && (
             <button
               type="button"
               onClick={onStartDiagnosis}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-accent text-white dark:text-black text-[11.5px] font-semibold hover:bg-accent2 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sy-accent text-white dark:text-black text-[11.5px] font-semibold hover:bg-sy-accent-2 transition-colors"
             >
               <Play className="w-3 h-3" />
               开始分析
             </button>
           )}
           {sse.isStreaming && (
-            <span className="flex items-center gap-1.5 text-[11px] text-amber">
+            <span className="flex items-center gap-1.5 text-[11px] text-sy-warn">
               <Loader2 className="w-3 h-3 animate-spin" />
               分析进行中...
             </span>

@@ -11,7 +11,12 @@ interface PublishVersionDialogProps {
   onSuccess: (versionFrom: number, versionTo: number) => void;
 }
 
-export function PublishVersionDialog({ open, reqId, onClose, onSuccess }: PublishVersionDialogProps) {
+export function PublishVersionDialog({
+  open,
+  reqId,
+  onClose,
+  onSuccess,
+}: PublishVersionDialogProps) {
   const [versionNote, setVersionNote] = useState('');
   const [loading, setLoading] = useState(false);
 

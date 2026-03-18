@@ -91,18 +91,12 @@ export function HelpFab({ onShowOnboarding }: HelpFabProps) {
           className="w-12 h-12 rounded-full flex items-center justify-center transition-all bg-sy-accent hover:bg-sy-accent-2 text-white shadow-lg"
           aria-label={isOpen ? '关闭帮助菜单' : '打开帮助菜单'}
         >
-          {isOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <CircleHelp className="w-6 h-6" />
-          )}
+          {isOpen ? <X className="w-6 h-6" /> : <CircleHelp className="w-6 h-6" />}
         </button>
       </div>
 
       {/* Onboarding Modal */}
-      {showOnboarding && (
-        <OnboardingGuideModal onClose={() => setShowOnboarding(false)} />
-      )}
+      {showOnboarding && <OnboardingGuideModal onClose={() => setShowOnboarding(false)} />}
     </>
   );
 }

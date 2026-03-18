@@ -44,7 +44,7 @@ function LeftColumn() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="col-header">
-        <GitCompareArrows className="w-3.5 h-3.5 text-accent" />
+        <GitCompareArrows className="w-3.5 h-3.5 text-sy-accent" />
         <span>需求版本</span>
       </div>
 
@@ -63,7 +63,7 @@ function LeftColumn() {
             value={requirementId ?? ''}
             onChange={(e) => setRequirementId(e.target.value || null)}
             placeholder="输入需求 UUID"
-            className="w-full px-3 py-1.5 text-[12.5px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 outline-none focus:border-accent transition-colors"
+            className="w-full px-3 py-1.5 text-[12.5px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 outline-none focus:border-sy-accent transition-colors"
           />
         </div>
 
@@ -76,7 +76,7 @@ function LeftColumn() {
             type="button"
             onClick={handleCompute}
             disabled={computing || !requirementId}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-semibold bg-accent text-white dark:text-black hover:bg-accent2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[12px] font-semibold bg-sy-accent text-white dark:text-black hover:bg-sy-accent-2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {computing ? (
               <>
@@ -108,13 +108,13 @@ function LeftColumn() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-bg2 rounded-md p-2 text-center">
-                <div className="font-mono text-[16px] font-semibold text-accent leading-none">
+                <div className="font-mono text-[16px] font-semibold text-sy-accent leading-none">
                   +{diffResult.text_diff?.additions ?? 0}
                 </div>
                 <div className="text-[10px] text-text3 mt-0.5">新增</div>
               </div>
               <div className="bg-bg2 rounded-md p-2 text-center">
-                <div className="font-mono text-[16px] font-semibold text-red leading-none">
+                <div className="font-mono text-[16px] font-semibold text-sy-danger leading-none">
                   −{diffResult.text_diff?.deletions ?? 0}
                 </div>
                 <div className="text-[10px] text-text3 mt-0.5">删除</div>
@@ -122,13 +122,13 @@ function LeftColumn() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-bg2 rounded-md p-2 text-center">
-                <div className="font-mono text-[14px] font-semibold text-amber leading-none">
+                <div className="font-mono text-[14px] font-semibold text-sy-warn leading-none">
                   {diffResult.affected_test_points?.count ?? 0}
                 </div>
                 <div className="text-[10px] text-text3 mt-0.5">测试点</div>
               </div>
               <div className="bg-bg2 rounded-md p-2 text-center">
-                <div className="font-mono text-[14px] font-semibold text-blue leading-none">
+                <div className="font-mono text-[14px] font-semibold text-sy-info leading-none">
                   {diffResult.affected_test_cases?.count ?? 0}
                 </div>
                 <div className="text-[10px] text-text3 mt-0.5">用例</div>
@@ -192,7 +192,7 @@ function CenterColumn() {
   if (computing) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-text3 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <Loader2 className="w-8 h-8 animate-spin text-sy-accent" />
         <span className="text-[13px] font-medium">正在执行两阶段 Diff 分析...</span>
         <span className="text-[11px] text-text3/70">文本级 + 语义级</span>
       </div>
@@ -219,9 +219,7 @@ function CenterColumn() {
             type="button"
             onClick={() => setActiveTab('text')}
             className={`px-3 py-1 rounded-md text-[12px] font-medium transition-all ${
-              activeTab === 'text'
-                ? 'bg-bg1 text-text shadow-sm'
-                : 'text-text3 hover:text-text2'
+              activeTab === 'text' ? 'bg-bg1 text-text shadow-sm' : 'text-text3 hover:text-text2'
             }`}
           >
             文本对比
@@ -230,9 +228,7 @@ function CenterColumn() {
             type="button"
             onClick={() => setActiveTab('summary')}
             className={`px-3 py-1 rounded-md text-[12px] font-medium transition-all ${
-              activeTab === 'summary'
-                ? 'bg-bg1 text-text shadow-sm'
-                : 'text-text3 hover:text-text2'
+              activeTab === 'summary' ? 'bg-bg1 text-text shadow-sm' : 'text-text3 hover:text-text2'
             }`}
           >
             变更摘要
@@ -258,7 +254,7 @@ function CenterColumn() {
             {diffResult.summary && (
               <div className="p-3 bg-bg1 border border-border rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-accent text-white dark:text-black">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-sy-accent text-white dark:text-black">
                     AI 摘要
                   </span>
                 </div>
@@ -289,7 +285,8 @@ function CenterColumn() {
 // ── Right Column ──
 
 function RightColumn() {
-  const { diffResult, regenerating, regenerateProgress, regenerateCases, requirementId } = useDiff();
+  const { diffResult, regenerating, regenerateProgress, regenerateCases, requirementId } =
+    useDiff();
 
   const cases = diffResult?.affected_test_cases?.items ?? [];
   const testPointCount = diffResult?.affected_test_points?.count ?? 0;
@@ -300,7 +297,7 @@ function RightColumn() {
   return (
     <div className="flex flex-col h-full">
       <div className="col-header">
-        <Target className="w-3.5 h-3.5 text-amber" />
+        <Target className="w-3.5 h-3.5 text-sy-warn" />
         <span>受影响用例</span>
         {cases.length > 0 && (
           <span className="ml-auto font-mono text-[10px] text-text3">{cases.length}</span>
@@ -309,7 +306,11 @@ function RightColumn() {
 
       <div className="flex-1 overflow-y-auto p-3">
         {diffResult ? (
-          <AffectedCases cases={cases} totalTestPoints={testPointCount} requirementId={requirementId} />
+          <AffectedCases
+            cases={cases}
+            totalTestPoints={testPointCount}
+            requirementId={requirementId}
+          />
         ) : (
           <EmptyState
             icon={<FileText className="w-8 h-8" />}
@@ -341,7 +342,7 @@ export default function DiffPage() {
     <div className="no-sidebar">
       {/* Header */}
       <div className="topbar">
-        <GitCompareArrows className="w-5 h-5 text-accent" />
+        <GitCompareArrows className="w-5 h-5 text-sy-accent" />
         <h1>需求变更 Diff</h1>
         <span className="sub">Requirement Change Diff</span>
         <div className="spacer" />

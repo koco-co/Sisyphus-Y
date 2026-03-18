@@ -71,7 +71,7 @@ export function OutputPreferences() {
   return (
     <div>
       <div className="sec-header">
-        <Settings2 className="w-4 h-4 text-accent" />
+        <Settings2 className="w-4 h-4 text-sy-accent" />
         <span className="sec-title">输出偏好</span>
         <div className="ml-auto">
           <button type="button" className="btn btn-sm btn-primary" onClick={handleSave}>

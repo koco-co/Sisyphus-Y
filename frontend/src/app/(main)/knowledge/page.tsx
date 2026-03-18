@@ -109,7 +109,7 @@ export default function KnowledgePage() {
                 type="button"
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] transition-colors ${
                   categoryFilter === cat.key
-                    ? 'bg-accent/10 text-accent font-medium border border-accent/25'
+                    ? 'bg-sy-accent/10 text-sy-accent font-medium border border-sy-accent/25'
                     : 'text-text3 hover:text-text2 hover:bg-bg2 border border-transparent'
                 }`}
                 onClick={() => setCategoryFilter(cat.key)}

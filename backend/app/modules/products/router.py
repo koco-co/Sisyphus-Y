@@ -126,9 +126,7 @@ async def list_all_requirements(session: AsyncSessionDep) -> list[RequirementRes
 
 
 @router.get("/requirements/{requirement_id}", response_model=RequirementDetailResponse)
-async def get_requirement_detail(
-    requirement_id: uuid.UUID, session: AsyncSessionDep
-) -> RequirementDetailResponse:
+async def get_requirement_detail(requirement_id: uuid.UUID, session: AsyncSessionDep) -> RequirementDetailResponse:
     service = RequirementService(session)
     requirement = await service.get_requirement(requirement_id)
     return RequirementDetailResponse.model_validate(requirement)

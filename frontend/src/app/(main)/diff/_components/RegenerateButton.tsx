@@ -33,7 +33,7 @@ export function RegenerateButton({
         type="button"
         disabled={regenerating || affectedCount === 0}
         onClick={() => setConfirmOpen(true)}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[12.5px] font-semibold transition-colors bg-accent text-white dark:text-black hover:bg-accent2 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[12.5px] font-semibold transition-colors bg-sy-accent text-white dark:text-black hover:bg-sy-accent-2 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {regenerating ? (
           <>

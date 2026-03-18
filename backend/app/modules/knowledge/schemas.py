@@ -94,6 +94,7 @@ class ChunksResponse(BaseModel):
 
 # ── 手动条目创建 ──────────────────────────────────────────────────
 
+
 class ManualEntryCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     category: KNOWLEDGE_CATEGORIES

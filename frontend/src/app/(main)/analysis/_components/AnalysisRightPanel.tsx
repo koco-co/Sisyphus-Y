@@ -1,8 +1,7 @@
 'use client';
 
 import { MousePointerClick } from 'lucide-react';
-import { useCallback } from 'react';
-import { useDiagnosis } from '@/hooks/useDiagnosis';
+import { useCallback, useState } from 'react';
 import { RequirementDetailTab } from '../../diagnosis/_components/RequirementDetailTab';
 import { AnalysisTab } from './AnalysisTab';
 import CoverageTab from './CoverageTab';
@@ -24,12 +23,21 @@ function RightPanelContent({
   activeTab,
   onTabChange,
 }: AnalysisRightPanelProps & { selectedReqId: string }) {
-  const { startDiagnosis } = useDiagnosis(selectedReqId);
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['detail']));
+  const [autoStartAnalysis, setAutoStartAnalysis] = useState(false);
+
+  const handleTabChange = useCallback(
+    (key: 'detail' | 'analysis' | 'coverage') => {
+      setVisitedTabs((prev) => new Set([...prev, key]));
+      onTabChange(key);
+    },
+    [onTabChange],
+  );
 
   const handleStartAnalysis = useCallback(() => {
-    onTabChange('analysis');
-    startDiagnosis();
-  }, [onTabChange, startDiagnosis]);
+    setAutoStartAnalysis(true);
+    handleTabChange('analysis');
+  }, [handleTabChange]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -39,7 +47,7 @@ function RightPanelContent({
           <button
             key={key}
             type="button"
-            onClick={() => onTabChange(key)}
+            onClick={() => handleTabChange(key)}
             className={`px-4 py-2.5 text-[12.5px] font-medium transition-colors relative ${
               activeTab === key ? 'text-sy-accent' : 'text-sy-text-2 hover:text-sy-text'
             }`}
@@ -52,19 +60,28 @@ function RightPanelContent({
         ))}
       </div>
 
-      {/* Tab content — all mounted to preserve state, toggled via visibility */}
+      {/* Tab content — lazy mount: only render tabs after first visit */}
       <div className="flex-1 overflow-hidden relative">
         <div className={`absolute inset-0 ${activeTab === 'detail' ? '' : 'hidden'}`}>
           <RequirementDetailTab reqId={selectedReqId} onStartAnalysis={handleStartAnalysis} />
         </div>
 
-        <div className={`absolute inset-0 ${activeTab === 'analysis' ? '' : 'hidden'}`}>
-          <AnalysisTab requirementId={selectedReqId} visible={activeTab === 'analysis'} />
-        </div>
+        {visitedTabs.has('analysis') && (
+          <div className={`absolute inset-0 ${activeTab === 'analysis' ? '' : 'hidden'}`}>
+            <AnalysisTab
+              requirementId={selectedReqId}
+              visible={activeTab === 'analysis'}
+              autoStart={autoStartAnalysis}
+              onAutoStartConsumed={() => setAutoStartAnalysis(false)}
+            />
+          </div>
+        )}
 
-        <div className={`absolute inset-0 ${activeTab === 'coverage' ? '' : 'hidden'}`}>
-          <CoverageTab requirementId={selectedReqId} visible={activeTab === 'coverage'} />
-        </div>
+        {visitedTabs.has('coverage') && (
+          <div className={`absolute inset-0 ${activeTab === 'coverage' ? '' : 'hidden'}`}>
+            <CoverageTab requirementId={selectedReqId} visible={activeTab === 'coverage'} />
+          </div>
+        )}
       </div>
     </div>
   );

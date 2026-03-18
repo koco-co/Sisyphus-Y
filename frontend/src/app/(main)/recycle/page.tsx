@@ -275,7 +275,7 @@ export default function RecyclePage() {
               key={item.value}
               className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
                 filter === item.value
-                  ? 'bg-accent/10 text-accent border border-accent/25'
+                  ? 'bg-sy-accent/10 text-sy-accent border border-sy-accent/25'
                   : 'text-text3 hover:text-text2 hover:bg-bg2 border border-transparent'
               }`}
               onClick={() => setFilter(item.value)}
@@ -379,7 +379,7 @@ export default function RecyclePage() {
                         const expires = getExpiresIn(item.deleted_at);
                         return (
                           <span
-                            className={`font-mono text-[11px] ${expires.urgent ? 'text-red font-semibold' : 'text-text3'}`}
+                            className={`font-mono text-[11px] ${expires.urgent ? 'text-sy-danger font-semibold' : 'text-text3'}`}
                           >
                             {expires.text}
                           </span>
@@ -399,7 +399,7 @@ export default function RecyclePage() {
                         </button>
                         <button
                           type="button"
-                          className="btn btn-sm btn-ghost text-red"
+                          className="btn btn-sm btn-ghost text-sy-danger"
                           onClick={() => void handlePermanentDelete([item.id])}
                           title="永久删除"
                           disabled={acting}

@@ -187,14 +187,16 @@ async def rag_preview(
             score_threshold=0.72,
             product=product,
         )
-        return RagPreviewResponse(results=[
-            RagPreviewResult(
-                title=r.metadata.get("title", ""),
-                content=r.content,
-                score=r.score,
-            )
-            for r in results
-        ])
+        return RagPreviewResponse(
+            results=[
+                RagPreviewResult(
+                    title=r.metadata.get("title", ""),
+                    content=r.content,
+                    score=r.score,
+                )
+                for r in results
+            ]
+        )
     except Exception:
         # 任何异常（包括 Qdrant 连接失败）都返回空结果，保证 graceful degradation
         return RagPreviewResponse(results=[])

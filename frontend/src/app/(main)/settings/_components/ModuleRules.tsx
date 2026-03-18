@@ -71,7 +71,7 @@ export function ModuleRules() {
   return (
     <div>
       <div className="sec-header">
-        <Layers className="w-4 h-4 text-accent" />
+        <Layers className="w-4 h-4 text-sy-accent" />
         <span className="sec-title">模块专项规则</span>
         <div className="ml-auto">
           <button type="button" className="btn btn-sm btn-primary" onClick={handleSave}>
@@ -114,7 +114,7 @@ export function ModuleRules() {
                     value={mod.rules}
                     onChange={(e) => updateRules(mod.id, e.target.value)}
                     rows={5}
-                    className="w-full p-3 bg-bg2 border border-border rounded-lg text-text text-[12.5px] font-mono leading-relaxed outline-none resize-y focus:border-accent transition-colors"
+                    className="w-full p-3 bg-bg2 border border-border rounded-lg text-text text-[12.5px] font-mono leading-relaxed outline-none resize-y focus:border-sy-accent transition-colors"
                     placeholder="每行一条规则，建议使用 - 开头..."
                   />
                 </div>

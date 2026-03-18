@@ -82,6 +82,8 @@ class TestCaseResponse(BaseResponse):
     reviewer_id: uuid.UUID | None = None
     review_comment: str | None = None
     version: int
+    feedback: str | None = None
+    feedback_reason: str | None = None
 
 
 TestCaseListResponse = PaginatedResponse[TestCaseResponse]
@@ -194,3 +196,11 @@ class FolderReorderItem(BaseSchema):
 
 class FolderReorderRequest(BaseSchema):
     items: list[FolderReorderItem]
+
+
+# ── Feedback (TASK-161) ────────────────────────────────────────────
+
+
+class FeedbackRequest(BaseSchema):
+    feedback: Literal["up", "down"]
+    reason: str | None = None

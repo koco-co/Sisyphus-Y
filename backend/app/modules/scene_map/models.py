@@ -30,3 +30,11 @@ class TestPoint(BaseModel):
     estimated_cases: Mapped[int] = mapped_column(Integer, default=3)
     source: Mapped[str] = mapped_column(String(20), default="ai")
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
+
+    # TASK-160: risk item → test point traceability
+    source_risk_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("diagnosis_risks.id"), nullable=True, default=None
+    )
+
+    # TASK-162: actual generated case count (backfilled after generation)
+    actual_cases_count: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)

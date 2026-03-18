@@ -21,10 +21,10 @@ export function FormField({
     <div className={`mb-4 ${className}`}>
       <label className="block text-[12.5px] font-medium text-text2 mb-1.5">
         {label}
-        {required && <span className="text-red ml-0.5">*</span>}
+        {required && <span className="text-sy-danger ml-0.5">*</span>}
       </label>
       {children}
-      {error && <p className="text-[11px] text-red mt-1">{error}</p>}
+      {error && <p className="text-[11px] text-sy-danger mt-1">{error}</p>}
     </div>
   );
 }

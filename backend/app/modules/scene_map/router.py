@@ -127,15 +127,18 @@ async def rag_preview(
     query = " ".join(p.title for p in points)
     try:
         from app.engine.rag.retriever import retrieve_similar_cases
+
         results = await retrieve_similar_cases(query, top_k=5, score_threshold=0.72)
-        return RagPreviewResponse(results=[
-            RagPreviewResult(
-                title=r.metadata.get("title", ""),
-                score=r.score,
-                content=r.content,
-            )
-            for r in results
-        ])
+        return RagPreviewResponse(
+            results=[
+                RagPreviewResult(
+                    title=r.metadata.get("title", ""),
+                    score=r.score,
+                    content=r.content,
+                )
+                for r in results
+            ]
+        )
     except Exception:
         logger.warning("RAG preview failed, returning empty results")
         return RagPreviewResponse(results=[])

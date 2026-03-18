@@ -56,14 +56,14 @@ export function CasePreviewCard({
               className="rounded-md bg-bg p-2 border border-border text-[11px]"
             >
               <div className="flex items-start gap-1.5">
-                <span className="font-mono text-accent shrink-0" style={{ minWidth: 18 }}>
+                <span className="font-mono text-sy-accent shrink-0" style={{ minWidth: 18 }}>
                   {step.step_num}.
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="text-text">{step.action}</div>
                   {step.expected_result && (
                     <div className="text-text3 mt-0.5">
-                      <span className="text-accent2 font-medium">预期：</span>
+                      <span className="text-sy-accent-2 font-medium">预期：</span>
                       {step.expected_result}
                     </div>
                   )}
@@ -77,13 +77,13 @@ export function CasePreviewCard({
         <button
           type="button"
           onClick={onAccept}
-          className="mt-2 w-full text-center py-1 rounded-md text-[11px] font-medium bg-accent text-black hover:bg-accent2 transition-colors"
+          className="mt-2 w-full text-center py-1 rounded-md text-[11px] font-medium bg-sy-accent text-black hover:bg-sy-accent-2 transition-colors"
         >
           <Check className="w-3.5 h-3.5 inline-block -mt-px" /> 接受用例
         </button>
       )}
       {isAccepted && (
-        <div className="mt-2 text-center py-1 text-[11px] text-accent font-mono flex items-center justify-center gap-1">
+        <div className="mt-2 text-center py-1 text-[11px] text-sy-accent font-mono flex items-center justify-center gap-1">
           <Check className="w-3.5 h-3.5" /> 已接受
         </div>
       )}

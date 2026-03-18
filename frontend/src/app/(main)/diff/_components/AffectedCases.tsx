@@ -23,14 +23,20 @@ interface AffectedCasesProps {
 }
 
 // Badge config for change_impact (canonical backend field)
-const changeImpactBadge: Record<string, { variant: 'danger' | 'warning' | 'success' | 'gray'; label: string }> = {
+const changeImpactBadge: Record<
+  string,
+  { variant: 'danger' | 'warning' | 'success' | 'gray'; label: string }
+> = {
   needs_rewrite: { variant: 'danger', label: '需重写' },
   needs_review: { variant: 'warning', label: '需复核' },
   not_affected: { variant: 'success', label: '不受影响' },
 };
 
 // Fallback badge for legacy impact_type field
-const impactTypeBadge: Record<string, { variant: 'danger' | 'warning' | 'success' | 'gray'; label: string }> = {
+const impactTypeBadge: Record<
+  string,
+  { variant: 'danger' | 'warning' | 'success' | 'gray'; label: string }
+> = {
   rewrite: { variant: 'danger', label: '需重写' },
   review: { variant: 'warning', label: '需审核' },
   none: { variant: 'success', label: '不受影响' },
@@ -44,19 +50,31 @@ function getImpactBadge(c: AffectedTestCase) {
 }
 
 function getImpactIcon(c: AffectedTestCase) {
-  const key = c.change_impact ?? (c.impact_type === 'rewrite' ? 'needs_rewrite' : c.impact_type === 'review' ? 'needs_review' : 'not_affected');
+  const key =
+    c.change_impact ??
+    (c.impact_type === 'rewrite'
+      ? 'needs_rewrite'
+      : c.impact_type === 'review'
+        ? 'needs_review'
+        : 'not_affected');
   if (key === 'needs_rewrite') return <RefreshCw className="w-3.5 h-3.5 text-sy-danger" />;
   if (key === 'needs_review') return <Eye className="w-3.5 h-3.5 text-sy-warn" />;
   return <CheckCircle2 className="w-3.5 h-3.5 text-sy-accent" />;
 }
 
-export function AffectedCases({ cases, requirementId, totalTestPoints = 0, className = '' }: AffectedCasesProps) {
+export function AffectedCases({
+  cases,
+  requirementId,
+  totalTestPoints = 0,
+  className = '',
+}: AffectedCasesProps) {
   const [search, setSearch] = useState('');
   const [pushing, setPushing] = useState(false);
 
   const stats = useMemo(() => {
     const rewrite = cases.filter(
-      (c) => c.change_impact === 'needs_rewrite' || (!c.change_impact && c.impact_type === 'rewrite'),
+      (c) =>
+        c.change_impact === 'needs_rewrite' || (!c.change_impact && c.impact_type === 'rewrite'),
     ).length;
     const review = cases.filter(
       (c) => c.change_impact === 'needs_review' || (!c.change_impact && c.impact_type === 'review'),

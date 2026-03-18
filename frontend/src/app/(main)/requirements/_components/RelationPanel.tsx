@@ -64,7 +64,7 @@ export function RelationPanel({
       <div className="bg-bg1 border border-border rounded-[10px] p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <TreePine size={14} className="text-accent" />
+            <TreePine size={14} className="text-sy-accent" />
             <span className="text-[12px] font-semibold text-text2">关联测试点</span>
             <span className="text-[10px] font-mono text-text3 bg-bg3 px-1.5 py-0.5 rounded">
               {testPoints.length}
@@ -72,7 +72,7 @@ export function RelationPanel({
           </div>
           <Link
             href={getAnalysisSceneMapHref(requirementId)}
-            className="flex items-center gap-1 text-[11px] text-accent hover:text-accent2 transition-colors"
+            className="flex items-center gap-1 text-[11px] text-sy-accent hover:text-sy-accent-2 transition-colors"
           >
             查看场景地图 <ExternalLink size={11} />
           </Link>
@@ -88,7 +88,7 @@ export function RelationPanel({
                 href={getAnalysisSceneMapHref(requirementId)}
                 className="flex items-center gap-2 p-2 rounded-md hover:bg-bg2 transition-colors group"
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-sy-accent shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] text-text truncate">{tp.title}</div>
                   <div className="text-[10.5px] text-text3 truncate">{tp.group_name}</div>
@@ -108,7 +108,7 @@ export function RelationPanel({
       <div className="bg-bg1 border border-border rounded-[10px] p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <ClipboardList size={14} className="text-blue" />
+            <ClipboardList size={14} className="text-sy-info" />
             <span className="text-[12px] font-semibold text-text2">关联用例</span>
             <span className="text-[10px] font-mono text-text3 bg-bg3 px-1.5 py-0.5 rounded">
               {testCases.length}
@@ -116,7 +116,7 @@ export function RelationPanel({
           </div>
           <Link
             href={getWorkbenchHref(requirementId)}
-            className="flex items-center gap-1 text-[11px] text-accent hover:text-accent2 transition-colors"
+            className="flex items-center gap-1 text-[11px] text-sy-accent hover:text-sy-accent-2 transition-colors"
           >
             生成工作台 <ExternalLink size={11} />
           </Link>
@@ -132,7 +132,7 @@ export function RelationPanel({
                 href={`/testcases?highlight=${tc.id}`}
                 className="flex items-center gap-2 p-2 rounded-md hover:bg-bg2 transition-colors group"
               >
-                <span className="text-[11px] font-mono text-accent shrink-0">{tc.case_id}</span>
+                <span className="text-[11px] font-mono text-sy-accent shrink-0">{tc.case_id}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] text-text truncate">{tc.title}</div>
                 </div>

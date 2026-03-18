@@ -35,8 +35,8 @@ type ReqStatus = 'unanalyzed' | 'analyzing' | 'completed';
 function statusBadge(status: ReqStatus) {
   const map: Record<ReqStatus, { label: string; cls: string }> = {
     unanalyzed: { label: '未分析', cls: 'bg-bg3 text-text3 border-border' },
-    analyzing: { label: '分析中', cls: 'bg-amber/10 text-amber border-amber/30' },
-    completed: { label: '已完成', cls: 'bg-accent/10 text-accent border-accent/30' },
+    analyzing: { label: '分析中', cls: 'bg-sy-warn/10 text-sy-warn border-sy-warn/30' },
+    completed: { label: '已完成', cls: 'bg-sy-accent/10 text-sy-accent border-sy-accent/30' },
   };
   const cfg = map[status];
   return (
@@ -123,7 +123,7 @@ export default function DiagnosisPage() {
     >
       {/* Header */}
       <div className="px-3.5 py-2.5 border-b border-border flex items-center gap-2 flex-shrink-0">
-        <Activity className="w-3.5 h-3.5 text-accent" />
+        <Activity className="w-3.5 h-3.5 text-sy-accent" />
         <span className="text-[12px] font-semibold text-text2">AI 分析</span>
       </div>
 
@@ -145,7 +145,7 @@ export default function DiagnosisPage() {
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-text3 flex-shrink-0" />
               )}
-              <FolderOpen className="w-3.5 h-3.5 text-accent flex-shrink-0" />
+              <FolderOpen className="w-3.5 h-3.5 text-sy-accent flex-shrink-0" />
               <span className="truncate flex-1 text-left">{product.name}</span>
             </button>
 
@@ -187,7 +187,7 @@ export default function DiagnosisPage() {
                               onClick={() => tree.selectRequirement(req)}
                               className={`w-full flex items-center gap-1.5 px-2 py-1.5 ml-4 rounded-md text-[12px] transition-colors ${
                                 isSelected
-                                  ? 'bg-accent/10 text-accent'
+                                  ? 'bg-sy-accent/10 text-sy-accent'
                                   : 'text-text3 hover:bg-bg2 hover:text-text2'
                               }`}
                             >
@@ -228,7 +228,7 @@ export default function DiagnosisPage() {
         className="flex-shrink-0 flex items-center gap-3 px-5 border-b border-border bg-bg1"
         style={{ height: 48 }}
       >
-        <FileText className="w-4 h-4 text-accent flex-shrink-0" />
+        <FileText className="w-4 h-4 text-sy-accent flex-shrink-0" />
         <span className="text-[13px] font-semibold text-text truncate flex-1">
           {tree.selectedReqTitle}
         </span>
@@ -240,7 +240,7 @@ export default function DiagnosisPage() {
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${
               hasUnhandledHighRisk
                 ? 'opacity-40 pointer-events-none bg-bg3 text-text3 border border-border cursor-not-allowed'
-                : 'bg-accent text-white dark:text-black hover:bg-accent2'
+                : 'bg-sy-accent text-white dark:text-black hover:bg-sy-accent-2'
             }`}
             aria-disabled={hasUnhandledHighRisk}
             onClick={(e) => hasUnhandledHighRisk && e.preventDefault()}
@@ -268,12 +268,12 @@ export default function DiagnosisPage() {
             type="button"
             onClick={() => setActiveTab(key)}
             className={`px-4 py-2.5 text-[12.5px] font-medium transition-colors relative ${
-              activeTab === key ? 'text-accent' : 'text-text3 hover:text-text2'
+              activeTab === key ? 'text-sy-accent' : 'text-text3 hover:text-text2'
             }`}
           >
             {label}
             {activeTab === key && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent rounded-t-sm" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sy-accent rounded-t-sm" />
             )}
           </button>
         ))}

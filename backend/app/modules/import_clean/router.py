@@ -174,6 +174,7 @@ async def list_records(
 ) -> list[ImportRecordResponse]:
     """列出导入记录（支持分页和搜索）。"""
     from sqlalchemy import select
+
     from app.modules.import_clean.models import ImportRecord
 
     stmt = select(ImportRecord).where(
@@ -197,6 +198,7 @@ async def count_all_records(
 ) -> dict:
     """统计所有导入记录数量。"""
     from sqlalchemy import func, select
+
     from app.modules.import_clean.models import ImportRecord
 
     stmt = select(func.count()).select_from(ImportRecord).where(ImportRecord.deleted_at.is_(None))
@@ -215,6 +217,7 @@ async def list_all_records(
 ) -> list[ImportRecordResponse]:
     """列出所有导入记录（跨所有 Job，支持分页和搜索）。"""
     from sqlalchemy import select
+
     from app.modules.import_clean.models import ImportRecord
 
     stmt = select(ImportRecord).where(ImportRecord.deleted_at.is_(None))
@@ -236,7 +239,6 @@ async def list_discarded_records(
     svc = ImportRecordService(session)
     records = await svc.list_discarded_records(limit=limit, offset=offset)
     return [ImportRecordResponse.model_validate(r) for r in records]
-
 
 
 async def record_action(

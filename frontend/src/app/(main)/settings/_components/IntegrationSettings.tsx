@@ -67,7 +67,7 @@ export function IntegrationSettings() {
   return (
     <div>
       <div className="sec-header">
-        <Link2 className="w-4 h-4 text-accent" />
+        <Link2 className="w-4 h-4 text-sy-accent" />
         <span className="sec-title">外部系统集成</span>
       </div>
 

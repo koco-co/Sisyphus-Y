@@ -65,6 +65,10 @@ class TestCase(BaseModel):
     # 值域: "needs_rewrite" | "needs_review" | "not_affected" | None
     change_impact: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
+    # TASK-161: case quality feedback ("up" | "down" | None)
+    feedback: Mapped[str | None] = mapped_column(String(10), nullable=True, default=None)
+    feedback_reason: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
+
 
 class TestCaseStep(BaseModel):
     __tablename__ = "test_case_steps"

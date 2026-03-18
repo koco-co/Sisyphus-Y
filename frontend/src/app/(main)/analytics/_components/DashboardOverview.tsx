@@ -18,11 +18,11 @@ interface DashboardOverviewProps {
 }
 
 const COLOR_BG_CLASS: Record<string, string> = {
-  'text-accent': 'bg-accent/10',
-  'text-blue': 'bg-blue/10',
+  'text-sy-accent': 'bg-sy-accent/10',
+  'text-sy-info': 'bg-sy-info/10',
   'text-purple': 'bg-purple/10',
-  'text-amber': 'bg-amber/10',
-  'text-red': 'bg-red/10',
+  'text-sy-warn': 'bg-sy-warn/10',
+  'text-sy-danger': 'bg-sy-danger/10',
 };
 
 function ScoreCard({ overview }: { overview: AnalyticsOverview }) {
@@ -66,7 +66,7 @@ function MetricCard({
     <div className="card card-hover">
       <div className="flex items-center gap-2 mb-3">
         <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center ${COLOR_BG_CLASS[colorClass] ?? 'bg-accent/10'}`}
+          className={`w-8 h-8 rounded-lg flex items-center justify-center ${COLOR_BG_CLASS[colorClass] ?? 'bg-sy-accent/10'}`}
         >
           <Icon className={`w-4 h-4 ${colorClass}`} />
         </div>
@@ -82,14 +82,14 @@ function MetricCard({
 
 export function DashboardOverview({ overview }: DashboardOverviewProps) {
   const kpis = [
-    { label: '子产品', value: overview.product_count, icon: Package, color: 'text-blue' },
+    { label: '子产品', value: overview.product_count, icon: Package, color: 'text-sy-info' },
     { label: '迭代', value: overview.iteration_count, icon: Layers, color: 'text-purple' },
-    { label: '需求', value: overview.requirement_count, icon: FileText, color: 'text-amber' },
+    { label: '需求', value: overview.requirement_count, icon: FileText, color: 'text-sy-warn' },
     {
       label: '测试用例',
       value: overview.testcase_count,
       icon: ClipboardList,
-      color: 'text-accent',
+      color: 'text-sy-accent',
     },
   ];
 
@@ -99,16 +99,16 @@ export function DashboardOverview({ overview }: DashboardOverviewProps) {
       value: overview.pass_rate,
       suffix: '%',
       icon: CheckCircle,
-      color: 'text-accent',
+      color: 'text-sy-accent',
     },
     {
       label: '覆盖率',
       value: overview.coverage_rate,
       suffix: '%',
       icon: Target,
-      color: 'text-blue',
+      color: 'text-sy-info',
     },
-    { label: '缺陷密度', value: overview.defect_density, icon: Bug, color: 'text-red' },
+    { label: '缺陷密度', value: overview.defect_density, icon: Bug, color: 'text-sy-danger' },
     {
       label: '自动化率',
       value: overview.automation_rate,
@@ -129,7 +129,7 @@ export function DashboardOverview({ overview }: DashboardOverviewProps) {
           <div key={kpi.label} className="card card-hover">
             <div className="flex items-center gap-2 mb-3">
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center ${COLOR_BG_CLASS[kpi.color] ?? 'bg-accent/10'}`}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center ${COLOR_BG_CLASS[kpi.color] ?? 'bg-sy-accent/10'}`}
               >
                 <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
               </div>

@@ -18,9 +18,21 @@ const TYPE_CONFIG: Record<
     label: '知识库',
     color: 'text-purple bg-purple/10 border-purple/25',
   },
-  requirement: { icon: FileText, label: '需求', color: 'text-blue bg-blue/10 border-blue/25' },
-  test_point: { icon: Target, label: '测试点', color: 'text-accent bg-accent/10 border-accent/25' },
-  document: { icon: FileText, label: '文档', color: 'text-amber bg-amber/10 border-amber/25' },
+  requirement: {
+    icon: FileText,
+    label: '需求',
+    color: 'text-sy-info bg-sy-info/10 border-sy-info/25',
+  },
+  test_point: {
+    icon: Target,
+    label: '测试点',
+    color: 'text-sy-accent bg-sy-accent/10 border-sy-accent/25',
+  },
+  document: {
+    icon: FileText,
+    label: '文档',
+    color: 'text-sy-warn bg-sy-warn/10 border-sy-warn/25',
+  },
 };
 
 export function ContextPanel({ items, onAdd, onRemove }: ContextPanelProps) {
@@ -38,7 +50,7 @@ export function ContextPanel({ items, onAdd, onRemove }: ContextPanelProps) {
         <button
           type="button"
           onClick={handleAddContext}
-          className="inline-flex items-center gap-0.5 text-[10px] text-accent hover:text-accent2 transition-colors"
+          className="inline-flex items-center gap-0.5 text-[10px] text-sy-accent hover:text-sy-accent-2 transition-colors"
         >
           <Plus className="w-3 h-3" />
           添加

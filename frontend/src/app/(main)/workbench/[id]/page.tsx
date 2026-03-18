@@ -96,7 +96,7 @@ export default function WorkbenchPage() {
     <div className="flex flex-col h-[calc(100vh-0px)] overflow-hidden">
       {/* Toolbar */}
       <div className="flex items-center gap-3 p-3 border-b border-border bg-bg1">
-        <div className="font-display font-bold text-[14px] text-accent flex items-center gap-1">
+        <div className="font-display font-bold text-[14px] text-sy-accent flex items-center gap-1">
           <Zap size={14} /> 生成工作台
         </div>
         <div className="w-px h-5 bg-border mx-1" />
@@ -109,7 +109,7 @@ export default function WorkbenchPage() {
               onClick={() => setMode(m.key)}
               className={`px-3 py-1 rounded-md text-[11.5px] border transition-colors flex items-center gap-1 ${
                 mode === m.key
-                  ? 'bg-accent-d text-accent border-[rgba(0,217,163,0.2)]'
+                  ? 'bg-accent-d text-sy-accent border-[rgba(0,217,163,0.2)]'
                   : 'text-text3 border-border hover:text-text hover:border-border2'
               }`}
             >
@@ -144,7 +144,7 @@ export default function WorkbenchPage() {
             return (
               <div
                 key={m.key}
-                className={`p-2 rounded-md mb-1 text-[11px] ${mode === m.key ? 'bg-accent-d text-accent border border-[rgba(0,217,163,0.2)]' : 'text-text3'}`}
+                className={`p-2 rounded-md mb-1 text-[11px] ${mode === m.key ? 'bg-accent-d text-sy-accent border border-[rgba(0,217,163,0.2)]' : 'text-text3'}`}
               >
                 <div className="font-medium flex items-center gap-1">
                   <ModeIcon size={11} /> {m.label}
@@ -185,7 +185,7 @@ export default function WorkbenchPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-              className="flex-1 bg-bg2 border border-border rounded-md px-3 py-2 text-[13px] text-text outline-none focus:border-accent placeholder:text-text3"
+              className="flex-1 bg-bg2 border border-border rounded-md px-3 py-2 text-[13px] text-text outline-none focus:border-sy-accent placeholder:text-text3"
               placeholder="描述你需要的测试用例，或输入 /gen 开始自动生成..."
               disabled={isStreaming}
             />
@@ -193,7 +193,7 @@ export default function WorkbenchPage() {
               type="button"
               onClick={sendMessage}
               disabled={isStreaming || !input.trim()}
-              className="px-5 py-2 rounded-md text-[12px] font-semibold bg-accent text-black disabled:opacity-50 hover:bg-accent2 transition-colors"
+              className="px-5 py-2 rounded-md text-[12px] font-semibold bg-sy-accent text-black disabled:opacity-50 hover:bg-sy-accent-2 transition-colors"
             >
               生成
             </button>

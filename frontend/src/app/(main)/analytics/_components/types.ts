@@ -38,29 +38,29 @@ export function getGrade(score: number): QualityGrade {
 export function getGradeColor(grade: QualityGrade): string {
   switch (grade) {
     case 'A':
-      return 'text-accent';
+      return 'text-sy-accent';
     case 'B':
-      return 'text-blue';
+      return 'text-sy-info';
     case 'C':
-      return 'text-amber';
+      return 'text-sy-warn';
     case 'D':
       return 'text-purple';
     case 'F':
-      return 'text-red';
+      return 'text-sy-danger';
   }
 }
 
 export function getGradeBg(grade: QualityGrade): string {
   switch (grade) {
     case 'A':
-      return 'bg-accent/10 border-accent/25';
+      return 'bg-sy-accent/10 border-sy-accent/25';
     case 'B':
-      return 'bg-blue/10 border-blue/25';
+      return 'bg-sy-info/10 border-sy-info/25';
     case 'C':
-      return 'bg-amber/10 border-amber/25';
+      return 'bg-sy-warn/10 border-sy-warn/25';
     case 'D':
       return 'bg-purple/10 border-purple/25';
     case 'F':
-      return 'bg-red/10 border-red/25';
+      return 'bg-sy-danger/10 border-sy-danger/25';
   }
 }

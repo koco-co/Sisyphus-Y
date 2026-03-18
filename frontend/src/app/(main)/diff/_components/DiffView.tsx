@@ -46,9 +46,21 @@ export function parseSideBySide(unifiedDiff: string): SideBySideLine[] {
           rightNum: add.num,
         });
       } else if (del) {
-        result.push({ type: 'del', left: del.content, right: null, leftNum: del.num, rightNum: null });
+        result.push({
+          type: 'del',
+          left: del.content,
+          right: null,
+          leftNum: del.num,
+          rightNum: null,
+        });
       } else if (add) {
-        result.push({ type: 'add', left: null, right: add.content, leftNum: null, rightNum: add.num });
+        result.push({
+          type: 'add',
+          left: null,
+          right: add.content,
+          leftNum: null,
+          rightNum: add.num,
+        });
       }
     }
     pendingDels.length = 0;
@@ -74,7 +86,13 @@ export function parseSideBySide(unifiedDiff: string): SideBySideLine[] {
       flushPending();
       oldNum++;
       newNum++;
-      result.push({ type: 'ctx', left: line.slice(1), right: line.slice(1), leftNum: oldNum, rightNum: newNum });
+      result.push({
+        type: 'ctx',
+        left: line.slice(1),
+        right: line.slice(1),
+        leftNum: oldNum,
+        rightNum: newNum,
+      });
     }
   }
   flushPending();
@@ -130,14 +148,25 @@ function SbsRow({ line, idx }: { line: SideBySideLine; idx: number }) {
         : '';
 
   const leftText =
-    line.type === 'del' ? 'text-sy-danger' : line.type === 'modified' ? 'text-sy-warn' : 'text-sy-text-2';
+    line.type === 'del'
+      ? 'text-sy-danger'
+      : line.type === 'modified'
+        ? 'text-sy-warn'
+        : 'text-sy-text-2';
   const rightText =
-    line.type === 'add' ? 'text-sy-accent' : line.type === 'modified' ? 'text-sy-warn' : 'text-sy-text-2';
+    line.type === 'add'
+      ? 'text-sy-accent'
+      : line.type === 'modified'
+        ? 'text-sy-warn'
+        : 'text-sy-text-2';
 
   // Hunk header spans full width
   if (line.type === 'ctx' && line.left?.startsWith('@@')) {
     return (
-      <div key={getDiffLineKey(line, idx)} className="col-span-2 flex font-mono text-[11px] bg-sy-bg-2 border-y border-sy-border/40 px-3 py-0.5 text-sy-text-3">
+      <div
+        key={getDiffLineKey(line, idx)}
+        className="col-span-2 flex font-mono text-[11px] bg-sy-bg-2 border-y border-sy-border/40 px-3 py-0.5 text-sy-text-3"
+      >
         <span className="flex-1 truncate">{line.left}</span>
       </div>
     );
@@ -150,16 +179,22 @@ function SbsRow({ line, idx }: { line: SideBySideLine; idx: number }) {
         <span className="w-8 shrink-0 text-right pr-1.5 text-sy-text-3/40 select-none text-[10px] font-mono">
           {line.leftNum ?? ''}
         </span>
-        <span className={`flex-1 font-mono text-[11.5px] leading-[1.7] whitespace-pre-wrap break-all py-px ${leftText}`}>
+        <span
+          className={`flex-1 font-mono text-[11.5px] leading-[1.7] whitespace-pre-wrap break-all py-px ${leftText}`}
+        >
           {line.left ?? ''}
         </span>
       </div>
       {/* Right cell */}
-      <div className={`flex items-baseline gap-1 min-w-0 border-l border-sy-border/30 ${rightBg} px-0`}>
+      <div
+        className={`flex items-baseline gap-1 min-w-0 border-l border-sy-border/30 ${rightBg} px-0`}
+      >
         <span className="w-8 shrink-0 text-right pr-1.5 text-sy-text-3/40 select-none text-[10px] font-mono">
           {line.rightNum ?? ''}
         </span>
-        <span className={`flex-1 font-mono text-[11.5px] leading-[1.7] whitespace-pre-wrap break-all py-px ${rightText}`}>
+        <span
+          className={`flex-1 font-mono text-[11.5px] leading-[1.7] whitespace-pre-wrap break-all py-px ${rightText}`}
+        >
           {line.right ?? ''}
         </span>
       </div>
@@ -204,7 +239,12 @@ function CollapsibleChunk({ lines }: { lines: SideBySideLine[] }) {
   );
 }
 
-export function DiffView({ diffText, additions = 0, deletions = 0, className = '' }: DiffViewProps) {
+export function DiffView({
+  diffText,
+  additions = 0,
+  deletions = 0,
+  className = '',
+}: DiffViewProps) {
   const parsed = useMemo(() => parseSideBySide(diffText), [diffText]);
   const groups = useMemo(() => groupForCollapse(parsed), [parsed]);
 

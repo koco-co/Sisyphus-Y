@@ -175,6 +175,16 @@ class TestCaseService:
         tc.deleted_at = datetime.now(UTC)
         await self.session.commit()
 
+    # ── Feedback (TASK-161) ────────────────────────────────────────
+
+    async def submit_feedback(self, case_id: UUID, feedback: str, reason: str | None = None) -> TestCase:
+        tc = await self.get_case(case_id)
+        tc.feedback = feedback
+        tc.feedback_reason = reason
+        await self.session.commit()
+        await self.session.refresh(tc)
+        return tc
+
     # ── Batch status update ────────────────────────────────────────
 
     async def batch_update_status(self, case_ids: list[UUID], new_status: str) -> int:

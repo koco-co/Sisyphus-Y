@@ -484,9 +484,7 @@ class KnowledgeService:
             doc.vector_status = "pending"
 
         await self.session.commit()
-        summary = (
-            f"已清理 {cleanup_report['deleted_points']} 个旧向量点，并将 {len(docs)} 篇文档重新标记为 pending。"
-        )
+        summary = f"已清理 {cleanup_report['deleted_points']} 个旧向量点，并将 {len(docs)} 篇文档重新标记为 pending。"
         logger.info(
             "重建向量索引：collection=%s, dimensions=%d, docs_queued=%d, deleted_points=%d",
             collection,

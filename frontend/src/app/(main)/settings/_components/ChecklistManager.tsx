@@ -100,7 +100,7 @@ export function ChecklistManager() {
   return (
     <div>
       <div className="sec-header">
-        <ClipboardCheck className="w-4 h-4 text-accent" />
+        <ClipboardCheck className="w-4 h-4 text-sy-accent" />
         <span className="sec-title">行业必问清单</span>
       </div>
 
@@ -114,7 +114,7 @@ export function ChecklistManager() {
                 key={c.id}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-left text-[12.5px] transition-colors ${
                   activeId === c.id
-                    ? 'bg-accent/8 text-accent border border-accent/20'
+                    ? 'bg-sy-accent/8 text-sy-accent border border-sy-accent/20'
                     : 'text-text2 hover:bg-bg2 border border-transparent'
                 }`}
                 onClick={() => setActiveId(c.id)}
@@ -163,7 +163,7 @@ export function ChecklistManager() {
                       <button
                         type="button"
                         onClick={() => removeItem(item.id)}
-                        className="text-text3 hover:text-red transition-colors shrink-0"
+                        className="text-text3 hover:text-sy-danger transition-colors shrink-0"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

@@ -25,7 +25,7 @@ export function VersionSelector({ className = '' }: VersionSelectorProps) {
           min={1}
           value={versionFrom}
           onChange={(e) => setVersionFrom(Number(e.target.value))}
-          className="w-full px-3 py-1.5 text-[12.5px] font-mono bg-bg2 border border-border rounded-md text-text outline-none focus:border-accent transition-colors"
+          className="w-full px-3 py-1.5 text-[12.5px] font-mono bg-bg2 border border-border rounded-md text-text outline-none focus:border-sy-accent transition-colors"
         />
       </div>
 
@@ -51,7 +51,7 @@ export function VersionSelector({ className = '' }: VersionSelectorProps) {
           min={1}
           value={versionTo}
           onChange={(e) => setVersionTo(Number(e.target.value))}
-          className="w-full px-3 py-1.5 text-[12.5px] font-mono bg-bg2 border border-border rounded-md text-text outline-none focus:border-accent transition-colors"
+          className="w-full px-3 py-1.5 text-[12.5px] font-mono bg-bg2 border border-border rounded-md text-text outline-none focus:border-sy-accent transition-colors"
         />
       </div>
     </div>
