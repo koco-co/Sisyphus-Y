@@ -17,9 +17,9 @@ from collections.abc import AsyncIterator
 
 from langsmith import traceable
 
-from app.ai.parser import parse_test_cases
 from app.ai.prompts import assemble_prompt
 from app.ai.stream_adapter import get_thinking_stream_with_fallback
+from app.ai.structured import generate_cases_structured
 from app.engine.rag.retriever import retrieve_as_context
 
 logger = logging.getLogger(__name__)
@@ -232,6 +232,27 @@ async def template_driven_generate(
             logger.warning("RAG 检索失败，跳过知识库注入")
             rag_context = None
 
+    task_instruction = build_task_instruction(
+        template_name,
+        template_category,
+        template_description,
+        template_content,
+        template_variables,
+        user_variables,
+        requirement_title,
+        requirement_content,
+    )
+    system = assemble_prompt("generation", task_instruction, rag_context=rag_context)
+    user_msg = (
+        f"请基于模板「{template_name}」为以下需求生成测试用例：\n\n"
+        f"需求标题：{requirement_title}\n\n"
+        f"需求内容：\n{requirement_content}"
+    )
+    messages_with_sys = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user_msg},
+    ]
+
     stream = await template_driven_stream(
         template_name,
         template_category,
@@ -251,8 +272,10 @@ async def template_driven_generate(
     full_sse = "".join(chunks)
     full_text = _extract_content_from_sse(full_sse)
 
-    cases = parse_test_cases(full_text)
-    standardized = _standardize_cases(cases)
+    standardized = await generate_cases_structured(
+        messages_with_sys,
+        fallback_text=full_text,
+    )
     logger.info(
         "模板驱动生成 %d 条用例 (template=%s, title=%s)",
         len(standardized),

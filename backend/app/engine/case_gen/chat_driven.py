@@ -17,9 +17,9 @@ from collections.abc import AsyncIterator
 
 from langsmith import traceable
 
-from app.ai.parser import parse_test_cases
 from app.ai.prompts import assemble_prompt
 from app.ai.stream_adapter import get_thinking_stream_with_fallback
+from app.ai.structured import generate_cases_structured
 from app.engine.rag.retriever import retrieve_as_context
 
 logger = logging.getLogger(__name__)
@@ -169,6 +169,10 @@ async def chat_driven_generate(
             logger.warning("RAG 检索失败，跳过知识库注入")
             rag_context = None
 
+    task_instruction = build_task_instruction(requirement_title, requirement_content, existing_cases)
+    system = assemble_prompt("exploratory", task_instruction, rag_context=rag_context)
+    messages_with_sys = [{"role": "system", "content": system}, *build_messages(history, current_message)]
+
     stream = await chat_driven_stream(
         requirement_title,
         requirement_content,
@@ -185,8 +189,10 @@ async def chat_driven_generate(
     full_sse = "".join(chunks)
     full_text = _extract_content_from_sse(full_sse)
 
-    cases = parse_test_cases(full_text)
-    standardized = _standardize_cases(cases)
+    standardized = await generate_cases_structured(
+        messages_with_sys,
+        fallback_text=full_text,
+    )
 
     if standardized:
         logger.info(
