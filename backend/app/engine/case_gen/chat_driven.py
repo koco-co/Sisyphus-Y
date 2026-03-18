@@ -20,6 +20,7 @@ from langsmith import traceable
 from app.ai.parser import parse_test_cases
 from app.ai.prompts import assemble_prompt
 from app.ai.stream_adapter import get_thinking_stream_with_fallback
+from app.engine.rag.retriever import retrieve_as_context
 
 logger = logging.getLogger(__name__)
 
@@ -161,6 +162,13 @@ async def chat_driven_generate(
         - parsed_cases: 从回复中提取的标准化用例列表（可能为空，
           当 AI 仅进行对话追问而未生成用例时）
     """
+    if rag_context is None:
+        try:
+            rag_context = await retrieve_as_context(requirement_content, top_k=5, score_threshold=0.72)
+        except Exception:
+            logger.warning("RAG 检索失败，跳过知识库注入")
+            rag_context = None
+
     stream = await chat_driven_stream(
         requirement_title,
         requirement_content,

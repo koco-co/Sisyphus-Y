@@ -20,6 +20,7 @@ from langsmith import traceable
 from app.ai.parser import parse_test_cases
 from app.ai.prompts import assemble_prompt
 from app.ai.stream_adapter import get_thinking_stream_with_fallback
+from app.engine.rag.retriever import retrieve_as_context
 
 logger = logging.getLogger(__name__)
 
@@ -224,6 +225,13 @@ async def template_driven_generate(
         每个 dict 包含 title / precondition / priority / case_type / steps / source，
         与 TestCase 模型兼容。
     """
+    if rag_context is None:
+        try:
+            rag_context = await retrieve_as_context(requirement_content, top_k=5, score_threshold=0.72)
+        except Exception:
+            logger.warning("RAG 检索失败，跳过知识库注入")
+            rag_context = None
+
     stream = await template_driven_stream(
         template_name,
         template_category,
