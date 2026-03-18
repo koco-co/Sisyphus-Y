@@ -15,6 +15,8 @@ import logging
 import re
 from collections.abc import AsyncIterator
 
+from langsmith import traceable
+
 from app.ai.parser import parse_test_cases
 from app.ai.prompts import assemble_prompt
 from app.ai.stream_adapter import get_thinking_stream_with_fallback
@@ -203,6 +205,7 @@ def _extract_content_from_sse(sse_text: str) -> str:
 # ═══════════════════════════════════════════════════════════════════
 
 
+@traceable(name="case_gen/template_driven", metadata={"module": "case_gen"})
 async def template_driven_generate(
     template_name: str,
     template_category: str,

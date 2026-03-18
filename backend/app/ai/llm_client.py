@@ -5,6 +5,8 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, cast
 
+from langsmith import traceable
+
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -18,6 +20,7 @@ class LLMResult:
     usage: dict = field(default_factory=dict)
 
 
+@traceable(name="llm_invoke", tags=["non-stream"])
 async def invoke_llm(
     messages: list[dict],
     *,

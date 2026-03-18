@@ -18,6 +18,8 @@ import time
 from collections.abc import AsyncIterator
 from typing import Any, cast
 
+from langsmith import traceable
+
 from app.ai.llm_client import invoke_llm
 from app.core.config import settings
 
@@ -291,6 +293,7 @@ async def _with_heartbeat_and_timeout(
             return
 
 
+@traceable(name="llm_stream", tags=["stream"])
 async def get_thinking_stream_with_fallback(
     messages: list[dict],
     system: str = "",
