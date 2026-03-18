@@ -60,6 +60,8 @@ async def _invoke(provider: str, messages: list[dict], *, model: str | None = No
         return await _invoke_zhipu(messages, model=model)
     if provider == "dashscope":
         return await _invoke_dashscope(messages, model=model)
+    if provider == "openrouter":
+        return await _invoke_openrouter(messages, model=model)
     return await _invoke_openai(messages, model=model)
 
 
@@ -125,6 +127,29 @@ async def _invoke_dashscope(messages: list[dict], model: str | None = None) -> L
         Any,
         await client.chat.completions.create(
             model=model or settings.dashscope_model,
+            messages=cast(Any, messages),
+        ),
+    )
+    return LLMResult(
+        content=response.choices[0].message.content or "",
+        usage=_extract_usage(response.usage),
+    )
+
+
+async def _invoke_openrouter(messages: list[dict], model: str | None = None) -> LLMResult:
+    """OpenRouter 调用 — OpenAI 兼容接口。"""
+    import httpx
+    from openai import AsyncOpenAI
+
+    client = AsyncOpenAI(
+        api_key=settings.openrouter_api_key,
+        base_url="https://openrouter.ai/api/v1",
+        http_client=httpx.AsyncClient(proxy=None, trust_env=False),
+    )
+    response = cast(
+        Any,
+        await client.chat.completions.create(
+            model=model or settings.openrouter_model,
             messages=cast(Any, messages),
         ),
     )

@@ -224,6 +224,44 @@ async def dashscope_thinking_stream(
     yield _sse("done", {"usage": {}})
 
 
+async def openrouter_thinking_stream(
+    messages: list[dict],
+    system: str = "",
+    model: str | None = None,
+) -> AsyncIterator[str]:
+    """OpenRouter 流式输出（OpenAI 兼容接口）。"""
+    import httpx
+    from openai import AsyncOpenAI
+
+    no_proxy_client = httpx.AsyncClient(proxy=None, trust_env=False)
+    client = AsyncOpenAI(
+        api_key=settings.openrouter_api_key,
+        base_url="https://openrouter.ai/api/v1",
+        http_client=no_proxy_client,
+    )
+
+    yield _sse("thinking", {"delta": "正在通过 OpenRouter 分析需求...\n"})
+
+    all_messages = messages
+    if system:
+        all_messages = [{"role": "system", "content": system}, *messages]
+
+    stream = cast(
+        Any,
+        await client.chat.completions.create(
+            model=model or settings.openrouter_model,
+            messages=cast(Any, all_messages),
+            stream=True,
+        ),
+    )
+
+    async for chunk in stream:
+        if chunk.choices and chunk.choices[0].delta.content:
+            yield _sse("content", {"delta": chunk.choices[0].delta.content})
+
+    yield _sse("done", {"usage": {}})
+
+
 async def get_thinking_stream(
     messages: list[dict],
     system: str = "",
@@ -232,6 +270,8 @@ async def get_thinking_stream(
 ) -> AsyncIterator[str]:
     """根据 settings.llm_provider 选择适配器。"""
     selected_provider = (provider or settings.llm_provider).lower()
+    if selected_provider == "openrouter":
+        return openrouter_thinking_stream(messages, system, model)
     if selected_provider == "anthropic":
         return anthropic_thinking_stream(messages, system, model)
     if selected_provider == "zhipu":
@@ -246,6 +286,7 @@ _PROVIDER_FUNCS = {
     "anthropic": anthropic_thinking_stream,
     "zhipu": zhipu_thinking_stream,
     "dashscope": dashscope_thinking_stream,
+    "openrouter": openrouter_thinking_stream,
 }
 
 

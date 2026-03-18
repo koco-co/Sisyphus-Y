@@ -29,6 +29,7 @@ dependencies = [
     "langsmith>=0.2",
     "langchain-core>=0.3",
     "langchain-openai>=0.2",
+    "fastembed>=0.7.4",
 ]
 
 [project.optional-dependencies]

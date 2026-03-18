@@ -52,7 +52,12 @@ class Settings(BaseSettings):
     dashscope_api_key: str = ""
     dashscope_model: str = "qwen-max"
     dashscope_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    openrouter_api_key: str = ""
+    openrouter_model: str = "openrouter/auto"
     llm_fallback_provider: str = "zhipu"
+    embedding_provider: str = ""  # 为空时跟随 llm_provider
+    voyageai_api_key: str = ""
+    voyageai_model: str = "voyage-3.5-lite"
 
 
 settings = Settings()

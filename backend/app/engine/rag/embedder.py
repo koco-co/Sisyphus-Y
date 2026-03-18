@@ -30,9 +30,13 @@ _DIMENSIONS: dict[str, int] = {
     "dashscope": 1024,
     "zhipu": 2048,
     "openai": 1536,
+    "local": 512,
+    "voyageai": 1024,
 }
 
-EMBEDDING_DIMENSION: int = _DIMENSIONS.get(settings.llm_provider, 1024)
+EMBEDDING_DIMENSION: int = _DIMENSIONS.get(
+    settings.embedding_provider or settings.llm_provider, 1024
+)
 
 # ═══════════════════════════════════════════════════════════════════
 # 嵌入 API 调用
@@ -54,7 +58,7 @@ async def embed_texts(texts: list[str], *, batch_size: int = 16) -> list[list[fl
     if not texts:
         return []
 
-    provider = settings.llm_provider
+    provider = settings.embedding_provider or settings.llm_provider
     all_vectors: list[list[float]] = []
 
     for i in range(0, len(texts), batch_size):
@@ -87,6 +91,10 @@ async def _embed_batch(texts: list[str], provider: str) -> list[list[float]]:
         return await _embed_zhipu(texts)
     if provider == "openai":
         return await _embed_openai(texts)
+    if provider == "local":
+        return await _embed_local(texts)
+    if provider == "voyageai":
+        return await _embed_voyageai(texts)
     raise ValueError(f"不支持的嵌入 provider: {provider}")
 
 
@@ -149,3 +157,64 @@ async def _embed_openai(texts: list[str]) -> list[list[float]]:
         data = resp.json()
 
     return [item["embedding"] for item in sorted(data["data"], key=lambda x: x["index"])]
+
+
+async def _embed_voyageai(texts: list[str]) -> list[list[float]]:
+    """Voyage AI voyage-3.5-lite（REST API）— 带重试。"""
+    url = "https://api.voyageai.com/v1/embeddings"
+    headers = {
+        "Authorization": f"Bearer {settings.voyageai_api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": settings.voyageai_model,
+        "input": texts,
+        "input_type": "document",
+    }
+
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            async with httpx.AsyncClient(timeout=_TIMEOUT, trust_env=False) as client:
+                resp = await client.post(url, json=payload, headers=headers)
+                resp.raise_for_status()
+                data = resp.json()
+            return [item["embedding"] for item in sorted(data["data"], key=lambda x: x["index"])]
+        except httpx.HTTPStatusError as e:
+            last_error = e
+            if e.response.status_code == 429 and attempt < 2:
+                wait = 2 ** (attempt + 1)
+                logger.warning("Voyage AI 429, %ds 后重试 (attempt %d/3)", wait, attempt + 1)
+                await asyncio.sleep(wait)
+            else:
+                raise
+    raise RuntimeError(f"Voyage AI 嵌入失败: {last_error}")
+
+
+# ── 本地嵌入（fastembed + ONNX，无需 API Key） ──────────────────
+
+_LOCAL_MODEL: object | None = None
+_LOCAL_MODEL_NAME = "BAAI/bge-small-zh-v1.5"
+
+
+def _get_local_model():
+    """懒加载 fastembed 模型（首次加载约 2s）。"""
+    global _LOCAL_MODEL  # noqa: PLW0603
+    if _LOCAL_MODEL is None:
+        from fastembed import TextEmbedding
+
+        _LOCAL_MODEL = TextEmbedding(_LOCAL_MODEL_NAME)
+        logger.info("本地嵌入模型已加载: %s", _LOCAL_MODEL_NAME)
+    return _LOCAL_MODEL
+
+
+async def _embed_local(texts: list[str]) -> list[list[float]]:
+    """本地嵌入 — fastembed (ONNX Runtime)，适用于无 API Key 场景。"""
+    import numpy as np
+
+    def _run():
+        model = _get_local_model()
+        embeddings = list(model.embed(texts))
+        return [e.tolist() if isinstance(e, np.ndarray) else list(e) for e in embeddings]
+
+    return await asyncio.to_thread(_run)
