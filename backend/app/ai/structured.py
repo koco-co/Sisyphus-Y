@@ -48,11 +48,17 @@ class TestCaseList(BaseModel):
 
 def _build_structured_llm() -> Any:
     """构建带结构化输出的 LangChain LLM 实例（GLM-5 OpenAI 兼容接口）。"""
+    import httpx
+
+    http_client = httpx.Client(proxy=None, trust_env=False)
+    async_http_client = httpx.AsyncClient(proxy=None, trust_env=False)
     return ChatOpenAI(
         model="glm-5",
         api_key=settings.zhipu_api_key,
         base_url="https://open.bigmodel.cn/api/paas/v4/",
         temperature=0.3,
+        http_client=http_client,
+        http_async_client=async_http_client,
     ).with_structured_output(TestCaseList)
 
 
