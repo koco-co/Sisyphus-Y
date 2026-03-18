@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# Claude Instructions — Sisyphus Case Platform
+# Claude Instructions — Sisyphus-Y
 
 ## Interaction Language
 
@@ -10,7 +10,7 @@ Always respond to me in Simplified Chinese (简体中文). This applies to code 
 
 ## 项目概述
 
-**Sisyphus-case-platform**（代号 Sisyphus-Y）是 AI 驱动的企业级功能测试用例自动生成平台，面向数据中台场景。
+**Sisyphus-Y** 是 AI 驱动的企业级功能测试用例自动生成平台，面向数据中台场景。
 
 核心理念：显式拆分「测什么」（M04 测试点/场景地图）和「怎么测」（M05 用例步骤），通过评审节点前置拦截方向错误，构建 需求录入 → 需求分析 → 测试点确认 → 用例生成 → 执行回流 的完整测试生命周期。
 

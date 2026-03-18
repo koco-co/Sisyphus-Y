@@ -27,7 +27,7 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: 'Sisyphus · 智能测试用例平台',
+  title: 'Sisyphus-Y · 智能测试用例平台',
   description: 'AI 驱动的企业级功能测试用例自动生成平台',
 };
 

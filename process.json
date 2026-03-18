@@ -1,0 +1,101 @@
+{
+  "project": "Sisyphus-Y",
+  "version": "2.1.0",
+  "mode": "delivery-acceptance-remediation",
+  "last_updated": "2026-03-18T14:30:00+08:00",
+  "summary": {
+    "goal": "完成全站交付验收、问题梳理、关键体验修复与文档事实收敛",
+    "current_focus": "全站浏览器验收与关键模块收敛",
+    "accepted": false
+  },
+  "phases": [
+    {
+      "id": "phase-1",
+      "title": "进度模型与计划底座",
+      "status": "completed",
+      "items": [
+        {
+          "id": "P1-001",
+          "title": "升级 progress.json 为三轨交付模型",
+          "status": "completed"
+        },
+        {
+          "id": "P1-002",
+          "title": "补充 process.json 开发阶段状态",
+          "status": "completed"
+        },
+        {
+          "id": "P1-003",
+          "title": "增强前端进度大盘映射逻辑",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "title": "全站浏览器验收",
+      "status": "in_progress",
+      "items": [
+        {
+          "id": "P2-001",
+          "title": "启动前后端与依赖服务",
+          "status": "completed"
+        },
+        {
+          "id": "P2-002",
+          "title": "完成所有现有入口的浏览器实测",
+          "status": "in_progress"
+        },
+        {
+          "id": "P2-003",
+          "title": "把问题逐项回写 progress.json",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "title": "关键问题修复",
+      "status": "pending",
+      "items": [
+        {
+          "id": "P3-001",
+          "title": "优先修复工作台用例生成体验",
+          "status": "in_progress"
+        },
+        {
+          "id": "P3-002",
+          "title": "收敛导航与模块暴露不一致",
+          "status": "in_progress"
+        },
+        {
+          "id": "P3-003",
+          "title": "修复 markdown 与图片回显问题",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "title": "文档收敛与最终回归",
+      "status": "pending",
+      "items": [
+        {
+          "id": "P4-001",
+          "title": "统一更新 README、CLAUDE、AGENTS、copilot-instructions",
+          "status": "pending"
+        },
+        {
+          "id": "P4-002",
+          "title": "补充修复验证证据",
+          "status": "pending"
+        },
+        {
+          "id": "P4-003",
+          "title": "完成 lint、typecheck 与主流程回归",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import {
   BookOpen,
   ClipboardList,
@@ -12,32 +12,33 @@ import {
   Sun,
   Trash2,
   Wand2,
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
-import { GlobalSearch, SearchTrigger } from '@/components/ui/GlobalSearch';
-import { OnboardingGuideButton } from '@/components/ui/OnboardingGuide';
-import ProgressDashboard from '@/components/ui/ProgressDashboard';
-import { UserMenu } from '@/components/ui/UserMenu';
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { GlobalSearch, SearchTrigger } from "@/components/ui/GlobalSearch";
+import { OnboardingGuideButton } from "@/components/ui/OnboardingGuide";
+import ProgressDashboard from "@/components/ui/ProgressDashboard";
+import { UserMenu } from "@/components/ui/UserMenu";
+import { NotificationBell } from "./_components/NotificationBell";
 
 const navGroups = [
   {
     items: [
-      { href: '/', label: '仪表盘', icon: LayoutDashboard },
-      { href: '/analysis', label: '分析台', icon: FolderSearch },
-      { href: '/workbench', label: '工作台', icon: Wand2 },
-      { href: '/diff', label: '需求Diff', icon: GitCompareArrows },
-      { href: '/testcases', label: '用例库', icon: ClipboardList },
+      { href: "/", label: "仪表盘", icon: LayoutDashboard },
+      { href: "/analysis", label: "分析台", icon: FolderSearch },
+      { href: "/workbench", label: "工作台", icon: Wand2 },
+      { href: "/diff", label: "需求Diff", icon: GitCompareArrows },
+      { href: "/testcases", label: "用例库", icon: ClipboardList },
     ],
   },
   {
     items: [
-      { href: '/templates', label: '模板库', icon: LayoutTemplate },
-      { href: '/knowledge', label: '知识库', icon: BookOpen },
-      { href: '/recycle', label: '回收站', icon: Trash2 },
-      { href: '/settings', label: '设置', icon: Settings },
+      { href: "/templates", label: "模板库", icon: LayoutTemplate },
+      { href: "/knowledge", label: "知识库", icon: BookOpen },
+      { href: "/recycle", label: "回收站", icon: Trash2 },
+      { href: "/settings", label: "设置", icon: Settings },
     ],
   },
 ];
@@ -50,9 +51,9 @@ function ThemeToggle() {
   if (!mounted) return <div className="theme-toggle" />;
 
   const cycleTheme = () => {
-    if (theme === 'dark') setTheme('light');
-    else if (theme === 'light') setTheme('system');
-    else setTheme('dark');
+    if (theme === "dark") setTheme("light");
+    else if (theme === "light") setTheme("system");
+    else setTheme("dark");
   };
 
   return (
@@ -60,22 +61,35 @@ function ThemeToggle() {
       type="button"
       className="theme-toggle"
       onClick={cycleTheme}
-      aria-label={`切换主题，当前: ${theme === 'system' ? '跟随系统' : theme === 'dark' ? '深色' : '浅色'}`}
-      title={`当前: ${theme === 'system' ? '跟随系统' : theme === 'dark' ? '深色' : '浅色'}`}
+      aria-label={`切换主题，当前: ${theme === "system" ? "跟随系统" : theme === "dark" ? "深色" : "浅色"}`}
+      title={`当前: ${theme === "system" ? "跟随系统" : theme === "dark" ? "深色" : "浅色"}`}
     >
-      {resolvedTheme === 'dark' ? <Moon /> : theme === 'system' ? <Monitor /> : <Sun />}
+      {resolvedTheme === "dark" ? (
+        <Moon />
+      ) : theme === "system" ? (
+        <Monitor />
+      ) : (
+        <Sun />
+      )}
     </button>
   );
 }
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export default function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
 
   return (
     <div className="min-w-[1280px]">
       <nav className="top-nav" aria-label="主导航">
-        <span className="nav-title">Sisyphus</span>
-        <span className="pill pill-green" style={{ marginRight: 8, fontSize: 10 }}>
+        <span className="nav-title">Sisyphus-Y</span>
+        <span
+          className="pill pill-green"
+          style={{ marginRight: 8, fontSize: 10 }}
+        >
           v2.0
         </span>
 
@@ -84,17 +98,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           const items = group.items.map((t) => {
             const Icon = t.icon;
             const isActive =
-              t.href === '/'
-                ? pathname === '/'
-                : t.href === '/analysis'
-                  ? pathname.startsWith('/analysis') ||
-                    pathname.startsWith('/diagnosis') ||
-                    pathname.startsWith('/scene-map') ||
-                    pathname.startsWith('/requirements') ||
-                    pathname.startsWith('/coverage')
+              t.href === "/"
+                ? pathname === "/"
+                : t.href === "/analysis"
+                  ? pathname.startsWith("/analysis") ||
+                    pathname.startsWith("/diagnosis") ||
+                    pathname.startsWith("/scene-map") ||
+                    pathname.startsWith("/requirements") ||
+                    pathname.startsWith("/coverage")
                   : pathname === t.href || pathname.startsWith(`${t.href}/`);
             return (
-              <Link key={t.href} href={t.href} className={`tab${isActive ? ' active' : ''}`}>
+              <Link
+                key={t.href}
+                href={t.href}
+                className={`tab${isActive ? " active" : ""}`}
+              >
                 <Icon />
                 {t.label}
               </Link>
@@ -108,8 +126,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               style={{
                 width: 1,
                 height: 20,
-                background: 'var(--border)',
-                margin: '0 4px',
+                background: "var(--border)",
+                margin: "0 4px",
                 flexShrink: 0,
               }}
             />,
@@ -119,6 +137,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
         <div className="nav-actions">
           <SearchTrigger />
+          <NotificationBell />
           <ThemeToggle />
           <UserMenu />
         </div>

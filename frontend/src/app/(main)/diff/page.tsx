@@ -10,6 +10,7 @@ import type { DiffHistoryItem } from '@/stores/diff-store';
 import { AffectedCases } from './_components/AffectedCases';
 import { DiffView } from './_components/DiffView';
 import { RegenerateButton } from './_components/RegenerateButton';
+import { RequirementCascader } from './_components/RequirementCascader';
 import { SemanticAnalysis } from './_components/SemanticAnalysis';
 import { SuggestedPoints } from './_components/SuggestedPoints';
 import { VersionSelector } from './_components/VersionSelector';
@@ -49,23 +50,8 @@ function LeftColumn() {
       </div>
 
       <div className="p-3 space-y-3 flex-1 overflow-y-auto">
-        {/* Requirement ID input */}
-        <div>
-          <label
-            htmlFor="diff-requirement-id"
-            className="block text-[10px] font-semibold text-text3 uppercase tracking-wider mb-1"
-          >
-            需求 ID
-          </label>
-          <input
-            id="diff-requirement-id"
-            type="text"
-            value={requirementId ?? ''}
-            onChange={(e) => setRequirementId(e.target.value || null)}
-            placeholder="输入需求 UUID"
-            className="w-full px-3 py-1.5 text-[12.5px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 outline-none focus:border-sy-accent transition-colors"
-          />
-        </div>
+        {/* Three-level cascading requirement selector */}
+        <RequirementCascader value={requirementId ?? null} onChange={(id) => setRequirementId(id)} />
 
         {/* Version selector */}
         <VersionSelector />

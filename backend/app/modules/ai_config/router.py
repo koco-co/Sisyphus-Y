@@ -16,7 +16,11 @@ from app.modules.ai_config.schemas import (
     PromptConfigUpdate,
     PromptHistoryResponse,
 )
-from app.modules.ai_config.service import AiConfigService, ModelConfigService, PromptConfigService
+from app.modules.ai_config.service import (
+    AiConfigService,
+    ModelConfigService,
+    PromptConfigService,
+)
 
 router = APIRouter(prefix="/ai-config", tags=["ai-config"])
 
@@ -63,10 +67,26 @@ async def get_providers() -> dict:
                         "name": "GLM-4-Flash",
                         "description": "速度最快，适合实时对话",
                     },
-                    {"id": "glm-4", "name": "GLM-4", "description": "综合能力强，性价比高"},
-                    {"id": "glm-4-air", "name": "GLM-4-Air", "description": "轻量版，低延迟"},
-                    {"id": "glm-4-airx", "name": "GLM-4-AirX", "description": "极速推理版"},
-                    {"id": "glm-4-long", "name": "GLM-4-Long", "description": "超长上下文（128K）"},
+                    {
+                        "id": "glm-4",
+                        "name": "GLM-4",
+                        "description": "综合能力强，性价比高",
+                    },
+                    {
+                        "id": "glm-4-air",
+                        "name": "GLM-4-Air",
+                        "description": "轻量版，低延迟",
+                    },
+                    {
+                        "id": "glm-4-airx",
+                        "name": "GLM-4-AirX",
+                        "description": "极速推理版",
+                    },
+                    {
+                        "id": "glm-4-long",
+                        "name": "GLM-4-Long",
+                        "description": "超长上下文（128K）",
+                    },
                 ],
             },
             {
@@ -81,9 +101,21 @@ async def get_providers() -> dict:
                         "description": "最高质量，复杂推理首选",
                         "recommended": True,
                     },
-                    {"id": "qwen-plus", "name": "Qwen-Plus", "description": "质量与速度均衡"},
-                    {"id": "qwen-turbo", "name": "Qwen-Turbo", "description": "高速低成本"},
-                    {"id": "qwen-long", "name": "Qwen-Long", "description": "超长上下文（1M Token）"},
+                    {
+                        "id": "qwen-plus",
+                        "name": "Qwen-Plus",
+                        "description": "质量与速度均衡",
+                    },
+                    {
+                        "id": "qwen-turbo",
+                        "name": "Qwen-Turbo",
+                        "description": "高速低成本",
+                    },
+                    {
+                        "id": "qwen-long",
+                        "name": "Qwen-Long",
+                        "description": "超长上下文（1M Token）",
+                    },
                 ],
             },
             {
@@ -92,8 +124,17 @@ async def get_providers() -> dict:
                 "description": "DeepSeek 系列模型，推理和编程能力出色",
                 "api_key_placeholder": "sk-xxxxxxxxxxxxxxxx",
                 "models": [
-                    {"id": "deepseek-chat", "name": "DeepSeek-V3", "description": "通用对话模型", "recommended": True},
-                    {"id": "deepseek-reasoner", "name": "DeepSeek-R1", "description": "深度推理模型"},
+                    {
+                        "id": "deepseek-chat",
+                        "name": "DeepSeek-V3",
+                        "description": "通用对话模型",
+                        "recommended": True,
+                    },
+                    {
+                        "id": "deepseek-reasoner",
+                        "name": "DeepSeek-R1",
+                        "description": "深度推理模型",
+                    },
                 ],
             },
             {
@@ -102,14 +143,22 @@ async def get_providers() -> dict:
                 "description": "超长上下文，中文理解优秀",
                 "api_key_placeholder": "sk-xxxxxxxxxxxxxxxx",
                 "models": [
-                    {"id": "moonshot-v1-8k", "name": "Moonshot-v1-8K", "description": "标准版"},
+                    {
+                        "id": "moonshot-v1-8k",
+                        "name": "Moonshot-v1-8K",
+                        "description": "标准版",
+                    },
                     {
                         "id": "moonshot-v1-32k",
                         "name": "Moonshot-v1-32K",
                         "description": "长上下文",
                         "recommended": True,
                     },
-                    {"id": "moonshot-v1-128k", "name": "Moonshot-v1-128K", "description": "超长上下文"},
+                    {
+                        "id": "moonshot-v1-128k",
+                        "name": "Moonshot-v1-128K",
+                        "description": "超长上下文",
+                    },
                 ],
             },
             {
@@ -118,10 +167,32 @@ async def get_providers() -> dict:
                 "description": "兼容 OpenAI 协议的模型",
                 "api_key_placeholder": "sk-xxxxxxxxxxxxxxxx",
                 "models": [
-                    {"id": "gpt-4o", "name": "GPT-4o", "description": "多模态旗舰模型", "recommended": True},
-                    {"id": "gpt-4o-mini", "name": "GPT-4o mini", "description": "低成本版"},
-                    {"id": "gpt-4-turbo", "name": "GPT-4 Turbo", "description": "强推理，128K 上下文"},
+                    {
+                        "id": "gpt-4o",
+                        "name": "GPT-4o",
+                        "description": "多模态旗舰模型",
+                        "recommended": True,
+                    },
+                    {
+                        "id": "gpt-4o-mini",
+                        "name": "GPT-4o mini",
+                        "description": "低成本版",
+                    },
+                    {
+                        "id": "gpt-4-turbo",
+                        "name": "GPT-4 Turbo",
+                        "description": "强推理，128K 上下文",
+                    },
                 ],
+            },
+            {
+                "id": "openrouter",
+                "name": "OpenRouter",
+                "description": "统一接入多家模型供应商，支持直接填写自定义模型 ID",
+                "api_key_placeholder": "sk-or-v1-xxxxxxxxxxxxxxxx",
+                "requires_base_url": True,
+                "default_base_url": "https://openrouter.ai/api/v1",
+                "models": [],
             },
             {
                 "id": "ollama",
@@ -131,9 +202,18 @@ async def get_providers() -> dict:
                 "requires_base_url": True,
                 "default_base_url": "http://localhost:11434",
                 "models": [
-                    {"id": "llama3", "name": "Llama 3", "description": "Meta 开源旗舰模型", "recommended": True},
+                    {
+                        "id": "llama3",
+                        "name": "Llama 3",
+                        "description": "Meta 开源旗舰模型",
+                        "recommended": True,
+                    },
                     {"id": "qwen2", "name": "Qwen 2", "description": "通义千问开源版"},
-                    {"id": "deepseek-coder", "name": "DeepSeek Coder", "description": "编程优化模型"},
+                    {
+                        "id": "deepseek-coder",
+                        "name": "DeepSeek Coder",
+                        "description": "编程优化模型",
+                    },
                 ],
             },
             {
@@ -150,21 +230,27 @@ async def get_providers() -> dict:
 
 
 @router.get("/{config_id}", response_model=AiConfigResponse)
-async def get_config(config_id: uuid.UUID, session: AsyncSessionDep) -> AiConfigResponse:
+async def get_config(
+    config_id: uuid.UUID, session: AsyncSessionDep
+) -> AiConfigResponse:
     service = AiConfigService(session)
     config = await service.get_config(config_id)
     return AiConfigResponse.model_validate(config)
 
 
 @router.post("", response_model=AiConfigResponse, status_code=status.HTTP_201_CREATED)
-async def create_config(data: AiConfigCreate, session: AsyncSessionDep) -> AiConfigResponse:
+async def create_config(
+    data: AiConfigCreate, session: AsyncSessionDep
+) -> AiConfigResponse:
     service = AiConfigService(session)
     config = await service.create_config(data)
     return AiConfigResponse.model_validate(config)
 
 
 @router.patch("/{config_id}", response_model=AiConfigResponse)
-async def update_config(config_id: uuid.UUID, data: AiConfigUpdate, session: AsyncSessionDep) -> AiConfigResponse:
+async def update_config(
+    config_id: uuid.UUID, data: AiConfigUpdate, session: AsyncSessionDep
+) -> AiConfigResponse:
     service = AiConfigService(session)
     config = await service.update_config(config_id, data)
     return AiConfigResponse.model_validate(config)
@@ -234,8 +320,12 @@ async def list_model_configs(session: AsyncSessionDep) -> list[ModelConfigRespon
     return [ModelConfigResponse.model_validate(svc.serialize(m)) for m in items]
 
 
-@router.post("/models", response_model=ModelConfigResponse, status_code=status.HTTP_201_CREATED)
-async def create_model_config(data: ModelConfigCreate, session: AsyncSessionDep) -> ModelConfigResponse:
+@router.post(
+    "/models", response_model=ModelConfigResponse, status_code=status.HTTP_201_CREATED
+)
+async def create_model_config(
+    data: ModelConfigCreate, session: AsyncSessionDep
+) -> ModelConfigResponse:
     svc = ModelConfigService(session)
     item = await svc.create_model(data)
     return ModelConfigResponse.model_validate(svc.serialize(item))
@@ -251,13 +341,39 @@ async def update_model_config(
 
 
 @router.delete("/models/{model_config_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_model_config(model_config_id: uuid.UUID, session: AsyncSessionDep) -> None:
+async def delete_model_config(
+    model_config_id: uuid.UUID, session: AsyncSessionDep
+) -> None:
     svc = ModelConfigService(session)
     await svc.delete_model(model_config_id)
 
 
+@router.get("/models/{model_config_id}/reveal-key")
+async def reveal_model_api_key(
+    model_config_id: uuid.UUID, session: AsyncSessionDep
+) -> dict:
+    """Decrypt and return the full API key for a model configuration."""
+    from app.core.encryption import decrypt_api_key
+
+    svc = ModelConfigService(session)
+    item = await svc.get_model(model_config_id)
+    if not item.api_key_encrypted:
+        return {"api_key": ""}
+    try:
+        plain_key = decrypt_api_key(item.api_key_encrypted)
+        return {"api_key": plain_key}
+    except Exception:
+        from fastapi import HTTPException
+
+        raise HTTPException(
+            status_code=500, detail="无法解密 API Key，请检查服务器密钥配置"
+        )
+
+
 @router.post("/models/{model_config_id}/test")
-async def test_model_config(model_config_id: uuid.UUID, session: AsyncSessionDep) -> dict:
+async def test_model_config(
+    model_config_id: uuid.UUID, session: AsyncSessionDep
+) -> dict:
     """Test connection for a specific model configuration."""
     svc = ModelConfigService(session)
     item = await svc.get_model(model_config_id)
@@ -325,7 +441,9 @@ async def list_prompt_configs(session: AsyncSessionDep) -> list[dict]:
 
 
 @router.get("/prompts/{module}", response_model=PromptConfigResponse | None)
-async def get_prompt_config(module: str, session: AsyncSessionDep) -> PromptConfigResponse | None:
+async def get_prompt_config(
+    module: str, session: AsyncSessionDep
+) -> PromptConfigResponse | None:
     svc = PromptConfigService(session)
     item = await svc.get_prompt(module)
     if not item:
@@ -334,7 +452,9 @@ async def get_prompt_config(module: str, session: AsyncSessionDep) -> PromptConf
 
 
 @router.put("/prompts/{module}", response_model=PromptConfigResponse)
-async def upsert_prompt_config(module: str, data: PromptConfigUpdate, session: AsyncSessionDep) -> PromptConfigResponse:
+async def upsert_prompt_config(
+    module: str, data: PromptConfigUpdate, session: AsyncSessionDep
+) -> PromptConfigResponse:
     svc = PromptConfigService(session)
     item = await svc.upsert_prompt(module, data.system_prompt, data.change_reason)
     return PromptConfigResponse.model_validate(item)
@@ -355,14 +475,20 @@ async def reset_prompt_config_post(module: str, session: AsyncSessionDep) -> Non
 
 
 @router.get("/prompts/{module}/history", response_model=list[PromptHistoryResponse])
-async def get_prompt_history(module: str, session: AsyncSessionDep) -> list[PromptHistoryResponse]:
+async def get_prompt_history(
+    module: str, session: AsyncSessionDep
+) -> list[PromptHistoryResponse]:
     svc = PromptConfigService(session)
     items = await svc.get_history(module)
     return [PromptHistoryResponse.model_validate(h) for h in items]
 
 
-@router.post("/prompts/{module}/rollback/{history_id}", response_model=PromptConfigResponse)
-async def rollback_prompt_config(module: str, history_id: uuid.UUID, session: AsyncSessionDep) -> PromptConfigResponse:
+@router.post(
+    "/prompts/{module}/rollback/{history_id}", response_model=PromptConfigResponse
+)
+async def rollback_prompt_config(
+    module: str, history_id: uuid.UUID, session: AsyncSessionDep
+) -> PromptConfigResponse:
     svc = PromptConfigService(session)
     item = await svc.rollback_prompt(module, history_id)
     return PromptConfigResponse.model_validate(item)

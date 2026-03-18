@@ -1,7 +1,8 @@
 'use client';
 
-import { Bot, Check, ChevronDown, Key, Loader2, Plus, Save, Sparkles, Trash2 } from 'lucide-react';
+import { Bot, Check, ChevronDown, Eye, EyeOff, Loader2, Plus, Save, Sparkles, Trash2, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { ConnectionTestButton } from '@/components/ui/ConnectionTestButton';
 import { useAiConfig } from '@/hooks/useAiConfig';
 import {
@@ -36,6 +37,7 @@ interface ModelDraft {
   baseUrl: string;
   apiKey: string;
   apiKeyMasked: string | null;
+  apiKeyVisible: boolean;
   temperature: number;
   maxTokens: string;
   purposeTagsText: string;
@@ -79,6 +81,7 @@ function buildEmptyDraft(
       : getBaseUrlFromEffectiveConfig(effectiveConfig ?? null),
     apiKey: '',
     apiKeyMasked: null,
+    apiKeyVisible: false,
     temperature: effectiveConfig?.llm_temperature ?? 0.7,
     maxTokens:
       typeof effectiveConfig?.output_preference?.max_tokens === 'number'
@@ -98,6 +101,7 @@ function buildDraftFromModel(model: ModelConfigRecord): ModelDraft {
     baseUrl: model.base_url ?? '',
     apiKey: model.api_key_masked ?? '',
     apiKeyMasked: model.api_key_masked,
+    apiKeyVisible: false,
     temperature: model.temperature,
     maxTokens: model.max_tokens ? String(model.max_tokens) : '',
     purposeTagsText: model.purpose_tags.join(', '),
@@ -151,6 +155,8 @@ export function AIModelSettings() {
   const [draft, setDraft] = useState<ModelDraft>(() => buildEmptyDraft());
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [revealingKey, setRevealingKey] = useState(false);
 
   useEffect(() => {
     api
@@ -234,6 +240,7 @@ export function AIModelSettings() {
     setSelectedModelId(model.id);
     setDraft(buildDraftFromModel(model));
     setSaved(false);
+    setSheetOpen(true);
   };
 
   const handleCreateNew = () => {
@@ -241,6 +248,7 @@ export function AIModelSettings() {
     setSelectedModelId(null);
     setDraft(buildEmptyDraft(activeProvider ?? defaultProvider, effectiveConfig));
     setSaved(false);
+    setSheetOpen(true);
   };
 
   const handleProviderChange = (providerId: string) => {
@@ -329,6 +337,7 @@ export function AIModelSettings() {
     setSelectedModelId(result.id);
     setDraft(buildDraftFromModel(result));
     setSaved(true);
+    setSheetOpen(false);
     window.setTimeout(() => setSaved(false), 2000);
   };
 
@@ -347,6 +356,24 @@ export function AIModelSettings() {
     setSelectedModelId(null);
     setEditorMode('edit');
     setSaved(false);
+    setSheetOpen(false);
+  };
+
+  const handleRevealKey = async () => {
+    if (!selectedModelId) return;
+    if (draft.apiKeyVisible) {
+      setDraft((prev) => ({ ...prev, apiKeyVisible: false }));
+      return;
+    }
+    setRevealingKey(true);
+    try {
+      const data = await api.get<{ api_key: string }>(`/ai-config/models/${selectedModelId}/reveal-key`);
+      setDraft((prev) => ({ ...prev, apiKey: data.api_key, apiKeyVisible: true }));
+    } catch {
+      toast.error('无法获取 API Key，请检查服务器配置');
+    } finally {
+      setRevealingKey(false);
+    }
   };
 
   return (
@@ -363,7 +390,7 @@ export function AIModelSettings() {
           </div>
         )}
 
-        <div className="mb-6 grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+        <div className="mb-6">
           <div className="card">
             <div className="mb-3 flex items-center justify-between gap-2">
               <div>
@@ -448,26 +475,47 @@ export function AIModelSettings() {
               )}
             </div>
           </div>
+        </div>
 
-          <div className="card">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[13px] font-semibold text-sy-text">
-                  {editorMode === 'create' ? '新建模型配置' : selectedModel?.name || '编辑模型配置'}
-                </p>
-                <p className="mt-1 text-[11px] text-sy-text-3">
-                  保存后该配置会出现在左侧列表；设为默认时会同步更新当前全局生效模型。
-                </p>
+        {/* Model Config Sheet Overlay */}
+        {sheetOpen && (
+          <div
+            className="fixed inset-0 z-50 flex justify-end"
+            onClick={() => setSheetOpen(false)}
+          >
+            <div
+              className="relative flex h-full w-full max-w-[560px] flex-col overflow-y-auto border-l border-sy-border bg-sy-bg-1 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Sheet Header */}
+              <div className="flex items-start justify-between gap-3 border-b border-sy-border px-6 py-4">
+                <div>
+                  <p className="text-[14px] font-semibold text-sy-text">
+                    {editorMode === 'create' ? '新建模型配置' : selectedModel?.name || '编辑模型配置'}
+                  </p>
+                  <p className="mt-1 text-[11px] text-sy-text-3">
+                    保存后配置出现在列表；设为默认时会同步更新全局生效模型。
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {selectedModel?.id && (
+                    <ConnectionTestButton
+                      testUrl={`/api/ai-config/models/${selectedModel.id}/test`}
+                      label="测试连接"
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSheetOpen(false)}
+                    className="flex h-7 w-7 items-center justify-center rounded-md border border-sy-border text-sy-text-3 hover:border-sy-border-2 hover:text-sy-text"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
 
-              {selectedModel?.id && (
-                <ConnectionTestButton
-                  testUrl={`/api/ai-config/models/${selectedModel.id}/test`}
-                  label="测试此模型"
-                />
-              )}
-            </div>
-
+              {/* Sheet Body (form) */}
+              <div className="flex-1 px-6 py-5">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label
@@ -598,16 +646,30 @@ export function AIModelSettings() {
                   <div className="relative flex-1">
                     <input
                       id="model-config-api-key"
-                      type="text"
+                      type={draft.apiKeyVisible ? 'text' : 'password'}
                       value={draft.apiKey}
                       onChange={(event) =>
-                        setDraft((prev) => ({ ...prev, apiKey: event.target.value }))
+                        setDraft((prev) => ({ ...prev, apiKey: event.target.value, apiKeyVisible: true }))
                       }
                       className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
                       placeholder={activeProvider?.api_key_placeholder || 'sk-xxxxxxxx'}
                     />
                   </div>
-                  <Key className="h-4 w-4 text-sy-text-3" />
+                  <button
+                    type="button"
+                    onClick={() => void handleRevealKey()}
+                    disabled={revealingKey || (!selectedModelId && editorMode === 'edit')}
+                    title={draft.apiKeyVisible ? '隐藏 API Key' : '显示完整 API Key'}
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-sy-border bg-sy-bg-2 text-sy-text-3 transition-colors hover:border-sy-border-2 hover:text-sy-text disabled:opacity-40"
+                  >
+                    {revealingKey ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : draft.apiKeyVisible ? (
+                      <EyeOff className="h-3.5 w-3.5" />
+                    ) : (
+                      <Eye className="h-3.5 w-3.5" />
+                    )}
+                  </button>
                 </div>
                 <p className="mt-1 text-[11px] text-sy-text-3">
                   {draft.apiKeyMasked
@@ -684,77 +746,65 @@ export function AIModelSettings() {
                 />
               </div>
             </div>
+          </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-sy-border pt-4">
-              <label className="inline-flex items-center gap-2 text-[12px] text-sy-text-2">
-                <input
-                  type="checkbox"
-                  checked={draft.isEnabled}
-                  onChange={(event) =>
-                    setDraft((prev) => ({ ...prev, isEnabled: event.target.checked }))
-                  }
-                  className="h-4 w-4 rounded border-sy-border bg-sy-bg-2 accent-sy-accent"
-                />
-                启用此配置
-              </label>
-
-              <label className="inline-flex items-center gap-2 text-[12px] text-sy-text-2">
-                <input
-                  type="checkbox"
-                  checked={draft.isDefault}
-                  onChange={(event) =>
-                    setDraft((prev) => ({ ...prev, isDefault: event.target.checked }))
-                  }
-                  className="h-4 w-4 rounded border-sy-border bg-sy-bg-2 accent-sy-accent"
-                />
-                设为默认模型
-              </label>
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-sy-border pt-4">
-              <div className="text-[12px] text-sy-text-3">
-                当前生效模型：
-                <span className="ml-1 text-sy-text-2">
-                  {effectiveConfig?.llm_model ?? '未设置'}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {editorMode === 'edit' && selectedModelId && (
-                  <button
-                    type="button"
-                    onClick={() => void handleDelete()}
-                    disabled={saving || deleting}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-sy-danger/30 bg-sy-danger/10 px-3 py-1.5 text-[12px] font-medium text-sy-danger transition-colors hover:bg-sy-danger/15 disabled:opacity-60"
-                  >
-                    {deleting ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-3.5 w-3.5" />
+              {/* Sheet Footer */}
+              <div className="border-t border-sy-border px-6 py-4">
+                <div className="flex flex-wrap items-center gap-4 pb-3">
+                  <label className="inline-flex items-center gap-2 text-[12px] text-sy-text-2">
+                    <input
+                      type="checkbox"
+                      checked={draft.isEnabled}
+                      onChange={(event) =>
+                        setDraft((prev) => ({ ...prev, isEnabled: event.target.checked }))
+                      }
+                      className="h-4 w-4 rounded border-sy-border bg-sy-bg-2 accent-sy-accent"
+                    />
+                    启用此配置
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-[12px] text-sy-text-2">
+                    <input
+                      type="checkbox"
+                      checked={draft.isDefault}
+                      onChange={(event) =>
+                        setDraft((prev) => ({ ...prev, isDefault: event.target.checked }))
+                      }
+                      className="h-4 w-4 rounded border-sy-border bg-sy-bg-2 accent-sy-accent"
+                    />
+                    设为默认模型
+                  </label>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[11px] text-sy-text-3">
+                    生效：<span className="text-sy-text-2">{effectiveConfig?.llm_model ?? '未设置'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {editorMode === 'edit' && selectedModelId && (
+                      <button
+                        type="button"
+                        onClick={() => void handleDelete()}
+                        disabled={saving || deleting}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-sy-danger/30 bg-sy-danger/10 px-3 py-1.5 text-[12px] font-medium text-sy-danger transition-colors hover:bg-sy-danger/15 disabled:opacity-60"
+                      >
+                        {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        删除
+                      </button>
                     )}
-                    删除
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => void handleSave()}
-                  disabled={isSaveDisabled}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-sy-accent px-3 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-sy-accent-2 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {saving ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : saved ? (
-                    <Check className="h-3.5 w-3.5" />
-                  ) : (
-                    <Save className="h-3.5 w-3.5" />
-                  )}
-                  {saved ? '已保存' : saving ? '保存中...' : '保存模型配置'}
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleSave()}
+                      disabled={isSaveDisabled}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-sy-accent px-3 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-sy-accent-2 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : saved ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
+                      {saved ? '已保存' : saving ? '保存中...' : '保存配置'}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="card mb-6">
           <div className="mb-3 flex items-center gap-2">

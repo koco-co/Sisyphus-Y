@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🧪 Sisyphus-case-platform
+# 🧪 Sisyphus-Y
 
 **AI 驱动的企业级功能测试用例自动生成平台**
 
 *专为数据中台、数据湖仓、实时计算等复杂企业系统设计*
 
-[![Version](https://img.shields.io/badge/version-v2.0.0--rc-blue.svg)](https://github.com/koco-co/Sisyphus-case-platform)
+[![Version](https://img.shields.io/badge/version-v2.0.0--rc-blue.svg)](https://github.com/koco-co/Sisyphus-Y)
 [![License](https://img.shields.io/badge/license-Enterprise-orange.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.12+-3776AB.svg?logo=python&logoColor=white)](https://python.org)
 [![Next.js](https://img.shields.io/badge/Next.js-16+-000000.svg?logo=next.js)](https://nextjs.org)
@@ -16,7 +16,7 @@
 
 <br/>
 
-> 💡 **核心理念**：测试用例生成分为两个本质不同的决策：**「测什么」**（测试点/场景地图）和**「怎么测」**（用例步骤）。Sisyphus-case-platform 显式拆分这两个阶段，通过「需求分析 → 测试点分析确认 → 约束式用例生成 → 变更影响追踪 → 执行回流」形成持续进化的质量飞轮。
+> 💡 **核心理念**：测试用例生成分为两个本质不同的决策：**「测什么」**（测试点/场景地图）和**「怎么测」**（用例步骤）。Sisyphus-Y 显式拆分这两个阶段，通过「需求分析 → 测试点分析确认 → 约束式用例生成 → 变更影响追踪 → 执行回流」形成持续进化的质量飞轮。
 
 <br/>
 
@@ -52,11 +52,11 @@
 
 ## 🎯 产品概述
 
-Sisyphus-case-platform 是一款面向**企业数据中台场景**的 AI 功能测试用例智能生成平台，支持子产品多迭代并行研发模式，覆盖从需求录入、需求分析、测试点分析、用例生成、变更追踪到执行回流的完整测试生命周期。
+Sisyphus-Y 是一款面向**企业数据中台场景**的 AI 功能测试用例智能生成平台，支持子产品多迭代并行研发模式，覆盖从需求录入、需求分析、测试点分析、用例生成、变更追踪到执行回流的完整测试生命周期。
 
 ### 核心痛点对照表
 
-| 挑战 | 传统方式 | Sisyphus-case-platform |
+| 挑战 | 传统方式 | Sisyphus-Y |
 |---|---|---|
 | 需求散乱、格式各异 | 人工整合成大文档，耗时数天 | Requirement Card + 平台自动聚合 |
 | 覆盖方向错了才发现 | 写完几十条用例才发现测错了方向 | **测试点显式评审**，先对齐"测什么"再生成 |
@@ -988,7 +988,7 @@ v2.0.0 GA — 生产就绪
 ### 一键启动（推荐）
 
 ```bash
-git clone https://github.com/koco-co/Sisyphus-case-platform.git && cd Sisyphus-case-platform
+git clone https://github.com/koco-co/Sisyphus-Y.git && cd Sisyphus-Y
 ./init.sh   # 自动完成所有步骤：检查依赖 → 安装 → 启动 Docker → 迁移 → seed → 启动前后端
 ```
 
@@ -997,7 +997,7 @@ git clone https://github.com/koco-co/Sisyphus-case-platform.git && cd Sisyphus-c
 ### 手动分步启动
 
 ```bash
-git clone https://github.com/koco-co/Sisyphus-case-platform.git && cd Sisyphus-case-platform
+git clone https://github.com/koco-co/Sisyphus-Y.git && cd Sisyphus-Y
 cp .env.example .env   # 编辑 .env 填入 OPENAI_API_KEY
 
 docker compose -f docker/docker-compose.yml up -d   # 启动基础设施
@@ -1029,8 +1029,8 @@ IMAGE_ARCHIVE_EXTERNAL=false
 ### 生产 K8s 部署
 
 ```bash
-helm repo add Sisyphus-case-platform https://charts.Sisyphus-case-platform.io
-helm install Sisyphus-case-platform Sisyphus-case-platform/Sisyphus-case-platform \
+helm repo add Sisyphus-Y https://charts.Sisyphus-Y.io
+helm install Sisyphus-Y Sisyphus-Y/Sisyphus-Y \
   --set global.openaiApiKey="sk-..." \
   -f values-production.yaml
 ```
@@ -1054,7 +1054,7 @@ Enterprise License — 商业使用请联系授权
 ---
 
 <div align="center">
-**Sisyphus-case-platform** · AI 驱动的企业级测试用例生成平台
+**Sisyphus-Y** · AI 驱动的企业级测试用例生成平台
 
 *测什么（测试点）先于怎么测（用例），方向对了才是真的快*
 

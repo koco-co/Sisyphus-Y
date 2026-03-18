@@ -43,6 +43,8 @@ def _get_client() -> AsyncQdrantClient:
         _client = AsyncQdrantClient(
             url=settings.qdrant_url,
             timeout=30,
+            proxy=None,
+            trust_env=False,
         )
         logger.info("AsyncQdrant 客户端已连接: %s", settings.qdrant_url)
     return _client
@@ -84,7 +86,9 @@ async def recreate_collection(
         info = await client.get_collection(collection_name=collection_name)
         deleted_points = int(getattr(info, "points_count", 0) or 0)
         await client.delete_collection(collection_name=collection_name)
-        logger.info("删除 Qdrant collection: %s (points=%d)", collection_name, deleted_points)
+        logger.info(
+            "删除 Qdrant collection: %s (points=%d)", collection_name, deleted_points
+        )
 
     await client.create_collection(
         collection_name=collection_name,
@@ -199,7 +203,9 @@ async def retrieve(
             score=hit.score if hit.score is not None else 0.0,
             metadata={
                 "doc_id": hit.payload.get("doc_id", "") if hit.payload else "",
-                "section_path": hit.payload.get("section_path", "") if hit.payload else "",
+                "section_path": (
+                    hit.payload.get("section_path", "") if hit.payload else ""
+                ),
                 "headers": hit.payload.get("headers", []) if hit.payload else [],
                 "chunk_index": hit.payload.get("chunk_index", 0) if hit.payload else 0,
             },
@@ -229,7 +235,9 @@ async def retrieve_as_context(
     parts: list[str] = []
     for i, r in enumerate(results, 1):
         source = r.metadata.get("section_path") or r.metadata.get("doc_id", "未知来源")
-        parts.append(f"### 参考片段 {i}（相似度 {r.score:.2f} | {source}）\n{r.content}")
+        parts.append(
+            f"### 参考片段 {i}（相似度 {r.score:.2f} | {source}）\n{r.content}"
+        )
 
     return "\n\n".join(parts)
 
@@ -275,7 +283,9 @@ async def retrieve_similar_cases(
             content=hit.payload.get("content", "") if hit.payload else "",
             score=hit.score if hit.score is not None else 0.0,
             metadata={
-                "testcase_id": hit.payload.get("testcase_id", "") if hit.payload else "",
+                "testcase_id": (
+                    hit.payload.get("testcase_id", "") if hit.payload else ""
+                ),
                 "title": hit.payload.get("title", "") if hit.payload else "",
                 "product": hit.payload.get("product", "") if hit.payload else "",
                 "module": hit.payload.get("module", "") if hit.payload else "",

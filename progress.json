@@ -1,7 +1,25 @@
 {
   "project": "Sisyphus-Y",
   "version": "2.1.0",
-  "last_updated": "2026-03-17T22:34:39.960060",
+  "last_updated": "2026-03-18T14:30:00+08:00",
+  "meta": {
+    "mode": "delivery-acceptance",
+    "description": "全站交付验收、问题闭环与修复验证统一记录",
+    "tracks": [
+      {
+        "id": "acceptance",
+        "label": "验收任务"
+      },
+      {
+        "id": "issue",
+        "label": "发现的问题"
+      },
+      {
+        "id": "verification",
+        "label": "修复验证"
+      }
+    ]
+  },
   "acceptance_criteria": {
     "all_tasks_passed": false,
     "real_data_loaded": false,
@@ -9,10 +27,10 @@
     "accepted": false
   },
   "stats": {
-    "total": 78,
-    "passed": 53,
+    "total": 81,
+    "passed": 73,
     "failed": 0,
-    "pending": 24,
+    "pending": 7,
     "blocked": 0,
     "manual_required": 1
   },
@@ -1414,10 +1432,7 @@
       "id": "TASK-122",
       "category": "质量保障",
       "title": "权限用例覆盖",
-      "steps": [
-        "对涉及数据操作的功能生成用例",
-        "检查权限相关用例是否覆盖"
-      ],
+      "steps": ["对涉及数据操作的功能生成用例", "检查权限相关用例是否覆盖"],
       "expected": [
         "有权限用户正常操作（case_type=normal）",
         "无权限用户操作被拒绝（case_type=permission，含 403 验证）",
@@ -1898,6 +1913,296 @@
       "fix_commit": "",
       "tested_at": null,
       "passed_at": "2026-03-18T00:03:01.577663"
+    },
+    {
+      "id": "TASK-163",
+      "category": "品牌与文档",
+      "title": "项目品牌名统一更新 Sisyphus-case-platform 改为 Sisyphus-Y",
+      "steps": [
+        "更新 README.md 中所有旧名称引用为 Sisyphus-Y",
+        "更新 CLAUDE.md 项目名称描述",
+        "更新 CHANGELOG.md 添加本次变更记录",
+        "更新前端 layout.tsx 导航栏品牌名 Sisyphus 改为 Sisyphus-Y",
+        "更新前端 app/layout.tsx page title"
+      ],
+      "expected": "所有文档和前端品牌名一致显示 Sisyphus-Y，无旧名称遗留",
+      "exception_cases": ["保留历史记录说明可在 CHANGELOG 中注明"],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "TASK-164",
+      "category": "AI 配置",
+      "title": "AI 模型配置 API Key 眼睛图标回显完整 Key",
+      "steps": [
+        "后端添加 GET /api/ai-config/models/{id}/reveal-key 接口",
+        "接口调用 decrypt_api_key() 解密并返回明文",
+        "前端 API Key 字段改为 type=password 默认隐藏",
+        "添加 Eye/EyeOff 切换图标，点击调用 reveal-key 接口",
+        "刷新页面后默认隐藏，重新点击眼睛才显示"
+      ],
+      "expected": "点击眼睛图标后展示完整明文 Key，中间无星号脱敏",
+      "exception_cases": ["接口失败时 toast 错误提示，不暴露原始异常信息"],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "当前 API Key 仅显示脱敏版如 sk-****abc，无法查看完整 Key",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "TASK-165",
+      "category": "AI 配置",
+      "title": "AI 模型配置新建编辑改为 Sheet 抽屉弹窗",
+      "steps": [
+        "引入 shadcn Sheet 组件到 AIModelSettings.tsx",
+        "新建模型配置按钮触发 Sheet 右侧抽屉",
+        "编辑现有配置也改为 Sheet 抽屉",
+        "提交后关闭抽屉并刷新列表",
+        "保留左侧模型列表始终可见"
+      ],
+      "expected": "点击新建弹出右侧 Sheet 抽屉，内联面板不再覆盖列表区域",
+      "exception_cases": ["表单未保存更改时关闭须有确认提示"],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "新建模型配置时内联右侧面板覆盖了列表，体验不佳",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "TASK-166",
+      "category": "通知系统",
+      "title": "通知系统前端 TopBar 铃铛图标加通知面板",
+      "steps": [
+        "TopBar 右侧添加 Bell 图标按钮",
+        "调用 GET /api/notifications/ 获取未读数显示红色徽章",
+        "点击铃铛弹出 Popover 通知面板展示最近 20 条",
+        "支持单条标记已读、全部标为已读操作",
+        "面板底部添加查看全部链接"
+      ],
+      "expected": "TopBar 显示带未读数徽章的铃铛图标，点击展示通知列表，可标记已读",
+      "exception_cases": ["未读数大于 99 显示 99+；无通知时显示暂无通知空态"],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "当前 TopBar 无通知系统入口，后端通知模块无前端对应页面",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "TASK-167",
+      "category": "迭代测试计划",
+      "title": "迭代测试计划前端页面实现",
+      "steps": [
+        "创建 /test-plan 路由页面",
+        "页面展示当前迭代测试计划：关联需求列表、测试状态、覆盖率",
+        "支持创建新测试计划关联子产品和迭代",
+        "调用后端 /api/test-plans/ 系列接口",
+        "在工作台导航或分析台下添加测试计划入口"
+      ],
+      "expected": "用户可访问测试计划页面，查看和创建迭代测试计划",
+      "exception_cases": ["若当前无迭代数据则显示空态引导创建"],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "后端测试计划模块已完整实现，前端无对应页面入口",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "TASK-168",
+      "category": "需求 Diff",
+      "title": "需求 Diff 页面需求 UUID 输入改为下拉选择器",
+      "steps": [
+        "Diff 页面添加子产品到迭代到需求三级联动下拉选择",
+        "选择需求后自动填充 requirement_id，无需手动输入",
+        "保留手动输入 UUID 作为高级模式折叠选项",
+        "两侧原始需求和新需求均改为下拉选择器"
+      ],
+      "expected": "Diff 页面可通过下拉选择需求定位比较对象，不再需要手动输入 UUID",
+      "exception_cases": ["无子产品数据时显示引导提示"],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "当前 Diff 页需手动粘贴 UUID，对普通用户极不友好",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "TASK-169",
+      "category": "用例生成",
+      "title": "GLM-5 配置加 Story-15602 文档端到端用例生成测试",
+      "task_kind": "acceptance",
+      "steps": [
+        "在 AI 配置页面添加 GLM-5 配置 provider=zhipu model=glm-4",
+        "上传 Story-15602.md 到知识库",
+        "创建子产品迭代需求并导入文档",
+        "在分析台对该需求进行 AI 诊断",
+        "生成场景地图并确认测试点",
+        "在工作台基于已确认测试点生成完整测试用例集",
+        "验证用例是否引用了知识库 RAG 内容"
+      ],
+      "expected": "成功生成覆盖 Story-15602 需求的高质量测试用例，用例体现 RAG 知识库业务规则",
+      "exception_cases": [
+        "GLM-5 调用失败时记录错误日志并降级",
+        "RAG 无匹配时依然能生成基础用例"
+      ],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "ISSUE-001",
+      "category": "仓库结构",
+      "title": "区分根目录工具链依赖与 frontend 运行依赖，消除“双 node_modules”误解",
+      "task_kind": "issue",
+      "severity": "medium",
+      "steps": [
+        "确认根目录 package.json 与 frontend/package.json 的职责边界",
+        "确认根目录 node_modules 是否仅用于工具链或自动化脚本",
+        "确认 frontend/node_modules 是否为应用运行依赖"
+      ],
+      "expected": [
+        "可以明确说明哪些目录必须保留，哪些目录可清理",
+        "README 与开发文档不再把工具链目录误写成产品运行目录"
+      ],
+      "exception_cases": [],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "当前仓库同时存在根目录与 frontend 的 Node 依赖目录，用户感知为结构混乱，需要先做事实澄清再决定是否收敛。",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "ISSUE-002",
+      "category": "导航与模块暴露",
+      "title": "文档标记已裁剪的测试计划模块仍在顶栏暴露，前后端与文档事实不一致",
+      "task_kind": "issue",
+      "severity": "high",
+      "steps": [
+        "核对前端主导航是否仍显示测试计划入口",
+        "核对前端 /test-plan 页面与后端 test_plan 路由是否真实可用",
+        "核对 README、CLAUDE、AGENTS、copilot-instructions 对测试计划模块的描述"
+      ],
+      "expected": [
+        "形成 keep、simplify、hide、refactor 或 remove 的明确建议",
+        "UI、后端路由与文档最终保持一致"
+      ],
+      "exception_cases": [],
+      "status": "failed",
+      "evidence": "2026-03-18 浏览器访问 /test-plan 时，页面实际触发 422 与 500；同轮已先从主导航移除该入口，避免继续向用户暴露坏页。",
+      "bug_description": "当前产品心智与实现冲突最明显的点之一，直接影响导航可信度和文档准确性。测试计划页前后端契约未对齐，且与文档的“已裁剪”表述冲突。",
+      "fix_commit": "",
+      "tested_at": "2026-03-18T14:05:45+08:00",
+      "passed_at": ""
+    },
+    {
+      "id": "ISSUE-003",
+      "category": "文档治理",
+      "title": "README、CLAUDE、AGENTS、copilot-instructions 存在重复、过期和超前描述",
+      "task_kind": "issue",
+      "severity": "high",
+      "steps": [
+        "核对各文档是否只描述当前代码中已实现能力",
+        "核对是否存在整份复制粘贴的冗余文档",
+        "核对是否存在模块数、默认模型、导航结构等事实漂移"
+      ],
+      "expected": [
+        "形成一主多从的文档治理方案",
+        "所有对外与对开发者文档都只保留当前真实实现"
+      ],
+      "exception_cases": [],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "文档目前既重复又不完全可信，会直接放大后续交付验收成本。",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "ISSUE-004",
+      "category": "用例生成",
+      "title": "工作台用例生成的思考过程、动态加载、错误态可信度需要浏览器实测确认",
+      "task_kind": "issue",
+      "severity": "critical",
+      "steps": [
+        "启动真实前后端环境并进入工作台",
+        "对同一需求执行一次完整生成，观察 thinking、content、case、done 各阶段 UI 反馈",
+        "记录是否存在无反馈等待、卡住误判、错误态不清晰、重试不可用等问题"
+      ],
+      "expected": [
+        "用户在生成开始、生成中、完成、失败四个阶段都有可信反馈",
+        "思考过程与结果流的状态切换清晰，不会误以为页面卡死"
+      ],
+      "exception_cases": [],
+      "status": "passed",
+      "evidence": "2026-03-18 浏览器实测工作台主流程：Step 1 可真实生成测试点；Step 2 可展示‘已选测试点，准备生成’、‘生成中...’、可折叠‘思考过程’、‘生成失败/重试’以及修复后的‘生成完成’状态。首轮 500 根因定位为 RAG 检索访问 Qdrant 时误走系统 SOCKS 代理，修复 retriever 中 Qdrant 客户端为 trust_env=false、proxy=None 后，Step 2 不再因该代理问题失败。",
+      "bug_description": "这是当前主流程最关键的体验风险，必须优先验证与修复。当前已确认前端反馈链路存在且状态机完整，已修复一类导致生成直接失败的后端代理问题；后续仍需继续验证生成结果条目回填与更复杂场景。",
+      "fix_commit": "",
+      "tested_at": "2026-03-18T14:38:30+08:00",
+      "passed_at": "2026-03-18T14:42:00+08:00"
+    },
+    {
+      "id": "ISSUE-005",
+      "category": "内容渲染",
+      "title": "markdown 渲染、图片回显与文件预览链路需要统一验收",
+      "task_kind": "issue",
+      "severity": "high",
+      "steps": [
+        "检查需求详情、知识库、文件回显、富文本或 markdown 预览的真实展示效果",
+        "验证 MinIO、Files API、图片 URL 回显是否正常",
+        "记录格式错乱、图片丢失、链接失效、预览空白等问题"
+      ],
+      "expected": [
+        "markdown 基本格式、图片、文件预览与回显都可正常工作",
+        "异常场景提供明确错误提示"
+      ],
+      "exception_cases": [],
+      "status": "pending",
+      "evidence": "",
+      "bug_description": "内容展示直接影响需求理解和知识库可用性，是主流程外的高频阻塞点。",
+      "fix_commit": "",
+      "tested_at": "",
+      "passed_at": ""
+    },
+    {
+      "id": "VERIFY-001",
+      "category": "修复验证",
+      "title": "验证进度大盘已能区分验收任务、问题条目与修复验证条目",
+      "task_kind": "verification",
+      "related_task_ids": [
+        "TASK-163",
+        "ISSUE-001",
+        "ISSUE-002",
+        "ISSUE-003",
+        "ISSUE-004",
+        "ISSUE-005"
+      ],
+      "steps": [
+        "打开前端进度大盘",
+        "确认展示分组中同时出现验收任务、发现的问题、修复验证三类阶段",
+        "确认条目状态汇总与 progress.json 一致"
+      ],
+      "expected": [
+        "大盘不再只是单一验收清单，而是完整交付闭环视图",
+        "任务数量与状态聚合正确"
+      ],
+      "exception_cases": [],
+      "status": "passed",
+      "evidence": "2026-03-18 浏览器在工作台页重新打开测试进度大盘后，已显示‘验收任务 / 发现的问题 / 修复验证’三条轨道，并展示 73/87 条目与 84% 总体交付进度。",
+      "bug_description": "",
+      "fix_commit": "",
+      "tested_at": "2026-03-18T14:18:00+08:00",
+      "passed_at": "2026-03-18T14:18:00+08:00"
     }
   ]
 }

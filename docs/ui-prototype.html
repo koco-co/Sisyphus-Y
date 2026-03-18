@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sisyphus-Y — UI 原型</title>
+<style>
+/* ═══════════════════════════════════════
+   CSS Variables — sy-* design tokens
+═══════════════════════════════════════ */
+:root {
+  --sy-bg:       #0d0f12;
+  --sy-bg-1:     #131619;
+  --sy-bg-2:     #1a1e24;
+  --sy-bg-3:     #212730;
+  --sy-border:   #2a313d;
+  --sy-border-2: #353d4a;
+  --sy-text:     #e2e8f0;
+  --sy-text-2:   #94a3b8;
+  --sy-text-3:   #566577;
+  --sy-accent:   #00d9a3;
+  --sy-accent-2: #00b386;
+  --sy-warn:     #f59e0b;
+  --sy-danger:   #f43f5e;
+  --sy-info:     #3b82f6;
+  --sy-purple:   #a855f7;
+  --topbar-h:    49px;
+}
+
+/* ═══════════════════════════════════════  Reset + Base */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  background: var(--sy-bg);
+  color: var(--sy-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+code, .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+a { color: var(--sy-accent); text-decoration: none; }
+
+/* ═══════════════════════════════════════  Layout Shell */
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+/* TopBar */
+#topbar {
+  height: var(--topbar-h);
+  background: var(--sy-bg-1);
+  border-bottom: 1px solid var(--sy-border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 8px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.topbar-logo {
+  font-family: 'Syne', 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sy-accent);
+  letter-spacing: -0.5px;
+  margin-right: 16px;
+  white-space: nowrap;
+}
+.topbar-logo span { color: var(--sy-text-2); font-weight: 400; }
+.nav-items { display: flex; gap: 2px; flex: 1; }
+.nav-item {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--sy-text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.nav-item:hover { background: var(--sy-bg-2); color: var(--sy-text); }
+.nav-item.active { background: var(--sy-bg-3); color: var(--sy-text); }
+.nav-item.active::after { display: none; }
+
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.search-box {
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 6px;
+  padding: 5px 10px 5px 30px;
+  color: var(--sy-text-3);
+  font-size: 12px;
+  width: 180px;
+  position: relative;
+  cursor: pointer;
+}
+.search-wrap { position: relative; }
+.search-wrap svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); }
+.icon-btn {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--sy-text-3);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.icon-btn:hover { background: var(--sy-bg-2); color: var(--sy-text-2); }
+.avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--sy-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+  color: var(--sy-bg);
+  cursor: pointer;
+}
+
+/* Page container */
+#pages { flex: 1; overflow: hidden; }
+.page { display: none; height: 100%; }
+.page.active { display: flex; flex-direction: column; }
+
+/* ═══════════════════════════════════════  Dashboard */
+.dash-header {
+  padding: 24px 28px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.dash-title { font-size: 20px; font-weight: 600; }
+.dash-tabs { display: flex; gap: 4px; margin-top: 16px; padding: 0 28px; flex-shrink: 0; border-bottom: 1px solid var(--sy-border); }
+.tab-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--sy-text-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+}
+.tab-btn:hover { color: var(--sy-text-2); }
+.tab-btn.active { color: var(--sy-accent); border-bottom-color: var(--sy-accent); }
+
+.dash-content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--sy-bg-1);
+  border: 1px solid var(--sy-border);
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.15s;
+}
+.stat-card:hover { border-color: var(--sy-border-2); transform: translateY(-1px); }
+.stat-label { font-size: 12px; color: var(--sy-text-3); margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.stat-sub { font-size: 12px; color: var(--sy-text-3); margin-top: 4px; }
+.stat-up { color: var(--sy-accent); font-size: 11px; }
+.stat-down { color: var(--sy-danger); font-size: 11px; }
+
+.charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+.chart-card {
+  background: var(--sy-bg-1);
+  border: 1px solid var(--sy-border);
+  border-radius: 10px;
+  padding: 20px;
+}
+.chart-card-title { font-size: 13px; font-weight: 600; color: var(--sy-text-2); margin-bottom: 16px; }
+
+/* Fake chart */
+.fake-chart { height: 140px; display: flex; align-items: flex-end; gap: 8px; padding-bottom: 4px; }
+.bar { flex: 1; border-radius: 4px 4px 0 0; transition: all 0.3s; cursor: pointer; }
+.bar:hover { filter: brightness(1.2); }
+
+.pie-wrap { display: flex; gap: 16px; align-items: center; justify-content: center; height: 140px; }
+.pie { width: 100px; height: 100px; border-radius: 50%; position: relative; overflow: hidden; }
+.pie-legend { display: flex; flex-direction: column; gap: 8px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--sy-text-2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+.bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.activity-list { display: flex; flex-direction: column; gap: 12px; }
+.activity-item { display: flex; gap: 12px; align-items: flex-start; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sy-accent); margin-top: 4px; flex-shrink: 0; }
+.activity-text { font-size: 12px; color: var(--sy-text-2); line-height: 1.4; }
+.activity-time { font-size: 11px; color: var(--sy-text-3); margin-top: 2px; }
+
+.todo-list { display: flex; flex-direction: column; gap: 8px; }
+.todo-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.todo-item:hover { border-color: var(--sy-border-2); }
+.todo-badge {
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════  Analysis */
+.analysis-layout { display: flex; height: 100%; }
+.analysis-left {
+  width: 280px;
+  border-right: 1px solid var(--sy-border);
+  background: var(--sy-bg-1);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.panel-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--sy-border);
+  flex-shrink: 0;
+}
+.panel-title { font-size: 13px; font-weight: 600; color: var(--sy-text-2); }
+.panel-actions { display: flex; gap: 6px; margin-top: 10px; }
+.btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-primary { background: var(--sy-accent); color: var(--sy-bg); }
+.btn-primary:hover { background: var(--sy-accent-2); }
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--sy-border);
+  color: var(--sy-text-2);
+}
+.btn-secondary:hover { border-color: var(--sy-border-2); color: var(--sy-text); }
+.btn-danger { background: var(--sy-danger); color: white; }
+.btn-ghost { background: transparent; color: var(--sy-text-2); padding: 4px 8px; }
+.btn-ghost:hover { background: var(--sy-bg-2); color: var(--sy-text); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+
+.req-list { flex: 1; overflow-y: auto; padding: 8px; }
+.req-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+}
+.req-item:hover { background: var(--sy-bg-2); }
+.req-item.active { background: var(--sy-bg-2); border-color: var(--sy-border); }
+.req-item-title { font-size: 13px; color: var(--sy-text); margin-bottom: 4px; }
+.req-item-meta { display: flex; gap: 6px; align-items: center; }
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+}
+.badge-accent { background: rgba(0,217,163,0.1); border: 1px solid rgba(0,217,163,0.35); color: var(--sy-accent); }
+.badge-warn { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35); color: var(--sy-warn); }
+.badge-danger { background: rgba(244,63,94,0.1); border: 1.5px solid var(--sy-danger); color: var(--sy-danger); font-weight: 600; }
+.badge-info { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.35); color: var(--sy-info); }
+.badge-muted { background: var(--sy-bg-3); border: 1px dashed var(--sy-border-2); color: var(--sy-text-3); }
+.badge-purple { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.35); color: var(--sy-purple); }
+
+.analysis-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.right-tabs { padding: 0 20px; border-bottom: 1px solid var(--sy-border); display: flex; flex-shrink: 0; }
+.right-content { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* AI Banner */
+.ai-banner {
+  background: linear-gradient(135deg, rgba(0,217,163,0.08) 0%, rgba(168,85,247,0.08) 100%);
+  border: 1px solid rgba(0,217,163,0.2);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.ai-banner-icon { font-size: 24px; }
+.ai-banner-title { font-size: 14px; font-weight: 600; color: var(--sy-text); }
+.ai-banner-desc { font-size: 12px; color: var(--sy-text-2); margin-top: 2px; }
+
+/* Risk cards */
+.risk-section { margin-bottom: 16px; }
+.risk-section-title { font-size: 11px; font-weight: 600; color: var(--sy-text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.risk-card {
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  transition: all 0.15s;
+}
+.risk-card:hover { border-color: var(--sy-border-2); }
+.risk-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.risk-card-title { font-size: 13px; font-weight: 500; flex: 1; }
+.risk-card-body { font-size: 12px; color: var(--sy-text-2); line-height: 1.5; }
+.risk-card-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+/* SSE stream */
+.stream-area {
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--sy-text-2);
+  margin-bottom: 16px;
+}
+.thinking-block {
+  background: var(--sy-bg-3);
+  border: 1px solid var(--sy-border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--sy-text-3);
+  margin-bottom: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.thinking-label { color: var(--sy-warn); font-size: 11px; font-weight: 600; }
+.cursor {
+  display: inline-block;
+  width: 2px; height: 14px;
+  background: var(--sy-warn);
+  animation: blink 0.8s infinite;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ═══════════════════════════════════════  Workbench */
+.workbench-layout { display: flex; height: 100%; }
+.wb-left {
+  width: 240px;
+  border-right: 1px solid var(--sy-border);
+  background: var(--sy-bg-1);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+}
+.wb-mid { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.wb-right {
+  width: 320px;
+  border-left: 1px solid var(--sy-border);
+  background: var(--sy-bg-1);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+}
+.col-body { flex: 1; overflow-y: auto; padding: 16px; }
+
+.step-indicator {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--sy-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  background: var(--sy-bg-1);
+}
+.step-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600;
+  flex-shrink: 0;
+}
+.step-dot.done { background: var(--sy-accent); color: var(--sy-bg); }
+.step-dot.active { background: var(--sy-info); color: white; }
+.step-dot.pending { background: var(--sy-bg-3); color: var(--sy-text-3); border: 1px solid var(--sy-border); }
+.step-label { font-size: 12px; }
+.step-label.active { color: var(--sy-text); font-weight: 500; }
+.step-label.pending { color: var(--sy-text-3); }
+.step-arrow { color: var(--sy-border); font-size: 16px; }
+
+.test-point-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px;
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.15s;
+}
+.test-point-item:hover { border-color: var(--sy-border-2); }
+.tp-check {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--sy-border-2);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tp-check.checked { background: var(--sy-accent); border-color: var(--sy-accent); }
+.tp-check svg { display: none; }
+.tp-check.checked svg { display: block; }
+.tp-name { font-size: 12px; color: var(--sy-text); flex: 1; }
+.tp-type { font-size: 10px; color: var(--sy-text-3); margin-top: 2px; }
+
+/* Case card */
+.case-card {
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.15s;
+}
+.case-card:hover { border-color: var(--sy-border-2); transform: translateY(-1px); }
+.case-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.case-title { font-size: 13px; font-weight: 600; flex: 1; }
+.case-steps { list-style: none; }
+.case-step {
+  display: flex; gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--sy-border);
+  font-size: 12px;
+  color: var(--sy-text-2);
+}
+.case-step:last-child { border-bottom: none; }
+.step-num {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--sy-bg-3);
+  color: var(--sy-text-3);
+  font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+.case-card-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+/* ═══════════════════════════════════════  Testcases */
+.tc-layout { display: flex; height: 100%; }
+.tc-tree {
+  width: 220px;
+  border-right: 1px solid var(--sy-border);
+  background: var(--sy-bg-1);
+  overflow-y: auto;
+  padding: 12px 8px;
+  flex-shrink: 0;
+}
+.tree-node {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sy-text-2);
+  transition: all 0.15s;
+}
+.tree-node:hover { background: var(--sy-bg-2); color: var(--sy-text); }
+.tree-node.active { background: var(--sy-bg-2); color: var(--sy-accent); }
+.tree-indent-1 { padding-left: 24px; }
+.tree-indent-2 { padding-left: 40px; }
+.tree-icon { color: var(--sy-text-3); font-size: 10px; }
+
+.tc-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.tc-toolbar {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--sy-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  background: var(--sy-bg-1);
+}
+.tc-table-wrap { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.tc-table { width: 100%; border-collapse: collapse; }
+.tc-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sy-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--sy-border);
+  background: var(--sy-bg-1);
+  position: sticky; top: 0;
+}
+.tc-table td {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--sy-text-2);
+  border-bottom: 1px solid rgba(42,49,61,0.6);
+}
+.tc-table tr:hover td { background: var(--sy-bg-2); }
+.tc-title { color: var(--sy-text); font-size: 13px; font-weight: 500; }
+
+.input-search {
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--sy-text);
+  font-size: 12px;
+  width: 220px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input-search:focus { border-color: var(--sy-accent); }
+.input-search::placeholder { color: var(--sy-text-3); }
+
+.select {
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 6px;
+  padding: 6px 28px 6px 10px;
+  color: var(--sy-text-2);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23566577' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+/* ═══════════════════════════════════════  Diff */
+.diff-layout { display: flex; height: 100%; flex-direction: column; }
+.diff-toolbar {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--sy-border);
+  background: var(--sy-bg-1);
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+.diff-body { flex: 1; overflow: hidden; display: flex; gap: 0; }
+.diff-left, .diff-right { flex: 1; overflow-y: auto; padding: 20px; }
+.diff-left { border-right: 1px solid var(--sy-border); }
+.diff-pane-title { font-size: 11px; font-weight: 600; color: var(--sy-text-3); text-transform: uppercase; margin-bottom: 12px; }
+.diff-line {
+  padding: 3px 8px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  border-radius: 3px;
+  margin-bottom: 2px;
+  line-height: 1.6;
+}
+.diff-del { background: rgba(244,63,94,0.1); color: #f87171; text-decoration: line-through; }
+.diff-add { background: rgba(0,217,163,0.1); color: var(--sy-accent); }
+.diff-ctx { color: var(--sy-text-2); }
+.impact-card {
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.impact-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* ═══════════════════════════════════════  Settings */
+.settings-layout { display: flex; height: 100%; }
+.settings-nav {
+  width: 200px;
+  border-right: 1px solid var(--sy-border);
+  background: var(--sy-bg-1);
+  padding: 16px 8px;
+  flex-shrink: 0;
+}
+.settings-nav-section { font-size: 10px; font-weight: 600; color: var(--sy-text-3); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 8px 6px; margin-top: 12px; }
+.settings-nav-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--sy-text-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.settings-nav-item:hover { background: var(--sy-bg-2); color: var(--sy-text); }
+.settings-nav-item.active { background: var(--sy-bg-2); color: var(--sy-accent); }
+.settings-main { flex: 1; overflow-y: auto; padding: 28px 36px; }
+.settings-section-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+.settings-section-desc { font-size: 13px; color: var(--sy-text-3); margin-bottom: 24px; }
+.settings-card {
+  background: var(--sy-bg-1);
+  border: 1px solid var(--sy-border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.settings-card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.settings-card-desc { font-size: 12px; color: var(--sy-text-3); margin-bottom: 16px; }
+
+.provider-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.provider-card {
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+.provider-card:hover { border-color: var(--sy-border-2); }
+.provider-card.selected { border-color: var(--sy-accent); background: rgba(0,217,163,0.05); }
+.provider-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.provider-model { font-size: 11px; color: var(--sy-text-3); }
+.provider-status { font-size: 10px; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.status-dot.ok { background: var(--sy-accent); }
+.status-dot.warn { background: var(--sy-warn); }
+.status-dot.off { background: var(--sy-text-3); }
+
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--sy-text-2); margin-bottom: 6px; display: block; }
+.form-input {
+  width: 100%;
+  background: var(--sy-bg-2);
+  border: 1px solid var(--sy-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--sy-text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--sy-accent); }
+.form-input::placeholder { color: var(--sy-text-3); }
+textarea.form-input { height: 120px; resize: vertical; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+/* ═══════════════════════════════════════  Knowledge */
+.knowledge-layout { display: flex; height: 100%; flex-direction: column; }
+.knowledge-header {
+  padding: 20px 24px 0;
+  flex-shrink: 0;
+}
+.knowledge-tabs { display: flex; gap: 4px; margin-top: 16px; border-bottom: 1px solid var(--sy-border); }
+.knowledge-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.doc-card {
+  background: var(--sy-bg-1);
+  border: 1px solid var(--sy-border);
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.doc-card:hover { border-color: var(--sy-border-2); transform: translateY(-1px); }
+.doc-icon { font-size: 22px; margin-bottom: 10px; }
+.doc-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.doc-meta { font-size: 11px; color: var(--sy-text-3); display: flex; gap: 8px; }
+.doc-status { display: flex; align-items: center; gap: 4px; margin-top: 10px; font-size: 11px; color: var(--sy-accent); }
+
+/* ═══════════════════════════════════════  Recycle */
+.recycle-layout { padding: 24px; overflow-y: auto; height: 100%; }
+.recycle-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.recycle-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sy-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--sy-border);
+}
+.recycle-table td {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--sy-text-2);
+  border-bottom: 1px solid rgba(42,49,61,0.6);
+}
+.countdown { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.countdown.urgent { color: var(--sy-danger); }
+.countdown.soon { color: var(--sy-warn); }
+.countdown.ok { color: var(--sy-text-3); }
+
+/* ═══════════════════════════════════════  Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--sy-bg-3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sy-border-2); }
+
+/* ═══════════════════════════════════════  Misc */
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: var(--sy-text-3); gap: 8px; }
+.empty-icon { font-size: 40px; opacity: 0.4; }
+.empty-text { font-size: 13px; }
+.divider { height: 1px; background: var(--sy-border); margin: 16px 0; }
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.text-accent { color: var(--sy-accent); }
+.text-warn { color: var(--sy-warn); }
+.text-danger { color: var(--sy-danger); }
+.text-muted { color: var(--sy-text-3); }
+.text-sm { font-size: 12px; }
+.text-xs { font-size: 11px; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }
+
+.progress-bar-wrap { height: 4px; background: var(--sy-bg-3); border-radius: 2px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 2px; background: var(--sy-accent); transition: width 0.3s; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══════════════════ TopBar ═══════════════════ -->
+<div id="topbar">
+  <div class="topbar-logo">Sisyphus<span>-Y</span></div>
+  <nav class="nav-items" id="navItems">
+    <div class="nav-item active" data-page="dashboard">仪表盘</div>
+    <div class="nav-item" data-page="analysis">分析台</div>
+    <div class="nav-item" data-page="workbench">工作台</div>
+    <div class="nav-item" data-page="diff">需求Diff</div>
+    <div class="nav-item" data-page="testcases">用例库</div>
+    <div class="nav-item" data-page="templates">模板库</div>
+    <div class="nav-item" data-page="knowledge">知识库</div>
+    <div class="nav-item" data-page="recycle">回收站</div>
+    <div class="nav-item" data-page="settings">设置</div>
+  </nav>
+  <div class="topbar-right">
+    <div class="search-wrap">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#566577" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <div class="search-box">搜索... ⌘K</div>
+    </div>
+    <button class="icon-btn" title="通知">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+    <div class="avatar">P</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ Pages ═══════════════════ -->
+<div id="pages">
+
+  <!-- ======= Dashboard ======= -->
+  <div class="page active" id="page-dashboard">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">仪表盘</div>
+        <div class="text-sm text-muted" style="margin-top:4px">数据中台 · 迭代 2026-Q1</div>
+      </div>
+      <div class="flex gap-8 items-center">
+        <select class="select" style="width:160px">
+          <option>数据中台 v3.2 (当前迭代)</option>
+          <option>数据中台 v3.1</option>
+          <option>数据中台 v3.0</option>
+        </select>
+        <button class="btn btn-secondary btn-sm">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          导出报告
+        </button>
+      </div>
+    </div>
+    <div class="dash-tabs">
+      <div class="tab-btn active">项目概览</div>
+      <div class="tab-btn">质量分析</div>
+    </div>
+    <div class="dash-content">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">需求总数</div>
+          <div class="stat-value text-accent">48</div>
+          <div class="stat-sub"><span class="stat-up">↑ 12</span> 本迭代新增</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">测试用例</div>
+          <div class="stat-value" style="color:var(--sy-info)">1,284</div>
+          <div class="stat-sub"><span class="stat-up">↑ 387</span> AI 生成</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">需求覆盖率</div>
+          <div class="stat-value text-accent">87.5%</div>
+          <div class="progress-bar-wrap" style="margin-top:8px"><div class="progress-bar-fill" style="width:87.5%"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">平均质量分</div>
+          <div class="stat-value text-warn">82.3</div>
+          <div class="stat-sub"><span class="stat-up">↑ 4.1</span> 较上次迭代</div>
+        </div>
+      </div>
+      <!-- Charts -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-card-title">用例增长趋势（最近7天）</div>
+          <div class="fake-chart">
+            <div class="bar" style="height:40%;background:rgba(0,217,163,0.4)"></div>
+            <div class="bar" style="height:55%;background:rgba(0,217,163,0.4)"></div>
+            <div class="bar" style="height:48%;background:rgba(0,217,163,0.4)"></div>
+            <div class="bar" style="height:70%;background:rgba(0,217,163,0.5)"></div>
+            <div class="bar" style="height:65%;background:rgba(0,217,163,0.5)"></div>
+            <div class="bar" style="height:80%;background:rgba(0,217,163,0.6)"></div>
+            <div class="bar" style="height:95%;background:var(--sy-accent)"></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">用例类型分布</div>
+          <div class="pie-wrap">
+            <div style="width:90px;height:90px;background:conic-gradient(var(--sy-accent) 0% 45%, var(--sy-info) 45% 70%, var(--sy-warn) 70% 85%, var(--sy-purple) 85% 100%);border-radius:50%"></div>
+            <div class="pie-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--sy-accent)"></div>功能测试 45%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--sy-info)"></div>边界测试 25%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--sy-warn)"></div>异常测试 15%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--sy-purple)"></div>性能测试 15%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Bottom -->
+      <div class="bottom-row">
+        <div class="chart-card">
+          <div class="chart-card-title">最近活动</div>
+          <div class="activity-list">
+            <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">张伟 确认了「数据血缘查询」的 24 个测试点</div><div class="activity-time">2分钟前</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--sy-info)"></div><div><div class="activity-text">AI 为「指标管理」生成了 38 条测试用例</div><div class="activity-time">15分钟前</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--sy-warn)"></div><div><div class="activity-text">李红 发布了「权限控制模块 v2.1」需求版本，触发 Diff 分析</div><div class="activity-time">1小时前</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--sy-purple)"></div><div><div class="activity-text">王刚 上传了「数据标准规范 v3.xlsx」到知识库</div><div class="activity-time">2小时前</div></div></div>
+            <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">系统完成了「数据质量模块」历史用例向量化（312条）</div><div class="activity-time">3小时前</div></div></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">待办事项</div>
+          <div class="todo-list">
+            <div class="todo-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sy-danger)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span style="flex:1">「权限控制模块」有 3 个高风险未处理</span>
+              <span class="todo-badge badge-danger">紧急</span>
+            </div>
+            <div class="todo-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sy-warn)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span style="flex:1">4 个需求场景地图等待确认</span>
+              <span class="todo-badge badge-warn">待处理</span>
+            </div>
+            <div class="todo-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sy-info)" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <span style="flex:1">58 条 AI 用例待接受入库</span>
+              <span class="todo-badge badge-info">待接受</span>
+            </div>
+            <div class="todo-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sy-text-3)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span style="flex:1">「数据血缘」需求分析未完成</span>
+              <span class="todo-badge badge-muted">进行中</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Analysis ======= -->
+  <div class="page" id="page-analysis">
+    <div class="analysis-layout">
+      <div class="analysis-left">
+        <div class="panel-header">
+          <div class="flex items-center justify-between">
+            <div class="panel-title">需求列表</div>
+            <button class="btn btn-primary btn-sm">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              新建
+            </button>
+          </div>
+          <div style="margin-top:10px">
+            <input class="input-search" style="width:100%" placeholder="搜索需求...">
+          </div>
+        </div>
+        <div class="req-list">
+          <div class="req-item active">
+            <div class="req-item-title">数据血缘查询功能</div>
+            <div class="req-item-meta">
+              <span class="badge badge-accent">已确认</span>
+              <span class="text-xs text-muted">24个测试点</span>
+            </div>
+          </div>
+          <div class="req-item">
+            <div class="req-item-title">权限控制模块 v2.1</div>
+            <div class="req-item-meta">
+              <span class="badge badge-danger">高风险</span>
+              <span class="text-xs text-muted">3个未处理</span>
+            </div>
+          </div>
+          <div class="req-item">
+            <div class="req-item-title">指标管理中心</div>
+            <div class="req-item-meta">
+              <span class="badge badge-warn">分析中</span>
+              <span class="text-xs text-muted">得分 78</span>
+            </div>
+          </div>
+          <div class="req-item">
+            <div class="req-item-title">数据质量规则引擎</div>
+            <div class="req-item-meta">
+              <span class="badge badge-info">待分析</span>
+            </div>
+          </div>
+          <div class="req-item">
+            <div class="req-item-title">元数据管理</div>
+            <div class="req-item-meta">
+              <span class="badge badge-accent">已确认</span>
+              <span class="text-xs text-muted">31个测试点</span>
+            </div>
+          </div>
+          <div class="req-item">
+            <div class="req-item-title">数据集成调度</div>
+            <div class="req-item-meta">
+              <span class="badge badge-muted">草稿</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="analysis-right">
+        <div class="right-tabs">
+          <div class="tab-btn active">AI 分析</div>
+          <div class="tab-btn">需求详情</div>
+          <div class="tab-btn">场景地图</div>
+          <div class="tab-btn">覆盖追踪</div>
+        </div>
+        <div class="right-content">
+          <div class="ai-banner">
+            <div class="ai-banner-icon">🧠</div>
+            <div style="flex:1">
+              <div class="ai-banner-title">数据血缘查询功能 — 诊断完成</div>
+              <div class="ai-banner-desc">共识别 7 个潜在风险，其中 2 项已确认，1 项已忽略 · 质量评分 <strong style="color:var(--sy-accent)">91/100</strong></div>
+            </div>
+            <button class="btn btn-secondary btn-sm">重新诊断</button>
+          </div>
+          <div class="risk-section">
+            <div class="risk-section-title">🔴 高风险 (1)</div>
+            <div class="risk-card">
+              <div class="risk-card-header">
+                <span class="badge badge-danger">逻辑缺陷</span>
+                <div class="risk-card-title">循环血缘关系的处理机制未定义</div>
+              </div>
+              <div class="risk-card-body">需求中描述了多跳查询，但未说明当数据血缘形成环路时（A→B→C→A），系统如何检测并处理，可能导致无限递归。</div>
+              <div class="risk-card-actions">
+                <button class="btn btn-secondary btn-sm">追问 AI</button>
+                <button class="btn btn-ghost btn-sm text-accent">✓ 确认</button>
+                <button class="btn btn-ghost btn-sm text-muted">忽略</button>
+              </div>
+            </div>
+          </div>
+          <div class="risk-section">
+            <div class="risk-section-title">🟡 警告 (4)</div>
+            <div class="risk-card">
+              <div class="risk-card-header">
+                <span class="badge badge-warn">边界缺失</span>
+                <div class="risk-card-title">最大查询深度未明确</div>
+              </div>
+              <div class="risk-card-body">需求提到"支持多跳查询"，但未定义最大深度限制（如10跳？20跳？），缺少此约束可能引发性能问题。</div>
+              <div class="risk-card-actions">
+                <button class="btn btn-secondary btn-sm">追问 AI</button>
+                <button class="btn btn-ghost btn-sm text-accent">✓ 确认</button>
+                <button class="btn btn-ghost btn-sm text-muted">忽略</button>
+              </div>
+            </div>
+            <div class="risk-card">
+              <div class="risk-card-header">
+                <span class="badge badge-warn">模糊表述</span>
+                <div class="risk-card-title">"实时性"要求未量化</div>
+              </div>
+              <div class="risk-card-body">需求说明需要"实时展示血缘关系"，但未定义延迟基准（毫秒级？秒级？），无法作为测试验收标准。</div>
+              <div class="risk-card-actions">
+                <button class="btn btn-secondary btn-sm">追问 AI</button>
+                <button class="btn btn-ghost btn-sm text-accent">✓ 确认</button>
+                <button class="btn btn-ghost btn-sm text-muted">忽略</button>
+              </div>
+            </div>
+          </div>
+          <div class="risk-section">
+            <div class="risk-section-title">🔵 已确认 (2)</div>
+            <div class="risk-card" style="opacity:0.6">
+              <div class="risk-card-header">
+                <span class="badge badge-accent">已确认</span>
+                <div class="risk-card-title">权限隔离：不同租户的血缘数据隔离</div>
+              </div>
+              <div class="risk-card-body">已补充说明：租户隔离通过 tenant_id 字段强制过滤实现。</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div style="margin-bottom:12px">
+            <div class="text-sm" style="color:var(--sy-text);font-weight:600;margin-bottom:8px">AI 追问对话</div>
+            <div class="stream-area">
+              <div class="thinking-block">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span class="thinking-label">思考过程</span>
+                <span class="text-xs text-muted">点击展开 (1.2s)</span>
+              </div>
+              关于循环血缘检测，建议在需求中补充以下约束：<br>
+              1. 系统在构建血缘图时，应使用 DFS 算法检测环路<br>
+              2. 发现环路时，应在 UI 以红色边框高亮显示环路节点，并提示用户<br>
+              3. 查询接口应返回错误码 <span class="font-mono text-warn">LINEAGE_CYCLE_DETECTED</span>，客户端需处理此异常<span class="cursor"></span>
+            </div>
+            <div class="flex gap-8">
+              <input class="form-input" style="flex:1;height:auto;padding:8px 12px" placeholder="继续追问...">
+              <button class="btn btn-primary btn-sm">发送</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Workbench ======= -->
+  <div class="page" id="page-workbench">
+    <div class="workbench-layout">
+      <!-- Left: req list -->
+      <div class="wb-left">
+        <div class="panel-header">
+          <div class="panel-title">需求列表</div>
+          <div class="text-xs text-muted" style="margin-top:4px">选择需求开始生成</div>
+        </div>
+        <div class="col-body" style="padding:8px">
+          <div class="req-item active">
+            <div class="req-item-title">数据血缘查询功能</div>
+            <div class="req-item-meta">
+              <span class="badge badge-accent">可生成</span>
+              <span class="text-xs text-muted">24个测试点</span>
+            </div>
+          </div>
+          <div class="req-item">
+            <div class="req-item-title">元数据管理</div>
+            <div class="req-item-meta">
+              <span class="badge badge-accent">可生成</span>
+              <span class="text-xs text-muted">31个测试点</span>
+            </div>
+          </div>
+          <div class="req-item">
+            <div class="req-item-title">权限控制模块 v2.1</div>
+            <div class="req-item-meta">
+              <span class="badge badge-danger">未确认</span>
+              <span class="text-xs text-muted">3个高风险</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Mid: step area -->
+      <div class="wb-mid">
+        <div class="step-indicator">
+          <div class="step-dot done">✓</div>
+          <div class="step-label">Step 1 确认测试点</div>
+          <div class="step-arrow">→</div>
+          <div class="step-dot active">2</div>
+          <div class="step-label active">Step 2 生成用例</div>
+          <div style="flex:1"></div>
+          <button class="btn btn-ghost btn-sm">← 返回 Step 1</button>
+        </div>
+        <div class="col-body">
+          <div style="margin-bottom:16px">
+            <div class="flex items-center justify-between mb-12">
+              <div class="text-sm" style="font-weight:600">数据血缘查询功能 — 用例生成</div>
+              <div class="flex gap-8">
+                <button class="btn btn-secondary btn-sm">接受全部</button>
+                <select class="select" style="font-size:12px">
+                  <option>全部类型</option>
+                  <option>功能测试</option>
+                  <option>边界测试</option>
+                  <option>异常测试</option>
+                </select>
+              </div>
+            </div>
+            <div class="stream-area" style="margin-bottom:8px">
+              <div class="thinking-block" style="margin-bottom:12px">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span class="thinking-label">生成思路</span>
+                <span class="text-xs text-muted">基于 24 个确认测试点 + RAG 知识库 12 条匹配片段</span>
+              </div>
+              正在为「多跳血缘查询」场景生成测试用例...<span class="cursor"></span>
+            </div>
+          </div>
+          <!-- Case cards -->
+          <div class="case-card">
+            <div class="case-card-header">
+              <span class="badge badge-info">功能测试</span>
+              <span class="badge badge-accent">P1</span>
+              <div class="case-title">正向查询：单跳血缘关系查询</div>
+            </div>
+            <ol class="case-steps">
+              <li class="case-step"><div class="step-num">1</div><div>以有效租户账号登录系统，进入「数据血缘」功能页</div></li>
+              <li class="case-step"><div class="step-num">2</div><div>在搜索框输入已存在的数据表名称 <span class="font-mono text-warn">ods_order_detail</span></div></li>
+              <li class="case-step"><div class="step-num">3</div><div>点击「查询血缘」按钮</div></li>
+              <li class="case-step"><div class="step-num">4</div><div>等待血缘图加载完成（应在 3 秒内）</div></li>
+              <li class="case-step"><div class="step-num">5</div><div>验证画布显示直接上游表节点，连线方向正确，节点文字与实际元数据一致</div></li>
+            </ol>
+            <div class="text-xs text-muted" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--sy-border)">
+              <strong>预期结果：</strong>血缘图正确展示 1 跳关系，包含上游表 dwd_order / dwd_user，连线方向为"源→目标"，页面无报错
+            </div>
+            <div class="case-card-footer">
+              <button class="btn btn-ghost btn-sm">编辑</button>
+              <button class="btn btn-ghost btn-sm text-danger">拒绝</button>
+              <button class="btn btn-primary btn-sm">接受入库</button>
+            </div>
+          </div>
+          <div class="case-card">
+            <div class="case-card-header">
+              <span class="badge badge-warn">边界测试</span>
+              <span class="badge badge-danger">P0</span>
+              <div class="case-title">边界：最大查询深度（10跳）限制</div>
+            </div>
+            <ol class="case-steps">
+              <li class="case-step"><div class="step-num">1</div><div>准备测试数据：构造超过 10 跳深度的血缘链路</div></li>
+              <li class="case-step"><div class="step-num">2</div><div>发起血缘查询请求，<span class="font-mono text-warn">depth=11</span></div></li>
+              <li class="case-step"><div class="step-num">3</div><div>验证系统截断显示，不展示第 11 跳及以上</div></li>
+            </ol>
+            <div class="case-card-footer">
+              <button class="btn btn-ghost btn-sm">编辑</button>
+              <button class="btn btn-ghost btn-sm text-danger">拒绝</button>
+              <button class="btn btn-primary btn-sm">接受入库</button>
+            </div>
+          </div>
+        </div>
+        <!-- Chat input -->
+        <div style="padding:16px;border-top:1px solid var(--sy-border);background:var(--sy-bg-1);flex-shrink:0">
+          <div class="flex gap-8">
+            <input class="form-input" style="flex:1;height:auto;padding:9px 14px" placeholder="指令：增加更多负向测试用例 / 修改步骤风格 / 针对并发场景补充...">
+            <button class="btn btn-primary">发送</button>
+          </div>
+        </div>
+      </div>
+      <!-- Right: scene map preview + case list -->
+      <div class="wb-right">
+        <div class="panel-header">
+          <div class="panel-title">场景地图预览</div>
+        </div>
+        <div class="col-body" style="padding:12px">
+          <div class="text-xs text-muted" style="margin-bottom:10px">已确认测试点 24/24</div>
+          <div class="test-point-item">
+            <div class="tp-check checked"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sy-bg)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="tp-name">单跳血缘查询（正向）</div><div class="tp-type">功能测试 · P1</div></div>
+          </div>
+          <div class="test-point-item">
+            <div class="tp-check checked"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sy-bg)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="tp-name">多跳查询（2-5跳）</div><div class="tp-type">功能测试 · P1</div></div>
+          </div>
+          <div class="test-point-item">
+            <div class="tp-check checked"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sy-bg)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="tp-name">最大深度边界（10跳）</div><div class="tp-type">边界测试 · P0</div></div>
+          </div>
+          <div class="test-point-item">
+            <div class="tp-check checked"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sy-bg)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="tp-name">循环血缘检测</div><div class="tp-type">异常测试 · P0</div></div>
+          </div>
+          <div class="test-point-item">
+            <div class="tp-check checked"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--sy-bg)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><div class="tp-name">租户隔离验证</div><div class="tp-type">安全测试 · P0</div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="text-xs text-muted" style="margin-bottom:8px">已生成用例 (12/24)</div>
+          <div class="flex items-center justify-between" style="padding:6px 0;border-bottom:1px solid var(--sy-border)">
+            <div class="text-xs" style="color:var(--sy-text)">单跳查询正向</div>
+            <span class="badge badge-accent">已接受</span>
+          </div>
+          <div class="flex items-center justify-between" style="padding:6px 0;border-bottom:1px solid var(--sy-border)">
+            <div class="text-xs" style="color:var(--sy-text)">最大深度边界</div>
+            <span class="badge badge-accent">已接受</span>
+          </div>
+          <div class="flex items-center justify-between" style="padding:6px 0">
+            <div class="text-xs" style="color:var(--sy-text)">循环血缘检测</div>
+            <span class="badge badge-warn">待接受</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Diff ======= -->
+  <div class="page" id="page-diff">
+    <div class="diff-layout">
+      <div class="diff-toolbar">
+        <select class="select" style="width:240px"><option>权限控制模块 v2.1</option><option>数据血缘查询功能</option></select>
+        <div class="text-xs text-muted">v2.0 → v2.1</div>
+        <div style="flex:1"></div>
+        <div class="tab-btn active" style="font-size:13px;padding:6px 14px;cursor:pointer">文本对比</div>
+        <div class="tab-btn" style="font-size:13px;padding:6px 14px;cursor:pointer">变更摘要</div>
+      </div>
+      <div class="diff-body">
+        <div class="diff-left">
+          <div class="diff-pane-title">v2.0（旧版本）</div>
+          <div class="diff-line diff-ctx">## 权限管理</div>
+          <div class="diff-line diff-ctx">支持基于角色的权限控制（RBAC）。</div>
+          <div class="diff-line diff-del">角色分为：管理员、普通用户两种类型。</div>
+          <div class="diff-line diff-ctx">权限分配由超级管理员在后台操作。</div>
+          <div class="diff-line diff-del">权限变更实时生效。</div>
+          <div class="diff-line diff-ctx"></div>
+          <div class="diff-line diff-ctx">## 数据权限</div>
+          <div class="diff-line diff-ctx">用户只能查看被授权的数据集。</div>
+          <div class="diff-line diff-del">不支持行级权限控制。</div>
+        </div>
+        <div class="diff-right">
+          <div class="diff-pane-title">v2.1（新版本）</div>
+          <div class="diff-line diff-ctx">## 权限管理</div>
+          <div class="diff-line diff-ctx">支持基于角色的权限控制（RBAC）。</div>
+          <div class="diff-line diff-add">角色分为：超级管理员、部门管理员、只读用户、数据开发四种类型。</div>
+          <div class="diff-line diff-ctx">权限分配由超级管理员在后台操作。</div>
+          <div class="diff-line diff-add">权限变更需在下次登录后生效，当前 Session 不受影响。</div>
+          <div class="diff-line diff-ctx"></div>
+          <div class="diff-line diff-ctx">## 数据权限</div>
+          <div class="diff-line diff-ctx">用户只能查看被授权的数据集。</div>
+          <div class="diff-line diff-add">新增行级权限控制（RLS），支持按字段过滤数据。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Testcases ======= -->
+  <div class="page" id="page-testcases">
+    <div class="tc-layout">
+      <div class="tc-tree">
+        <div style="padding:10px 8px 6px;font-size:11px;font-weight:600;color:var(--sy-text-3);text-transform:uppercase;letter-spacing:0.4px">目录树</div>
+        <div class="tree-node active">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          数据中台
+        </div>
+        <div class="tree-node tree-indent-1">
+          <span class="tree-icon">▶</span> 数据血缘
+        </div>
+        <div class="tree-node tree-indent-2" style="color:var(--sy-text)">查询功能</div>
+        <div class="tree-node tree-indent-2">血缘展示</div>
+        <div class="tree-node tree-indent-1">
+          <span class="tree-icon">▶</span> 权限控制
+        </div>
+        <div class="tree-node tree-indent-1">
+          <span class="tree-icon">▶</span> 指标管理
+        </div>
+        <div class="tree-node tree-indent-1">
+          <span class="tree-icon">▶</span> 数据质量
+        </div>
+        <div class="tree-node tree-indent-1">
+          <span class="tree-icon">▶</span> 元数据管理
+        </div>
+      </div>
+      <div class="tc-main">
+        <div class="tc-toolbar">
+          <input class="input-search" placeholder="搜索用例...">
+          <select class="select"><option>全部状态</option><option>草稿</option><option>已审批</option></select>
+          <select class="select"><option>全部优先级</option><option>P0</option><option>P1</option><option>P2</option></select>
+          <div style="flex:1"></div>
+          <button class="btn btn-secondary btn-sm">导入</button>
+          <button class="btn btn-secondary btn-sm">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            导出
+          </button>
+          <button class="btn btn-primary btn-sm">新建用例</button>
+        </div>
+        <div class="tc-table-wrap">
+          <table class="tc-table">
+            <thead>
+              <tr>
+                <th style="width:32px"><input type="checkbox" style="accent-color:var(--sy-accent)"></th>
+                <th>用例标题</th>
+                <th>优先级</th>
+                <th>类型</th>
+                <th>状态</th>
+                <th>来源</th>
+                <th>更新时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox" style="accent-color:var(--sy-accent)"></td>
+                <td class="tc-title">正向查询：单跳血缘关系查询</td>
+                <td><span class="badge badge-info">P1</span></td>
+                <td><span class="badge badge-muted">功能</span></td>
+                <td><span class="badge badge-accent">已批准</span></td>
+                <td class="text-xs text-muted font-mono">AI生成</td>
+                <td class="text-xs text-muted">2026-03-18</td>
+                <td><button class="btn btn-ghost btn-sm">查看</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="accent-color:var(--sy-accent)"></td>
+                <td class="tc-title">边界测试：最大查询深度（10跳）</td>
+                <td><span class="badge badge-danger">P0</span></td>
+                <td><span class="badge badge-warn">边界</span></td>
+                <td><span class="badge badge-accent">已批准</span></td>
+                <td class="text-xs text-muted font-mono">AI生成</td>
+                <td class="text-xs text-muted">2026-03-18</td>
+                <td><button class="btn btn-ghost btn-sm">查看</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="accent-color:var(--sy-accent)"></td>
+                <td class="tc-title">异常：环路血缘检测与提示</td>
+                <td><span class="badge badge-danger">P0</span></td>
+                <td><span class="badge badge-danger">异常</span></td>
+                <td><span class="badge badge-warn">草稿</span></td>
+                <td class="text-xs text-muted font-mono">AI生成</td>
+                <td class="text-xs text-muted">2026-03-18</td>
+                <td><button class="btn btn-ghost btn-sm">查看</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="accent-color:var(--sy-accent)"></td>
+                <td class="tc-title">安全：跨租户血缘数据隔离验证</td>
+                <td><span class="badge badge-danger">P0</span></td>
+                <td><span class="badge badge-purple">安全</span></td>
+                <td><span class="badge badge-accent">已批准</span></td>
+                <td class="text-xs text-muted font-mono">手动创建</td>
+                <td class="text-xs text-muted">2026-03-17</td>
+                <td><button class="btn btn-ghost btn-sm">查看</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="accent-color:var(--sy-accent)"></td>
+                <td class="tc-title">性能：并发查询响应时间（100 QPS）</td>
+                <td><span class="badge badge-warn">P1</span></td>
+                <td><span class="badge badge-purple">性能</span></td>
+                <td><span class="badge badge-info">评审中</span></td>
+                <td class="text-xs text-muted font-mono">AI生成</td>
+                <td class="text-xs text-muted">2026-03-17</td>
+                <td><button class="btn btn-ghost btn-sm">查看</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Templates ======= -->
+  <div class="page" id="page-templates">
+    <div style="padding:24px;overflow-y:auto;height:100%">
+      <div class="flex items-center justify-between mb-16">
+        <div>
+          <div style="font-size:18px;font-weight:600">模板库</div>
+          <div class="text-sm text-muted" style="margin-top:4px">管理可复用的用例结构模板</div>
+        </div>
+        <button class="btn btn-primary">新建模板</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <div class="stat-card" style="cursor:pointer">
+          <div class="flex items-center justify-between mb-12">
+            <span class="badge badge-accent">通用</span>
+            <span class="text-xs text-muted">已使用 128 次</span>
+          </div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px">标准功能测试模板</div>
+          <div class="text-xs text-muted">5步标准结构：前置/操作/等待/验证/后置清理</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer">
+          <div class="flex items-center justify-between mb-12">
+            <span class="badge badge-warn">接口</span>
+            <span class="text-xs text-muted">已使用 64 次</span>
+          </div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px">REST 接口测试模板</div>
+          <div class="text-xs text-muted">含请求构造/状态码/响应体/性能断言</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer">
+          <div class="flex items-center justify-between mb-12">
+            <span class="badge badge-purple">权限</span>
+            <span class="text-xs text-muted">已使用 41 次</span>
+          </div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px">权限验证模板</div>
+          <div class="text-xs text-muted">角色矩阵覆盖：正常/越权/未登录三种场景</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Knowledge ======= -->
+  <div class="page" id="page-knowledge">
+    <div class="knowledge-layout">
+      <div class="knowledge-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <div style="font-size:18px;font-weight:600">知识库</div>
+            <div class="text-sm text-muted" style="margin-top:4px">72 个文档 · 4,812 个分块 · 全部已索引</div>
+          </div>
+          <div class="flex gap-8">
+            <button class="btn btn-secondary btn-sm">RAG 测试</button>
+            <button class="btn btn-primary btn-sm">上传文档</button>
+          </div>
+        </div>
+        <div class="knowledge-tabs">
+          <div class="tab-btn active">企业规范 (18)</div>
+          <div class="tab-btn">业务知识 (24)</div>
+          <div class="tab-btn">历史用例 (21)</div>
+          <div class="tab-btn">技术参考 (9)</div>
+        </div>
+      </div>
+      <div class="knowledge-body">
+        <div class="doc-grid">
+          <div class="doc-card">
+            <div class="doc-icon">📄</div>
+            <div class="doc-name">数据中台测试规范 v3.0</div>
+            <div class="doc-meta"><span>256 chunks</span><span>2026-03-10</span></div>
+            <div class="doc-status">
+              <div class="status-dot ok"></div>已索引
+            </div>
+          </div>
+          <div class="doc-card">
+            <div class="doc-icon">📑</div>
+            <div class="doc-name">接口测试质量红线标准</div>
+            <div class="doc-meta"><span>128 chunks</span><span>2026-02-20</span></div>
+            <div class="doc-status">
+              <div class="status-dot ok"></div>已索引
+            </div>
+          </div>
+          <div class="doc-card">
+            <div class="doc-icon">📋</div>
+            <div class="doc-name">安全测试清单 2026</div>
+            <div class="doc-meta"><span>89 chunks</span><span>2026-01-15</span></div>
+            <div class="doc-status">
+              <div class="status-dot ok"></div>已索引
+            </div>
+          </div>
+          <div class="doc-card">
+            <div class="doc-icon">📊</div>
+            <div class="doc-name">性能测试基准指标库</div>
+            <div class="doc-meta"><span>143 chunks</span><span>2026-03-05</span></div>
+            <div class="doc-status">
+              <div class="status-dot warn"></div>重建索引中
+            </div>
+          </div>
+          <div class="doc-card">
+            <div class="doc-icon">🔒</div>
+            <div class="doc-name">数据权限设计规范</div>
+            <div class="doc-meta"><span>77 chunks</span><span>2026-02-18</span></div>
+            <div class="doc-status">
+              <div class="status-dot ok"></div>已索引
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Recycle ======= -->
+  <div class="page" id="page-recycle">
+    <div class="recycle-layout">
+      <div class="flex items-center justify-between mb-16">
+        <div>
+          <div style="font-size:18px;font-weight:600">回收站</div>
+          <div class="text-sm text-muted" style="margin-top:4px">已删除对象将在 30 天后自动永久清除</div>
+        </div>
+        <div class="flex gap-8">
+          <button class="btn btn-secondary btn-sm">批量恢复</button>
+          <button class="btn btn-danger btn-sm">清空回收站</button>
+        </div>
+      </div>
+      <table class="recycle-table">
+        <thead>
+          <tr>
+            <th style="width:32px"><input type="checkbox" style="accent-color:var(--sy-accent)"></th>
+            <th>类型</th>
+            <th>名称</th>
+            <th>删除时间</th>
+            <th>到期时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox" style="accent-color:var(--sy-accent)"></td>
+            <td><span class="badge badge-info">用例</span></td>
+            <td style="color:var(--sy-text)">登录模块-密码强度验证旧版</td>
+            <td class="text-xs">2026-03-15 14:23</td>
+            <td><span class="countdown urgent">剩余 3 天</span></td>
+            <td><button class="btn btn-ghost btn-sm text-accent">恢复</button></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" style="accent-color:var(--sy-accent)"></td>
+            <td><span class="badge badge-warn">需求</span></td>
+            <td style="color:var(--sy-text)">报表模块旧版需求草稿</td>
+            <td class="text-xs">2026-03-10 09:11</td>
+            <td><span class="countdown soon">剩余 8 天</span></td>
+            <td><button class="btn btn-ghost btn-sm text-accent">恢复</button></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" style="accent-color:var(--sy-accent)"></td>
+            <td><span class="badge badge-purple">知识</span></td>
+            <td style="color:var(--sy-text)">旧版接口测试规范 v1.0</td>
+            <td class="text-xs">2026-02-28 16:45</td>
+            <td><span class="countdown ok">剩余 19 天</span></td>
+            <td><button class="btn btn-ghost btn-sm text-accent">恢复</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======= Settings ======= -->
+  <div class="page" id="page-settings">
+    <div class="settings-layout">
+      <div class="settings-nav">
+        <div class="text-xs" style="color:var(--sy-text-3);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;padding:0 8px 6px">设置</div>
+        <div class="settings-nav-item active">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 1.6 2.77"/></svg>
+          AI 模型配置
+        </div>
+        <div class="settings-nav-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          Prompt 管理
+        </div>
+        <div class="settings-nav-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          测试标准
+        </div>
+        <div class="settings-nav-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          操作日志
+        </div>
+        <div class="settings-nav-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          集成配置
+        </div>
+      </div>
+      <div class="settings-main">
+        <div class="settings-section-title">AI 模型配置</div>
+        <div class="settings-section-desc">配置 LLM 提供商 API Key 及主/备降级策略，修改后立即生效</div>
+        <div class="settings-card">
+          <div class="settings-card-title">主 LLM 提供商</div>
+          <div class="settings-card-desc">用于需求分析、场景地图生成和用例生成</div>
+          <div class="provider-grid">
+            <div class="provider-card selected">
+              <div class="provider-name">智谱 AI</div>
+              <div class="provider-model">GLM-5 / GLM-4-Flash</div>
+              <div class="provider-status"><div class="status-dot ok"></div><span class="text-accent">已连接</span></div>
+            </div>
+            <div class="provider-card">
+              <div class="provider-name">阿里云百炼</div>
+              <div class="provider-model">Qwen-Max</div>
+              <div class="provider-status"><div class="status-dot ok"></div><span class="text-accent">已连接</span></div>
+            </div>
+            <div class="provider-card">
+              <div class="provider-name">DeepSeek</div>
+              <div class="provider-model">deepseek-chat V3</div>
+              <div class="provider-status"><div class="status-dot off"></div><span style="color:var(--sy-text-3)">未配置</span></div>
+            </div>
+            <div class="provider-card">
+              <div class="provider-name">Kimi（月之暗面）</div>
+              <div class="provider-model">moonshot-v1-32k</div>
+              <div class="provider-status"><div class="status-dot off"></div><span style="color:var(--sy-text-3)">未配置</span></div>
+            </div>
+            <div class="provider-card">
+              <div class="provider-name">OpenAI</div>
+              <div class="provider-model">gpt-4o</div>
+              <div class="provider-status"><div class="status-dot off"></div><span style="color:var(--sy-text-3)">未配置</span></div>
+            </div>
+            <div class="provider-card">
+              <div class="provider-name">Ollama（本地）</div>
+              <div class="provider-model">llama3 / 自定义</div>
+              <div class="provider-status"><div class="status-dot warn"></div><span class="text-warn">未检测</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-title">API Key 配置</div>
+          <div class="settings-card-desc">当前选中：智谱 AI</div>
+          <div class="form-group">
+            <label class="form-label">ZHIPU_API_KEY</label>
+            <input class="form-input" type="password" value="sk-••••••••••••••••••••••••••••3a7f" placeholder="输入 API Key...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">默认模型</label>
+            <select class="form-input">
+              <option>glm-5（推荐，性能更强）</option>
+              <option>glm-4-flash（快速响应）</option>
+            </select>
+          </div>
+          <div class="flex gap-8">
+            <button class="btn btn-secondary btn-sm">测试连接</button>
+            <button class="btn btn-primary btn-sm">保存配置</button>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-title">备用 LLM（降级策略）</div>
+          <div class="settings-card-desc">主模型失败后自动切换（重试 2 次后触发，指数退避 1s / 2s）</div>
+          <div class="form-group">
+            <label class="form-label">备用提供商</label>
+            <select class="form-input" style="max-width:240px">
+              <option>阿里云百炼 (qwen-max)</option>
+              <option>DeepSeek</option>
+              <option>无降级（直接报错）</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /pages -->
+</div><!-- /app -->
+
+<script>
+// ═══ Navigation ═══
+const navItems = document.querySelectorAll('.nav-item');
+const pages = document.querySelectorAll('.page');
+
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const target = item.dataset.page;
+    navItems.forEach(n => n.classList.remove('active'));
+    pages.forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    const page = document.getElementById('page-' + target);
+    if (page) page.classList.add('active');
+  });
+});
+
+// ═══ Tab switching (dash) ═══
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const parent = btn.closest('.dash-tabs, .right-tabs, .knowledge-tabs');
+    if (parent) {
+      parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  });
+});
+
+// ═══ Checkbox toggle ═══
+document.querySelectorAll('.tp-check').forEach(check => {
+  check.addEventListener('click', () => check.classList.toggle('checked'));
+});
+
+// ═══ Workbench step nav ═══
+const stepIndicator = document.querySelector('.step-indicator');
+if (stepIndicator) {
+  const backBtn = stepIndicator.querySelector('.btn-ghost');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      const dots = stepIndicator.querySelectorAll('.step-dot');
+      const labels = stepIndicator.querySelectorAll('.step-label');
+      dots[0].className = 'step-dot active';
+      dots[0].textContent = '1';
+      dots[1].className = 'step-dot pending';
+      dots[1].textContent = '2';
+      labels[0].className = 'step-label active';
+      labels[1].className = 'step-label pending';
+    });
+  }
+}
+
+// ═══ Settings nav ═══
+document.querySelectorAll('.settings-nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+// ═══ Req item select ═══
+document.querySelectorAll('.req-item, .tree-node').forEach(item => {
+  item.addEventListener('click', () => {
+    const siblings = item.closest('.req-list, .tc-tree')?.querySelectorAll('.req-item, .tree-node');
+    if (siblings) siblings.forEach(s => s.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+// ═══ Accept case btn animation ═══
+document.querySelectorAll('.case-card-footer .btn-primary').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.textContent = '✓ 已接受';
+    btn.style.background = 'var(--sy-accent-2)';
+    btn.disabled = true;
+    const card = btn.closest('.case-card');
+    if (card) {
+      card.style.opacity = '0.6';
+      card.style.transform = 'none';
+    }
+  });
+});
+
+// ═══ Provider card select ═══
+document.querySelectorAll('.provider-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  });
+});
+</script>
+</body>
+</html>

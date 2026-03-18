@@ -122,3 +122,11 @@ class TestEntityHistory:
         result = await svc.get_entity_history("test_case", uuid.uuid4())
 
         assert result == []
+
+
+class TestAuditModel:
+    def test_audit_log_model_does_not_require_soft_delete_column(self):
+        """审计日志表应与历史迁移保持一致，不要求 deleted_at 列。"""
+        from app.modules.audit.models import AuditLog
+
+        assert "deleted_at" not in AuditLog.__table__.columns.keys()

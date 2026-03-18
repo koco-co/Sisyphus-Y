@@ -34,6 +34,8 @@ _MODULE_NAMES = [
     "audit",
     "recycle",
     "ai_config",
+    "notification",
+    "test_plan",
     "tasks",
     "files",
 ]
