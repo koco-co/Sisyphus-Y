@@ -1,7 +1,7 @@
 """向量检索器 — 从 Qdrant 检索相似文档片段。
 
 职责：
-- 管理 Qdrant collection 的创建/连接
+- 管理 Qdrant collection 的创建/连接（AsyncQdrantClient）
 - 文档分块 → 嵌入 → 入库
 - 语义检索 + 元数据过滤
 - 格式化检索结果为 RAG 上下文字符串
@@ -11,7 +11,7 @@ import logging
 import uuid
 from dataclasses import dataclass
 
-from qdrant_client import QdrantClient, models
+from qdrant_client import AsyncQdrantClient, models
 
 from app.core.config import settings
 from app.engine.rag.chunker import Chunk
@@ -19,17 +19,8 @@ from app.engine.rag.embedder import EMBEDDING_DIMENSION, embed_query, embed_text
 
 logger = logging.getLogger(__name__)
 
-# ═══════════════════════════════════════════════════════════════════
-# 常量
-# ═══════════════════════════════════════════════════════════════════
-
 COLLECTION_NAME = "knowledge_chunks"
 TESTCASE_COLLECTION = "historical_testcases"
-
-
-# ═══════════════════════════════════════════════════════════════════
-# 检索结果
-# ═══════════════════════════════════════════════════════════════════
 
 
 @dataclass
@@ -42,32 +33,28 @@ class RetrievalResult:
     chunk_id: str
 
 
-# ═══════════════════════════════════════════════════════════════════
-# Qdrant 客户端（延迟初始化）
-# ═══════════════════════════════════════════════════════════════════
-
-_client: QdrantClient | None = None
+_client: AsyncQdrantClient | None = None
 
 
-def _get_client() -> QdrantClient:
-    """懒加载 Qdrant 客户端，避免导入时连接。"""
+def _get_client() -> AsyncQdrantClient:
+    """懒加载 AsyncQdrantClient，避免导入时连接。"""
     global _client  # noqa: PLW0603
     if _client is None:
-        _client = QdrantClient(
+        _client = AsyncQdrantClient(
             url=settings.qdrant_url,
             timeout=30,
-            trust_env=False,
         )
-        logger.info("Qdrant 客户端已连接: %s", settings.qdrant_url)
+        logger.info("AsyncQdrant 客户端已连接: %s", settings.qdrant_url)
     return _client
 
 
-def ensure_collection() -> None:
-    """确保 Qdrant collection 存在，不存在则创建。"""
+async def ensure_collection() -> None:
+    """确保 collection 存在，不存在则创建。"""
     client = _get_client()
-    collections = [c.name for c in client.get_collections().collections]
+    result = await client.get_collections()
+    collections = [c.name for c in result.collections]
     if COLLECTION_NAME not in collections:
-        client.create_collection(
+        await client.create_collection(
             collection_name=COLLECTION_NAME,
             vectors_config=models.VectorParams(
                 size=EMBEDDING_DIMENSION,
@@ -81,20 +68,25 @@ def ensure_collection() -> None:
         )
 
 
-def recreate_collection(*, collection_name: str = COLLECTION_NAME, vector_size: int = EMBEDDING_DIMENSION) -> dict:
+async def recreate_collection(
+    *,
+    collection_name: str = COLLECTION_NAME,
+    vector_size: int = EMBEDDING_DIMENSION,
+) -> dict:
     """删除并重建指定 collection，返回清理摘要。"""
     client = _get_client()
-    collections = [c.name for c in client.get_collections().collections]
+    result = await client.get_collections()
+    collections = [c.name for c in result.collections]
     existed = collection_name in collections
     deleted_points = 0
 
     if existed:
-        info = client.get_collection(collection_name=collection_name)
+        info = await client.get_collection(collection_name=collection_name)
         deleted_points = int(getattr(info, "points_count", 0) or 0)
-        client.delete_collection(collection_name=collection_name)
+        await client.delete_collection(collection_name=collection_name)
         logger.info("删除 Qdrant collection: %s (points=%d)", collection_name, deleted_points)
 
-    client.create_collection(
+    await client.create_collection(
         collection_name=collection_name,
         vectors_config=models.VectorParams(
             size=vector_size,
@@ -111,25 +103,12 @@ def recreate_collection(*, collection_name: str = COLLECTION_NAME, vector_size: 
     }
 
 
-# ═══════════════════════════════════════════════════════════════════
-# 文档入库
-# ═══════════════════════════════════════════════════════════════════
-
-
 async def index_chunks(chunks: list[Chunk], *, doc_id: str = "") -> int:
-    """将分块嵌入并写入 Qdrant。
-
-    Args:
-        chunks: 分块列表。
-        doc_id: 关联的知识库文档 ID（便于按文档删除）。
-
-    Returns:
-        成功写入的数量。
-    """
+    """将分块嵌入并写入 Qdrant。"""
     if not chunks:
         return 0
 
-    ensure_collection()
+    await ensure_collection()
     client = _get_client()
 
     texts = [c.content for c in chunks]
@@ -152,21 +131,16 @@ async def index_chunks(chunks: list[Chunk], *, doc_id: str = "") -> int:
             )
         )
 
-    client.upsert(collection_name=COLLECTION_NAME, points=points)
+    await client.upsert(collection_name=COLLECTION_NAME, points=points)
     logger.info("入库完成: %d chunks (doc_id=%s)", len(points), doc_id)
     return len(points)
 
 
-# ═══════════════════════════════════════════════════════════════════
-# 按文档 ID 删除
-# ═══════════════════════════════════════════════════════════════════
-
-
-def delete_by_doc_id(doc_id: str) -> None:
-    """删除指定文档的所有向量（文档更新/删除时调用）。"""
-    ensure_collection()
+async def _async_delete_by_doc_id(doc_id: str) -> None:
+    """异步删除指定文档的所有向量。"""
+    await ensure_collection()
     client = _get_client()
-    client.delete(
+    await client.delete(
         collection_name=COLLECTION_NAME,
         points_selector=models.FilterSelector(
             filter=models.Filter(
@@ -182,9 +156,9 @@ def delete_by_doc_id(doc_id: str) -> None:
     logger.info("已删除文档向量: doc_id=%s", doc_id)
 
 
-# ═══════════════════════════════════════════════════════════════════
-# 语义检索
-# ═══════════════════════════════════════════════════════════════════
+async def delete_by_doc_id(doc_id: str) -> None:
+    """删除指定文档的所有向量（文档更新/删除时调用）。"""
+    await _async_delete_by_doc_id(doc_id)
 
 
 async def retrieve(
@@ -194,18 +168,8 @@ async def retrieve(
     score_threshold: float = 0.72,
     doc_ids: list[str] | None = None,
 ) -> list[RetrievalResult]:
-    """语义检索最相似的文档片段。
-
-    Args:
-        query: 用户查询文本。
-        top_k: 返回的最大结果数。
-        score_threshold: 最低相似度阈值（0~1）。
-        doc_ids: 可选的文档 ID 过滤列表。
-
-    Returns:
-        按相似度降序排列的检索结果。
-    """
-    ensure_collection()
+    """语义检索最相似的文档片段。"""
+    await ensure_collection()
     client = _get_client()
 
     query_vector = await embed_query(query)
@@ -221,13 +185,13 @@ async def retrieve(
             ]
         )
 
-    results = client.query_points(
+    result = await client.query_points(
         collection_name=COLLECTION_NAME,
         query=query_vector,
         query_filter=query_filter,
         limit=top_k,
         score_threshold=score_threshold,
-    ).points
+    )
 
     return [
         RetrievalResult(
@@ -241,13 +205,8 @@ async def retrieve(
             },
             chunk_id=str(hit.id),
         )
-        for hit in results
+        for hit in result.points
     ]
-
-
-# ═══════════════════════════════════════════════════════════════════
-# 格式化为 Prompt 上下文
-# ═══════════════════════════════════════════════════════════════════
 
 
 async def retrieve_as_context(
@@ -257,11 +216,7 @@ async def retrieve_as_context(
     score_threshold: float = 0.72,
     doc_ids: list[str] | None = None,
 ) -> str | None:
-    """检索并格式化为可直接注入 Prompt 的上下文字符串。
-
-    返回 None 表示没有检索到相关内容。供 case_gen / diagnosis 等引擎
-    通过 ``rag_context`` 参数注入 7 层 Prompt 的 Layer 6。
-    """
+    """检索并格式化为可直接注入 Prompt 的上下文字符串。"""
     results = await retrieve(
         query,
         top_k=top_k,
@@ -279,11 +234,6 @@ async def retrieve_as_context(
     return "\n\n".join(parts)
 
 
-# ═══════════════════════════════════════════════════════════════════
-# 历史用例检索
-# ═══════════════════════════════════════════════════════════════════
-
-
 async def retrieve_similar_cases(
     query: str,
     *,
@@ -291,19 +241,10 @@ async def retrieve_similar_cases(
     score_threshold: float = 0.72,
     product: str | None = None,
 ) -> list[RetrievalResult]:
-    """从 historical_testcases collection 检索相似的历史用例。
-
-    Args:
-        query: 查询文本（通常是需求描述或测试点）。
-        top_k: 返回的最大结果数。
-        score_threshold: 最低相似度阈值。
-        product: 可选的产品名称过滤。
-
-    Returns:
-        按相似度降序排列的检索结果。
-    """
+    """从 historical_testcases collection 检索相似的历史用例。"""
     client = _get_client()
-    collections = [c.name for c in client.get_collections().collections]
+    result = await client.get_collections()
+    collections = [c.name for c in result.collections]
     if TESTCASE_COLLECTION not in collections:
         logger.warning("历史用例 collection '%s' 不存在，跳过检索", TESTCASE_COLLECTION)
         return []
@@ -321,13 +262,13 @@ async def retrieve_similar_cases(
             ]
         )
 
-    results = client.query_points(
+    result2 = await client.query_points(
         collection_name=TESTCASE_COLLECTION,
         query=query_vector,
         query_filter=query_filter,
         limit=top_k,
         score_threshold=score_threshold,
-    ).points
+    )
 
     return [
         RetrievalResult(
@@ -342,13 +283,8 @@ async def retrieve_similar_cases(
             },
             chunk_id=str(hit.id),
         )
-        for hit in results
+        for hit in result2.points
     ]
-
-
-# ═══════════════════════════════════════════════════════════════════
-# 分块预览（按文档 ID 滚动分页）
-# ═══════════════════════════════════════════════════════════════════
 
 
 async def scroll_by_doc_id(
@@ -356,21 +292,12 @@ async def scroll_by_doc_id(
     limit: int = 50,
     offset: int = 0,
 ) -> list[dict]:
-    """按文档 ID 分页获取 Qdrant 中的分块列表。
-
-    Args:
-        doc_id: 知识库文档 ID。
-        limit: 每页返回数量（最大 50）。
-        offset: 偏移量，用于分页。
-
-    Returns:
-        包含 content 和 chunk_index 的字典列表。文档不存在时返回空列表。
-    """
-    ensure_collection()
+    """按文档 ID 分页获取 Qdrant 中的分块列表。"""
+    await ensure_collection()
     client = _get_client()
 
     try:
-        points, _ = client.scroll(
+        scroll_result = await client.scroll(
             collection_name=COLLECTION_NAME,
             scroll_filter=models.Filter(
                 must=[
@@ -384,24 +311,17 @@ async def scroll_by_doc_id(
             offset=offset,
             with_payload=True,
         )
+        points = scroll_result[0]
     except Exception:
         logger.exception("scroll_by_doc_id 失败: doc_id=%s", doc_id)
         return []
 
-    result: list[dict] = []
+    out: list[dict] = []
     for idx, point in enumerate(points):
         payload = point.payload or {}
-        chunk_index = payload.get("chunk_index")
-        if chunk_index is None:
-            chunk_index = offset + idx
-        result.append(
-            {
-                "content": payload.get("content", ""),
-                "chunk_index": chunk_index,
-            }
-        )
-
-    return result
+        chunk_index = payload.get("chunk_index", offset + idx)
+        out.append({"content": payload.get("content", ""), "chunk_index": chunk_index})
+    return out
 
 
 async def retrieve_cases_as_context(
@@ -411,11 +331,7 @@ async def retrieve_cases_as_context(
     score_threshold: float = 0.72,
     product: str | None = None,
 ) -> str | None:
-    """检索历史用例并格式化为 Prompt 上下文。
-
-    返回 None 表示没有检索到相关内容。供 case_gen 引擎
-    通过 ``historical_cases_context`` 参数注入 Prompt。
-    """
+    """检索历史用例并格式化为 Prompt 上下文。"""
     results = await retrieve_similar_cases(
         query,
         top_k=top_k,
