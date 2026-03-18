@@ -46,20 +46,30 @@ class TestCaseList(BaseModel):
 # ═══════════════════════════════════════════════════════════════════
 
 
-def _build_structured_llm() -> Any:
-    """构建带结构化输出的 LangChain LLM 实例（GLM-5 OpenAI 兼容接口）。"""
+def _build_llm() -> Any:
+    """构建 LangChain ChatOpenAI 实例（GLM OpenAI 兼容接口，禁用系统代理）。"""
     import httpx
 
-    http_client = httpx.Client(proxy=None, trust_env=False)
-    async_http_client = httpx.AsyncClient(proxy=None, trust_env=False)
     return ChatOpenAI(
-        model="glm-5",
+        model=settings.zhipu_model,
         api_key=settings.zhipu_api_key,
         base_url="https://open.bigmodel.cn/api/paas/v4/",
         temperature=0.3,
-        http_client=http_client,
-        http_async_client=async_http_client,
-    ).with_structured_output(TestCaseList)
+        http_client=httpx.Client(proxy=None, trust_env=False),
+        http_async_client=httpx.AsyncClient(proxy=None, trust_env=False),
+    )
+
+
+def _validate_cases(raw: list[dict]) -> list[dict]:
+    """对 JSON 解析结果逐条 Pydantic 校验，过滤不合法用例。"""
+    valid: list[dict] = []
+    for item in raw:
+        try:
+            case = TestCase.model_validate(item)
+            valid.append(case.model_dump())
+        except Exception:
+            logger.debug("用例 Pydantic 校验失败，跳过: %s", item.get("title", "?"))
+    return valid
 
 
 @traceable(name="structured_case_gen", tags=["structured-output"])
@@ -68,7 +78,10 @@ async def generate_cases_structured(
     *,
     fallback_text: str | None = None,
 ) -> list[dict]:
-    """结构化生成用例，Pydantic 强校验，失败时降级到正则解析。
+    """结构化生成用例：调用 LLM → 提取 JSON → Pydantic 校验，失败时降级正则解析。
+
+    GLM 经常在 JSON 外包裹 markdown 代码围栏，此处通过 parse_test_cases 提取，
+    再用 Pydantic 逐条校验，替代 with_structured_output 以保证健壮性。
 
     Args:
         messages: OpenAI 格式消息列表（含 system + user 等）。
@@ -78,10 +91,12 @@ async def generate_cases_structured(
         标准化用例字典列表，与 _standardize_cases 输出格式兼容。
     """
     try:
-        llm = _build_structured_llm()
-        result: TestCaseList = await llm.ainvoke(messages)
-        cases = [c.model_dump() for c in result.cases]
-        logger.info("结构化输出成功: %d 条用例", len(cases))
+        llm = _build_llm()
+        response = await llm.ainvoke(messages)
+        raw_text = response.content if hasattr(response, "content") else str(response)
+        raw_cases = parse_test_cases(raw_text)
+        cases = _validate_cases(raw_cases)
+        logger.info("结构化输出成功: %d 条用例（原始 %d 条）", len(cases), len(raw_cases))
         return cases
     except Exception as e:
         logger.warning("结构化输出失败，降级到正则解析: %s", e)

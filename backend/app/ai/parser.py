@@ -30,14 +30,15 @@ def _extract_json(text: str) -> list[dict] | dict | None:
     except json.JSONDecodeError:
         pass
 
-    # 3. First JSON array embedded in prose
-    for match in re.finditer(r"\[[\s\S]*?\]", text):
+    # 3. Greedy search: first '[' to last ']' captures full outer array
+    match = re.search(r"\[.*\]", text, re.DOTALL)
+    if match:
         try:
             result = json.loads(match.group())
             if isinstance(result, list):
                 return result
         except json.JSONDecodeError:
-            continue
+            pass
 
     return None
 
