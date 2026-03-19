@@ -1,20 +1,20 @@
-import { expect, mock, test } from 'bun:test';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { expect, mock, test } from "bun:test";
+import { renderToStaticMarkup } from "react-dom/server";
 
 const mockWorkbenchState = {
   sessions: [],
   activeSessionId: null,
   selectedReqId: null as string | null,
-  selectedReqTitle: '',
-  selectedMode: 'test_point_driven',
+  selectedReqTitle: "",
+  selectedMode: "test_point_driven",
   messages: [],
   testCases: [],
   contextItems: [],
   priorityFilter: null,
   typeFilter: null,
   sse: {
-    content: '',
-    thinking: '',
+    content: "",
+    thinking: "",
     cases: [],
     isStreaming: false,
   },
@@ -33,11 +33,11 @@ const mockWorkbenchState = {
 
 const mockSceneMapState = {
   selectedReqId: null as string | null,
-  selectedReqTitle: '',
+  selectedReqTitle: "",
   testPoints: [],
   selectedPointId: null as string | null,
   checkedPointIds: new Set<string>(),
-  searchQuery: '',
+  searchQuery: "",
   isLocked: false,
   stats: {
     total: 0,
@@ -63,42 +63,42 @@ const mockSceneMapState = {
 
 const mockAiConfigState = {
   effectiveConfig: {
-    llm_model: 'glm-5-flash',
+    llm_model: "glm-5-flash",
   },
   modelConfigs: [
     {
-      id: 'model-001',
+      id: "model-001",
       is_enabled: true,
-      model_id: 'glm-5-flash',
+      model_id: "glm-5-flash",
     },
   ],
   loading: false,
 };
 
-mock.module('@/hooks/useWorkbench', () => ({
+mock.module("@/hooks/useWorkbench", () => ({
   useWorkbench: () => mockWorkbenchState,
 }));
 
-mock.module('@/hooks/useSceneMap', () => ({
+mock.module("@/hooks/useSceneMap", () => ({
   useSceneMap: () => mockSceneMapState,
 }));
 
-mock.module('@/hooks/useAiConfig', () => ({
+mock.module("@/hooks/useAiConfig", () => ({
   useAiConfig: () => mockAiConfigState,
 }));
 
-mock.module('@/stores/workspace-store', () => ({
+mock.module("@/stores/workspace-store", () => ({
   useWorkspaceStore: () => ({
     selectedReqId: null,
     activeSessionId: null,
   }),
 }));
 
-mock.module('next/navigation', () => ({
+mock.module("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-mock.module('next/link', () => ({
+mock.module("next/link", () => ({
   default: ({
     href,
     children,
@@ -114,7 +114,7 @@ mock.module('next/link', () => ({
   ),
 }));
 
-mock.module('@/components/layout/ThreeColLayout', () => ({
+mock.module("@/components/layout/ThreeColLayout", () => ({
   ThreeColLayout: ({
     left,
     center,
@@ -132,46 +132,46 @@ mock.module('@/components/layout/ThreeColLayout', () => ({
   ),
 }));
 
-mock.module('./_components/RequirementNav', () => ({
+mock.module("./_components/RequirementNav", () => ({
   RequirementNav: () => <div>RequirementNav</div>,
 }));
 
-mock.module('./_components/GeneratedCases', () => ({
+mock.module("./_components/GeneratedCases", () => ({
   GeneratedCases: () => <div>GeneratedCases</div>,
 }));
 
-mock.module('./_components/GeneratedCasesByPoint', () => ({
+mock.module("./_components/GeneratedCasesByPoint", () => ({
   GeneratedCasesByPoint: () => <div>GeneratedCasesByPoint</div>,
 }));
 
-mock.module('./_components/GenerationPanel', () => ({
+mock.module("./_components/GenerationPanel", () => ({
   GenerationPanel: () => <div>GenerationPanel</div>,
 }));
 
-mock.module('./_components/TestPointGroupList', () => ({
+mock.module("./_components/TestPointGroupList", () => ({
   default: () => <div>TestPointGroupList</div>,
 }));
 
-mock.module('./_components/WorkbenchStepBar', () => ({
+mock.module("./_components/WorkbenchStepBar", () => ({
   default: () => <div>WorkbenchStepBar</div>,
 }));
 
-mock.module('./_components/ContextPanel', () => ({
+mock.module("./_components/ContextPanel", () => ({
   ContextPanel: () => <div>ContextPanel</div>,
 }));
 
-mock.module('@/components/ui/AiConfigBanner', () => ({
+mock.module("@/components/ui/AiConfigBanner", () => ({
   AiConfigBanner: () => <div>AiConfigBanner</div>,
 }));
 
-test('workbench empty state guides users to requirement entry and sample data', async () => {
-  const module = await import('./page');
+test("workbench empty state guides users to requirement entry and sample data", async () => {
+  const module = await import("./page");
   const WorkbenchPage = module.default;
 
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
-  expect(html).toContain('前往需求录入');
-  expect(html).toContain('查看示例用例');
+  expect(html).toContain("前往需求录入");
+  expect(html).toContain("查看示例用例");
   expect(html).toContain('href="/requirements"');
   expect(html).toContain('href="/testcases"');
 });

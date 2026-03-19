@@ -1,4 +1,4 @@
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { NextResponse } from "next/server";
 
@@ -349,11 +349,79 @@ export async function GET() {
     const filePath = await resolveProgressFilePath();
     const content = await readFile(filePath, "utf-8");
     const raw = JSON.parse(content) as LegacyRawProgress | CurrentRawProgress;
-    return NextResponse.json(transformProgress(raw));
+    const transformed = transformProgress(raw);
+
+    // Attach live backend stats if available (graceful fallback on failure)
+    let liveStats: Record<string, unknown> | null = null;
+    try {
+      const backendUrl = process.env.BACKEND_URL ?? "http://localhost:8000";
+      const res = await fetch(`${backendUrl}/api/dashboard/stats`, {
+        signal: AbortSignal.timeout(2000),
+      });
+      if (res.ok) {
+        liveStats = (await res.json()) as Record<string, unknown>;
+      }
+    } catch {
+      // backend not available — liveStats stays null
+    }
+
+    return NextResponse.json({ ...transformed, liveStats });
   } catch {
     return NextResponse.json(
       { error: "Progress data not available" },
       { status: 404 },
     );
+  }
+}
+
+/** PATCH /api/progress — update a single task's status in progress.json */
+export async function PATCH(req: Request) {
+  try {
+    const body = (await req.json()) as { taskId: string; status: string };
+    if (!body.taskId || !body.status) {
+      return NextResponse.json({ error: "taskId and status are required" }, { status: 400 });
+    }
+
+    const VALID_STATUSES = ["pending", "passed", "failed", "manual_required"];
+    if (!VALID_STATUSES.includes(body.status)) {
+      return NextResponse.json({ error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}` }, { status: 400 });
+    }
+
+    const filePath = await resolveProgressFilePath();
+    const content = await readFile(filePath, "utf-8");
+    const raw = JSON.parse(content) as CurrentRawProgress;
+
+    const task = raw.tasks.find((t) => t.id === body.taskId);
+    if (!task) {
+      return NextResponse.json({ error: `Task ${body.taskId} not found` }, { status: 404 });
+    }
+
+    // Mutate and persist
+    task.status = body.status;
+    if (body.status === "passed") {
+      (task as CurrentRawTask & { passed_at?: string }).passed_at = new Date().toISOString();
+    }
+    raw.last_updated = new Date().toISOString();
+
+    // Recompute aggregate stats
+    const statusCounts: Record<string, number> = {};
+    for (const t of raw.tasks) {
+      statusCounts[t.status] = (statusCounts[t.status] ?? 0) + 1;
+    }
+    raw.stats = {
+      total: raw.tasks.length,
+      passed: statusCounts.passed ?? 0,
+      failed: statusCounts.failed ?? 0,
+      pending: statusCounts.pending ?? 0,
+      blocked: statusCounts.blocked ?? 0,
+      manual_required: statusCounts.manual_required ?? 0,
+    };
+
+    await writeFile(filePath, JSON.stringify(raw, null, 2), "utf-8");
+
+    return NextResponse.json({ ok: true, taskId: body.taskId, status: body.status });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

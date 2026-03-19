@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Circle,
   Loader2,
+  RotateCcw,
   X,
   XCircle,
 } from "lucide-react";
@@ -34,12 +35,33 @@ interface Phase {
   modules: Module[];
 }
 
+interface LiveStats {
+  requirement_count?: number;
+  testcase_count?: number;
+  coverage_rate?: number;
+  weekly_cases?: number;
+  pending_diagnosis?: number;
+  selected_iteration_name?: string | null;
+}
+
 interface ProgressData {
   mode?: string;
   version: string;
   lastUpdated: string;
   phases: Phase[];
+  liveStats?: LiveStats | null;
 }
+
+// Task statuses cycle: pending → passed → failed → pending
+const TASK_STATUS_CYCLE: Record<string, string> = {
+  pending: "passed",
+  passed: "failed",
+  failed: "pending",
+  manual_required: "passed",
+  done: "pending",
+  in_progress: "passed",
+  partial: "passed",
+};
 
 const STATUS_CFG = {
   done: {
@@ -119,13 +141,30 @@ function getPhaseProgress(phase: Phase): number {
   return Math.round(((done + partial * 0.5) / statuses.length) * 100);
 }
 
-function ModuleRow({ mod }: { mod: Module }) {
+function ModuleRow({
+  mod,
+  onTaskUpdate,
+}: {
+  mod: Module;
+  onTaskUpdate: (taskId: string, newStatus: string) => Promise<void>;
+}) {
   const [expanded, setExpanded] = useState(false);
+  const [updating, setUpdating] = useState<string | null>(null);
   const hasTasks = (mod.tasks?.length ?? 0) > 0;
   const taskProgress = hasTasks && mod.tasks ? getProgress(mod.tasks) : 0;
   const derivedStatus = deriveModuleStatus(mod);
   const cfg = STATUS_CFG[derivedStatus] ?? STATUS_CFG.pending;
   const showIdentifier = mod.id !== mod.name;
+
+  async function handleTaskClick(task: Task) {
+    const nextStatus = TASK_STATUS_CYCLE[task.status] ?? "passed";
+    setUpdating(task.id);
+    try {
+      await onTaskUpdate(task.id, nextStatus);
+    } finally {
+      setUpdating(null);
+    }
+  }
 
   return (
     <div>
@@ -196,6 +235,7 @@ function ModuleRow({ mod }: { mod: Module }) {
           {mod.tasks?.map((task) => {
             const tc =
               STATUS_CFG[task.status as StatusKey] ?? STATUS_CFG.pending;
+            const isUpdating = updating === task.id;
             return (
               <div
                 key={task.id}
@@ -207,7 +247,31 @@ function ModuleRow({ mod }: { mod: Module }) {
                   fontSize: 11.5,
                 }}
               >
-                <StatusIcon status={task.status} size={11} />
+                <button
+                  type="button"
+                  title="点击切换状态"
+                  disabled={isUpdating}
+                  onClick={() => handleTaskClick(task)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    opacity: isUpdating ? 0.5 : 1,
+                  }}
+                >
+                  {isUpdating ? (
+                    <Loader2
+                      size={11}
+                      className="animate-spin"
+                      style={{ color: "var(--text3)" }}
+                    />
+                  ) : (
+                    <StatusIcon status={task.status} size={11} />
+                  )}
+                </button>
                 <span style={{ flex: 1, color: "var(--text2)" }}>
                   {task.name}
                 </span>
@@ -240,7 +304,13 @@ function ModuleRow({ mod }: { mod: Module }) {
   );
 }
 
-function PhaseSection({ phase }: { phase: Phase }) {
+function PhaseSection({
+  phase,
+  onTaskUpdate,
+}: {
+  phase: Phase;
+  onTaskUpdate: (taskId: string, newStatus: string) => Promise<void>;
+}) {
   const [expanded, setExpanded] = useState(phase.status === "in_progress");
   const progress = getPhaseProgress(phase);
 
@@ -293,7 +363,7 @@ function PhaseSection({ phase }: { phase: Phase }) {
             />
           </div>
           {phase.modules.map((mod) => (
-            <ModuleRow key={mod.id} mod={mod} />
+            <ModuleRow key={mod.id} mod={mod} onTaskUpdate={onTaskUpdate} />
           ))}
         </div>
       )}
@@ -322,6 +392,46 @@ export default function ProgressDashboard() {
     }
   }, []);
 
+  /** Update a task status via PATCH, then immediately refresh */
+  const handleTaskUpdate = useCallback(
+    async (taskId: string, newStatus: string) => {
+      // Optimistic local update
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          phases: prev.phases.map((phase) => ({
+            ...phase,
+            modules: phase.modules.map((mod) => ({
+              ...mod,
+              tasks: mod.tasks?.map((task) =>
+                task.id === taskId
+                  ? { ...task, status: newStatus as Task["status"] }
+                  : task,
+              ),
+            })),
+          })),
+        };
+      });
+
+      try {
+        const res = await fetch("/api/progress", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ taskId, status: newStatus }),
+        });
+        if (!res.ok) {
+          console.warn("Failed to update task status");
+        }
+      } catch (e) {
+        console.warn("Failed to update task status:", e);
+      }
+      // Refresh to get server-consistent state (includes recomputed stats)
+      await fetchProgress();
+    },
+    [fetchProgress],
+  );
+
   useEffect(() => {
     fetchProgress();
   }, [fetchProgress]);
@@ -329,7 +439,8 @@ export default function ProgressDashboard() {
   useEffect(() => {
     if (open) {
       fetchProgress();
-      const interval = setInterval(fetchProgress, 30000);
+      // Poll every 10 seconds while panel is open
+      const interval = setInterval(fetchProgress, 10000);
       return () => clearInterval(interval);
     }
   }, [open, fetchProgress]);
@@ -439,6 +550,23 @@ export default function ProgressDashboard() {
           )}
           <button
             type="button"
+            onClick={fetchProgress}
+            title="立即刷新"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--text3)",
+              display: "flex",
+              padding: 4,
+              borderRadius: 4,
+            }}
+            aria-label="刷新"
+          >
+            <RotateCcw size={14} />
+          </button>
+          <button
+            type="button"
             onClick={() => setOpen(false)}
             style={{
               background: "none",
@@ -530,9 +658,96 @@ export default function ProgressDashboard() {
                 </div>
               </div>
 
+              {/* Live backend stats — shown when backend is available */}
+              {data.liveStats && (
+                <div
+                  className="card"
+                  style={{ marginBottom: 14, padding: "10px 12px" }}
+                >
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--text3)",
+                      marginBottom: 8,
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    实时统计
+                    {data.liveStats.selected_iteration_name && (
+                      <span
+                        style={{ marginLeft: 6, color: "var(--accent)", fontWeight: 400 }}
+                      >
+                        · {data.liveStats.selected_iteration_name}
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(3, 1fr)",
+                      gap: 8,
+                    }}
+                  >
+                    {[
+                      { label: "需求", value: data.liveStats.requirement_count ?? 0 },
+                      { label: "用例", value: data.liveStats.testcase_count ?? 0 },
+                      {
+                        label: "覆盖率",
+                        value: `${Math.round((data.liveStats.coverage_rate ?? 0) * 100)}%`,
+                      },
+                      {
+                        label: "本周新增",
+                        value: data.liveStats.weekly_cases ?? 0,
+                      },
+                      {
+                        label: "待分析",
+                        value: data.liveStats.pending_diagnosis ?? 0,
+                      },
+                    ].map((stat) => (
+                      <div
+                        key={stat.label}
+                        style={{
+                          textAlign: "center",
+                          background: "var(--bg2)",
+                          borderRadius: 6,
+                          padding: "6px 4px",
+                        }}
+                      >
+                        <div
+                          className="mono"
+                          style={{
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: "var(--accent)",
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {stat.value}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            color: "var(--text3)",
+                            marginTop: 2,
+                          }}
+                        >
+                          {stat.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Phase list */}
               {data.phases.map((phase) => (
-                <PhaseSection key={phase.id} phase={phase} />
+                <PhaseSection
+                  key={phase.id}
+                  phase={phase}
+                  onTaskUpdate={handleTaskUpdate}
+                />
               ))}
             </>
           ) : (

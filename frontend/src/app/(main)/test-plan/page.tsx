@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function TestPlanCompatibilityPage() {
   return (
@@ -7,7 +7,9 @@ export default function TestPlanCompatibilityPage() {
         <p className="text-[11px] font-mono uppercase tracking-[0.24em] text-sy-text-3">
           Deprecated Route
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-sy-text">测试计划模块已下线</h1>
+        <h1 className="mt-3 text-3xl font-semibold text-sy-text">
+          测试计划模块已下线
+        </h1>
         <p className="mt-3 max-w-2xl text-[14px] leading-6 text-sy-text-2">
           当前版本不再维护独立的“测试计划”页面。原有规划动作已经收敛到分析台、工作台和用例库主链路中，避免与现行交付流程脱节。
         </p>
