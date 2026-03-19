@@ -29,7 +29,7 @@ const progressPayloadWithLiveStats = {
   liveStats: {
     requirement_count: 12,
     testcase_count: 108,
-    coverage_rate: 0.87,
+    coverage_rate: 87,
     weekly_cases: 23,
     pending_diagnosis: 3,
     selected_iteration_name: "迭代 v1.0",
@@ -86,7 +86,9 @@ describe("ProgressDashboard", () => {
     });
 
     render(<ProgressDashboard />);
-    fireEvent.click(await screen.findByRole("button", { name: "打开测试进度大盘" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "打开测试进度大盘" }),
+    );
 
     expect(await screen.findByText("实时统计")).toBeInTheDocument();
     expect(screen.getByText("需求")).toBeInTheDocument();
@@ -97,7 +99,9 @@ describe("ProgressDashboard", () => {
 
   it("does not show live stats section when liveStats is null", async () => {
     render(<ProgressDashboard />);
-    fireEvent.click(await screen.findByRole("button", { name: "打开测试进度大盘" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "打开测试进度大盘" }),
+    );
 
     await screen.findByText("验收任务");
     expect(screen.queryByText("实时统计")).not.toBeInTheDocument();
@@ -106,7 +110,9 @@ describe("ProgressDashboard", () => {
   it("clicking a task status icon sends PATCH and refreshes", async () => {
     // Expanding the workbench module to see task row
     render(<ProgressDashboard />);
-    fireEvent.click(await screen.findByRole("button", { name: "打开测试进度大盘" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "打开测试进度大盘" }),
+    );
     await screen.findByText("验收任务");
 
     // Expand the module row to reveal tasks
@@ -139,7 +145,9 @@ describe("ProgressDashboard", () => {
 
   it("manual refresh button triggers a new fetch", async () => {
     render(<ProgressDashboard />);
-    fireEvent.click(await screen.findByRole("button", { name: "打开测试进度大盘" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "打开测试进度大盘" }),
+    );
     await screen.findByText("验收任务");
 
     const callsBefore = fetchMock.mock.calls.length;

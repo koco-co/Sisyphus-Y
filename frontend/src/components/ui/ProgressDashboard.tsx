@@ -677,7 +677,11 @@ export default function ProgressDashboard() {
                     实时统计
                     {data.liveStats.selected_iteration_name && (
                       <span
-                        style={{ marginLeft: 6, color: "var(--accent)", fontWeight: 400 }}
+                        style={{
+                          marginLeft: 6,
+                          color: "var(--accent)",
+                          fontWeight: 400,
+                        }}
                       >
                         · {data.liveStats.selected_iteration_name}
                       </span>
@@ -691,11 +695,17 @@ export default function ProgressDashboard() {
                     }}
                   >
                     {[
-                      { label: "需求", value: data.liveStats.requirement_count ?? 0 },
-                      { label: "用例", value: data.liveStats.testcase_count ?? 0 },
+                      {
+                        label: "需求",
+                        value: data.liveStats.requirement_count ?? 0,
+                      },
+                      {
+                        label: "用例",
+                        value: data.liveStats.testcase_count ?? 0,
+                      },
                       {
                         label: "覆盖率",
-                        value: `${Math.round((data.liveStats.coverage_rate ?? 0) * 100)}%`,
+                        value: `${Math.round(data.liveStats.coverage_rate ?? 0)}%`,
                       },
                       {
                         label: "本周新增",
