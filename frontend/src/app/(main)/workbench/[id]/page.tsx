@@ -195,7 +195,7 @@ export default function WorkbenchPage() {
               disabled={isStreaming || !input.trim()}
               className="px-5 py-2 rounded-md text-[12px] font-semibold bg-sy-accent text-black disabled:opacity-50 hover:bg-sy-accent-2 transition-colors"
             >
-              生成
+              {isStreaming ? '正在编写测试步骤...' : '开始生成用例'}
             </button>
           </div>
         </div>

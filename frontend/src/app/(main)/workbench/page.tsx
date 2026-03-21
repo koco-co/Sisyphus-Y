@@ -306,8 +306,8 @@ function WorkbenchPageContent() {
         <div className="flex-1 flex items-center justify-center">
           <EmptyState
             icon={<Sparkles className="w-12 h-12" />}
-            title="请从左侧选择需求"
-            description="先进入需求录入或用例库选择可用需求，再回来完成 Step 1 测试点确认与 Step 2 用例生成。"
+            title="从左侧选择一个需求"
+            description="AI 会根据已确认的测试点生成用例"
             action={
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Link
