@@ -17,14 +17,16 @@ export function useSSEStream() {
     const decoder = new TextDecoder();
     let buffer = '';
     let contentReceived = false;
+    let organizeTriggered = false;
 
     for (;;) {
       const { done, value } = await reader.read();
       if (done) {
-        if (contentReceived) {
+        if (contentReceived && !organizeTriggered) {
+          organizeTriggered = true;
           setOrganizing();
           setTimeout(() => setDone(), 800);
-        } else {
+        } else if (!organizeTriggered) {
           setDone();
         }
         break;
@@ -47,8 +49,11 @@ export function useSSEStream() {
             appendContent(payload.delta ?? '');
             contentReceived = true;
           } else if (eventType === 'done') {
-            setOrganizing();
-            setTimeout(() => setDone(), 800);
+            if (!organizeTriggered) {
+              organizeTriggered = true;
+              setOrganizing();
+              setTimeout(() => setDone(), 800);
+            }
           }
         } catch {
           /* ignore parse errors */

@@ -39,7 +39,7 @@ export function SmartNextCard({
   if (!visible) return null;
 
   return (
-    <div className="mt-4 rounded-xl border border-sy-accent/30 bg-sy-accent/5 p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="mt-4 rounded-xl border border-sy-accent/30 bg-sy-accent/5 p-4 fade-in transition-all duration-300">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <p className="text-[13px] font-medium text-sy-text">{title}</p>
