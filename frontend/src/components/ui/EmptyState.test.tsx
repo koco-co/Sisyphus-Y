@@ -13,10 +13,10 @@ describe('EmptyState', () => {
       expect(icon).toHaveClass('w-12', 'h-12');
     });
 
-    it('renders default title "暂无数据"', () => {
+    it('renders default title "这里还没有内容"', () => {
       render(<EmptyState />);
 
-      expect(screen.getByText('暂无数据')).toBeInTheDocument();
+      expect(screen.getByText('这里还没有内容')).toBeInTheDocument();
     });
   });
 
