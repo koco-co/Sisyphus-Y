@@ -1,4 +1,4 @@
-"""诊断扫描异步任务 — 对需求文档执行 6 维度风险扫描。"""
+"""分析扫描异步任务 — 对需求文档执行 6 维度风险扫描。"""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 @celery_app.task(bind=True, name="app.tasks.diagnosis_task.run_diagnosis_scan", max_retries=3)
 def run_diagnosis_scan(self, requirement_id: str, requirement_text: str) -> dict:
-    """对需求文档执行异步诊断扫描。
+    """对需求文档执行异步分析扫描。
 
     Args:
         requirement_id: 需求 ID
@@ -30,11 +30,11 @@ def run_diagnosis_scan(self, requirement_id: str, requirement_text: str) -> dict
 
         self.update_state(state="STARTED", meta={"step": "saving", "progress": 80})
 
-        logger.info("诊断扫描完成: requirement_id=%s, risks=%d", requirement_id, len(risks))
+        logger.info("分析扫描完成: requirement_id=%s, risks=%d", requirement_id, len(risks))
         return {"status": "success", "requirement_id": requirement_id, "risk_count": len(risks), "risks": risks}
 
     except Exception as exc:
-        logger.error("诊断扫描失败 requirement_id=%s: %s", requirement_id, exc, exc_info=True)
+        logger.error("分析扫描失败 requirement_id=%s: %s", requirement_id, exc, exc_info=True)
         try:
             self.retry(exc=exc, countdown=2**self.request.retries)
         except self.MaxRetriesExceededError:

@@ -186,6 +186,37 @@ async def get_providers() -> dict:
                 ],
             },
             {
+                "id": "siliconflow",
+                "name": "硅基流动",
+                "description": "国内高性价比推理平台，支持 Kimi K2、DeepSeek 等热门开源模型",
+                "api_key_placeholder": "sk-xxxxxxxxxxxxxxxx",
+                "requires_base_url": True,
+                "default_base_url": "https://api.siliconflow.cn/v1",
+                "models": [
+                    {
+                        "id": "moonshotai/Kimi-K2-Instruct",
+                        "name": "Kimi K2 Instruct",
+                        "description": "月之暗面最新旗舰模型，中文能力强",
+                        "recommended": True,
+                    },
+                    {
+                        "id": "deepseek-ai/DeepSeek-V3",
+                        "name": "DeepSeek-V3",
+                        "description": "推理与编程优秀",
+                    },
+                    {
+                        "id": "Qwen/Qwen2.5-72B-Instruct",
+                        "name": "Qwen2.5-72B",
+                        "description": "通义千问 72B 指令版",
+                    },
+                    {
+                        "id": "deepseek-ai/DeepSeek-R1",
+                        "name": "DeepSeek-R1",
+                        "description": "深度推理模型",
+                    },
+                ],
+            },
+            {
                 "id": "openrouter",
                 "name": "OpenRouter",
                 "description": "统一接入多家模型供应商，支持直接填写自定义模型 ID",
@@ -229,6 +260,45 @@ async def get_providers() -> dict:
     }
 
 
+@router.get("/prompts")
+async def list_prompt_configs_early(session: AsyncSessionDep) -> list[dict]:
+    """Return all module prompts (registered before /{config_id} to avoid 422)."""
+    svc = PromptConfigService(session)
+    db_records = await svc.list_prompts()
+    db_map = {r.module: r for r in db_records}
+
+    result = []
+    for module_key in _MODULE_PROMPTS:
+        if module_key in db_map:
+            r = db_map[module_key]
+            result.append(
+                {
+                    "id": str(r.id),
+                    "module_key": r.module,
+                    "prompt_text": r.system_prompt,
+                    "is_default": False,
+                    "is_customized": r.is_customized,
+                    "version": r.version,
+                    "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+                    "created_at": r.created_at.isoformat() if r.created_at else None,
+                }
+            )
+        else:
+            result.append(
+                {
+                    "id": None,
+                    "module_key": module_key,
+                    "prompt_text": get_system_prompt(module_key),
+                    "is_default": True,
+                    "is_customized": False,
+                    "version": 0,
+                    "updated_at": None,
+                    "created_at": None,
+                }
+            )
+    return result
+
+
 @router.get("/{config_id}", response_model=AiConfigResponse)
 async def get_config(
     config_id: uuid.UUID, session: AsyncSessionDep
@@ -268,6 +338,7 @@ async def test_llm_connection(
         result = await invoke_llm(
             [{"role": "user", "content": "请回复'连接成功'四个字。"}],
             provider=provider,
+            model=model,
             max_retries=0,
         )
         return {
@@ -399,45 +470,6 @@ async def test_model_config(
 
 
 # ── Prompt Configuration endpoints ────────────────────────────────
-
-
-@router.get("/prompts")
-async def list_prompt_configs(session: AsyncSessionDep) -> list[dict]:
-    """Return all 6 module prompts, merging DB records with hardcoded defaults."""
-    svc = PromptConfigService(session)
-    db_records = await svc.list_prompts()
-    db_map = {r.module: r for r in db_records}
-
-    result = []
-    for module_key in _MODULE_PROMPTS:
-        if module_key in db_map:
-            r = db_map[module_key]
-            result.append(
-                {
-                    "id": str(r.id),
-                    "module_key": r.module,
-                    "prompt_text": r.system_prompt,
-                    "is_default": False,
-                    "is_customized": r.is_customized,
-                    "version": r.version,
-                    "updated_at": r.updated_at.isoformat() if r.updated_at else None,
-                    "created_at": r.created_at.isoformat() if r.created_at else None,
-                }
-            )
-        else:
-            result.append(
-                {
-                    "id": None,
-                    "module_key": module_key,
-                    "prompt_text": get_system_prompt(module_key),
-                    "is_default": True,
-                    "is_customized": False,
-                    "version": 0,
-                    "updated_at": None,
-                    "created_at": None,
-                }
-            )
-    return result
 
 
 @router.get("/prompts/{module}", response_model=PromptConfigResponse | None)

@@ -85,7 +85,7 @@ const mockPrompts = [
 ];
 
 const _PROMPT_DISPLAY_NAMES: Record<string, string> = {
-  diagnosis: '需求诊断',
+  diagnosis: '需求分析',
   scene_map: '场景地图',
   generation: '用例生成',
   diagnosis_followup: '追问补充',
@@ -118,7 +118,7 @@ describe('TemplatesPage - Prompt Tab', () => {
 
     await waitFor(() => {
       // Verify all 6 module names are displayed
-      expect(screen.getByText('需求诊断')).toBeInTheDocument();
+      expect(screen.getByText('需求分析')).toBeInTheDocument();
       expect(screen.getByText('场景地图')).toBeInTheDocument();
       expect(screen.getByText('用例生成')).toBeInTheDocument();
       expect(screen.getByText('追问补充')).toBeInTheDocument();
@@ -151,15 +151,15 @@ describe('TemplatesPage - Prompt Tab', () => {
     fireEvent.click(promptTab);
 
     await waitFor(() => {
-      expect(screen.getByText('需求诊断')).toBeInTheDocument();
+      expect(screen.getByText('需求分析')).toBeInTheDocument();
     });
 
     // Search for specific module
     const searchInput = screen.getByPlaceholderText('搜索模板...');
-    fireEvent.change(searchInput, { target: { value: '诊断' } });
+    fireEvent.change(searchInput, { target: { value: '分析' } });
 
     await waitFor(() => {
-      expect(screen.getByText('需求诊断')).toBeInTheDocument();
+      expect(screen.getByText('需求分析')).toBeInTheDocument();
       expect(screen.queryByText('场景地图')).not.toBeInTheDocument();
     });
   });
@@ -173,7 +173,7 @@ describe('TemplatesPage - Prompt Tab', () => {
     fireEvent.click(promptTab);
 
     await waitFor(() => {
-      expect(screen.getByText('需求诊断')).toBeInTheDocument();
+      expect(screen.getByText('需求分析')).toBeInTheDocument();
     });
 
     // Find and click the view details button for diagnosis
@@ -200,7 +200,7 @@ describe('TemplatesPage - Prompt Export/Import', () => {
     fireEvent.click(promptTab);
 
     await waitFor(() => {
-      expect(screen.getByText('需求诊断')).toBeInTheDocument();
+      expect(screen.getByText('需求分析')).toBeInTheDocument();
     });
 
     // Click export button
@@ -217,7 +217,7 @@ describe('TemplatesPage - Prompt Export/Import', () => {
     fireEvent.click(promptTab);
 
     await waitFor(() => {
-      expect(screen.getByText('需求诊断')).toBeInTheDocument();
+      expect(screen.getByText('需求分析')).toBeInTheDocument();
     });
 
     // Import button should exist
@@ -234,7 +234,7 @@ describe('TemplatesPage - Prompt Export/Import', () => {
     fireEvent.click(promptTab);
 
     await waitFor(() => {
-      expect(screen.getByText('需求诊断')).toBeInTheDocument();
+      expect(screen.getByText('需求分析')).toBeInTheDocument();
     });
 
     // Import functionality should be present

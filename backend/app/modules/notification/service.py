@@ -145,7 +145,7 @@ class NotificationService:
         """Generate contextual notifications based on business events."""
         event_templates: dict[str, str] = {
             "case_generated": "测试用例已生成，请查看",
-            "diagnosis_complete": "需求诊断已完成",
+            "diagnosis_complete": "需求分析已完成",
             "review_requested": "有新的评审请求需要处理",
             "export_ready": "导出任务已完成，可下载",
             "scene_map_updated": "场景地图已更新",

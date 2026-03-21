@@ -14,7 +14,7 @@ mock.module('@/hooks/useAiConfig', () => ({
     modelConfigs: [
       {
         id: 'model-001',
-        name: '诊断主模型',
+        name: '分析主模型',
         provider: 'zhipu',
         model_id: 'glm-5',
         base_url: null,
@@ -92,6 +92,6 @@ test('AIModelSettings renders multiple model configs as a list', async () => {
   const html = renderToStaticMarkup(<AIModelSettings />);
 
   expect(html).toContain('模型配置列表');
-  expect(html).toContain('诊断主模型');
+  expect(html).toContain('分析主模型');
   expect(html).toContain('用例生成模型');
 });

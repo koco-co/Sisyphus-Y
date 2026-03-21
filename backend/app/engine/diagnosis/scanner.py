@@ -55,7 +55,7 @@ async def scan_requirement(requirement_text: str) -> list[dict]:
     """
     task = SCANNER_TASK.format(requirement_text=requirement_text)
     system = assemble_prompt("diagnosis", task)
-    messages = [{"role": "user", "content": f"请执行诊断扫描：\n\n{requirement_text}"}]
+    messages = [{"role": "user", "content": f"请执行分析扫描：\n\n{requirement_text}"}]
 
     result = await invoke_llm([{"role": "system", "content": system}, *messages])
 

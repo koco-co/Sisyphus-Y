@@ -174,7 +174,7 @@ function GroupSection({
                   <StatusBadge variant={sceneTypeToBadgeVariant(point.source)}>
                     {point.source}
                   </StatusBadge>
-                  {point.source_risk_id && <StatusBadge variant="purple">源自诊断</StatusBadge>}
+                  {point.source_risk_id && <StatusBadge variant="purple">源自分析</StatusBadge>}
                   {point.actual_cases_count != null && point.actual_cases_count > 0 ? (
                     <span className="text-[10px] text-sy-accent font-mono">
                       {point.actual_cases_count} 用例

@@ -84,7 +84,7 @@ const categoryPills: Record<string, string> = {
 };
 
 const PROMPT_DISPLAY_NAMES: Record<string, string> = {
-  diagnosis: '需求诊断',
+  diagnosis: '需求分析',
   scene_map: '场景地图',
   generation: '用例生成',
   diagnosis_followup: '追问补充',
@@ -384,7 +384,8 @@ export default function TemplatesPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeTab, prompts.length, promptsLoading]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, prompts.length]);
 
   // Filter prompts by search
   const filteredPrompts = useMemo(() => {

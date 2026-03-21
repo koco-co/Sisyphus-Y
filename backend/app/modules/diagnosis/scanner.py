@@ -31,7 +31,7 @@ def scan_requirement_text(text: str) -> list[ScanFinding]:
     """对需求文本进行广度扫描，识别潜在遗漏。
 
     注意：此函数做基于关键词的快速扫描，
-    深度分析由 AI 引擎的诊断 Prompt 完成。
+    深度分析由 AI 引擎的分析 Prompt 完成。
     """
     findings: list[ScanFinding] = []
 

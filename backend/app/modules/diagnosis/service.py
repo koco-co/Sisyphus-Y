@@ -26,9 +26,14 @@ class DiagnosisService:
     # ── 查询方法 ──────────────────────────────────────────────────────
 
     async def get_report(self, requirement_id: UUID) -> DiagnosisReport | None:
-        q = select(DiagnosisReport).where(
-            DiagnosisReport.requirement_id == requirement_id,
-            DiagnosisReport.deleted_at.is_(None),
+        q = (
+            select(DiagnosisReport)
+            .where(
+                DiagnosisReport.requirement_id == requirement_id,
+                DiagnosisReport.deleted_at.is_(None),
+            )
+            .order_by(DiagnosisReport.created_at.desc())
+            .limit(1)
         )
         result = await self.session.execute(q)
         return result.scalar_one_or_none()
@@ -74,11 +79,11 @@ class DiagnosisService:
         checklist_hint = get_checklist_summary(content)
 
         user_content = (
-            f"请对以下需求进行健康诊断：\n\n"
+            f"请对以下需求进行健康分析：\n\n"
             f"需求标题：{title}\n\n需求内容：\n{content}\n\n"
             f"---\n行业清单参考：\n{checklist_hint}"
         )
-        task_instruction = "对用户提供的需求文档进行全面的测试健康诊断，按 6 个维度逐一扫描并给出评分。"
+        task_instruction = "对用户提供的需求文档进行全面的测试健康分析，按 6 个维度逐一扫描并给出评分。"
         system = assemble_prompt("diagnosis", task_instruction)
         messages = [{"role": "user", "content": user_content}]
         return await get_thinking_stream_with_fallback(
