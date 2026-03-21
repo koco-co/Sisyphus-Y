@@ -131,8 +131,8 @@ export default function DocTable({
       <div className="card">
         <div className="empty-state">
           <HardDrive size={48} />
-          <p style={{ fontWeight: 500 }}>暂无知识库文档</p>
-          <p>上传 .md / .docx / .pdf / .txt 文件构建知识库，或手动添加条目</p>
+          <p style={{ fontWeight: 500 }}>上传测试规范或历史用例</p>
+          <p>AI 生成时会自动参考这些知识</p>
         </div>
       </div>
     );

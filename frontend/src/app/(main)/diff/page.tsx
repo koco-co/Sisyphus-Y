@@ -189,8 +189,8 @@ function CenterColumn() {
     return (
       <EmptyState
         icon={<GitCompareArrows className="w-12 h-12" />}
-        title="输入需求 ID 并选择版本范围"
-        description="系统将进行文本级 + 语义级两阶段 Diff 分析"
+        title="选择同一需求的两个版本"
+        description="AI 将找出变更并评估对测试用例的影响"
         className="h-full"
       />
     );

@@ -326,9 +326,9 @@ export default function RecyclePage() {
         <div className="py-16 text-center">
           <Trash2 className="w-12 h-12 text-text3 mx-auto mb-3 opacity-20" />
           <p className="text-[13px] text-text3">
-            {search.trim() ? '暂无匹配的已删除项目' : '回收站为空'}
+            {search.trim() ? '暂无匹配的已删除项目' : '回收站是空的'}
           </p>
-          <p className="text-[12px] text-text3/60 mt-1">删除的项目将显示在这里</p>
+          <p className="text-[12px] text-text3/60 mt-1">已删除的内容会在这里保留 30 天</p>
         </div>
       ) : (
         <div className="card overflow-hidden">
