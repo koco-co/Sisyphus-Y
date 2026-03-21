@@ -267,8 +267,8 @@ export default function TestPointGroupList({
     return (
       <div className="flex flex-col items-center justify-center h-full text-center py-12">
         <Sparkles className="w-10 h-10 text-sy-text-3 opacity-20 mb-3" />
-        <p className="text-[13px] text-sy-text-3">暂无测试点</p>
-        <p className="text-[11px] text-sy-text-3 opacity-60 mt-1">请先生成测试点</p>
+        <p className="text-[13px] text-sy-text-3">需要先确认测试点才能生成用例</p>
+        <p className="text-[11px] text-sy-text-3 opacity-60 mt-1">前往分析台确认</p>
       </div>
     );
   }
