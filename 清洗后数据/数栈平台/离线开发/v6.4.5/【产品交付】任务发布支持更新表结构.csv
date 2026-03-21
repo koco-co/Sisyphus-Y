@@ -1,5 +1,5 @@
-﻿用例编号,用例标题,所属模块,相关需求,前置条件,步骤,预期结果,优先级,用例类型
-178320,"验证【发布包校验】变更SQL失败后, 日志记录正常（Doris + 导入导出发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_21，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    amount VARCHAR(100) COMMENT '金额（原始为STRING，包含“abc“等非数字数据）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Hive（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    amount VARCHAR(200) COMMENT '金额（原始为STRING，包含“abc“等非数字数据）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />-- 插入测试数据<br />INSERT INTO source_table_fail VALUES (1, '张三', '100'), (2, '李四', 'abc');<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL失败后, 日志记录正常（Doris + 导入导出发布)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_21，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    amount VARCHAR(100) COMMENT '金额（原始为STRING，包含“abc“等非数字数据）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Hive（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    amount VARCHAR(200) COMMENT '金额（原始为STRING，包含“abc“等非数字数据）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />-- 插入测试数据<br />INSERT INTO source_table_fail VALUES (1, '张三', '100'), (2, '李四', 'abc');<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_21, 添加关联表source_table_fail并打包
 3. 导出zip包, 导入导出发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -9,15 +9,15 @@
 3. 【发布包校验】弹窗存在表结构变更: - 修改字段 amount (VARCHAR(200) -> VARCHAR(100))
 4. 发布失败
 5. 显示所有任务发布对象
-6. 存在发布失败信息: Cannot shorten string length",1,功能测试
-178319,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + PRIMARY KEY / UNIQUE KEY 定义、变更）",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_20，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />场景1：PRIMARY KEY 定义（测试项目无主键，生产项目有主键）<br />项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_pk_def (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_pk_def (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />PRIMARY KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />场景2：PRIMARY KEY 变更（主键字段不同）<br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_pk_change (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />PRIMARY KEY(id, name)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_pk_change (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />PRIMARY KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />场景3：UNIQUE KEY 定义（测试项目无唯一键，生产项目有唯一键）<br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_uk_def (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_uk_def (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />UNIQUE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />场景4：UNIQUE KEY 变更（唯一键字段不同）<br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_uk_change (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    email VARCHAR(100) COMMENT '邮箱'<br />)<br />UNIQUE KEY(id, email)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_uk_change (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    email VARCHAR(100) COMMENT '邮箱'<br />)<br />UNIQUE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />场景5：PRIMARY KEY 和 UNIQUE KEY 之间切换<br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_key_switch (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />UNIQUE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_key_switch (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />PRIMARY KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
+6. 存在发布失败信息: Cannot shorten string length",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + PRIMARY KEY / UNIQUE KEY 定义、变更）","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_20，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />场景1：PRIMARY KEY 定义（测试项目无主键，生产项目有主键）<br />项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_pk_def (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_pk_def (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />PRIMARY KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />场景2：PRIMARY KEY 变更（主键字段不同）<br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_pk_change (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />PRIMARY KEY(id, name)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_pk_change (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />PRIMARY KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />场景3：UNIQUE KEY 定义（测试项目无唯一键，生产项目有唯一键）<br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_uk_def (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_uk_def (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />UNIQUE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />场景4：UNIQUE KEY 变更（唯一键字段不同）<br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_uk_change (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    email VARCHAR(100) COMMENT '邮箱'<br />)<br />UNIQUE KEY(id, email)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_uk_change (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    email VARCHAR(100) COMMENT '邮箱'<br />)<br />UNIQUE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />场景5：PRIMARY KEY 和 UNIQUE KEY 之间切换<br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_key_switch (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />UNIQUE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />项目 test_project_02 中的表：<br />-- 数据源: Doris（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_key_switch (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />PRIMARY KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_20, 添加关联表source_table_pk_def等5张表并打包
 3. 导出zip包, 导入导出发布后, 检查【发布包校验】表结构变更信息
 4. 进入到【项目test_project_02】→【数据开发】→【周期任务】,查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",1,功能测试
-178318,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 字段DEFAULT值/COMMENT变更）",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 字段DEFAULT值/COMMENT变更）","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_19，且任务中包含 CREATE TABLE 语句
@@ -49,8 +49,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 4. 进入到【项目test_project_02】→【数据开发】→【周期任务】,查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178317,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 分区字段与普通字段同名)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 分区字段与普通字段同名)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_18，且任务中包含 CREATE TABLE 语句
@@ -83,8 +83,8 @@ PROPERTIES (“replication_num“ = “1“);","1. 进入【测试项目test_pro
 4. 进入到【项目test_project_02】→【数据开发】→【周期任务】,查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178316,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 分区字段新增/删除/类型变更)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 分区字段新增/删除/类型变更)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_18，且任务中包含 CREATE TABLE 语句
@@ -161,8 +161,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 4. 进入到【项目test_project_02】→【数据开发】→【周期任务】,查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178315,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 无结构变更/新建表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 无结构变更/新建表)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_17，且任务中包含 CREATE TABLE 语句
@@ -200,8 +200,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 4. 进入到【项目test_project_02】→【数据开发】→【周期任务】,查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178314,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 不勾选变更项)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 导入导出发布 + 不勾选变更项)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_16，且任务中包含 CREATE TABLE 语句
@@ -230,8 +230,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: source_table: 新增字段 age
 4. 1) Toast提示: 发布成功2) 不会出现二次确认发布弹窗
-5. 表结构不变",2,功能测试
-178313,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 勾选部分表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 勾选部分表)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_15，且任务中包含 CREATE TABLE 语句
@@ -280,8 +280,8 @@ DISTRIBUTED BY HASH(order_id) BUCKETS 10;","1. 进入【项目test_project_01】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - source_tableA: 新增字段 age- source_tableB: 新增字段 status
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 1) source_tableA表结构不变2) source_tableB表结构变更成功",2,功能测试
-178312,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 新建表 + 结构变更表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 1) source_tableA表结构不变2) source_tableB表结构变更成功",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 新建表 + 结构变更表)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_14，且任务中包含 CREATE TABLE 语句
@@ -321,8 +321,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: change_table: 删除字段 name, 新增字段 username, email
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 1) 新增表 new_table2)change_table表结构已成功变更",2,功能测试
-178311,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 多表 + 多变更类型)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 1) 新增表 new_table2)change_table表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 多表 + 多变更类型)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -390,8 +390,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 1) source_table_m1: 删除字段 name, 新增字段 username, phone2) source_table_m2: 删除字段 price, stock3) source_table_m3: 新增字段 status
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178310,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 删除字段)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_12，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />-- 项目 test_project_01 中的表：<br />CREATE TABLE IF NOT EXISTS source_table_delcol (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />-- 项目test_project_02<br />-- 数据源: Doris（生产集群地址）<br />-- 生产项目中的表（初始状态）<br />CREATE TABLE IF NOT EXISTS source_table_delcol (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄（将被删除）',<br />    address VARCHAR(200) COMMENT '地址（将被删除）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 删除字段)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_12，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />-- 项目 test_project_01 中的表：<br />CREATE TABLE IF NOT EXISTS source_table_delcol (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />-- 项目test_project_02<br />-- 数据源: Doris（生产集群地址）<br />-- 生产项目中的表（初始状态）<br />CREATE TABLE IF NOT EXISTS source_table_delcol (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    age INT COMMENT '年龄（将被删除）',<br />    address VARCHAR(200) COMMENT '地址（将被删除）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_12, 添加关联表source_table_delcol并打包
 3. 导出zip包, 导入导出发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -399,8 +399,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - 删除字段 name- 删除字段 address
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",1,功能测试
-178309,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 修改字段名称)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 修改字段名称)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_11，且任务中包含 CREATE TABLE 语句
@@ -430,8 +430,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - 删除字段 name- 新增字段 username
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178308,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 修改字段类型)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 修改字段类型)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -461,8 +461,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 修改字段 amount (INT -> BIGINT)
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178307,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 新增字段)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 导入导出发布 + 新增字段)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_09，且任务中包含 CREATE TABLE 语句
@@ -494,8 +494,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 新增字段 age (int)
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178306,验证【发布包校验】变更SQL选项非持久化 （Doris + 导入导出发布),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,验证【发布包校验】变更SQL选项非持久化 （Doris + 导入导出发布),"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -530,8 +530,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 5. 存在表结构变更
 6. 选项处于勾选状态
 7. 变更SQL选项恢复为未勾选状态
-8. 选项可以正常勾选",3,功能测试
-178305,"验证【发布包校验】变更SQL发布, 二次确认弹窗显示正常（Doris + 导入导出发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+8. 选项可以正常勾选",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布, 二次确认弹窗显示正常（Doris + 导入导出发布)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -565,8 +565,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 3. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 4. 进入【发布包校验】弹窗
 5. 存在表结构变更
-6. 显示二次确认弹窗1) 标题: 执行表结构变更SQL2) 文案: 当前操作将在发布过程中自动执行表结构变更 SQL，并直接作用于目标项目表结构，可能对任务和数据产生影响3) 按钮: 取消、确定",3,功能测试
-178304,验证【发布包校验】差异对比正常（Doris + 多表 + 多变更类型）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+6. 显示二次确认弹窗1) 标题: 执行表结构变更SQL2) 文案: 当前操作将在发布过程中自动执行表结构变更 SQL，并直接作用于目标项目表结构，可能对任务和数据产生影响3) 按钮: 取消、确定",3
+离线开发-项目管理-发布管理,验证【发布包校验】差异对比正常（Doris + 多表 + 多变更类型）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -617,8 +617,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 4. 进入【发布包校验】弹窗
-5. 存在表结构变更:1) 表名: source_table1变更说明: - 删除字段 old_field (int)- 新增字段 new_field (string)2) 表名: source_table2变更说明: - 删除字段 create_time (TIMESTAMP)- 修改字段 amount (DECIMAL(18,2) -> DECIMAL(10,2))- 修改字段 status (int -> string)",2,功能测试
-178303,验证【发布包校验】差异对比正常（Doris + 单表 + 单字段变更）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 存在表结构变更:1) 表名: source_table1变更说明: - 删除字段 old_field (int)- 新增字段 new_field (string)2) 表名: source_table2变更说明: - 删除字段 create_time (TIMESTAMP)- 修改字段 amount (DECIMAL(18,2) -> DECIMAL(10,2))- 修改字段 status (int -> string)",2
+离线开发-项目管理-发布管理,验证【发布包校验】差异对比正常（Doris + 单表 + 单字段变更）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -647,8 +647,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 4. 进入【发布包校验】弹窗
-5. 存在表结构变更:1) 表名: test_tableA2) 变更说明: 修改字段 age (string -> int)",2,功能测试
-178302,验证【发布包校验】 变更说明按风险顺序(删除→修改→新增)正确展示(Doris + 导入导出发布）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 存在表结构变更:1) 表名: test_tableA2) 变更说明: 修改字段 age (string -> int)",2
+离线开发-项目管理-发布管理,验证【发布包校验】 变更说明按风险顺序(删除→修改→新增)正确展示(Doris + 导入导出发布）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -686,8 +686,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 5. 显示【发布包检查】弹窗
 6. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 7. 进入【发布包校验】弹窗
-8. 变更项按照风险顺序正确排列：删除字段 old_field(INT）修改字段 age (STRING -> INT）新增字段 new_field(STRING)",3,功能测试
-178301,验证【发布包校验】 变更信息显示正常（Doris + 导入导出发布),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+8. 变更项按照风险顺序正确排列：删除字段 old_field(INT）修改字段 age (STRING -> INT）新增字段 new_field(STRING)",3
+离线开发-项目管理-发布管理,验证【发布包校验】 变更信息显示正常（Doris + 导入导出发布),"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -725,8 +725,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【项目test_project_01】→【
 5. 显示【发布包检查】弹窗
 6. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 7. 进入【发布包校验】弹窗
-8. “表”模块icon变更为黄色警告, 表格列信息:1) 标题: 本项目表结构存在变更2) 问号icon悬浮提示: 当前仅支持对 Doris、Hive 表的字段新增、字段删除及字段类型修改进行提示。在表格左侧勾选对应变更项后，系统将在发布过程中自动执行相应的表结构变更 SQL，变更将直接作用于目标项目的数据表结构，可能对下游任务及数据产生影响，请谨慎操作。3) 表格列包括:- 数据源名称：${数据源名称}（${数据源类型}）- Schema名称：展示表结构存在差异的表所在的schema名称- 表名：展示结构存在差异的表名- 变更说明：展示当前表内字段变更的情况，包括删除字段、修改字段类型、新增字段。按照变更风险从高到低的顺序展示，依次为：删除字段 → 修改字段 → 新增字段- 删除：删除字段 ${字段名称}（${字段类型}）- 修改：修改字段 ${字段名称}（${原字段类型} -> ${新字段类型}}）- 新增：新增字段 ${字段名称}（${字段类型}）",3,功能测试
-178300,"验证【发布包校验】变更SQL失败后, 日志记录正常（Hive + 导入导出发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+8. “表”模块icon变更为黄色警告, 表格列信息:1) 标题: 本项目表结构存在变更2) 问号icon悬浮提示: 当前仅支持对 Doris、Hive 表的字段新增、字段删除及字段类型修改进行提示。在表格左侧勾选对应变更项后，系统将在发布过程中自动执行相应的表结构变更 SQL，变更将直接作用于目标项目的数据表结构，可能对下游任务及数据产生影响，请谨慎操作。3) 表格列包括:- 数据源名称：${数据源名称}（${数据源类型}）- Schema名称：展示表结构存在差异的表所在的schema名称- 表名：展示结构存在差异的表名- 变更说明：展示当前表内字段变更的情况，包括删除字段、修改字段类型、新增字段。按照变更风险从高到低的顺序展示，依次为：删除字段 → 修改字段 → 新增字段- 删除：删除字段 ${字段名称}（${字段类型}）- 修改：修改字段 ${字段名称}（${原字段类型} -> ${新字段类型}}）- 新增：新增字段 ${字段名称}（${字段类型}）",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL失败后, 日志记录正常（Hive + 导入导出发布)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -760,8 +760,8 @@ INSERT INTO TABLE source_table_fail VALUES (1, '张三', '100'), (2, '李四', '
 3. 【发布包校验】弹窗存在表结构变更: - 修改字段 amount (string -> int)
 4. 发布失败
 5. 显示所有任务发布对象
-6. 正确显示发布失败信息",2,功能测试
-178299,"验证未执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 导入导出发布）",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+6. 正确显示发布失败信息",2
+离线开发-项目管理-发布管理,"验证未执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 导入导出发布）","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -793,8 +793,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 4. 1) 发布成功, 记录发布包列表中的【发布时间】2) 不存在二次确认弹窗
 5. 表结构不变
 6. 1) 【责任人】不变2) 【创建时间】不变
-7. 1) 【存储信息】→【表结构最后变更时间】不变2) 【存储信息】→【数据最后变更时间】不变",2,功能测试
-178298,"验证执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 导入导出发布 + 部分失败)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_19，且任务中包含 CREATE TABLE 语句<br />5) 生产项目 prod_project_01 中已存在目标表，且有历史「表结构最后变更时间」、「数据最后变更时间」<br />6) 建表语句：<br /><br />-- 场景：多表变更，部分成功、部分失败<br />-- Hive表<br />-- 表1：成功变更（新增字段）<br />-- 测试项目 test_project_01 中的表<br />-- 数据源: Hive（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_success1 (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名'<br />)<br />STORED AS ORC;<br /><br />-- 生产项目 prod_project_01 中的表（缺少age字段）<br />-- 数据源: Hive（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_success1 (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名'<br />)<br />STORED AS ORC;<br /><br /><br />-- 表2：成功变更（修改字段类型，类型兼容）<br />-- 测试项目 test_project_01 中的表<br />CREATE TABLE IF NOT EXISTS source_table_success2 (<br />    id INT COMMENT '主键ID',<br />    amount BIGINT COMMENT '金额（类型为BIGINT）'<br />)<br />STORED AS ORC;<br /><br />-- 生产项目 prod_project_01 中的表（amount字段为INT）<br />CREATE TABLE IF NOT EXISTS source_table_success2 (<br />    id INT COMMENT '主键ID',<br />    amount INT COMMENT '金额（类型为INT）'<br />)<br />STORED AS ORC;<br /><br />-- 表3：失败变更（字段类型不兼容，包含无法转换的数据）<br />-- 测试项目 test_project_01 中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    amount INT COMMENT '金额（类型修改为INT）'<br />)<br />STORED AS ORC;<br /><br /><br />-- 生产项目 prod_project_01 中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    amount STRING COMMENT '金额（原始为STRING，包含“abc“等非数字数据）'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
+7. 1) 【存储信息】→【表结构最后变更时间】不变2) 【存储信息】→【数据最后变更时间】不变",2
+离线开发-项目管理-发布管理,"验证执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 导入导出发布 + 部分失败)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_19，且任务中包含 CREATE TABLE 语句<br />5) 生产项目 prod_project_01 中已存在目标表，且有历史「表结构最后变更时间」、「数据最后变更时间」<br />6) 建表语句：<br /><br />-- 场景：多表变更，部分成功、部分失败<br />-- Hive表<br />-- 表1：成功变更（新增字段）<br />-- 测试项目 test_project_01 中的表<br />-- 数据源: Hive（测试集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_success1 (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名'<br />)<br />STORED AS ORC;<br /><br />-- 生产项目 prod_project_01 中的表（缺少age字段）<br />-- 数据源: Hive（生产集群地址）<br />CREATE TABLE IF NOT EXISTS source_table_success1 (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名'<br />)<br />STORED AS ORC;<br /><br /><br />-- 表2：成功变更（修改字段类型，类型兼容）<br />-- 测试项目 test_project_01 中的表<br />CREATE TABLE IF NOT EXISTS source_table_success2 (<br />    id INT COMMENT '主键ID',<br />    amount BIGINT COMMENT '金额（类型为BIGINT）'<br />)<br />STORED AS ORC;<br /><br />-- 生产项目 prod_project_01 中的表（amount字段为INT）<br />CREATE TABLE IF NOT EXISTS source_table_success2 (<br />    id INT COMMENT '主键ID',<br />    amount INT COMMENT '金额（类型为INT）'<br />)<br />STORED AS ORC;<br /><br />-- 表3：失败变更（字段类型不兼容，包含无法转换的数据）<br />-- 测试项目 test_project_01 中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    amount INT COMMENT '金额（类型修改为INT）'<br />)<br />STORED AS ORC;<br /><br /><br />-- 生产项目 prod_project_01 中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    amount STRING COMMENT '金额（原始为STRING，包含“abc“等非数字数据）'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_19, 添加关联表source_table_success1~3并打包
 3. 导出zip包, 导入导出发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -806,8 +806,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 4. 发布失败, 记录发布包列表中的【发布人】、【发布时间】
 5. 1) source_table_success1~2 表结构已成功变更2) source_table_success3 表结构不变
 6. 1) 【责任人】不变2) 【创建时间】不变
-7. 1) source_table_success1~2:- 【存储信息】→【表结构最后变更时间】更新为发布时间- 【存储信息】→【数据最后变更时间】更新为发布时间2) source_table_success3: - 【存储信息】→【表结构最后变更时间】不变- 【存储信息】→【数据最后变更时间】不变",1,功能测试
-178297,"验证执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 导入导出发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+7. 1) source_table_success1~2:- 【存储信息】→【表结构最后变更时间】更新为发布时间- 【存储信息】→【数据最后变更时间】更新为发布时间2) source_table_success3: - 【存储信息】→【表结构最后变更时间】不变- 【存储信息】→【数据最后变更时间】不变",1
+离线开发-项目管理-发布管理,"验证执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 导入导出发布)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句task_cycle_19，且任务中包含 CREATE TABLE 语句
@@ -839,8 +839,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 4. 发布成功, 记录发布包列表中的【发布人】、【发布时间】
 5. 表结构已成功变更
 6. 1) 【责任人】不变2) 【创建时间】不变
-7. 1) 【存储信息】→【表结构最后变更时间】更新为发布时间2) 【存储信息】→【数据最后变更时间】更新为发布时间",2,功能测试
-178296,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 导入导出发布 + 分区字段与普通字段同名)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+7. 1) 【存储信息】→【表结构最后变更时间】更新为发布时间2) 【存储信息】→【数据最后变更时间】更新为发布时间",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 导入导出发布 + 分区字段与普通字段同名)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -871,8 +871,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 进入到【项目test_project_02】→【数据开发】→【周期任务】,查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",3,功能测试
-178295,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 导入导出发布 + 分区字段新增/删除/类型变更)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 导入导出发布 + 分区字段新增/删除/类型变更)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -946,15 +946,15 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 4. 进入到【项目test_project_02】→【数据开发】→【周期任务】,查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178294,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 导入导出发布 + 无结构变更/新建表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />-- 项目test_project_01<br />CREATE TABLE IF NOT EXISTS source_table_same (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />-- 项目test_project_02<br />CREATE TABLE IF NOT EXISTS source_table_same (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 导入导出发布 + 无结构变更/新建表)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />-- 项目test_project_01<br />CREATE TABLE IF NOT EXISTS source_table_same (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />-- 项目test_project_02<br />CREATE TABLE IF NOT EXISTS source_table_same (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_17, 添加关联表source_table_same并打包
 3. 导出zip包, 导入导出发布后, 检查【发布包校验】表结构变更信息
 4. 进入到【项目test_project_02】→【数据开发】→【周期任务】,查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",1,功能测试
-178293,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 导入导出发布 + 不勾选变更项)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 导入导出发布 + 不勾选变更项)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -981,8 +981,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: source_table: 新增字段 age
 4. 1) Toast提示: 发布成功2) 不会出现二次确认发布弹窗
-5. 表结构不变",2,功能测试
-178292,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 勾选部分表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />-- 项目test_project_01<br />CREATE TABLE IF NOT EXISTS source_tableA (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />-- 项目test_project_02<br />CREATE TABLE IF NOT EXISTS source_tableA (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名'<br />)<br />STORED AS ORC;<br /><br />-- 项目test_project_01<br />CREATE TABLE IF NOT EXISTS source_tableB (<br />    order_id INT COMMENT '订单ID',<br />    amount DECIMAL(10,2) COMMENT '金额',<br />    status STRING COMMENT '状态'<br />)<br />STORED AS ORC;<br /><br />-- 项目test_project_02<br />CREATE TABLE IF NOT EXISTS source_tableB (<br />    order_id INT COMMENT '订单ID',<br />    amount DECIMAL(10,2) COMMENT '金额'<br />)<br />STORED AS ORC;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
+5. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 勾选部分表)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />-- 项目test_project_01<br />CREATE TABLE IF NOT EXISTS source_tableA (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />-- 项目test_project_02<br />CREATE TABLE IF NOT EXISTS source_tableA (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名'<br />)<br />STORED AS ORC;<br /><br />-- 项目test_project_01<br />CREATE TABLE IF NOT EXISTS source_tableB (<br />    order_id INT COMMENT '订单ID',<br />    amount DECIMAL(10,2) COMMENT '金额',<br />    status STRING COMMENT '状态'<br />)<br />STORED AS ORC;<br /><br />-- 项目test_project_02<br />CREATE TABLE IF NOT EXISTS source_tableB (<br />    order_id INT COMMENT '订单ID',<br />    amount DECIMAL(10,2) COMMENT '金额'<br />)<br />STORED AS ORC;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_15, 添加关联表source_tableA、source_tableB并打包
 3. 导出zip包, 导入导出发布后, 检查【发布包校验】表结构变更信息
 4. 勾选source_tableB的变更SQL选项, 并二次确认发布
@@ -990,8 +990,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - source_tableA: 新增字段 age- source_tableB: 新增字段 status
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 1) source_tableA表结构不变2) source_tableB表结构变更成功",1,功能测试
-178291,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 新建表 + 结构变更表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 1) source_tableA表结构不变2) source_tableB表结构变更成功",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 新建表 + 结构变更表)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -1030,8 +1030,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: change_table: 删除字段 name, 新增字段 username, email
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 1) 新增表 new_table2)change_table表结构已成功变更",2,功能测试
-178290,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 多表 + 多变更类型)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 1) 新增表 new_table2)change_table表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 多表 + 多变更类型)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -1097,8 +1097,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 1) source_table_m1: 删除字段 name, 新增字段 username, phone2) source_table_m2: 删除字段 price, stock3) source_table_m3: 新增字段 status
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178289,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 删除字段)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 删除字段)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -1130,8 +1130,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构不变",2,功能测试
-178288,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 修改字段名称)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_rename (<br />    id INT COMMENT '主键ID',<br />    username STRING COMMENT '用户名（修改后）',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表（初始状态）<br />CREATE TABLE IF NOT EXISTS source_table_rename (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名（修改前）',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
+5. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 修改字段名称)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 test_project_02）<br />3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源<br />4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句<br />5) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_rename (<br />    id INT COMMENT '主键ID',<br />    username STRING COMMENT '用户名（修改后）',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表（初始状态）<br />CREATE TABLE IF NOT EXISTS source_table_rename (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名（修改前）',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br />","1. 进入【项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_11, 添加关联表source_table_rename并打包
 3. 导出zip包, 导入导出发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -1139,8 +1139,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - 删除字段 name- 新增字段 username
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",1,功能测试
-178287,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 修改字段类型)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 修改字段类型)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -1172,8 +1172,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 修改字段 amount (INT -> BIGINT)
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178286,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 新增字段)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 导入导出发布 + 新增字段)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -1207,8 +1207,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 新增字段 age (int)
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178285,验证【发布包校验】变更SQL选项非持久化 （Hive + 导入导出发布),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,验证【发布包校验】变更SQL选项非持久化 （Hive + 导入导出发布),"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -1245,8 +1245,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 5. 存在表结构变更
 6. 选项处于勾选状态
 7. 变更SQL选项恢复为未勾选状态
-8. 选项可以正常勾选",3,功能测试
-178284,"验证【发布包校验】变更SQL发布, 二次确认弹窗显示正常（Hive + 导入导出发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+8. 选项可以正常勾选",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布, 二次确认弹窗显示正常（Hive + 导入导出发布)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -1281,8 +1281,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 3. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 4. 进入【发布包校验】弹窗
 5. 存在表结构变更
-6. 显示二次确认弹窗1) 标题: 执行表结构变更SQL2) 文案: 当前操作将在发布过程中自动执行表结构变更 SQL，并直接作用于目标项目表结构，可能对任务和数据产生影响3) 按钮: 取消、确定",3,功能测试
-178283,验证【发布包校验】差异对比正常（Hive + 导入导出发布 + 多表 + 多变更类型）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+6. 显示二次确认弹窗1) 标题: 执行表结构变更SQL2) 文案: 当前操作将在发布过程中自动执行表结构变更 SQL，并直接作用于目标项目表结构，可能对任务和数据产生影响3) 按钮: 取消、确定",3
+离线开发-项目管理-发布管理,验证【发布包校验】差异对比正常（Hive + 导入导出发布 + 多表 + 多变更类型）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -1331,8 +1331,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 4. 进入【发布包校验】弹窗
-5. 存在表结构变更:1) 表名: source_table1变更说明: - 删除字段 old_field (int)- 新增字段 new_field (string)2) 表名: source_table2变更说明: - 删除字段 create_time (TIMESTAMP)- 修改字段 amount (DECIMAL(18,2) -> DECIMAL(10,2))- 修改字段 status (int -> string)",2,功能测试
-178282,验证【发布包校验】差异对比正常（Hive + 导入导出发布 + 单表 + 单字段变更）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 存在表结构变更:1) 表名: source_table1变更说明: - 删除字段 old_field (int)- 新增字段 new_field (string)2) 表名: source_table2变更说明: - 删除字段 create_time (TIMESTAMP)- 修改字段 amount (DECIMAL(18,2) -> DECIMAL(10,2))- 修改字段 status (int -> string)",2
+离线开发-项目管理-发布管理,验证【发布包校验】差异对比正常（Hive + 导入导出发布 + 单表 + 单字段变更）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -1366,8 +1366,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 4. 进入【发布包校验】弹窗
-5. 存在表结构变更:1) 表名: test_tableA2) 变更说明: 修改字段 age (string -> int)",2,功能测试
-178281,验证【发布包校验】 变更说明按风险顺序(删除→修改→新增)正确展示(Hive + 导入导出发布）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 存在表结构变更:1) 表名: test_tableA2) 变更说明: 修改字段 age (string -> int)",2
+离线开发-项目管理-发布管理,验证【发布包校验】 变更说明按风险顺序(删除→修改→新增)正确展示(Hive + 导入导出发布）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 test_project_02）
 3) 项目 test_project_01 和test_project_02 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_02，且任务中包含 CREATE TABLE 语句
@@ -1410,8 +1410,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 5. 显示【发布包检查】弹窗
 6. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 7. 进入【发布包校验】弹窗
-8. 变更项按照风险顺序正确排列：删除字段 old_field(INT）修改字段 age (STRING -> INT）新增字段 new_field(STRING)",3,功能测试
-178280,验证【发布包校验】 变更信息显示正常（Hive + 导入导出发布),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+8. 变更项按照风险顺序正确排列：删除字段 old_field(INT）修改字段 age (STRING -> INT）新增字段 new_field(STRING)",3
+离线开发-项目管理-发布管理,验证【发布包校验】 变更信息显示正常（Hive + 导入导出发布),"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01和test_project_02）
 3) test_project_01和test_project_02均配置了Hive数据源
 4) test_project_01中存在1个周期任务A，任务中包含CREATE TABLE语句
@@ -1449,8 +1449,8 @@ STORED AS ORC;","1. 进入【项目test_project_01】→【任务发布】→【
 5. 显示【发布包检查】弹窗
 6. Toast提示: 导入成功，系统给出导入成功提示，数据已同步至目标列表
 7. 进入【发布包校验】弹窗
-8. “表”模块icon变更为黄色警告, 表格列信息:1) 标题: 本项目表结构存在变更2) 问号icon悬浮提示: 当前仅支持对 Doris、Hive 表的字段新增、字段删除及字段类型修改进行提示。在表格左侧勾选对应变更项后，系统将在发布过程中自动执行相应的表结构变更 SQL，变更将直接作用于目标项目的数据表结构，可能对下游任务及数据产生影响，请谨慎操作。3) 表格列包括:- 数据源名称：${数据源名称}（${数据源类型}）- Schema名称：展示表结构存在差异的表所在的schema名称- 表名：展示结构存在差异的表名- 变更说明：展示当前表内字段变更的情况，包括删除字段、修改字段类型、新增字段。按照变更风险从高到低的顺序展示，依次为：删除字段 → 修改字段 → 新增字段- 删除：删除字段 ${字段名称}（${字段类型}）- 修改：修改字段 ${字段名称}（${原字段类型} -> ${新字段类型}}）- 新增：新增字段 ${字段名称}（${字段类型}）",3,功能测试
-178279,"验证【发布包校验】变更SQL失败后, 日志记录正常（Doris + 一键发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+8. “表”模块icon变更为黄色警告, 表格列信息:1) 标题: 本项目表结构存在变更2) 问号icon悬浮提示: 当前仅支持对 Doris、Hive 表的字段新增、字段删除及字段类型修改进行提示。在表格左侧勾选对应变更项后，系统将在发布过程中自动执行相应的表结构变更 SQL，变更将直接作用于目标项目的数据表结构，可能对下游任务及数据产生影响，请谨慎操作。3) 表格列包括:- 数据源名称：${数据源名称}（${数据源类型}）- Schema名称：展示表结构存在差异的表所在的schema名称- 表名：展示结构存在差异的表名- 变更说明：展示当前表内字段变更的情况，包括删除字段、修改字段类型、新增字段。按照变更风险从高到低的顺序展示，依次为：删除字段 → 修改字段 → 新增字段- 删除：删除字段 ${字段名称}（${字段类型}）- 修改：修改字段 ${字段名称}（${原字段类型} -> ${新字段类型}}）- 新增：新增字段 ${字段名称}（${字段类型}）",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL失败后, 日志记录正常（Doris + 一键发布)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_21，且任务中包含 CREATE TABLE 语句
@@ -1488,8 +1488,8 @@ INSERT INTO source_table_fail VALUES (1, '张三', '100'), (2, '李四', 'abc');
 3. 【发布包校验】弹窗存在表结构变更: - 修改字段 amount (VARCHAR(200) -> VARCHAR(100))
 4. 发布失败
 5. 显示所有任务发布对象
-6. 存在发布失败信息: Cannot shorten string length",2,功能测试
-178278,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + PRIMARY KEY / UNIQUE KEY 定义、变更）",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+6. 存在发布失败信息: Cannot shorten string length",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + PRIMARY KEY / UNIQUE KEY 定义、变更）","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_20，且任务中包含 CREATE TABLE 语句
@@ -1605,15 +1605,15 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 4. 切换到【生产项目prod_project_01】, 查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178277,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 字段DEFAULT值/COMMENT变更）",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"<span><span>1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_19，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构仅DEFAULT值或COMMENT存在差异<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_default (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) DEFAULT '匿名' COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Doris（生产集群地址）<br />-- 生产项目中的表（DEFAULT值和COMMENT不同）<br />CREATE TABLE IF NOT EXISTS source_table_default (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) DEFAULT '未知' COMMENT '用户姓名',<br />    age INT COMMENT '年龄'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /></span></span>","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 字段DEFAULT值/COMMENT变更）","<span><span>1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_19，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构仅DEFAULT值或COMMENT存在差异<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_default (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) DEFAULT '匿名' COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Doris（生产集群地址）<br />-- 生产项目中的表（DEFAULT值和COMMENT不同）<br />CREATE TABLE IF NOT EXISTS source_table_default (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) DEFAULT '未知' COMMENT '用户姓名',<br />    age INT COMMENT '年龄'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /></span></span>","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_19, 添加关联表source_table_default并打包
 3. 一键发布后, 检查【发布包校验】表结构变更信息
 4. 切换到【生产项目prod_project_01】, 查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",1,功能测试
-178276,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 分区字段与普通字段同名)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 分区字段与普通字段同名)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_18，且任务中包含 CREATE TABLE 语句
@@ -1649,8 +1649,8 @@ PROPERTIES (“replication_num“ = “1“);","1. 进入【测试项目test_pro
 4. 切换到【生产项目prod_project_01】, 查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",3,功能测试
-178275,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 分区字段新增/删除/类型变更)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 分区字段新增/删除/类型变更)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_18，且任务中包含 CREATE TABLE 语句
@@ -1732,8 +1732,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 4. 切换到【生产项目prod_project_01】, 查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178274,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 无结构变更/新建表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 无结构变更/新建表)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_17，且任务中包含 CREATE TABLE 语句
@@ -1776,8 +1776,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 4. 切换到【生产项目prod_project_01】, 查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178273,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 不勾选变更项)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Doris + 一键发布 + 不勾选变更项)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_16，且任务中包含 CREATE TABLE 语句
@@ -1811,8 +1811,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: source_table: 新增字段 age
 4. 1) Toast提示: 发布成功2) 不会出现二次确认发布弹窗
-5. 表结构不变",3,功能测试
-178272,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 勾选部分表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构不变",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 勾选部分表)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_15，且任务中包含 CREATE TABLE 语句
@@ -1863,8 +1863,8 @@ DISTRIBUTED BY HASH(order_id) BUCKETS 10;","1. 进入【测试项目test_project
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - source_tableA: 新增字段 age- source_tableB: 新增字段 status
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 1) source_tableA表结构不变2) source_tableB表结构变更成功",2,功能测试
-178271,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 新建表 + 结构变更表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_14，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中存在新建表（生产项目中不存在）和结构变更表（生产项目中已存在但有差异）<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />-- 表1：新建表（生产项目中不存在）<br />CREATE TABLE IF NOT EXISTS new_table (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    create_time DATETIME COMMENT '创建时间'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />-- 表2：结构变更表（生产项目中已存在）<br />CREATE TABLE IF NOT EXISTS change_table (<br />    id INT COMMENT '主键ID',<br />    username VARCHAR(100) COMMENT '用户名（修改）',<br />    email VARCHAR(100) COMMENT '邮箱（新增）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Doris（生产集群地址）<br />-- 表2：初始状态（表1不存在）<br />CREATE TABLE IF NOT EXISTS change_table (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名（将被修改）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
+5. 1) source_tableA表结构不变2) source_tableB表结构变更成功",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 新建表 + 结构变更表)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_14，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中存在新建表（生产项目中不存在）和结构变更表（生产项目中已存在但有差异）<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />-- 表1：新建表（生产项目中不存在）<br />CREATE TABLE IF NOT EXISTS new_table (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    create_time DATETIME COMMENT '创建时间'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />-- 表2：结构变更表（生产项目中已存在）<br />CREATE TABLE IF NOT EXISTS change_table (<br />    id INT COMMENT '主键ID',<br />    username VARCHAR(100) COMMENT '用户名（修改）',<br />    email VARCHAR(100) COMMENT '邮箱（新增）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Doris（生产集群地址）<br />-- 表2：初始状态（表1不存在）<br />CREATE TABLE IF NOT EXISTS change_table (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名（将被修改）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_14, 添加关联表new_table、change_table并打包
 3. 一键发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -1872,8 +1872,8 @@ DISTRIBUTED BY HASH(order_id) BUCKETS 10;","1. 进入【测试项目test_project
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: change_table: 删除字段 name, 新增字段 username, email
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 1) 新增表 new_table2)change_table表结构已成功变更",1,功能测试
-178270,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 多表 + 多变更类型)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 1) 新增表 new_table2)change_table表结构已成功变更",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 多表 + 多变更类型)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_13，且任务中包含 CREATE TABLE 语句
@@ -1946,8 +1946,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 1) source_table_m1: 删除字段 name, 新增字段 username, phone2) source_table_m2: 删除字段 price, stock3) source_table_m3: 新增字段 status
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178269,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 删除字段)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 删除字段)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_12，且任务中包含 CREATE TABLE 语句
@@ -1982,8 +1982,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - 删除字段 name- 删除字段 address
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178268,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 修改字段名称)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 修改字段名称)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_11，且任务中包含 CREATE TABLE 语句
@@ -2018,8 +2018,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - 删除字段 name- 新增字段 username
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178267,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 修改字段类型)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_10，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构存在字段类型差异<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_type (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    amount BIGINT COMMENT '金额（类型修改）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Doris（生产集群地址）<br />-- 生产项目中的表（初始状态）<br />CREATE TABLE IF NOT EXISTS source_table_type (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    amount INT COMMENT '金额（原始类型）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 修改字段类型)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_10，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构存在字段类型差异<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Doris（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_type (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    amount BIGINT COMMENT '金额（类型修改）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Doris（生产集群地址）<br />-- 生产项目中的表（初始状态）<br />CREATE TABLE IF NOT EXISTS source_table_type (<br />    id INT COMMENT '主键ID',<br />    name VARCHAR(100) COMMENT '姓名',<br />    amount INT COMMENT '金额（原始类型）'<br />)<br />DUPLICATE KEY(id)<br />DISTRIBUTED BY HASH(id) BUCKETS 10;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_10, 添加关联表source_table_type并打包
 3. 一键发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -2027,8 +2027,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 修改字段 amount (INT -> BIGINT)
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",1,功能测试
-178266,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 新增字段)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Doris + 一键发布 + 新增字段)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_09，且任务中包含 CREATE TABLE 语句
@@ -2065,8 +2065,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 新增字段 age (int)
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178265,验证【发布包校验】变更SQL选项非持久化 （Doris + 一键发布),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,验证【发布包校验】变更SQL选项非持久化 （Doris + 一键发布),"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_06，且任务中包含 CREATE TABLE 语句
@@ -2104,8 +2104,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 4. 存在表结构变更
 5. 选项处于勾选状态
 6. 变更SQL选项恢复为未勾选状态
-7. 选项可以正常勾选",3,功能测试
-178264,"验证【发布包校验】变更SQL发布, 二次确认弹窗显示正常（Doris + 一键发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+7. 选项可以正常勾选",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布, 二次确认弹窗显示正常（Doris + 一键发布)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -2141,8 +2141,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
 4. 存在表结构变更
-5. 显示二次确认弹窗1) 标题: 执行表结构变更SQL2) 文案: 当前操作将在发布过程中自动执行表结构变更 SQL，并直接作用于目标项目表结构，可能对任务和数据产生影响3) 按钮: 取消、确定",3,功能测试
-178263,验证【发布包校验】差异对比正常（Doris + 多表 + 多变更类型）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 显示二次确认弹窗1) 标题: 执行表结构变更SQL2) 文案: 当前操作将在发布过程中自动执行表结构变更 SQL，并直接作用于目标项目表结构，可能对任务和数据产生影响3) 按钮: 取消、确定",3
+离线开发-项目管理-发布管理,验证【发布包校验】差异对比正常（Doris + 多表 + 多变更类型）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_04，且任务中包含 CREATE TABLE 语句
@@ -2194,8 +2194,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 4. 查看【表】模块信息","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
-4. 存在表结构变更:1) 表名: source_table1变更说明: - 删除字段 old_field (int)- 新增字段 new_field (string)2) 表名: source_table2变更说明: - 删除字段 create_time (TIMESTAMP)- 修改字段 amount (DECIMAL(18,2) -> DECIMAL(10,2))- 修改字段 status (int -> string)",2,功能测试
-178262,验证【发布包校验】差异对比正常（Doris + 单表 + 单字段变更）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 存在表结构变更:1) 表名: source_table1变更说明: - 删除字段 old_field (int)- 新增字段 new_field (string)2) 表名: source_table2变更说明: - 删除字段 create_time (TIMESTAMP)- 修改字段 amount (DECIMAL(18,2) -> DECIMAL(10,2))- 修改字段 status (int -> string)",2
+离线开发-项目管理-发布管理,验证【发布包校验】差异对比正常（Doris + 单表 + 单字段变更）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_03，且任务中包含 CREATE TABLE 语句
@@ -2227,8 +2227,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 4. 查看【表】模块信息","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
-4. 存在表结构变更:1) 表名: test_tableA2) 变更说明: 修改字段 age (string -> int)",2,功能测试
-178261,验证【发布包校验】 变更说明按风险顺序(删除→修改→新增)正确展示(Doris + 一键发布）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 存在表结构变更:1) 表名: test_tableA2) 变更说明: 修改字段 age (string -> int)",2
+离线开发-项目管理-发布管理,验证【发布包校验】 变更说明按风险顺序(删除→修改→新增)正确展示(Doris + 一键发布）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 项目 test_project_01 和 test_project_02 均配置了 Doris 数据源
 4) 项目 test_project_01 中存在周期任务 task_cycle_02，且任务中包含 CREATE TABLE 语句
@@ -2263,8 +2263,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 4. 查看【变更说明】区域的变更项排序","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
-4. 变更项按照风险顺序正确排列：删除字段 old_field(INT）修改字段 age (STRING -> INT）新增字段 new_field(STRING)",3,功能测试
-178260,验证【发布包校验】 变更信息显示正常（Doris + 一键发布),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"> 前置条件
+4. 变更项按照风险顺序正确排列：删除字段 old_field(INT）修改字段 age (STRING -> INT）新增字段 new_field(STRING)",3
+离线开发-项目管理-发布管理,验证【发布包校验】 变更信息显示正常（Doris + 一键发布),"> 前置条件
 1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Doris 数据源
@@ -2300,8 +2300,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 4. 检查【表】模块信息","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
-4. “表”模块icon变更为黄色警告, 表格列信息:1) 标题: 本项目表结构存在变更2) 问号icon悬浮提示: 当前仅支持对 Doris、Hive 表的字段新增、字段删除及字段类型修改进行提示。在表格左侧勾选对应变更项后，系统将在发布过程中自动执行相应的表结构变更 SQL，变更将直接作用于目标项目的数据表结构，可能对下游任务及数据产生影响，请谨慎操作。3) 表格列包括:- 数据源名称：${数据源名称}（${数据源类型}）- Schema名称：展示表结构存在差异的表所在的schema名称- 表名：展示结构存在差异的表名- 变更说明：展示当前表内字段变更的情况，包括删除字段、修改字段类型、新增字段。按照变更风险从高到低的顺序展示，依次为：删除字段 → 修改字段 → 新增字段- 删除：删除字段 ${字段名称}（${字段类型}）- 修改：修改字段 ${字段名称}（${原字段类型} -> ${新字段类型}}）- 新增：新增字段 ${字段名称}（${字段类型}）",3,功能测试
-178259,"验证【发布包校验】变更SQL失败后, 日志记录正常（Hive + 一键发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_26，且任务中包含 CREATE TABLE 语句<br />5) 生产项目 prod_project_01 中已存在目标表，表中的数据会导致字段类型转换失败<br />6) 测试项目中的源表尝试将STRING类型改为INT，但目标表中该字段包含无法转换为INT的数据<br />7) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    amount INT COMMENT '金额（类型修改为INT）'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    amount STRING COMMENT '金额（原始为STRING，包含“abc“等非数字数据）'<br />)<br />STORED AS ORC;<br /><br />-- 生产表中已插入测试数据<br />INSERT INTO TABLE source_table_fail VALUES (1, '张三', '100'), (2, '李四', 'abc');<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
+4. “表”模块icon变更为黄色警告, 表格列信息:1) 标题: 本项目表结构存在变更2) 问号icon悬浮提示: 当前仅支持对 Doris、Hive 表的字段新增、字段删除及字段类型修改进行提示。在表格左侧勾选对应变更项后，系统将在发布过程中自动执行相应的表结构变更 SQL，变更将直接作用于目标项目的数据表结构，可能对下游任务及数据产生影响，请谨慎操作。3) 表格列包括:- 数据源名称：${数据源名称}（${数据源类型}）- Schema名称：展示表结构存在差异的表所在的schema名称- 表名：展示结构存在差异的表名- 变更说明：展示当前表内字段变更的情况，包括删除字段、修改字段类型、新增字段。按照变更风险从高到低的顺序展示，依次为：删除字段 → 修改字段 → 新增字段- 删除：删除字段 ${字段名称}（${字段类型}）- 修改：修改字段 ${字段名称}（${原字段类型} -> ${新字段类型}}）- 新增：新增字段 ${字段名称}（${字段类型}）",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL失败后, 日志记录正常（Hive + 一键发布)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_26，且任务中包含 CREATE TABLE 语句<br />5) 生产项目 prod_project_01 中已存在目标表，表中的数据会导致字段类型转换失败<br />6) 测试项目中的源表尝试将STRING类型改为INT，但目标表中该字段包含无法转换为INT的数据<br />7) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    amount INT COMMENT '金额（类型修改为INT）'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_fail (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    amount STRING COMMENT '金额（原始为STRING，包含“abc“等非数字数据）'<br />)<br />STORED AS ORC;<br /><br />-- 生产表中已插入测试数据<br />INSERT INTO TABLE source_table_fail VALUES (1, '张三', '100'), (2, '李四', 'abc');<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_12, 添加关联表source_table_fail并打包
 3. 一键发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -2311,8 +2311,8 @@ DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【测试项目test_project_01】
 3. 【发布包校验】弹窗存在表结构变更: - 修改字段 amount (string -> int)
 4. 发布失败
 5. 显示所有任务发布对象
-6. 正确显示发布失败信息",1,功能测试
-178258,"验证未执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 一键发布）",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+6. 正确显示发布失败信息",1
+离线开发-项目管理-发布管理,"验证未执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 一键发布）","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_20，且任务中包含 CREATE TABLE 语句
@@ -2348,8 +2348,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 1) 发布成功, 记录发布包列表中的【发布时间】2) 不存在二次确认弹窗
 5. 表结构不变
 6. 1) 【责任人】不变2) 【创建时间】不变
-7. 1) 【存储信息】→【表结构最后变更时间】不变2) 【存储信息】→【数据最后变更时间】不变",3,功能测试
-178257,"验证执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 一键发布 + 部分失败)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+7. 1) 【存储信息】→【表结构最后变更时间】不变2) 【存储信息】→【数据最后变更时间】不变",3
+离线开发-项目管理-发布管理,"验证执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 一键发布 + 部分失败)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_19，且任务中包含 CREATE TABLE 语句
@@ -2417,8 +2417,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 发布失败, 记录发布包列表中的【发布人】、【发布时间】
 5. 1) source_table_success1~2 表结构已成功变更2) source_table_success3 表结构不变
 6. 1) 【责任人】不变2) 【创建时间】不变
-7. 1) source_table_success1~2:- 【存储信息】→【表结构最后变更时间】更新为发布时间- 【存储信息】→【数据最后变更时间】更新为发布时间2) source_table_success3: - 【存储信息】→【表结构最后变更时间】不变- 【存储信息】→【数据最后变更时间】不变",2,功能测试
-178256,"验证执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 一键发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_19，且任务中包含 CREATE TABLE 语句<br />5) 生产项目 prod_project_01 中已存在目标表，且有历史「表结构最后变更时间」、「数据最后变更时间」<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表<br />CREATE TABLE IF NOT EXISTS source_table (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
+7. 1) source_table_success1~2:- 【存储信息】→【表结构最后变更时间】更新为发布时间- 【存储信息】→【数据最后变更时间】更新为发布时间2) source_table_success3: - 【存储信息】→【表结构最后变更时间】不变- 【存储信息】→【数据最后变更时间】不变",2
+离线开发-项目管理-发布管理,"验证执行表结构变更SQL后, 数据地图中的表信息更新正确（Hive + 一键发布)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_19，且任务中包含 CREATE TABLE 语句<br />5) 生产项目 prod_project_01 中已存在目标表，且有历史「表结构最后变更时间」、「数据最后变更时间」<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表<br />CREATE TABLE IF NOT EXISTS source_table (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_19, 添加关联表source_table并打包
 3. 一键发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -2430,8 +2430,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 发布成功, 记录发布包列表中的【发布人】、【发布时间】
 5. 表结构已成功变更
 6. 1) 【责任人】不变2) 【创建时间】不变
-7. 1) 【存储信息】→【表结构最后变更时间】更新为发布时间2) 【存储信息】→【数据最后变更时间】更新为发布时间",1,功能测试
-178255,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 分区字段与普通字段同名)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+7. 1) 【存储信息】→【表结构最后变更时间】更新为发布时间2) 【存储信息】→【数据最后变更时间】更新为发布时间",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 分区字段与普通字段同名)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_18，且任务中包含 CREATE TABLE 语句
@@ -2462,8 +2462,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 切换到【生产项目prod_project_01】, 查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178254,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 分区字段新增/删除/类型变更)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 分区字段新增/删除/类型变更)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_18，且任务中包含 CREATE TABLE 语句
@@ -2544,15 +2544,15 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 切换到【生产项目prod_project_01】, 查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178253,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 无结构变更/新建表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_17，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构完全相同<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_same (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表（结构与测试项目完全一致）<br />CREATE TABLE IF NOT EXISTS source_table_same (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 无结构变更/新建表)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_17，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构完全相同<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_same (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表（结构与测试项目完全一致）<br />CREATE TABLE IF NOT EXISTS source_table_same (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_17, 添加关联表source_table_same并打包
 3. 一键发布后, 检查【发布包校验】表结构变更信息
 4. 切换到【生产项目prod_project_01】, 查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",1,功能测试
-178252,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 不勾选变更项)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 不勾选变更项)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_16，且任务中包含 CREATE TABLE 语句
@@ -2584,8 +2584,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: source_table: 新增字段 age
 4. 1) Toast提示: 发布成功2) 不会出现二次确认发布弹窗
-5. 表结构不变",2,功能测试
-178251,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 勾选部分表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 勾选部分表)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_15，且任务中包含 CREATE TABLE 语句
@@ -2630,8 +2630,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - source_tableA: 新增字段 age- source_tableB: 新增字段 status
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 1) source_tableA表结构不变2) source_tableB表结构变更成功",2,功能测试
-178250,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 新建表 + 结构变更表)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 1) source_tableA表结构不变2) source_tableB表结构变更成功",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 新建表 + 结构变更表)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_10，且任务中包含 CREATE TABLE 语句
@@ -2671,8 +2671,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: change_table: 删除字段 name, 新增字段 username, email
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 1) 新增表 new_table2)change_table表结构已成功变更",2,功能测试
-178249,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 多表 + 多变更类型)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_10，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构存在字段类型差异<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 表1：存在新增和修改字段<br />CREATE TABLE IF NOT EXISTS source_table_m1 (<br />    id INT COMMENT '主键ID',<br />    username STRING COMMENT '用户名（修改）',<br />    age INT COMMENT '年龄',<br />    phone STRING COMMENT '电话（新增）'<br />)<br />STORED AS ORC;<br /><br />-- 表2：存在删除字段<br />CREATE TABLE IF NOT EXISTS source_table_m2 (<br />    id INT COMMENT '主键ID',<br />    product_name STRING COMMENT '产品名称'<br />)<br />STORED AS ORC;<br /><br />-- 表3：存在新增字段<br />CREATE TABLE IF NOT EXISTS source_table_m3 (<br />    id INT COMMENT '主键ID',<br />    order_id STRING COMMENT '订单ID',<br />    amount DECIMAL(10,2) COMMENT '金额',<br />    status STRING COMMENT '状态（新增）'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 表1：初始状态<br />CREATE TABLE IF NOT EXISTS source_table_m1 (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名（将被修改）',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />-- 表2：初始状态<br />CREATE TABLE IF NOT EXISTS source_table_m2 (<br />    id INT COMMENT '主键ID',<br />    product_name STRING COMMENT '产品名称',<br />    price DECIMAL(10,2) COMMENT '价格（将被删除）',<br />    stock INT COMMENT '库存（将被删除）'<br />)<br />STORED AS ORC;<br /><br />-- 表3：初始状态<br />CREATE TABLE IF NOT EXISTS source_table_m3 (<br />    id INT COMMENT '主键ID',<br />    order_id STRING COMMENT '订单ID',<br />    amount DECIMAL(10,2) COMMENT '金额'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
+5. 1) 新增表 new_table2)change_table表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 多表 + 多变更类型)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_10，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构存在字段类型差异<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 表1：存在新增和修改字段<br />CREATE TABLE IF NOT EXISTS source_table_m1 (<br />    id INT COMMENT '主键ID',<br />    username STRING COMMENT '用户名（修改）',<br />    age INT COMMENT '年龄',<br />    phone STRING COMMENT '电话（新增）'<br />)<br />STORED AS ORC;<br /><br />-- 表2：存在删除字段<br />CREATE TABLE IF NOT EXISTS source_table_m2 (<br />    id INT COMMENT '主键ID',<br />    product_name STRING COMMENT '产品名称'<br />)<br />STORED AS ORC;<br /><br />-- 表3：存在新增字段<br />CREATE TABLE IF NOT EXISTS source_table_m3 (<br />    id INT COMMENT '主键ID',<br />    order_id STRING COMMENT '订单ID',<br />    amount DECIMAL(10,2) COMMENT '金额',<br />    status STRING COMMENT '状态（新增）'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 表1：初始状态<br />CREATE TABLE IF NOT EXISTS source_table_m1 (<br />    id INT COMMENT '主键ID',<br />    name STRING COMMENT '姓名（将被修改）',<br />    age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br /><br />-- 表2：初始状态<br />CREATE TABLE IF NOT EXISTS source_table_m2 (<br />    id INT COMMENT '主键ID',<br />    product_name STRING COMMENT '产品名称',<br />    price DECIMAL(10,2) COMMENT '价格（将被删除）',<br />    stock INT COMMENT '库存（将被删除）'<br />)<br />STORED AS ORC;<br /><br />-- 表3：初始状态<br />CREATE TABLE IF NOT EXISTS source_table_m3 (<br />    id INT COMMENT '主键ID',<br />    order_id STRING COMMENT '订单ID',<br />    amount DECIMAL(10,2) COMMENT '金额'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_13, 添加关联表source_table_m1~m3并打包
 3. 一键发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -2680,8 +2680,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 1) source_table_m1: 删除字段 name, 新增字段 username, phone2) source_table_m2: 删除字段 price, stock3) source_table_m3: 新增字段 status
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",1,功能测试
-178248,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 删除字段)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",1
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构不变（Hive + 一键发布 + 删除字段)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_12，且任务中包含 CREATE TABLE 语句
@@ -2712,8 +2712,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 切换到【生产项目prod_project_01】, 查询目标表结构","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 显示: 校验通过
-4. 表结构不变",2,功能测试
-178247,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 修改字段名称)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 表结构不变",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 修改字段名称)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_11，且任务中包含 CREATE TABLE 语句
@@ -2746,8 +2746,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: - 删除字段 name- 新增字段 username
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178246,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 修改字段类型)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 修改字段类型)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_10，且任务中包含 CREATE TABLE 语句
@@ -2780,8 +2780,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更: 修改字段 amount (INT -> BIGINT)
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",2,功能测试
-178245,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 新增字段)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_09，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构存在新增字段差异<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_addcol (<br /> id INT COMMENT '主键ID',<br /> name STRING COMMENT '姓名',<br /> age INT COMMENT '年龄',<br /> phone STRING COMMENT '电话（新增字段）',<br /> email STRING COMMENT '邮箱（新增字段）'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表（初始状态）<br />CREATE TABLE IF NOT EXISTS source_table_addcol (<br /> id INT COMMENT '主键ID',<br /> name STRING COMMENT '姓名',<br /> age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
+5. 表结构已成功变更",2
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布后, 目标表结构变更成功（Hive + 一键发布 + 新增字段)","1) 已登录系统，账号具有任务发布权限<br />2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）<br />3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源<br />4) 测试项目 test_project_01 中存在周期任务 task_cycle_09，且任务中包含 CREATE TABLE 语句<br />5) 测试项目中的表结构与生产项目中的表结构存在新增字段差异<br />6) 建表语句：<br /><br />测试项目 test_project_01 中的表：<br />-- 数据源: Hive（测试集群地址）<br />-- 测试项目中的表<br />CREATE TABLE IF NOT EXISTS source_table_addcol (<br /> id INT COMMENT '主键ID',<br /> name STRING COMMENT '姓名',<br /> age INT COMMENT '年龄',<br /> phone STRING COMMENT '电话（新增字段）',<br /> email STRING COMMENT '邮箱（新增字段）'<br />)<br />STORED AS ORC;<br /><br />生产项目 prod_project_01 中的表：<br />-- 数据源: Hive（生产集群地址）<br />-- 生产项目中的表（初始状态）<br />CREATE TABLE IF NOT EXISTS source_table_addcol (<br /> id INT COMMENT '主键ID',<br /> name STRING COMMENT '姓名',<br /> age INT COMMENT '年龄'<br />)<br />STORED AS ORC;<br />","1. 进入【测试项目test_project_01】→【任务发布】→【创建发布包】页面
 2. 勾选周期任务task_cycle_09, 添加关联表source_table_addcol并打包
 3. 一键发布后, 检查【发布包校验】表结构变更信息
 4. 勾选变更SQL选项, 并二次确认发布
@@ -2789,8 +2789,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 【发布包校验】弹窗存在表结构变更
 4. 系统提示发布成功，发布状态更新，相关页面可访问
-5. 表结构已成功变更",1,功能测试
-178244,验证【发布包校验】变更SQL选项非持久化 （Hive + 一键发布),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 表结构已成功变更",1
+离线开发-项目管理-发布管理,验证【发布包校验】变更SQL选项非持久化 （Hive + 一键发布),"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_08，且任务中包含 CREATE TABLE 语句
@@ -2826,8 +2826,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 存在表结构变更
 5. 选项处于勾选状态
 6. 变更SQL选项恢复为未勾选状态
-7. 选项可以正常勾选",3,功能测试
-178243,"验证【发布包校验】变更SQL发布, 二次确认弹窗显示正常（Hive + 一键发布)",离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+7. 选项可以正常勾选",3
+离线开发-项目管理-发布管理,"验证【发布包校验】变更SQL发布, 二次确认弹窗显示正常（Hive + 一键发布)","1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_07，且任务中包含 CREATE TABLE 语句
@@ -2861,8 +2861,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
 4. 存在表结构变更
-5. 显示二次确认弹窗1) 标题: 执行表结构变更SQL2) 文案: 当前操作将在发布过程中自动执行表结构变更 SQL，并直接作用于目标项目表结构，可能对任务和数据产生影响3) 按钮: 取消、确定",3,功能测试
-178242,验证【发布包校验】差异对比正常（Hive + 多表 + 多变更类型）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+5. 显示二次确认弹窗1) 标题: 执行表结构变更SQL2) 文案: 当前操作将在发布过程中自动执行表结构变更 SQL，并直接作用于目标项目表结构，可能对任务和数据产生影响3) 按钮: 取消、确定",3
+离线开发-项目管理-发布管理,验证【发布包校验】差异对比正常（Hive + 多表 + 多变更类型）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_06，且任务中包含 CREATE TABLE 语句
@@ -2910,8 +2910,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 查看【表】模块信息","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
-4. 存在表结构变更:1) 表名: source_table1变更说明: - 删除字段 old_field (int)- 新增字段 new_field (string)2) 表名: source_table2变更说明: - 删除字段 create_time (TIMESTAMP)- 修改字段 amount (DECIMAL(18,2) -> DECIMAL(10,2))- 修改字段 status (int -> string)",2,功能测试
-178241,验证【发布包校验】差异对比正常（Hive + 单表 + 单字段变更）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 存在表结构变更:1) 表名: source_table1变更说明: - 删除字段 old_field (int)- 新增字段 new_field (string)2) 表名: source_table2变更说明: - 删除字段 create_time (TIMESTAMP)- 修改字段 amount (DECIMAL(18,2) -> DECIMAL(10,2))- 修改字段 status (int -> string)",2
+离线开发-项目管理-发布管理,验证【发布包校验】差异对比正常（Hive + 单表 + 单字段变更）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_05，且任务中包含 CREATE TABLE 语句
@@ -2944,8 +2944,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 查看【表】模块信息","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
-4. 存在表结构变更:1) 表名: test_tableA2) 变更说明: 修改字段 age (string -> int)",2,功能测试
-178240,验证【发布包校验】 变更说明按风险顺序(删除→修改→新增)正确展示(Hive + 一键发布）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 存在表结构变更:1) 表名: test_tableA2) 变更说明: 修改字段 age (string -> int)",2
+离线开发-项目管理-发布管理,验证【发布包校验】 变更说明按风险顺序(删除→修改→新增)正确展示(Hive + 一键发布）,"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_02，且任务中包含 CREATE TABLE 语句
@@ -2980,8 +2980,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 查看【变更说明】区域的变更项排序","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
-4. 变更项按照风险顺序正确排列：删除字段 old_field(INT）修改字段 age (STRING -> INT）新增字段 new_field(STRING)",3,功能测试
-178239,验证【发布包校验】 变更信息显示正常（Hive + 一键发布),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1) 已登录系统，账号具有任务发布权限
+4. 变更项按照风险顺序正确排列：删除字段 old_field(INT）修改字段 age (STRING -> INT）新增字段 new_field(STRING)",3
+离线开发-项目管理-发布管理,验证【发布包校验】 变更信息显示正常（Hive + 一键发布),"1) 已登录系统，账号具有任务发布权限
 2) 系统中存在至少2个项目（test_project_01 和 prod_project_01）
 3) 测试项目 test_project_01 和生产项目 prod_project_01 均配置了 Hive 数据源
 4) 测试项目 test_project_01 中存在周期任务 task_cycle_01，且任务中包含 CREATE TABLE 语句
@@ -3016,8 +3016,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 检查【表】模块信息","1. 成功进入目标页面，页面内容正常加载显示，无报错
 2. 打包成功, 跳转到【发布至目标项目】页面
 3. 进入【发布包校验】弹窗
-4. “表”模块icon变更为黄色警告, 表格列信息:1) 标题: 本项目表结构存在变更2) 问号icon悬浮提示: 当前仅支持对 Doris、Hive 表的字段新增、字段删除及字段类型修改进行提示。在表格左侧勾选对应变更项后，系统将在发布过程中自动执行相应的表结构变更 SQL，变更将直接作用于目标项目的数据表结构，可能对下游任务及数据产生影响，请谨慎操作。3) 表格列包括:- 数据源名称：${数据源名称}（${数据源类型}）- Schema名称：展示表结构存在差异的表所在的schema名称- 表名：展示结构存在差异的表名- 变更说明：展示当前表内字段变更的情况，包括删除字段、修改字段类型、新增字段。按照变更风险从高到低的顺序展示，依次为：删除字段 → 修改字段 → 新增字段- 删除：删除字段 ${字段名称}（${字段类型}）- 修改：修改字段 ${字段名称}（${原字段类型} -> ${新字段类型}}）- 新增：新增字段 ${字段名称}（${字段类型}）",3,功能测试
-178238,验证【对象类型】选择【表】时，可正确展示当前项目中周期任务/手动任务/临时查询创建的(Doris),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1、项目中已存在以下Hive表（均由离线开发创建）：
+4. “表”模块icon变更为黄色警告, 表格列信息:1) 标题: 本项目表结构存在变更2) 问号icon悬浮提示: 当前仅支持对 Doris、Hive 表的字段新增、字段删除及字段类型修改进行提示。在表格左侧勾选对应变更项后，系统将在发布过程中自动执行相应的表结构变更 SQL，变更将直接作用于目标项目的数据表结构，可能对下游任务及数据产生影响，请谨慎操作。3) 表格列包括:- 数据源名称：${数据源名称}（${数据源类型}）- Schema名称：展示表结构存在差异的表所在的schema名称- 表名：展示结构存在差异的表名- 变更说明：展示当前表内字段变更的情况，包括删除字段、修改字段类型、新增字段。按照变更风险从高到低的顺序展示，依次为：删除字段 → 修改字段 → 新增字段- 删除：删除字段 ${字段名称}（${字段类型}）- 修改：修改字段 ${字段名称}（${原字段类型} -> ${新字段类型}}）- 新增：新增字段 ${字段名称}（${字段类型}）",3
+离线开发-项目管理-发布管理,验证【对象类型】选择【表】时，可正确展示当前项目中周期任务/手动任务/临时查询创建的(Doris),"1、项目中已存在以下Hive表（均由离线开发创建）：
 周期任务创建：test_db.tb_cycle
 手动任务创建：test_db.tb_manual
 临时查询创建：test_db.tb_adhoc
@@ -3028,8 +3028,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 勾选task_table01~03","1. 跳转到发布包创建页面
 2. 列表数据刷新
 3. 列表正确显示test_project_01中周期任务/手动任务/临时查询创建的所有表：1) task_table01（所属任务：周期任务1）2) task_table02（所属任务：手动任务1）3) task_table03（所属任务：临时查询1）
-4. 表成功添加到右侧【发布列表】",2,功能测试
-178237,验证周期任务/手动任务打包时，通过【添加关联】可正确关联任务中创建的表（Doris）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1、当前项目已创建Doris数据源
+4. 表成功添加到右侧【发布列表】",2
+离线开发-项目管理-发布管理,验证周期任务/手动任务打包时，通过【添加关联】可正确关联任务中创建的表（Doris）,"1、当前项目已创建Doris数据源
 2、项目中已存在一个Doris SQL周期任务和手动任务，任务中包含建表语句：
 
 CREATE TABLE test_db.tb_create_in_task (
@@ -3054,8 +3054,8 @@ create_time TIMESTAMP
 3. 列表正确显示周期任务A中所有创建的表, 包含Hive表test_source_tableA
 4. test_source_tableA成功添加到右侧【发布列表】
 5. 显示【添加关联】弹窗
-6. test_source_tableB成功添加到右侧【发布列表】",2,功能测试
-178236,验证【对象类型】选择【表】时，可正确展示当前项目中周期任务/手动任务/临时查询创建的表(Hive),离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1)已登录系统，账号具有任务发布权限
+6. test_source_tableB成功添加到右侧【发布列表】",2
+离线开发-项目管理-发布管理,验证【对象类型】选择【表】时，可正确展示当前项目中周期任务/手动任务/临时查询创建的表(Hive),"1)已登录系统，账号具有任务发布权限
 2)系统中存在至少1个测试项目test_project_01
 3)测试项目test_project_01中配置了Hive数据源
 4)测试项目test_project_01中存在以下任务：
@@ -3098,8 +3098,8 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 4. 勾选task_table01~03","1. 跳转到发布包创建页面
 2. 列表数据刷新
 3. 列表正确显示test_project_01中周期任务/手动任务/临时查询创建的所有表：1) task_table01（所属任务：周期任务1）2) task_table02（所属任务：手动任务1）3) task_table03（所属任务：临时查询1）
-4. 表成功添加到右侧【发布列表】",2,功能测试
-178235,验证周期任务/手动任务打包时，通过【添加关联】可正确关联任务中创建的表（Hive）,离线开发-项目管理-发布管理,【产品交付】任务发布支持更新表结构(#15375),"1)已登录系统，账号具有任务发布权限
+4. 表成功添加到右侧【发布列表】",2
+离线开发-项目管理-发布管理,验证周期任务/手动任务打包时，通过【添加关联】可正确关联任务中创建的表（Hive）,"1)已登录系统，账号具有任务发布权限
 2)系统中存在至少2个项目（测试项目test_project_01和生产项目prod_project_01）
 3)测试项目test_project_01和生产项目prod_project_01均配置了Hive数据源
 4)测试项目test_project_01中存在至少1个周期任务A或手动任务B，且任务中包含CREATE TABLE语句
@@ -3133,4 +3133,4 @@ STORED AS ORC;","1. 进入【测试项目test_project_01】→【任务发布】
 3. 列表正确显示周期任务A中所有创建的表, 包含Hive表test_source_tableA
 4. test_source_tableA成功添加到右侧【发布列表】
 5. 显示【添加关联】弹窗
-6. test_source_tableB成功添加到右侧【发布列表】",2,功能测试
+6. test_source_tableB成功添加到右侧【发布列表】",2

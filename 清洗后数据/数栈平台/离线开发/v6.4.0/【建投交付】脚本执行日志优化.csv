@@ -1,5 +1,5 @@
-﻿用例编号,用例标题,所属模块,相关需求,前置条件,步骤,预期结果,优先级,用例类型
-159344,验证多条非prd指定sql类型整段运行日志不展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+日志影响行数优化,验证多条非prd指定sql类型整段运行日志不展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 ALTER TABLE test_oushu_001 ADD age INT;
@@ -8,8 +8,8 @@ SELECT * FROM test_oushu_001;
 drop table test_oushu_001;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
-2. 任务运行成功，日志不包含本次需求日志",2,功能测试
-159343,验证sql任务补数据运行日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+2. 任务运行成功，日志不包含本次需求日志",2
+日志影响行数优化,验证sql任务补数据运行日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 CREATE TABLE test_oushu_001 (
@@ -24,8 +24,8 @@ DISTRIBUTED BY (id);
 2. 系统提示提交成功，记录状态更新，列表中可见该条记录
 3. 生成补数据实例
 4. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159342,验证sql任务周期实例运行日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证sql任务周期实例运行日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 CREATE TABLE test_oushu_001 (
@@ -36,8 +36,8 @@ DISTRIBUTED BY (id);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159341,验证多条sql分段运行日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证多条sql分段运行日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 CREATE TABLE test_oushu_001 (
@@ -49,8 +49,8 @@ INSERT INTO test_oushu_001 (id, name) VALUES (1, 'Alice');
 点击保存
 2. 选择上述sql点击分段运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，每条任务执行时长上方均显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159340,验证多条非指定和指定的sql整段运行日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证多条非指定和指定的sql整段运行日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 CREATE TABLE test_oushu_001 (
@@ -62,8 +62,8 @@ SELECT * FROM test_oushu_001;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159339,验证Greenplum SQL任务 失败--验证运行失败的delete sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证Greenplum SQL任务 失败--验证运行失败的delete sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Greenplum sql任务","1. 进入sql任务输入sql：
 DELETE FR test_gp_001
@@ -71,8 +71,8 @@ WHERE id = 1;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行DELETE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159338,验证Greenplum SQL任务 成功--验证运行成功的delete sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证Greenplum SQL任务 成功--验证运行成功的delete sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Greenplum sql任务","1. 进入sql任务输入sql：
 DELETE FROM test_gp_001
@@ -80,8 +80,8 @@ WHERE id = 1;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行DELETE语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159337,验证Greenplum SQL任务 失败--验证运行失败的update sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证Greenplum SQL任务 失败--验证运行失败的update sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Greenplum sql任务","1. 进入sql任务输入sql：
 UPD test_gp_001
@@ -90,8 +90,8 @@ WHERE id IN (1);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行UPDATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159336,验证Greenplum SQL任务 成功--验证运行成功的update sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证Greenplum SQL任务 成功--验证运行成功的update sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Greenplum sql任务","1. 进入sql任务输入sql：
 UPDATE test_gp_001
@@ -100,24 +100,24 @@ WHERE id IN (1);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行UPDATE语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159335,验证Greenplum SQL任务 失败--验证运行失败的insert sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证Greenplum SQL任务 失败--验证运行失败的insert sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Greenplum sql任务","1. 进入sql任务输入sql：
 INSERT IN test_gp_001 (id, name) VALUES (1, 'Alice');
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行INSERT语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159334,验证Greenplum SQL任务 成功--验证运行成功的insert sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证Greenplum SQL任务 成功--验证运行成功的insert sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Greenplum sql任务","1. 进入sql任务输入sql：
 INSERT INTO test_gp_001 (id, name) VALUES (1, 'Alice');
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行INSERT语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159333,验证Greenplum SQL任务 失败--验证运行失败的create sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证Greenplum SQL任务 失败--验证运行失败的create sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Greenplum sql任务","1. 进入sql任务输入sql：
 CREATE TA test_gp_001 (
@@ -128,8 +128,8 @@ DISTRIBUTED BY (id);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159332,验证Greenplum SQL任务 成功--验证运行成功的create sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证Greenplum SQL任务 成功--验证运行成功的create sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Greenplum sql任务","1. 进入sql任务输入sql：
 CREATE TABLE test_gp_001 (
@@ -140,8 +140,8 @@ DISTRIBUTED BY (id);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：-1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159331,验证DMDB for Oracle SQL任务 失败--验证运行失败的delete sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证DMDB for Oracle SQL任务 失败--验证运行失败的delete sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在DMDB for Oracle sql任务","1. 进入sql任务输入sql：
 DEL FROM test_dfo_001
@@ -149,8 +149,8 @@ WHERE id = 1;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行DELETE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159330,验证DMDB for Oracle SQL任务 成功--验证运行成功的delete sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证DMDB for Oracle SQL任务 成功--验证运行成功的delete sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在DMDB for Oracle sql任务","1. 进入sql任务输入sql：
 DELETE FROM test_dfo_001
@@ -158,8 +158,8 @@ WHERE id = 1;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行DELETE语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159329,验证DMDB for Oracle SQL任务 失败--验证运行失败的update sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证DMDB for Oracle SQL任务 失败--验证运行失败的update sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在DMDB for Oracle sql任务","1. 进入sql任务输入sql：
 UPD test_dfo_001
@@ -168,8 +168,8 @@ WHERE id IN (1);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行UPDATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159328,验证DMDB for Oracle SQL任务 成功--验证运行成功的update sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证DMDB for Oracle SQL任务 成功--验证运行成功的update sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在DMDB for Oracle sql任务","1. 进入sql任务输入sql：
 UPDATE test_dfo_001
@@ -178,24 +178,24 @@ WHERE id IN (1);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行UPDATE语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159327,验证DMDB for Oracle SQL任务 失败--验证运行失败的insert sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证DMDB for Oracle SQL任务 失败--验证运行失败的insert sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在DMDB for Oracle sql任务","1. 进入sql任务输入sql：
 INSERT IN test_dfo_001 (id, name) VALUES (1, 'Alice');
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行INSERT语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159326,验证DMDB for Oracle SQL任务 成功--验证运行成功的insert sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证DMDB for Oracle SQL任务 成功--验证运行成功的insert sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在DMDB for Oracle sql任务","1. 进入sql任务输入sql：
 INSERT INTO test_dfo_001 (id, name) VALUES (1, 'Alice');
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行INSERT语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159325,验证DMDB for Oracle SQL任务 失败--验证运行失败的create sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证DMDB for Oracle SQL任务 失败--验证运行失败的create sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在DMDB for Oracle sql任务","1. 进入sql任务输入sql：
 CREATE TAB test_dfo_001 (
@@ -205,8 +205,8 @@ name VARCHAR2(100)
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159324,验证DMDB for Oracle SQL任务 成功--验证运行成功的create sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证DMDB for Oracle SQL任务 成功--验证运行成功的create sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在DMDB for Oracle sql任务","1. 进入sql任务输入sql：
 CREATE TABLE test_dfo_001 (
@@ -216,8 +216,8 @@ name VARCHAR2(100)
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：-1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159323,验证OceanBase for Oracle SQL任务 失败--验证运行失败的delete sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证OceanBase for Oracle SQL任务 失败--验证运行失败的delete sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Oceanbase for Oracle sql任务","1. 进入sql任务输入sql：
 DEL FROM test_ofo_001
@@ -225,8 +225,8 @@ WHERE id = 1;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行DELETE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159322,验证OceanBase for Oracle SQL任务 成功--验证运行成功的delete sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证OceanBase for Oracle SQL任务 成功--验证运行成功的delete sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Oceanbase for Oracle sql任务","1. 进入sql任务输入sql：
 DELETE FROM test_ofo_001
@@ -234,8 +234,8 @@ WHERE id = 1;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行DELETE语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159321,验证OceanBase for Oracle SQL任务 失败--验证运行失败的update sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证OceanBase for Oracle SQL任务 失败--验证运行失败的update sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Oceanbase for Oracle sql任务","1. 进入sql任务输入sql：
 UPD test_ofo_001
@@ -244,8 +244,8 @@ WHERE id IN (1);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行UPDATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159320,验证OceanBase for Oracle SQL任务 成功--验证运行成功的update sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证OceanBase for Oracle SQL任务 成功--验证运行成功的update sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Oceanbase for Oracle sql任务","1. 进入sql任务输入sql：
 UPDATE test_ofo_001
@@ -254,24 +254,24 @@ WHERE id IN (1);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行UPDATE语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159319,验证OceanBase for Oracle SQL任务 失败--验证运行失败的insert sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证OceanBase for Oracle SQL任务 失败--验证运行失败的insert sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Oceanbase for Oracle sql任务","1. 进入sql任务输入sql：
 INSERT IN test_ofo_001 (id, name) VALUES (1, 'Alice');
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行INSERT语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159318,验证OceanBase for Oracle SQL任务 成功--验证运行成功的insert sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证OceanBase for Oracle SQL任务 成功--验证运行成功的insert sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Oceanbase for Oracle sql任务","1. 进入sql任务输入sql：
 INSERT INTO test_ofo_001 (id, name) VALUES (1, 'Alice');
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行INSERT语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159317,验证OceanBase for Oracle SQL任务 失败--验证运行失败的create sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证OceanBase for Oracle SQL任务 失败--验证运行失败的create sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Oceanbase for Oracle sql任务","1. 进入sql任务输入sql：
 CREATE TAB test_ofo_001 (
@@ -281,8 +281,8 @@ name VARCHAR2(100)
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159316,验证OceanBase for Oracle SQL任务 成功--验证运行成功的create sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证OceanBase for Oracle SQL任务 成功--验证运行成功的create sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在Oceanbase for Oracle sql任务","1. 进入sql任务输入sql：
 CREATE TABLE test_ofo_001 (
@@ -292,8 +292,8 @@ name VARCHAR2(100)
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：-1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159315,验证OushuDB SQL任务 失败--验证运行失败的delete sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证OushuDB SQL任务 失败--验证运行失败的delete sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 DELE FROM test_oushu_001
@@ -301,8 +301,8 @@ WHERE id = 1;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行DELETE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159314,验证OushuDB SQL任务 成功--验证运行成功的delete sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证OushuDB SQL任务 成功--验证运行成功的delete sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 DELETE FROM test_oushu_001
@@ -310,8 +310,8 @@ WHERE id = 1;
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行DELETE语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159313,验证OushuDB SQL任务 失败--验证运行失败的update sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证OushuDB SQL任务 失败--验证运行失败的update sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 UPDA test_oushu_001
@@ -320,8 +320,8 @@ WHERE id IN (1);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行UPDATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159312,验证OushuDB SQL任务 成功--验证运行成功的update sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证OushuDB SQL任务 成功--验证运行成功的update sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 UPDATE test_oushu_001
@@ -330,8 +330,8 @@ WHERE id IN (1);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行UPDATE语句完成，影响行数：1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159311,验证OushuDB SQL任务 失败--验证运行失败的insert sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证OushuDB SQL任务 失败--验证运行失败的insert sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 INSERT IN test_oushu_001 (id, name)
@@ -341,8 +341,8 @@ VALUES
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行INSERT语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159310,验证OushuDB SQL任务 成功--验证运行成功的insert sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证OushuDB SQL任务 成功--验证运行成功的insert sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 INSERT INTO test_oushu_001 (id, name)
@@ -352,8 +352,8 @@ VALUES
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行INSERT语句完成，影响行数：2
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
-159309,验证OushuDB SQL任务 失败--验证运行失败的create sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",1
+日志影响行数优化,验证OushuDB SQL任务 失败--验证运行失败的create sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 CREATE TAB test_oushu_001 (
@@ -364,8 +364,8 @@ DISTRIBUTED BY (id);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行失败，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：0
-其中[xx.xx.xx]：代表运行系统时间",2,功能测试
-159308,验证OushuDB SQL任务 成功--验证运行成功的create sql语句日志正常展示影响行数,日志影响行数优化,【建投交付】脚本执行日志优化(#14410),"项目中包含数据源类型：
+其中[xx.xx.xx]：代表运行系统时间",2
+日志影响行数优化,验证OushuDB SQL任务 成功--验证运行成功的create sql语句日志正常展示影响行数,"项目中包含数据源类型：
 OushuDB、Oceanbase for Oracle、DMDB for Oracle、Greenplum
 已存在oushudb sql任务","1. 进入sql任务输入sql：
 CREATE TABLE test_oushu_001 (
@@ -376,4 +376,4 @@ DISTRIBUTED BY (id);
 点击保存
 2. 选择上述sql点击临时运行","1. sql保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
 2. 任务运行成功，任务执行时长上方显示日志，包含内容[xx.xx.xx] <info> 执行CREATE语句完成，影响行数：-1
-其中[xx.xx.xx]：代表运行系统时间",1,功能测试
+其中[xx.xx.xx]：代表运行系统时间",1

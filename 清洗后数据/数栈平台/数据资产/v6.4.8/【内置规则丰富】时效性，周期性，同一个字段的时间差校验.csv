@@ -1,5 +1,5 @@
-﻿用例编号,用例标题,所属模块,相关需求,前置条件,步骤,预期结果,优先级,用例类型
-179157,验证「监控规则」-「时效性校验」-「单字段时间差校验」任务质量报告正确,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+数据资产-数据质量-内置规则库,验证「监控规则」-「时效性校验」-「单字段时间差校验」任务质量报告正确,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -132,8 +132,8 @@ TRUE,
 5. 页面包含：
 1）报告进入目录
 2）质量评估汇总（任务名）区域，（数据源、数据库、检测数据范围、表行数、抽样行数、字段数、校验规则数、校验通过率）
-3）规则校验明细，（规则类型-时效性校验、规则名称、字段名称、字段类型、质验结果、未通过原因、详情说明、操作）",2,功能测试
-179156,验证「监控规则」-「时效性校验」-「单字段时间差校验」任务不通过/失败结果详情正确,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+3）规则校验明细，（规则类型-时效性校验、规则名称、字段名称、字段类型、质验结果、未通过原因、详情说明、操作）",2
+数据资产-数据质量-内置规则库,验证「监控规则」-「时效性校验」-「单字段时间差校验」任务不通过/失败结果详情正确,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -284,8 +284,8 @@ TRUE,
 4）最近30次表级统计；
 5）最近30次表数据波动图
 11. 1）都展示【时效性校验】-【单字段时间差校验】配置的详情；
-2）运行失败的规则支持查看日志",2,功能测试
-179155,验证「监控规则」-「时效性校验」-「单字段时间差校验」任务通过结果详情正确,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+2）运行失败的规则支持查看日志",2
+数据资产-数据质量-内置规则库,验证「监控规则」-「时效性校验」-「单字段时间差校验」任务通过结果详情正确,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -427,8 +427,8 @@ TRUE,
 2）表级统计（记录数、报警数），空白时显示“--”；
 3）最近30次综合报告（记录数平均波动率、平均记录数、日平均告警数、平均告警数）；
 4）最近30次表级统计；
-5）最近30次表数据波动图",2,功能测试
-179154,验证「监控规则」-「时效性校验」-「单字段时间差校验」区域配置交互正确,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5）最近30次表数据波动图",2
+数据资产-数据质量-内置规则库,验证「监控规则」-「时效性校验」-「单字段时间差校验」区域配置交互正确,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -549,8 +549,8 @@ TRUE,
 进入【监控规则】配置页
 3. 选择成功，页面显示【时效性校验】规则配置区域
 4. 仅支持单选
-5. 仅支持输入正整数",3,功能测试
-179153,验证「内置规则」-「时效性」-「单字段时间差校验」-「字段类型异常」校验功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5. 仅支持输入正整数",3
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「字段类型异常」校验功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -733,8 +733,8 @@ TRUE,
 进入【调度属性】页面
 8. 监控规则配置完成；
 进入【调度属性】页面
-9. 规则保存失败，提示仅支持配置时间日期型字段",2,功能测试
-179152,验证「内置规则」-「时效性」-「单字段时间差校验」-「string转long」校验不通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+9. 规则保存失败，提示仅支持配置时间日期型字段",2
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「string转long」校验不通过功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -864,8 +864,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2,功能测试
-179151,验证「内置规则」-「时效性」-「单字段时间差校验」-「string转long」校验通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"<p>已存在spark表A</p>
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「string转long」校验通过功能,"<p>已存在spark表A</p>
 <p>CREATE TABLE IF NOT EXISTS<br /> tableA (<br /> create_date DATE COMMENT '日期类型',<br /> update_datetime TIMESTAMP COMMENT '日期时间类型（替代原DATETIME）',<br /> work_time STRING COMMENT '时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）',<br /> sync_timestamp TIMESTAMP COMMENT '时间戳类型',<br /> date_str_ymd STRING COMMENT '字符串日期(yyyy-MM-dd)，强转DATE',<br /> date_str_ymd_hms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP',<br /> date_str_mdy STRING COMMENT '字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）',<br /> date_str_ymd_hms_ms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP',<br /> date_str_irregular STRING COMMENT '字符串日期(非标准格式，如20260204)，强转DATE',<br /> id INT COMMENT '主键ID',<br /> user_name STRING COMMENT '用户名（Spark中VARCHAR等价于STRING）',<br /> age TINYINT COMMENT '年龄',<br /> phone BIGINT COMMENT '手机号',<br /> email STRING COMMENT '邮箱',<br /> salary DECIMAL(10, 2) COMMENT '薪资',<br /> is_active BOOLEAN COMMENT '是否激活',<br /> address STRING COMMENT '地址',<br /> score FLOAT COMMENT '评分',<br /> total_amount DOUBLE COMMENT '总金额'<br /> ) COMMENT '时效性校验表';</p>
 <p><br />INSERT INTO tableA (<br /> create_date,<br /> update_datetime,<br /> work_time,<br /> sync_timestamp,<br /> date_str_ymd,<br /> date_str_ymd_hms,<br /> date_str_mdy,<br /> date_str_ymd_hms_ms,<br /> date_str_irregular,<br /> id,<br /> user_name,<br /> age,<br /> phone,<br /> email,<br /> salary,<br /> is_active,<br /> address,<br /> score,<br /> total_amount<br />)<br />VALUES<br /> (<br /> DATE '2026-02-26',<br /> TIMESTAMP '2026-02-26 09:45:17',<br /> '08:30:00',<br /> CURRENT_TIMESTAMP(),<br /> '2026-02-26',<br /> '2026-02-26 09:45:17',<br /> '18:20:30',<br /> '2026-02-26 09:45:17.123',<br /> '20260226',<br /> 1,<br /> 'zhangsan',<br /> 25,<br /> 13800138000,<br /> 'zhangsan@example.com',<br /> 15000.50,<br /> TRUE,<br /> '北京市海淀区中关村',<br /> 95.5,<br /> 123456.789<br /> ),<br /> (<br /> DATE '2026-01-01',<br /> TIMESTAMP '2026-12-31 23:59:59',<br /> '23:59:59',<br /> TIMESTAMP '2026-02-26 12:00:00',<br /> '2026-01-01',<br /> '2026-12-31 23:59:59',<br /> '00:00:00',<br /> '2026-02-26 12:34:56.789',<br /> '20260101',<br /> 2,<br /> 'lisi',<br /> 30,<br /> 13900139000,<br /> 'lisi@example.com',<br /> 20000.00,<br /> FALSE,<br /> '上海市浦东新区陆家嘴',<br /> 88.8,<br /> 987654.321<br /> ),<br /> (<br /> DATE '1970-01-01',<br /> TIMESTAMP '1970-01-01 00:00:00',<br /> '',<br /> NULL,<br /> '',<br /> '',<br /> '',<br /> '',<br /> '20260204',<br /> 3,<br /> '',<br /> 0,<br /> 0,<br /> '',<br /> 0.00,<br /> NULL,<br /> '',<br /> 0.0,<br /> 0.0<br /> );</p>","1. 进入【资产-数据质量-规则任务配置-监控对象】页面
 2. 【规则名称】输入【test_rule】
@@ -888,8 +888,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",1,功能测试
-179150,验证「内置规则」-「时效性」-「单字段时间差校验」-「不同格式的timestamp类型」校验功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",1
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「不同格式的timestamp类型」校验功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS<br />    tableA (<br />        create_date DATE COMMENT '日期类型',<br />        update_datetime TIMESTAMP COMMENT '日期时间类型（替代原DATETIME）',<br />        work_time STRING COMMENT '时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）',<br />        sync_timestamp TIMESTAMP COMMENT '时间戳类型',<br />        date_str_ymd STRING COMMENT '字符串日期(yyyy-MM-dd)，强转DATE',<br />        date_str_ymd_hms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP',<br />        date_str_mdy STRING COMMENT '字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）',<br />        date_str_ymd_hms_ms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP',<br />        date_str_irregular STRING COMMENT '字符串日期(非标准格式，如20260204)，强转DATE',<br />        -- STRING类型时间字段<br />        time_hms_ms STRING COMMENT 'HH:mm:ss.SSS格式的STRING类型',<br />        time_hm STRING COMMENT 'HH:mm格式的STRING类型',<br />        -- STRING类型日期时间字段<br />        datetime_ymdhmss STRING COMMENT 'yyyyMMddHHmmss格式的STRING类型',<br />        datetime_ymd_slash_hms STRING COMMENT 'yyyy/MM/dd HH:mm:ss格式的STRING类型',<br />        ts_from_ymd_hms TIMESTAMP COMMENT 'yyyy-MM-dd HH:mm:ss字符串转TIMESTAMP',<br />        ts_from_ymd_hms_ms TIMESTAMP COMMENT 'yyyy-MM-dd HH:mm:ss.SSS字符串转TIMESTAMP',<br />        ts_from_ymdhmss TIMESTAMP COMMENT 'yyyyMMddHHmmss字符串转TIMESTAMP',<br />        ts_from_ymd_slash_hms TIMESTAMP COMMENT 'yyyy/MM/dd HH:mm:ss字符串转TIMESTAMP',<br />        -- 其他字段<br />        id INT COMMENT '主键ID',<br />        user_name STRING COMMENT '用户名（Spark中VARCHAR等价于STRING）',<br />        age TINYINT COMMENT '年龄',<br />        phone BIGINT COMMENT '手机号',<br />        email STRING COMMENT '邮箱',<br />        salary DECIMAL(10, 2) COMMENT '薪资',<br />        is_active BOOLEAN COMMENT '是否激活',<br />        address STRING COMMENT '地址',<br />        score FLOAT COMMENT '评分',<br />        total_amount DOUBLE COMMENT '总金额'<br />    ) COMMENT '时效性校验表';<br /><br />INSERT INTO tableA<br />SELECT<br />    -- 第一行数据<br />    DATE '2026-02-26',<br />    TIMESTAMP '2026-02-26 09:45:17',<br />    '08:30:00',<br />    CURRENT_TIMESTAMP(),<br />    '2026-02-26',<br />    '2026-02-26 09:45:17',<br />    '18:20:30',<br />    '2026-02-26 09:45:17.123',<br />    '20260226',<br />    '08:30:00.000',<br />    '08:30',<br />    '20260226094517',<br />    '2026/02/26 09:45:17',<br />    -- 函数转换TIMESTAMP（这里支持计算）<br />    to_timestamp('2026-02-26 09:45:17', 'yyyy-MM-dd HH:mm:ss'),<br />    to_timestamp('2026-02-26 09:45:17.123', 'yyyy-MM-dd HH:mm:ss.SSS'),<br />    to_timestamp('20260226094517', 'yyyyMMddHHmmss'),<br />    to_timestamp('2026/02/26 09:45:17', 'yyyy/MM/dd HH:mm:ss'),<br />    1,<br />    'zhangsan',<br />    25,<br />    13800138000,<br />    'zhangsan@example.com',<br />    15000.50,<br />    TRUE,<br />    '北京市海淀区中关村',<br />    95.5,<br />    123456.789<br />UNION ALL<br />SELECT<br />    -- 第二行数据<br />    DATE '2026-01-01',<br />    TIMESTAMP '2026-12-31 23:59:59',<br />    '23:59:59',<br />    TIMESTAMP '2026-02-26 12:00:00',<br />    '2026-01-01',<br />    '2026-12-31 23:59:59',<br />    '00:00:00',<br />    '2026-02-26 12:34:56.789',<br />    '20260101',<br />    '23:59:59.999',<br />    '23:59',<br />    '20261231235959',<br />    '2026/12/31 23:59:59',<br />    to_timestamp('2026-12-31 23:59:59', 'yyyy-MM-dd HH:mm:ss'),<br />    to_timestamp('2026-02-26 12:34:56.789', 'yyyy-MM-dd HH:mm:ss.SSS'),<br />    to_timestamp('20261231235959', 'yyyyMMddHHmmss'),<br />    to_timestamp('2026/12/31 23:59:59', 'yyyy/MM/dd HH:mm:ss'),<br />    2,<br />    'lisi',<br />    30,<br />    13900139000,<br />    'lisi@example.com',<br />    20000.00,<br />    FALSE,<br />    '上海市浦东新区陆家嘴',<br />    88.8,<br />    987654.321<br />UNION ALL<br />SELECT<br />    -- 第三行数据<br />    DATE '1970-01-01',<br />    TIMESTAMP '1970-01-01 00:00:00',<br />    '',<br />    NULL,<br />    '',<br />    '',<br />    '',<br />    '',<br />    '20260204',<br />    '',<br />    '',<br />    '',<br />    '',<br />    NULL,<br />    NULL,<br />    NULL,<br />    NULL,<br />    3,<br />    '',<br />    0,<br />    0,<br />    '',<br />    0.00,<br />    NULL,<br />    '',<br />    0.0,<br />    0.0;<br />","1. 进入【资产-数据质量-规则任务配置-监控对象】页面
 2. 【规则名称】输入【test_rule】
 【选择数据源】选择【${DATASOURCE}】
@@ -944,8 +944,8 @@ CREATE TABLE IF NOT EXISTS<br />    tableA (<br />        create_date DATE
 6. 监控规则配置完成；
 进入【调度属性】页面
 7. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-8. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",3,功能测试
-179149,验证「内置规则」-「时效性」-「单字段时间差校验」-「timestamp类型」校验不通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+8. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",3
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「timestamp类型」校验不通过功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -1075,8 +1075,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2,功能测试
-179148,验证「内置规则」-「时效性」-「单字段时间差校验」-「timestamp类型」校验通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「timestamp类型」校验通过功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -1206,8 +1206,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2,功能测试
-179147,验证「内置规则」-「时效性」-「单字段时间差校验」-「不同格式的time类型」校验功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「不同格式的time类型」校验功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS<br /> tableA (<br /> create_date DATE COMMENT '日期类型',<br /> update_datetime TIMESTAMP COMMENT '日期时间类型（替代原DATETIME）',<br /> work_time STRING COMMENT '时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）',<br /> sync_timestamp TIMESTAMP COMMENT '时间戳类型',<br /> date_str_ymd STRING COMMENT '字符串日期(yyyy-MM-dd)，强转DATE',<br /> date_str_ymd_hms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP',<br /> date_str_mdy STRING COMMENT '字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）',<br /> date_str_ymd_hms_ms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP',<br /> date_str_irregular STRING COMMENT '字符串日期(非标准格式，如20260204)，强转DATE',<br /> -- STRING类型时间字段<br /> time_hms_ms STRING COMMENT 'HH:mm:ss.SSS格式的STRING类型',<br /> time_hm STRING COMMENT 'HH:mm格式的STRING类型',<br /> -- STRING类型日期时间字段<br /> datetime_ymdhmss STRING COMMENT 'yyyyMMddHHmmss格式的STRING类型',<br /> datetime_ymd_slash_hms STRING COMMENT 'yyyy/MM/dd HH:mm:ss格式的STRING类型',<br /> -- 其他字段<br /> id INT COMMENT '主键ID',<br /> user_name STRING COMMENT '用户名（Spark中VARCHAR等价于STRING）',<br /> age TINYINT COMMENT '年龄',<br /> phone BIGINT COMMENT '手机号',<br /> email STRING COMMENT '邮箱',<br /> salary DECIMAL(10, 2) COMMENT '薪资',<br /> is_active BOOLEAN COMMENT '是否激活',<br /> address STRING COMMENT '地址',<br /> score FLOAT COMMENT '评分',<br /> total_amount DOUBLE COMMENT '总金额'<br /> ) COMMENT '时效性校验表';<br /><br />INSERT INTO tableA (<br /> create_date,<br /> update_datetime,<br /> work_time,<br /> sync_timestamp,<br /> date_str_ymd,<br /> date_str_ymd_hms,<br /> date_str_mdy,<br /> date_str_ymd_hms_ms,<br /> date_str_irregular,<br /> time_hms_ms,<br /> time_hm,<br /> datetime_ymdhmss,<br /> datetime_ymd_slash_hms,<br /> id,<br /> user_name,<br /> age,<br /> phone,<br /> email,<br /> salary,<br /> is_active,<br /> address,<br /> score,<br /> total_amount<br />)<br />VALUES<br /> (<br /> DATE '2026-02-26',<br /> TIMESTAMP '2026-02-26 09:45:17',<br /> '08:30:00',<br /> CURRENT_TIMESTAMP(),<br /> '2026-02-26',<br /> '2026-02-26 09:45:17',<br /> '18:20:30',<br /> '2026-02-26 09:45:17.123',<br /> '20260226',<br /> '08:30:00.000',    -- HH:mm:ss.SSS格式<br /> '08:30',           -- HH:mm格式<br /> '20260226094517',  -- yyyyMMddHHmmss格式<br /> '2026/02/26 09:45:17', -- yyyy/MM/dd HH:mm:ss格式<br /> 1,<br /> 'zhangsan',<br /> 25,<br /> 13800138000,<br /> 'zhangsan@example.com',<br /> 15000.50,<br /> TRUE,<br /> '北京市海淀区中关村',<br /> 95.5,<br /> 123456.789<br /> ),<br /> (<br /> DATE '2026-01-01',<br /> TIMESTAMP '2026-12-31 23:59:59',<br /> '23:59:59',<br /> TIMESTAMP '2026-02-26 12:00:00',<br /> '2026-01-01',<br /> '2026-12-31 23:59:59',<br /> '00:00:00',<br /> '2026-02-26 12:34:56.789',<br /> '20260101',<br /> '23:59:59.999',<br /> '23:59',<br /> '20261231235959',<br /> '2026/12/31 23:59:59',<br /> 2,<br /> 'lisi',<br /> 30,<br /> 13900139000,<br /> 'lisi@example.com',<br /> 20000.00,<br /> FALSE,<br /> '上海市浦东新区陆家嘴',<br /> 88.8,<br /> 987654.321<br /> ),<br /> (<br /> DATE '1970-01-01',<br /> TIMESTAMP '1970-01-01 00:00:00',<br /> '',<br /> NULL,<br /> '',<br /> '',<br /> '',<br /> '',<br /> '20260204',<br /> '',<br /> '',<br /> '',<br /> '',<br /> 3,<br /> '',<br /> 0,<br /> 0,<br /> '',<br /> 0.00,<br /> NULL,<br /> '',<br /> 0.0,<br /> 0.0<br /> );<br />","1. 进入【资产-数据质量-规则任务配置-监控对象】页面
 2. 【规则名称】输入【test_rule】
 【选择数据源】选择【${DATASOURCE}】
@@ -1251,8 +1251,8 @@ CREATE TABLE IF NOT EXISTS<br /> tableA (<br /> create_date DATE COMMENT '日期
 5. 监控规则配置完成；
 进入【调度属性】页面
 6. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-7. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",3,功能测试
-179146,验证「内置规则」-「时效性」-「单字段时间差校验」-「time类型」校验不通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+7. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",3
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「time类型」校验不通过功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -1382,8 +1382,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2,功能测试
-179145,验证「内置规则」-「时效性」-「单字段时间差校验」-「time类型」校验通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「time类型」校验通过功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -1513,8 +1513,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2,功能测试
-179144,验证「内置规则」-「时效性」-「单字段时间差校验」-「datetime类型」校验不通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「datetime类型」校验不通过功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -1644,8 +1644,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2,功能测试
-179143,验证「内置规则」-「时效性」-「单字段时间差校验」-「datetime类型」校验通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「datetime类型」校验通过功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -1775,8 +1775,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2,功能测试
-179142,验证「内置规则」-「时效性」-「单字段时间差校验」-「不同格式的date类型」校验功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",2
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「不同格式的date类型」校验功能,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -1939,8 +1939,8 @@ TRUE,
 6. 监控规则配置完成；
 进入【调度属性】页面
 7. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-8. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",3,功能测试
-179141,验证「内置规则」-「时效性」-「单字段时间差校验」-「date类型」校验不通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"<p>已存在spark表A</p>
+8. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",3
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「date类型」校验不通过功能,"<p>已存在spark表A</p>
 <p>CREATE TABLE IF NOT EXISTS<br /> tableA (<br /> create_date DATE COMMENT '日期类型',<br /> update_datetime TIMESTAMP COMMENT '日期时间类型（替代原DATETIME）',<br /> work_time STRING COMMENT '时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）',<br /> sync_timestamp TIMESTAMP COMMENT '时间戳类型',<br /> date_str_ymd STRING COMMENT '字符串日期(yyyy-MM-dd)，强转DATE',<br /> date_str_ymd_hms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP',<br /> date_str_mdy STRING COMMENT '字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）',<br /> date_str_ymd_hms_ms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP',<br /> date_str_irregular STRING COMMENT '字符串日期(非标准格式，如20260204)，强转DATE',<br /> id INT COMMENT '主键ID',<br /> user_name STRING COMMENT '用户名（Spark中VARCHAR等价于STRING）',<br /> age TINYINT COMMENT '年龄',<br /> phone BIGINT COMMENT '手机号',<br /> email STRING COMMENT '邮箱',<br /> salary DECIMAL(10, 2) COMMENT '薪资',<br /> is_active BOOLEAN COMMENT '是否激活',<br /> address STRING COMMENT '地址',<br /> score FLOAT COMMENT '评分',<br /> total_amount DOUBLE COMMENT '总金额'<br /> ) COMMENT '时效性校验表';<br /><br />INSERT INTO tableA (<br /> create_date,<br /> update_datetime,<br /> work_time,<br /> sync_timestamp,<br /> date_str_ymd,<br /> date_str_ymd_hms,<br /> date_str_mdy,<br /> date_str_ymd_hms_ms,<br /> date_str_irregular,<br /> id,<br /> user_name,<br /> age,<br /> phone,<br /> email,<br /> salary,<br /> is_active,<br /> address,<br /> score,<br /> total_amount<br />)<br />VALUES<br /> (<br /> DATE '2026-02-26',<br /> TIMESTAMP '2026-02-26 09:45:17',<br /> '08:30:00',<br /> CURRENT_TIMESTAMP(),<br /> '2026-02-26',<br /> '2026-02-26 09:45:17',<br /> '18:20:30',<br /> '2026-02-26 09:45:17.123',<br /> '20260226',<br /> 1,<br /> 'zhangsan',<br /> 25,<br /> 13800138000,<br /> 'zhangsan@example.com',<br /> 15000.50,<br /> TRUE,<br /> '北京市海淀区中关村',<br /> 95.5,<br /> 123456.789<br /> ),<br /> (<br /> DATE '2026-01-01',<br /> TIMESTAMP '2026-12-31 23:59:59',<br /> '23:59:59',<br /> TIMESTAMP '2026-02-26 12:00:00',<br /> '2026-01-01',<br /> '2026-12-31 23:59:59',<br /> '00:00:00',<br /> '2026-02-26 12:34:56.789',<br /> '20260101',<br /> 2,<br /> 'lisi',<br /> 30,<br /> 13900139000,<br /> 'lisi@example.com',<br /> 20000.00,<br /> FALSE,<br /> '上海市浦东新区陆家嘴',<br /> 88.8,<br /> 987654.321<br /> ),<br /> (<br /> DATE '1970-01-01',<br /> TIMESTAMP '1970-01-01 00:00:00',<br /> '',<br /> NULL,<br /> '',<br /> '',<br /> '',<br /> '',<br /> '20260204',<br /> 3,<br /> '',<br /> 0,<br /> 0,<br /> '',<br /> 0.00,<br /> NULL,<br /> '',<br /> 0.0,<br /> 0.0<br /> );</p>","1. 进入【资产-数据质量-规则任务配置-监控对象】页面
 2. 【规则名称】输入【test_rule】
 【选择数据源】选择【${DATASOURCE}】
@@ -1962,8 +1962,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",1,功能测试
-179140,验证「内置规则」-「时效性」-「单字段时间差校验」-「date类型」校验通过功能,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"<p>已存在spark表A</p>
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",1
+数据资产-数据质量-内置规则库,验证「内置规则」-「时效性」-「单字段时间差校验」-「date类型」校验通过功能,"<p>已存在spark表A</p>
 <p>CREATE TABLE IF NOT EXISTS<br /> tableA (<br /> create_date DATE COMMENT '日期类型',<br /> update_datetime TIMESTAMP COMMENT '日期时间类型（替代原DATETIME）',<br /> work_time STRING COMMENT '时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）',<br /> sync_timestamp TIMESTAMP COMMENT '时间戳类型',<br /> date_str_ymd STRING COMMENT '字符串日期(yyyy-MM-dd)，强转DATE',<br /> date_str_ymd_hms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP',<br /> date_str_mdy STRING COMMENT '字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）',<br /> date_str_ymd_hms_ms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP',<br /> date_str_irregular STRING COMMENT '字符串日期(非标准格式，如20260204)，强转DATE',<br /> id INT COMMENT '主键ID',<br /> user_name STRING COMMENT '用户名（Spark中VARCHAR等价于STRING）',<br /> age TINYINT COMMENT '年龄',<br /> phone BIGINT COMMENT '手机号',<br /> email STRING COMMENT '邮箱',<br /> salary DECIMAL(10, 2) COMMENT '薪资',<br /> is_active BOOLEAN COMMENT '是否激活',<br /> address STRING COMMENT '地址',<br /> score FLOAT COMMENT '评分',<br /> total_amount DOUBLE COMMENT '总金额'<br /> ) COMMENT '时效性校验表';<br /><br />INSERT INTO tableA (<br /> create_date,<br /> update_datetime,<br /> work_time,<br /> sync_timestamp,<br /> date_str_ymd,<br /> date_str_ymd_hms,<br /> date_str_mdy,<br /> date_str_ymd_hms_ms,<br /> date_str_irregular,<br /> id,<br /> user_name,<br /> age,<br /> phone,<br /> email,<br /> salary,<br /> is_active,<br /> address,<br /> score,<br /> total_amount<br />)<br />VALUES<br /> (<br /> DATE '2026-02-26',<br /> TIMESTAMP '2026-02-26 09:45:17',<br /> '08:30:00',<br /> CURRENT_TIMESTAMP(),<br /> '2026-02-26',<br /> '2026-02-26 09:45:17',<br /> '18:20:30',<br /> '2026-02-26 09:45:17.123',<br /> '20260226',<br /> 1,<br /> 'zhangsan',<br /> 25,<br /> 13800138000,<br /> 'zhangsan@example.com',<br /> 15000.50,<br /> TRUE,<br /> '北京市海淀区中关村',<br /> 95.5,<br /> 123456.789<br /> ),<br /> (<br /> DATE '2026-01-01',<br /> TIMESTAMP '2026-12-31 23:59:59',<br /> '23:59:59',<br /> TIMESTAMP '2026-02-26 12:00:00',<br /> '2026-01-01',<br /> '2026-12-31 23:59:59',<br /> '00:00:00',<br /> '2026-02-26 12:34:56.789',<br /> '20260101',<br /> 2,<br /> 'lisi',<br /> 30,<br /> 13900139000,<br /> 'lisi@example.com',<br /> 20000.00,<br /> FALSE,<br /> '上海市浦东新区陆家嘴',<br /> 88.8,<br /> 987654.321<br /> ),<br /> (<br /> DATE '1970-01-01',<br /> TIMESTAMP '1970-01-01 00:00:00',<br /> '',<br /> NULL,<br /> '',<br /> '',<br /> '',<br /> '',<br /> '20260204',<br /> 3,<br /> '',<br /> 0,<br /> 0,<br /> '',<br /> 0.00,<br /> NULL,<br /> '',<br /> 0.0,<br /> 0.0<br /> );</p>","1. 进入【资产-数据质量-规则任务配置-监控对象】页面
 2. 【规则名称】输入【test_rule】
 【选择数据源】选择【${DATASOURCE}】
@@ -1985,8 +1985,8 @@ TRUE,
 3. 监控规则配置完成；
 进入【调度属性】页面
 4. 系统提示规则保存成功，规则配置已持久化，列表中可见该规则
-5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",1,功能测试
-179139,验证「监控规则」-「时效性校验」-「单字段时间差校验」区域详情正确,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A
+5. 实例运行结果符合预期，且实例详情展示正确，质量报告展示正确",1
+数据资产-数据质量-内置规则库,验证「监控规则」-「时效性校验」-「单字段时间差校验」区域详情正确,"已存在spark表A
 CREATE TABLE IF NOT EXISTS tableA (
 create_date DATE COMMENT '日期类型',
 update_datetime DATETIME COMMENT '日期时间类型',
@@ -2113,8 +2113,8 @@ TRUE,
 5）【时间差】，可配置「>/</>=/<=/=/!= xx 毫秒/秒/分钟/小时/天」
 6）【强弱规则】，可选择【强/弱规则】
 7）【规则描述】，可输入内容
-8）【上一步】、【临时保存】和【下一步】按钮",2,功能测试
-179138,验证「监控规则」新增「时效性校验」规则类型,数据资产-数据质量-内置规则库,岚图-内置规则丰富-时效性，周期性，同一个字段的时间差校验,"已存在spark表A<br /><br />CREATE TABLE IF NOT EXISTS<br />tableA (<br />create_date DATE COMMENT '日期类型',<br />update_datetime TIMESTAMP COMMENT '日期时间类型（替代原DATETIME）',<br />work_time STRING COMMENT '时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）',<br />sync_timestamp TIMESTAMP COMMENT '时间戳类型',<br />date_str_ymd STRING COMMENT '字符串日期(yyyy-MM-dd)，强转DATE',<br />date_str_ymd_hms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP',<br />date_str_mdy STRING COMMENT '字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）',<br />date_str_ymd_hms_ms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP',<br />date_str_irregular STRING COMMENT '字符串日期(非标准格式，如20260204)，强转DATE',<br />id INT COMMENT '主键ID',<br />user_name STRING COMMENT '用户名（Spark中VARCHAR等价于STRING）',<br />age TINYINT COMMENT '年龄',<br />phone BIGINT COMMENT '手机号',<br />email STRING COMMENT '邮箱',<br />salary DECIMAL(10, 2) COMMENT '薪资',<br />is_active BOOLEAN COMMENT '是否激活',<br />address STRING COMMENT '地址',<br />score FLOAT COMMENT '评分',<br />total_amount DOUBLE COMMENT '总金额'<br />) COMMENT '时效性校验表';<br /><br />INSERT INTO tableA (<br /> create_date,<br /> update_datetime,<br /> work_time,<br /> sync_timestamp,<br /> date_str_ymd,<br /> date_str_ymd_hms,<br /> date_str_mdy,<br /> date_str_ymd_hms_ms,<br /> date_str_irregular,<br /> id,<br /> user_name,<br /> age,<br /> phone,<br /> email,<br /> salary,<br /> is_active,<br /> address,<br /> score,<br /> total_amount<br />)<br />VALUES<br /> (<br /> DATE '2026-02-26',<br /> TIMESTAMP '2026-02-26 09:45:17',<br /> '08:30:00',<br /> CURRENT_TIMESTAMP(),<br /> '2026-02-26',<br /> '2026-02-26 09:45:17',<br /> '18:20:30',<br /> '2026-02-26 09:45:17.123',<br /> '20260226',<br /> 1,<br /> 'zhangsan',<br /> 25,<br /> 13800138000,<br /> 'zhangsan@example.com',<br /> 15000.50,<br /> TRUE,<br /> '北京市海淀区中关村',<br /> 95.5,<br /> 123456.789<br /> ),<br /> (<br /> DATE '2026-01-01',<br /> TIMESTAMP '2026-12-31 23:59:59',<br /> '23:59:59',<br /> TIMESTAMP '2026-02-26 12:00:00',<br /> '2026-01-01',<br /> '2026-12-31 23:59:59',<br /> '00:00:00',<br /> '2026-02-26 12:34:56.789',<br /> '20260101',<br /> 2,<br /> 'lisi',<br /> 30,<br /> 13900139000,<br /> 'lisi@example.com',<br /> 20000.00,<br /> FALSE,<br /> '上海市浦东新区陆家嘴',<br /> 88.8,<br /> 987654.321<br /> ),<br /> (<br /> DATE '1970-01-01',<br /> TIMESTAMP '1970-01-01 00:00:00',<br /> '',<br /> NULL,<br /> '',<br /> '',<br /> '',<br /> '',<br /> '20260204',<br /> 3,<br /> '',<br /> 0,<br /> 0,<br /> '',<br /> 0.00,<br /> NULL,<br /> '',<br /> 0.0,<br /> 0.0<br /> );<br />","1. 进入【资产-数据质量-规则任务配置-监控对象】页面
+8）【上一步】、【临时保存】和【下一步】按钮",2
+数据资产-数据质量-内置规则库,验证「监控规则」新增「时效性校验」规则类型,"已存在spark表A<br /><br />CREATE TABLE IF NOT EXISTS<br />tableA (<br />create_date DATE COMMENT '日期类型',<br />update_datetime TIMESTAMP COMMENT '日期时间类型（替代原DATETIME）',<br />work_time STRING COMMENT '时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）',<br />sync_timestamp TIMESTAMP COMMENT '时间戳类型',<br />date_str_ymd STRING COMMENT '字符串日期(yyyy-MM-dd)，强转DATE',<br />date_str_ymd_hms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP',<br />date_str_mdy STRING COMMENT '字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）',<br />date_str_ymd_hms_ms STRING COMMENT '字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP',<br />date_str_irregular STRING COMMENT '字符串日期(非标准格式，如20260204)，强转DATE',<br />id INT COMMENT '主键ID',<br />user_name STRING COMMENT '用户名（Spark中VARCHAR等价于STRING）',<br />age TINYINT COMMENT '年龄',<br />phone BIGINT COMMENT '手机号',<br />email STRING COMMENT '邮箱',<br />salary DECIMAL(10, 2) COMMENT '薪资',<br />is_active BOOLEAN COMMENT '是否激活',<br />address STRING COMMENT '地址',<br />score FLOAT COMMENT '评分',<br />total_amount DOUBLE COMMENT '总金额'<br />) COMMENT '时效性校验表';<br /><br />INSERT INTO tableA (<br /> create_date,<br /> update_datetime,<br /> work_time,<br /> sync_timestamp,<br /> date_str_ymd,<br /> date_str_ymd_hms,<br /> date_str_mdy,<br /> date_str_ymd_hms_ms,<br /> date_str_irregular,<br /> id,<br /> user_name,<br /> age,<br /> phone,<br /> email,<br /> salary,<br /> is_active,<br /> address,<br /> score,<br /> total_amount<br />)<br />VALUES<br /> (<br /> DATE '2026-02-26',<br /> TIMESTAMP '2026-02-26 09:45:17',<br /> '08:30:00',<br /> CURRENT_TIMESTAMP(),<br /> '2026-02-26',<br /> '2026-02-26 09:45:17',<br /> '18:20:30',<br /> '2026-02-26 09:45:17.123',<br /> '20260226',<br /> 1,<br /> 'zhangsan',<br /> 25,<br /> 13800138000,<br /> 'zhangsan@example.com',<br /> 15000.50,<br /> TRUE,<br /> '北京市海淀区中关村',<br /> 95.5,<br /> 123456.789<br /> ),<br /> (<br /> DATE '2026-01-01',<br /> TIMESTAMP '2026-12-31 23:59:59',<br /> '23:59:59',<br /> TIMESTAMP '2026-02-26 12:00:00',<br /> '2026-01-01',<br /> '2026-12-31 23:59:59',<br /> '00:00:00',<br /> '2026-02-26 12:34:56.789',<br /> '20260101',<br /> 2,<br /> 'lisi',<br /> 30,<br /> 13900139000,<br /> 'lisi@example.com',<br /> 20000.00,<br /> FALSE,<br /> '上海市浦东新区陆家嘴',<br /> 88.8,<br /> 987654.321<br /> ),<br /> (<br /> DATE '1970-01-01',<br /> TIMESTAMP '1970-01-01 00:00:00',<br /> '',<br /> NULL,<br /> '',<br /> '',<br /> '',<br /> '',<br /> '20260204',<br /> 3,<br /> '',<br /> 0,<br /> 0,<br /> '',<br /> 0.00,<br /> NULL,<br /> '',<br /> 0.0,<br /> 0.0<br /> );<br />","1. 进入【资产-数据质量-规则任务配置-监控对象】页面
 2. 【规则名称】输入【test_rule】
 【选择数据源】选择【${DATASOURCE}】
 【选择数据库】选择【${DATABASE}】
@@ -2124,4 +2124,4 @@ TRUE,
 2. 监控对象配置成功；
 进入【监控规则】配置页
 3. 新增【时效性校验】规则
-4. 选择成功，页面显示【时效性校验】规则配置区域",1,功能测试
+4. 选择成功，页面显示【时效性校验】规则配置区域",1

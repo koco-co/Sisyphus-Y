@@ -1,5 +1,5 @@
-﻿用例编号,用例标题,所属模块,相关需求,前置条件,步骤,预期结果,优先级,用例类型
-169941,验证orc分区表新增字段且包含默认值，只同步历史分区正常同步至starrocks表内,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的orc表
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+parquet-orc新增字段历史分区处理,验证orc分区表新增字段且包含默认值，只同步历史分区正常同步至starrocks表内,"1.存在hive3.x的orc表
 -- orc表
 drop table if EXISTS ods_orders_orc;
 CREATE TABLE IF NOT EXISTS ods_orders_orc (
@@ -50,8 +50,8 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'orc');
 2. 任务运行成功，表ods_orders_orc新增一个字段new_col
 3. 任务运行成功，表ods_orders_orc新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，字段new_col分别同步数据orc、abc写入目标表",2,功能测试
-169940,验证orc分区表删除一个字段且在历史分区文件插入数据后，同步历史文件正常,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的orc表
+只有分区2025-11-20数据被同步，字段new_col分别同步数据orc、abc写入目标表",2
+parquet-orc新增字段历史分区处理,验证orc分区表删除一个字段且在历史分区文件插入数据后，同步历史文件正常,"1.存在hive3.x的orc表
 -- orc表
 drop table if EXISTS ods_orders_orc;
 CREATE TABLE IF NOT EXISTS ods_orders_orc (
@@ -102,8 +102,8 @@ VALUES (1, 1001, 2001, 20.5, current_timestamp(), 'orc');
 2. 任务运行成功，表ods_orders_orc字段order_status被删除
 3. 任务运行成功，表ods_orders_orc新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，目标表字段order_status值为NULL",2,功能测试
-169939,验证orc分区表修改字段名称且在历史分区文件插入数据后，同步历史文件正常,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的orc表
+只有分区2025-11-20数据被同步，目标表字段order_status值为NULL",2
+parquet-orc新增字段历史分区处理,验证orc分区表修改字段名称且在历史分区文件插入数据后，同步历史文件正常,"1.存在hive3.x的orc表
 -- orc表
 drop table if EXISTS ods_orders_orc;
 CREATE TABLE IF NOT EXISTS ods_orders_orc (
@@ -154,8 +154,8 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'orc');
 2. 任务运行成功，表ods_orders_orc字段名称被修改
 3. 任务运行成功，表ods_orders_orc新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，字段remark同步数据NULL写入目标表",2,功能测试
-169938,验证orc分区表新增字段后，在历史分区文件插入数据后，同步历史文件正常,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的orc表
+只有分区2025-11-20数据被同步，字段remark同步数据NULL写入目标表",2
+parquet-orc新增字段历史分区处理,验证orc分区表新增字段后，在历史分区文件插入数据后，同步历史文件正常,"1.存在hive3.x的orc表
 -- orc表
 drop table if EXISTS ods_orders_orc;
 CREATE TABLE IF NOT EXISTS ods_orders_orc (
@@ -209,8 +209,8 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'orc');
 2. 任务运行成功，表ods_orders_orc新增一个字段remark
 3. 任务运行成功，表ods_orders_orc新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，字段remark同步两条数据数据NULL、PAR写入目标表",2,功能测试
-169937,验证orc分区表新增字段且插入数据后，只同步新分区正常同步至starrocks表内,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的orc表
+只有分区2025-11-20数据被同步，字段remark同步两条数据数据NULL、PAR写入目标表",2
+parquet-orc新增字段历史分区处理,验证orc分区表新增字段且插入数据后，只同步新分区正常同步至starrocks表内,"1.存在hive3.x的orc表
 -- orc表
 drop table if EXISTS ods_orders_orc;
 CREATE TABLE IF NOT EXISTS ods_orders_orc (
@@ -264,8 +264,8 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'orc');
 2. 任务运行成功，表ods_orders_orc新增一个字段remark
 3. 任务运行成功，表ods_orders_orc新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-21数据被同步，字段remark同步数据PAR写入目标表",2,功能测试
-169936,验证orc分区表新增字段后，不插入数据只同步历史文件正常,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的orc表
+只有分区2025-11-21数据被同步，字段remark同步数据PAR写入目标表",2
+parquet-orc新增字段历史分区处理,验证orc分区表新增字段后，不插入数据只同步历史文件正常,"1.存在hive3.x的orc表
 -- orc表
 drop table if EXISTS ods_orders_orc;
 CREATE TABLE IF NOT EXISTS ods_orders_orc (
@@ -314,8 +314,8 @@ remark STRING COMMENT '备注说明'
 点击保存、临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
 2. 任务运行成功，表ods_orders_orc新增一个字段remark
 3. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，字段remark同步数据NULL写入目标表",2,功能测试
-169935,验证orc分区表新增字段且插入数据后，历史分区正常同步至starrocks表内,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的orc表
+只有分区2025-11-20数据被同步，字段remark同步数据NULL写入目标表",2
+parquet-orc新增字段历史分区处理,验证orc分区表新增字段且插入数据后，历史分区正常同步至starrocks表内,"1.存在hive3.x的orc表
 -- orc表
 drop table if EXISTS ods_orders_orc;
 CREATE TABLE IF NOT EXISTS ods_orders_orc (
@@ -369,8 +369,8 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'ORC');
 3. 任务运行成功，表ods_orders_orc新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
 在分区2025-11-21中，字段remark同步数据PAR写入目标表
-在分区2025-11-20中，字段remark同步数据Null写入目标表",1,功能测试
-169934,验证parquet分区表新增字段且包含默认值，只同步历史分区正常同步至starrocks表内,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的parquet表
+在分区2025-11-20中，字段remark同步数据Null写入目标表",1
+parquet-orc新增字段历史分区处理,验证parquet分区表新增字段且包含默认值，只同步历史分区正常同步至starrocks表内,"1.存在hive3.x的parquet表
 -- parquet表
 drop table if EXISTS ods_orders_par;
 CREATE TABLE IF NOT EXISTS ods_orders_par (
@@ -421,8 +421,8 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'PAR');
 2. 任务运行成功，表ods_orders_par新增一个字段new_col
 3. 任务运行成功，表ods_orders_par新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，字段new_col分别同步数据PAR、abc写入目标表",3,功能测试
-169933,验证parquet分区表删除一个字段且在历史分区文件插入数据后，同步历史文件正常,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的parquet表
+只有分区2025-11-20数据被同步，字段new_col分别同步数据PAR、abc写入目标表",3
+parquet-orc新增字段历史分区处理,验证parquet分区表删除一个字段且在历史分区文件插入数据后，同步历史文件正常,"1.存在hive3.x的parquet表
 -- parquet表
 drop table if EXISTS ods_orders_par;
 CREATE TABLE IF NOT EXISTS ods_orders_par (
@@ -473,8 +473,8 @@ VALUES (1, 1001, 2001, 20.5, current_timestamp(), 'PAR');
 2. 任务运行成功，表ods_orders_par字段order_status被删除
 3. 任务运行成功，表ods_orders_par新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，目标表字段order_status值为NULL",2,功能测试
-169932,验证parquet分区表修改字段名称且在历史分区文件插入数据后，同步历史文件正常,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的parquet表
+只有分区2025-11-20数据被同步，目标表字段order_status值为NULL",2
+parquet-orc新增字段历史分区处理,验证parquet分区表修改字段名称且在历史分区文件插入数据后，同步历史文件正常,"1.存在hive3.x的parquet表
 -- parquet表
 drop table if EXISTS ods_orders_par;
 CREATE TABLE IF NOT EXISTS ods_orders_par (
@@ -525,8 +525,8 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'PAR');
 2. 任务运行成功，表ods_orders_par字段名称被修改
 3. 任务运行成功，表ods_orders_par新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，字段remark同步数据NULL写入目标表",2,功能测试
-169931,验证parquet分区表新增字段后，在历史分区文件插入数据后，同步历史文件正常,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的parquet表
+只有分区2025-11-20数据被同步，字段remark同步数据NULL写入目标表",2
+parquet-orc新增字段历史分区处理,验证parquet分区表新增字段后，在历史分区文件插入数据后，同步历史文件正常,"1.存在hive3.x的parquet表
 -- parquet表
 drop table if EXISTS ods_orders_par;
 CREATE TABLE IF NOT EXISTS ods_orders_par (
@@ -580,8 +580,8 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'PAR');
 2. 任务运行成功，表ods_orders_par新增一个字段remark
 3. 任务运行成功，表ods_orders_par新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，字段remark同步两条数据数据NULL、PAR写入目标表",2,功能测试
-169930,验证parquet分区表新增字段且插入数据后，只同步新分区正常同步至starrocks表内,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的parquet表
+只有分区2025-11-20数据被同步，字段remark同步两条数据数据NULL、PAR写入目标表",2
+parquet-orc新增字段历史分区处理,验证parquet分区表新增字段且插入数据后，只同步新分区正常同步至starrocks表内,"1.存在hive3.x的parquet表
 -- parquet表
 drop table if EXISTS ods_orders_par;
 CREATE TABLE IF NOT EXISTS ods_orders_par (
@@ -635,8 +635,8 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'PAR');
 2. 任务运行成功，表ods_orders_par新增一个字段remark
 3. 任务运行成功，表ods_orders_par新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-21数据被同步，字段remark同步数据PAR写入目标表",2,功能测试
-169929,验证parquet分区表新增字段后，不插入数据只同步历史文件正常,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的parquet表
+只有分区2025-11-21数据被同步，字段remark同步数据PAR写入目标表",2
+parquet-orc新增字段历史分区处理,验证parquet分区表新增字段后，不插入数据只同步历史文件正常,"1.存在hive3.x的parquet表
 -- parquet表
 drop table if EXISTS ods_orders_par;
 CREATE TABLE IF NOT EXISTS ods_orders_par (
@@ -685,8 +685,8 @@ remark STRING COMMENT '备注说明'
 点击保存、临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
 2. 任务运行成功，表ods_orders_par新增一个字段remark
 3. 数据同步任务运行成功，数据被同步至目标表ods_orders，
-只有分区2025-11-20数据被同步，字段remark同步数据NULL写入目标表",2,功能测试
-169928,验证parquet分区表新增字段且插入数据后，历史分区正常同步至starrocks表内,parquet-orc新增字段历史分区处理,【产品交付】parquet/orc新增字段历史分区处理(#15339),"1.存在hive3.x的parquet表
+只有分区2025-11-20数据被同步，字段remark同步数据NULL写入目标表",2
+parquet-orc新增字段历史分区处理,验证parquet分区表新增字段且插入数据后，历史分区正常同步至starrocks表内,"1.存在hive3.x的parquet表
 -- parquet表
 drop table if EXISTS ods_orders_par;
 CREATE TABLE IF NOT EXISTS ods_orders_par (
@@ -740,4 +740,4 @@ VALUES (1, 1001, 2001, 20.5, 'SUCCESS', current_timestamp(), 'PAR');
 3. 任务运行成功，表ods_orders_par新增一条分区数据
 4. 数据同步任务运行成功，数据被同步至目标表ods_orders，
 在分区2025-11-21中，字段remark同步数据PAR写入目标表
-在分区2025-11-20中，字段remark同步数据Null写入目标表",1,功能测试
+在分区2025-11-20中，字段remark同步数据Null写入目标表",1

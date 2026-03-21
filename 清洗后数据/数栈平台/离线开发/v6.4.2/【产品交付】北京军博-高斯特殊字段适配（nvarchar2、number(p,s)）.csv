@@ -1,5 +1,5 @@
-﻿用例编号,用例标题,所属模块,相关需求,前置条件,步骤,预期结果,优先级,用例类型
-162061,验证手动任务-pg2pg，字段映射功能,gaussdb特殊字段适配,"【产品交付】北京军博-高斯特殊字段适配（nvarchar2、number(p,s)）(#14887)","1、源端pg数据源，底层创建表source，source下有字段：
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+gaussdb特殊字段适配,验证手动任务-pg2pg，字段映射功能,"1、源端pg数据源，底层创建表source，source下有字段：
 CREATE TABLE source (
 id NUMBER(10) PRIMARY KEY,
 number_int NUMBER(10,0),           -- 整数类型
@@ -48,8 +48,8 @@ N'Unicode测试","1. 进入离线开发-数据开发-新建手动任务，source
 3. 运行报错（底层建的表没有转化）
 4. 源端和目标端的字段及字段类型展示与各自的建表语句一致
 5. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常
-6. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常",2,功能测试
-162060,验证周期任务-pg2pg，字段映射功能,gaussdb特殊字段适配,"【产品交付】北京军博-高斯特殊字段适配（nvarchar2、number(p,s)）(#14887)","1、源端pg数据源，底层创建表source，source下有字段：
+6. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常",2
+gaussdb特殊字段适配,验证周期任务-pg2pg，字段映射功能,"1、源端pg数据源，底层创建表source，source下有字段：
 CREATE TABLE source (
 id NUMBER(10) PRIMARY KEY,
 number_int NUMBER(10,0),           -- 整数类型
@@ -96,8 +96,8 @@ N'Unicode测试","1. 进入离线开发-数据开发-新建手动任务，source
 2. 源端和目标端的字段及字段类型展示与各自的建表语句一致
 3. 运行报错（底层建的表没有转化）
 4. 源端和目标端的字段及字段类型展示与各自的建表语句一致
-5. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常",2,功能测试
-162059,验证手动任务-pg2pg，一键生成目标表功能,gaussdb特殊字段适配,"【产品交付】北京军博-高斯特殊字段适配（nvarchar2、number(p,s)）(#14887)","1、源端pg数据源，底层创建表source，source下有字段：
+5. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常",2
+gaussdb特殊字段适配,验证手动任务-pg2pg，一键生成目标表功能,"1、源端pg数据源，底层创建表source，source下有字段：
 CREATE TABLE source (
 id NUMBER(10) PRIMARY KEY,
 number_int NUMBER(10,0),           -- 整数类型
@@ -117,8 +117,8 @@ nvarchar2_long NVARCHAR2(500)     -- 长文本
 2. CREATE TABLE source ( id numeric(10) PRIMARY KEY, number_int numeric(10,0), -- 整数类型 number_decimal numeric(10,4), -- 小数类型 number_large_precision numeric(20,8), -- 大精度小数 number_small_scale numeric(5,2), -- 小范围数值 nvarchar2_field varchar(100), -- 常规长度 nvarchar2_short varchar(10), -- 短文本 nvarchar2_long varchar(500) -- 长文本）
 3. 源端和目标端的字段及字段类型展示与各自的建表语句一致
 4. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常
-5. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常",2,功能测试
-162058,验证周期任务-pg2pg，一键生成目标表功能,gaussdb特殊字段适配,"【产品交付】北京军博-高斯特殊字段适配（nvarchar2、number(p,s)）(#14887)","<p>1、源端pg数据源，底层创建表source，source下有字段：<br />CREATE TABLE source (<br />    id NUMBER(10) PRIMARY KEY,<br />    number_int NUMBER(10,0),           -- 整数类型<br />    number_decimal NUMBER(10,4),       -- 小数类型<br />    number_large_precision NUMBER(20,8), -- 大精度小数<br />    number_small_scale NUMBER(5,2),    -- 小范围数值<br />    nvarchar2_field NVARCHAR2(100),    -- 常规长度<br />    nvarchar2_short NVARCHAR2(10),     -- 短文本<br />    nvarchar2_long NVARCHAR2(500)     -- 长文本<br />）<br /><br />2、同步表到离线项目</p>
+5. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常",2
+gaussdb特殊字段适配,验证周期任务-pg2pg，一键生成目标表功能,"<p>1、源端pg数据源，底层创建表source，source下有字段：<br />CREATE TABLE source (<br />    id NUMBER(10) PRIMARY KEY,<br />    number_int NUMBER(10,0),           -- 整数类型<br />    number_decimal NUMBER(10,4),       -- 小数类型<br />    number_large_precision NUMBER(20,8), -- 大精度小数<br />    number_small_scale NUMBER(5,2),    -- 小范围数值<br />    nvarchar2_field NVARCHAR2(100),    -- 常规长度<br />    nvarchar2_short NVARCHAR2(10),     -- 短文本<br />    nvarchar2_long NVARCHAR2(500)     -- 长文本<br />）<br /><br />2、同步表到离线项目</p>
 <p><br /></p>","1. 进入离线开发-数据开发-新建周期任务，source端选择pg数据源，source表，点击下一步
 2. 目标端选择pg数据源，点击一键生成目标表，查看建表sql
 3. 点击下一步，进入字段映射页面，查看展示
@@ -138,4 +138,4 @@ nvarchar2_long  varchar(500)     -- 长文本
 3. 源端和目标端的字段及字段类型展示与各自的建表语句一致
 4. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常
 5. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常
-6. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常",1,功能测试
+6. 运行成功，sink表数据写入正常，功能行为符合预期，无报错或异常",1
