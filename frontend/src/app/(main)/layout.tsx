@@ -22,6 +22,7 @@ import { OnboardingGuideButton } from "@/components/ui/OnboardingGuide";
 import ProgressDashboard from "@/components/ui/ProgressDashboard";
 import { UserMenu } from "@/components/ui/UserMenu";
 import { NotificationBell } from "./_components/NotificationBell";
+import { PageTransition } from "./_components/PageTransition";
 
 const navGroups = [
   {
@@ -142,7 +143,7 @@ export default function MainLayout({
           <UserMenu />
         </div>
       </nav>
-      {children}
+      <PageTransition>{children}</PageTransition>
       <OnboardingGuideButton />
       <ProgressDashboard />
       <GlobalSearch />
