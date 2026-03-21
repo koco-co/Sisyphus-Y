@@ -188,8 +188,8 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
         {products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
             <FileText className="w-12 h-12 text-sy-text-3 opacity-30 mb-3" />
-            <p className="text-[12px] text-sy-text-3 mb-1">暂无需求</p>
-            <p className="text-[11px] text-sy-text-3 opacity-70 mb-3">请先在需求管理中添加需求</p>
+            <p className="text-[12px] text-sy-text-3 mb-1">还没有需求</p>
+            <p className="text-[11px] text-sy-text-3 opacity-70 mb-3">从录入或上传文档开始，AI 将自动分析潜在风险</p>
             <Link
               href="/requirements"
               className="inline-flex items-center px-3 py-1.5 rounded-md text-[11.5px] font-medium bg-sy-accent/10 border border-sy-accent/30 text-sy-accent hover:bg-sy-accent/20 transition-colors"

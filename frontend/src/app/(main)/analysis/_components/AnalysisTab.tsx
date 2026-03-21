@@ -333,9 +333,9 @@ export function AnalysisTab({
           {!loading && risks.length === 0 && (
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <Info className="w-8 h-8 text-sy-text-3 opacity-30 mb-2" />
-              <p className="text-[12px] text-sy-text-3">暂无广度扫描结果</p>
+              <p className="text-[12px] text-sy-text-3">还没有分析过这个需求</p>
               <p className="text-[11px] text-sy-text-3 opacity-60 mt-0.5">
-                点击「开始分析」运行 AI 广度扫描
+                点击「开始分析」让 AI 从 6 个维度识别潜在风险
               </p>
             </div>
           )}
