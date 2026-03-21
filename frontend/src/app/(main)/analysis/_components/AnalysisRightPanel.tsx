@@ -2,6 +2,9 @@
 
 import { MousePointerClick } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import type { WorkflowStep } from '@/components/workflow/WorkflowStepper';
+import { WorkflowStepper } from '@/components/workflow/WorkflowStepper';
+import { useRequirement } from '@/hooks/useRequirement';
 import { RequirementDetailTab } from '../../diagnosis/_components/RequirementDetailTab';
 import { AnalysisTab } from './AnalysisTab';
 import CoverageTab from './CoverageTab';
@@ -18,6 +21,41 @@ const tabLabels: { key: 'detail' | 'analysis' | 'coverage'; label: string }[] = 
   { key: 'coverage', label: '覆盖追踪' },
 ];
 
+function getWorkflowSteps(
+  id: string,
+  diagnosisStatus: string | undefined,
+  sceneMapStatus: string | undefined,
+): WorkflowStep[] {
+  const diagnosisDone = diagnosisStatus === 'completed';
+  const sceneMapDone = sceneMapStatus === 'confirmed';
+
+  return [
+    {
+      id: 1,
+      label: '需求准备',
+      status: 'done',
+    },
+    {
+      id: 2,
+      label: 'AI 分析',
+      href: `/analysis/diagnosis/${id}`,
+      status: diagnosisDone ? 'done' : 'current',
+    },
+    {
+      id: 3,
+      label: '确认测试点',
+      href: `/analysis/scene-map/${id}`,
+      status: diagnosisDone && sceneMapDone ? 'done' : diagnosisDone ? 'current' : 'pending',
+    },
+    {
+      id: 4,
+      label: '生成用例',
+      href: `/workbench/${id}`,
+      status: sceneMapDone ? 'current' : 'pending',
+    },
+  ];
+}
+
 function RightPanelContent({
   selectedReqId,
   activeTab,
@@ -25,6 +63,7 @@ function RightPanelContent({
 }: AnalysisRightPanelProps & { selectedReqId: string }) {
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(['detail']));
   const [autoStartAnalysis, setAutoStartAnalysis] = useState(false);
+  const { requirement } = useRequirement(selectedReqId);
 
   const handleTabChange = useCallback(
     (key: 'detail' | 'analysis' | 'coverage') => {
@@ -39,8 +78,19 @@ function RightPanelContent({
     handleTabChange('analysis');
   }, [handleTabChange]);
 
+  const workflowSteps = getWorkflowSteps(
+    selectedReqId,
+    requirement?.diagnosis_status,
+    requirement?.scene_map_status,
+  );
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Workflow stepper */}
+      <div className="flex-shrink-0 px-4 py-3 border-b border-sy-border bg-sy-bg-1">
+        <WorkflowStepper steps={workflowSteps} />
+      </div>
+
       {/* Tab nav */}
       <div className="flex-shrink-0 flex items-center border-b border-sy-border bg-sy-bg-1 px-1">
         {tabLabels.map(({ key, label }) => (
