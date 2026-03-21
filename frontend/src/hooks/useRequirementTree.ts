@@ -3,6 +3,7 @@ import { type Iteration, type Product, productsApi, type Requirement } from '@/l
 
 export function useRequirementTree() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [iterations, setIterations] = useState<Record<string, Iteration[]>>({});
   const [iterationsLoading, setIterationsLoading] = useState<Record<string, boolean>>({});
@@ -13,10 +14,12 @@ export function useRequirementTree() {
   const [selectedReqTitle, setSelectedReqTitle] = useState('');
 
   useEffect(() => {
+    setProductsLoading(true);
     productsApi
       .list()
       .then((data) => setProducts(Array.isArray(data) ? data : []))
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setProductsLoading(false));
   }, []);
 
   const toggleProduct = useCallback(
@@ -92,6 +95,7 @@ export function useRequirementTree() {
 
   return {
     products,
+    productsLoading,
     expandedProducts,
     iterations,
     iterationsLoading,

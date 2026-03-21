@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { API_BASE, sceneMapApi } from '@/lib/api';
 import {
   type TestPointItem,
@@ -19,9 +19,11 @@ function normalizeSource(source: string): TestPointSource {
 export function useSceneMap() {
   const store = useSceneMapStore();
   const sse = useSSE();
+  const [testPointsLoading, setTestPointsLoading] = useState(false);
 
   const loadTestPoints = useCallback(
     async (reqId: string) => {
+      setTestPointsLoading(true);
       try {
         const data = await sceneMapApi.listTestPoints(reqId);
         const points: TestPointItem[] = (Array.isArray(data) ? data : []).map((tp) => ({
@@ -34,6 +36,8 @@ export function useSceneMap() {
         if (points.length > 0) store.setStep('confirm');
       } catch {
         store.setTestPoints([]);
+      } finally {
+        setTestPointsLoading(false);
       }
     },
     [store],
@@ -191,6 +195,7 @@ export function useSceneMap() {
     ...store,
     sse,
     stats,
+    testPointsLoading,
     selectRequirement,
     generateTestPoints,
     confirmPoint,

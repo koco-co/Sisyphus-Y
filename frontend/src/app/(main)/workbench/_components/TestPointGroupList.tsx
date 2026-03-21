@@ -3,6 +3,7 @@
 import { ChevronDown, ChevronRight, Minus, Plus, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import { useSceneMap } from '@/hooks/useSceneMap';
 import type { TestPointItem } from '@/stores/scene-map-store';
 
@@ -262,6 +263,14 @@ export default function TestPointGroupList({
     return acc;
   }, {});
   const groupNames = Object.keys(grouped);
+
+  if (sm.testPointsLoading) {
+    return (
+      <div className="p-2">
+        <TableSkeleton rows={6} cols={2} />
+      </div>
+    );
+  }
 
   if (testPoints.length === 0) {
     return (

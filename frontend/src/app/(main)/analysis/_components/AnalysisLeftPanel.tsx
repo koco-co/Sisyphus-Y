@@ -1,9 +1,10 @@
 'use client';
 
-import { ChevronDown, ChevronRight, FileText, Filter, Loader2, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, Filter, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import { useRequirementTree } from '@/hooks/useRequirementTree';
 import type { Requirement } from '@/lib/api';
 
@@ -63,6 +64,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
 
   const {
     products,
+    productsLoading,
     expandedProducts,
     iterations,
     iterationsLoading,
@@ -185,7 +187,9 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
 
       {/* Tree list */}
       <div className="flex-1 overflow-y-auto">
-        {products.length === 0 ? (
+        {productsLoading ? (
+          <TableSkeleton rows={5} cols={2} />
+        ) : products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
             <FileText className="w-12 h-12 text-sy-text-3 opacity-30 mb-3" />
             <p className="text-[12px] text-sy-text-3 mb-1">还没有需求</p>
@@ -225,9 +229,8 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                 {isProductExpanded && (
                   <div>
                     {isIterLoading ? (
-                      <div className="flex items-center gap-2 px-6 py-2">
-                        <Loader2 className="w-3 h-3 text-sy-text-3 animate-spin" />
-                        <span className="text-[11px] text-sy-text-3">加载中...</span>
+                      <div className="px-2">
+                        <TableSkeleton rows={3} cols={2} />
                       </div>
                     ) : (
                       productIterations.map((iteration) => {
@@ -266,9 +269,8 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                             {isIterExpanded && (
                               <div>
                                 {isReqLoading ? (
-                                  <div className="flex items-center gap-2 px-8 py-2">
-                                    <Loader2 className="w-3 h-3 text-sy-text-3 animate-spin" />
-                                    <span className="text-[11px] text-sy-text-3">加载中...</span>
+                                  <div className="px-2">
+                                    <TableSkeleton rows={4} cols={2} />
                                   </div>
                                 ) : filteredReqs.length === 0 ? (
                                   <div className="px-8 py-2">
