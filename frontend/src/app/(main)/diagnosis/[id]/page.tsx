@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { ChatBubble, ProgressSteps, StatusPill, ThinkingStream } from '@/components/ui';
+import { AiStreamStatus, ChatBubble, ProgressSteps, StatusPill, ThinkingStream } from '@/components/ui';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import { apiClient } from '@/lib/api-client';
 import { useStreamStore } from '@/stores/stream-store';
@@ -203,6 +203,7 @@ export default function DiagnosisPage() {
                 content={m.content}
               />
             ))}
+            <AiStreamStatus />
             <ThinkingStream text={thinkingText} isStreaming={isStreaming && !contentText} />
             {contentText && (
               <ChatBubble sender="ai" content={contentText} isStreaming={isStreaming} />

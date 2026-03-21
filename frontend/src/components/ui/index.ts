@@ -1,3 +1,4 @@
+export { AiStreamStatus } from './AiStreamStatus';
 export { ChatBubble } from './ChatBubble';
 export { ConfirmDialog } from './ConfirmDialog';
 export { EmptyState } from './EmptyState';

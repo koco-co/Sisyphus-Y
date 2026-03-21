@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { FileText, MessageSquare, Target, Zap } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { ChatBubble, ThinkingStream } from '@/components/ui';
+import { AiStreamStatus, ChatBubble, ThinkingStream } from '@/components/ui';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import { apiClient } from '@/lib/api-client';
 import { useStreamStore } from '@/stores/stream-store';
@@ -175,6 +175,7 @@ export default function WorkbenchPage() {
                 filterJson={m.role === 'ai'}
               />
             ))}
+            <AiStreamStatus />
             <ThinkingStream text={thinkingText} isStreaming={isStreaming && !contentText} />
             {contentText && (
               <ChatBubble sender="ai" content={contentText} isStreaming={isStreaming} filterJson />
