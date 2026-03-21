@@ -597,9 +597,9 @@ export default function TestCasesPage() {
                 <div className="bg-sy-bg-1 border border-sy-border rounded-[10px]">
                   <EmptyState
                     icon={<ClipboardList className="w-12 h-12" />}
-                    title="暂无用例数据"
+                    title="用例库是空的"
                     description={
-                      selectedFolderId ? '该目录下暂无用例' : '当用例生成完成后，会自动出现在这里'
+                      selectedFolderId ? '该目录下还没有用例' : '先去工作台生成第一批用例'
                     }
                   />
                 </div>
@@ -684,11 +684,7 @@ export default function TestCasesPage() {
             title={
               deleteTarget?.single ? '删除用例' : `批量删除 ${deleteTarget?.ids.length ?? 0} 个用例`
             }
-            description={
-              deleteTarget?.single
-                ? '此操作将软删除该用例，确认继续？'
-                : `将软删除选中的 ${deleteTarget?.ids.length ?? 0} 个用例，确认继续？`
-            }
+            description="删除后可在回收站找回，30 天内有效"
             variant="danger"
             confirmText="删除"
             onConfirm={() => deleteTarget && handleDelete(deleteTarget.ids)}
