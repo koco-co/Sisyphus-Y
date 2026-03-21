@@ -13,7 +13,11 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type AnalysisPhase,
+  AnalysisProgressIndicator,
+} from '@/components/ui/AnalysisProgressIndicator';
 import { useDiagnosis } from '@/hooks/useDiagnosis';
 import { API_BASE } from '@/lib/api';
 import { ChatInput } from '../../diagnosis/_components/ChatInput';
@@ -172,6 +176,41 @@ export function AnalysisTab({
     visible && requirementId ? requirementId : null,
   );
 
+  // Local optimistic confirmed state (augments server state)
+  const [localConfirmed, setLocalConfirmed] = useState<Set<string>>(new Set());
+
+  const risks = report?.risks ?? [];
+
+  // Derive analysis phase from SSE state
+  const analysisPhase = useMemo<AnalysisPhase>(() => {
+    if (!sse.isStreaming) return 'idle';
+    // If we have thinking content but no main content yet, we're analyzing
+    if (sse.thinking && !sse.content) return 'analyzing';
+    // If we have main content streaming, we're generating risks
+    if (sse.content) return 'generating_risks';
+    // Default to analyzing when streaming starts
+    return 'analyzing';
+  }, [sse.isStreaming, sse.thinking, sse.content]);
+
+  // Track when analysis just completed to show "done" briefly
+  const [showDone, setShowDone] = useState(false);
+  const prevIsStreaming = useRef(sse.isStreaming);
+
+  useEffect(() => {
+    // Transition from streaming to done
+    if (prevIsStreaming.current && !sse.isStreaming && risks.length > 0) {
+      setShowDone(true);
+      const timer = setTimeout(() => setShowDone(false), 2000);
+      return () => clearTimeout(timer);
+    }
+    prevIsStreaming.current = sse.isStreaming;
+  }, [sse.isStreaming, risks.length]);
+
+  const displayPhase = useMemo<AnalysisPhase>(() => {
+    if (showDone) return 'done';
+    return analysisPhase;
+  }, [analysisPhase, showDone]);
+
   // Auto-start diagnosis when tab becomes visible via "开始分析" button
   useEffect(() => {
     if (autoStart && visible && requirementId && !sse.isStreaming) {
@@ -179,11 +218,6 @@ export function AnalysisTab({
       onAutoStartConsumed?.();
     }
   }, [autoStart, visible, requirementId, sse.isStreaming, startDiagnosis, onAutoStartConsumed]);
-
-  // Local optimistic confirmed state (augments server state)
-  const [localConfirmed, setLocalConfirmed] = useState<Set<string>>(new Set());
-
-  const risks = report?.risks ?? [];
 
   const hasUnhandledHighRisk = risks.some((r) => {
     const level =
@@ -263,6 +297,9 @@ export function AnalysisTab({
 
   return (
     <div ref={containerRef} className="flex flex-col h-full overflow-hidden">
+      {/* ─── Progress Indicator ─── */}
+      <AnalysisProgressIndicator phase={displayPhase} />
+
       {/* ─── Upper: Scan Results ─── */}
       <div
         className="flex flex-col overflow-hidden flex-shrink-0"

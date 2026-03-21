@@ -369,7 +369,7 @@ export const productsApi = {
 export const requirementsApi = {
   get: (reqId: string) => api.get<RequirementDetail>(`/products/requirements/${reqId}`),
   update: (reqId: string, data: Partial<RequirementDetail>) =>
-    api.put<RequirementDetail>(`/products/requirements/${reqId}`, data),
+    api.patch<RequirementDetail>(`/products/requirements/${reqId}`, data),
   delete: (reqId: string) => api.delete<void>(`/products/requirements/${reqId}`),
 };
 
@@ -385,6 +385,8 @@ export const sceneMapApi = {
   confirmPoint: (pointId: string) => api.post<void>(`/scene-map/test-points/${pointId}/confirm`),
   confirmAll: (reqId: string) => api.post<void>(`/scene-map/${reqId}/confirm`),
   deletePoint: (pointId: string) => api.delete<void>(`/scene-map/test-points/${pointId}`),
+  batchUpdate: (reqId: string, updates: { id: string; status?: string }[]) =>
+    api.post<TestPoint[]>(`/scene-map/${reqId}/test-points/batch-update`, { updates }),
 };
 
 export const recycleApi = {
@@ -460,7 +462,7 @@ export const templatesApi = {
       content: TemplateContentPayload;
       template_content: TemplateContentPayload;
     }>,
-  ) => api.put<TemplateDetailResponse>(`/templates/${id}`, data),
+  ) => api.patch<TemplateDetailResponse>(`/templates/${id}`, data),
   delete: (id: string) => api.delete<void>(`/templates/${id}`),
   listPrompts: () => api.get<PromptConfigItem[]>('/ai-config/prompts'),
 };

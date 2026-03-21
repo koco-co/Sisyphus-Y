@@ -454,6 +454,7 @@ async def test_model_config(
         result = await invoke_llm(
             [{"role": "user", "content": "请回复'连接成功'四个字。"}],
             provider=item.provider,
+            model=item.model_id,
             max_retries=0,
         )
         return {

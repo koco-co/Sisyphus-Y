@@ -1,5 +1,5 @@
-import { expect, mock, test } from "bun:test";
-import { renderToStaticMarkup } from "react-dom/server";
+import { expect, mock, test } from 'bun:test';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const mockWorkbenchState: {
   sessions: unknown[];
@@ -33,16 +33,16 @@ const mockWorkbenchState: {
   sessions: [],
   activeSessionId: null,
   selectedReqId: null as string | null,
-  selectedReqTitle: "",
-  selectedMode: "test_point_driven",
+  selectedReqTitle: '',
+  selectedMode: 'test_point_driven',
   messages: [],
   testCases: [],
   contextItems: [],
   priorityFilter: null,
   typeFilter: null,
   sse: {
-    content: "",
-    thinking: "",
+    content: '',
+    thinking: '',
     cases: [],
     isStreaming: false,
   },
@@ -88,11 +88,11 @@ const mockSceneMapState: {
   confirmPoint: () => Promise<void>;
 } = {
   selectedReqId: null as string | null,
-  selectedReqTitle: "",
+  selectedReqTitle: '',
   testPoints: [],
   selectedPointId: null as string | null,
   checkedPointIds: new Set<string>(),
-  searchQuery: "",
+  searchQuery: '',
   isLocked: false,
   stats: {
     total: 0,
@@ -117,13 +117,13 @@ const mockSceneMapState: {
 
 const mockAiConfigState = {
   effectiveConfig: {
-    llm_model: "glm-5-flash",
+    llm_model: 'glm-5-flash',
   },
   modelConfigs: [
     {
-      id: "model-001",
+      id: 'model-001',
       is_enabled: true,
-      model_id: "glm-5-flash",
+      model_id: 'glm-5-flash',
     },
   ],
   loading: false,
@@ -136,27 +136,27 @@ const mockWorkspaceStore = {
   setTestCases: () => {},
 };
 
-mock.module("@/hooks/useWorkbench", () => ({
+mock.module('@/hooks/useWorkbench', () => ({
   useWorkbench: () => mockWorkbenchState,
 }));
 
-mock.module("@/hooks/useSceneMap", () => ({
+mock.module('@/hooks/useSceneMap', () => ({
   useSceneMap: () => mockSceneMapState,
 }));
 
-mock.module("@/hooks/useAiConfig", () => ({
+mock.module('@/hooks/useAiConfig', () => ({
   useAiConfig: () => mockAiConfigState,
 }));
 
-mock.module("next/navigation", () => ({
+mock.module('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-mock.module("@/stores/workspace-store", () => ({
+mock.module('@/stores/workspace-store', () => ({
   useWorkspaceStore: () => mockWorkspaceStore,
 }));
 
-mock.module("next/link", () => ({
+mock.module('next/link', () => ({
   default: ({
     href,
     children,
@@ -172,7 +172,7 @@ mock.module("next/link", () => ({
   ),
 }));
 
-mock.module("@/components/layout/ThreeColLayout", () => ({
+mock.module('@/components/layout/ThreeColLayout', () => ({
   ThreeColLayout: ({
     left,
     center,
@@ -190,117 +190,117 @@ mock.module("@/components/layout/ThreeColLayout", () => ({
   ),
 }));
 
-mock.module("./_components/RequirementNav", () => ({
+mock.module('./_components/RequirementNav', () => ({
   RequirementNav: () => <div>RequirementNav</div>,
 }));
 
-mock.module("./_components/ChatArea", () => ({
+mock.module('./_components/ChatArea', () => ({
   ChatArea: () => <div>ChatArea</div>,
 }));
 
-mock.module("./_components/ChatInput", () => ({
+mock.module('./_components/ChatInput', () => ({
   ChatInput: () => <div>ChatInput</div>,
 }));
 
-mock.module("./_components/ContextPanel", () => ({
+mock.module('./_components/ContextPanel', () => ({
   ContextPanel: () => <div>ContextPanel</div>,
 }));
 
-mock.module("./_components/GeneratedCases", () => ({
+mock.module('./_components/GeneratedCases', () => ({
   GeneratedCases: () => <div>GeneratedCases</div>,
 }));
 
-mock.module("./_components/TestPointGroupList", () => ({
+mock.module('./_components/TestPointGroupList', () => ({
   default: () => <div>TestPointGroupList</div>,
 }));
 
-mock.module("./_components/ModeSelector", () => ({
+mock.module('./_components/ModeSelector', () => ({
   ModeSelector: () => <div>ModeSelector</div>,
 }));
 
-mock.module("./_components/QuickCommands", () => ({
+mock.module('./_components/QuickCommands', () => ({
   QuickCommands: () => <div>QuickCommands</div>,
 }));
 
-test("workbench page renders step 1 and step 2 progress labels", async () => {
+test('workbench page renders step 1 and step 2 progress labels', async () => {
   mockWorkbenchState.selectedReqId = null;
   mockWorkbenchState.activeSessionId = null;
   mockSceneMapState.selectedReqId = null;
   mockSceneMapState.checkedPointIds = new Set();
   mockWorkspaceStore.lastGeneratedPointIds = new Set();
 
-  const module = await import("./page");
+  const module = await import('./page');
   const WorkbenchPage = module.default;
 
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
-  expect(html).toContain("Step 1");
-  expect(html).toContain("Step 2");
+  expect(html).toContain('Step 1');
+  expect(html).toContain('Step 2');
 });
 
-test("workbench page shows step 1 guidance after selecting a requirement", async () => {
-  mockWorkbenchState.selectedReqId = "req-001";
+test('workbench page shows step 1 guidance after selecting a requirement', async () => {
+  mockWorkbenchState.selectedReqId = 'req-001';
   mockWorkbenchState.activeSessionId = null;
-  mockSceneMapState.selectedReqId = "req-001";
+  mockSceneMapState.selectedReqId = 'req-001';
   mockSceneMapState.checkedPointIds = new Set();
   mockWorkspaceStore.lastGeneratedPointIds = new Set();
 
-  const module = await import("./page");
+  const module = await import('./page');
   const WorkbenchPage = module.default;
 
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
-  expect(html).toContain("Step 1：确认测试点");
-  expect(html).toContain("勾选至少 1 个测试点后，才能进入 Step 2 生成用例。");
-  expect(html).not.toContain("请从左侧选择需求");
+  expect(html).toContain('Step 1：确认测试点');
+  expect(html).toContain('勾选至少 1 个测试点后，才能进入 Step 2 生成用例。');
+  expect(html).not.toContain('请从左侧选择需求');
 });
 
-test("workbench page renders test point draft tools in step 1", async () => {
-  mockWorkbenchState.selectedReqId = "req-001";
+test('workbench page renders test point draft tools in step 1', async () => {
+  mockWorkbenchState.selectedReqId = 'req-001';
   mockWorkbenchState.activeSessionId = null;
-  mockSceneMapState.selectedReqId = "req-001";
+  mockSceneMapState.selectedReqId = 'req-001';
   mockSceneMapState.checkedPointIds = new Set();
   mockWorkspaceStore.lastGeneratedPointIds = new Set();
 
-  const module = await import("./page");
+  const module = await import('./page');
   const WorkbenchPage = module.default;
 
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
-  expect(html).toContain("AI 生成测试点");
-  expect(html).toContain("TestPointGroupList");
+  expect(html).toContain('AI 生成测试点');
+  expect(html).toContain('TestPointGroupList');
 });
 
-test("workbench page shows append-generation guidance after existing generation history", async () => {
-  mockWorkbenchState.selectedReqId = "req-001";
+test('workbench page shows append-generation guidance after existing generation history', async () => {
+  mockWorkbenchState.selectedReqId = 'req-001';
   mockWorkbenchState.activeSessionId = null;
-  mockSceneMapState.selectedReqId = "req-001";
-  mockSceneMapState.checkedPointIds = new Set(["tp-001"]);
-  mockWorkspaceStore.lastGeneratedPointIds = new Set(["tp-001"]);
+  mockSceneMapState.selectedReqId = 'req-001';
+  mockSceneMapState.checkedPointIds = new Set(['tp-001']);
+  mockWorkspaceStore.lastGeneratedPointIds = new Set(['tp-001']);
 
-  const module = await import("./page");
+  const module = await import('./page');
   const WorkbenchPage = module.default;
 
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
-  expect(html).toContain("可继续勾选新测试点，点「追加生成」只生成新增部分。");
+  expect(html).toContain('可继续勾选新测试点，点「追加生成」只生成新增部分。');
 });
 
-test("workbench page shows AI config banner when no model is configured", async () => {
-  mockWorkbenchState.selectedReqId = "req-001";
+test('workbench page shows AI config banner when no model is configured', async () => {
+  mockWorkbenchState.selectedReqId = 'req-001';
   mockWorkbenchState.activeSessionId = null;
-  mockSceneMapState.selectedReqId = "req-001";
+  mockSceneMapState.selectedReqId = 'req-001';
   mockSceneMapState.checkedPointIds = new Set();
   mockWorkspaceStore.lastGeneratedPointIds = new Set();
   mockAiConfigState.effectiveConfig = {
-    llm_model: "",
+    llm_model: '',
   };
   mockAiConfigState.modelConfigs = [];
 
-  const module = await import("./page");
+  const module = await import('./page');
   const WorkbenchPage = module.default;
 
   const html = renderToStaticMarkup(<WorkbenchPage />);
 
-  expect(html).toContain("AiConfigBanner");
+  expect(html).toContain('AiConfigBanner');
 });

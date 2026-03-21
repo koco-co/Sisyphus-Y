@@ -5,10 +5,10 @@ import { FileText, MessageSquare, Target, Zap } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { AiStreamStatus, ChatBubble, ThinkingStream } from '@/components/ui';
+import { SmartNextCard } from '@/components/workflow/SmartNextCard';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import { apiClient } from '@/lib/api-client';
 import { useStreamStore } from '@/stores/stream-store';
-import { SmartNextCard } from '@/components/workflow/SmartNextCard';
 import { CasePreviewCard, type CaseStep } from './_components/CasePreviewCard';
 
 interface Message {

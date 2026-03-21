@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { sceneMapApi } from '@/lib/api';
+
 export type SceneMapStep = 'select' | 'analyzing' | 'confirm' | 'done';
 export type TestPointSource = 'document' | 'supplemented' | 'missing' | 'pending';
 
@@ -42,11 +44,16 @@ interface SceneMapState {
   selectPoint: (id: string | null) => void;
   toggleCheckPoint: (id: string) => void;
   checkAllPoints: () => void;
+  uncheckAllPoints: () => void;
   bulkCheckPoints: (ids: string[], checked: boolean) => void;
   updatePoint: (id: string, updates: Partial<TestPointItem>) => void;
   addPoint: (point: TestPointItem) => void;
   removePoint: (id: string) => void;
   confirmPoint: (id: string) => void;
+  batchConfirmPoints: (
+    ids: string[],
+    onProgress?: (current: number, total: number) => void,
+  ) => Promise<void>;
   ignorePoint: (id: string) => void;
   lockMap: () => void;
   setGranularityWarnings: (warnings: GranularityWarning[]) => void;
@@ -92,6 +99,7 @@ export const useSceneMapStore = create<SceneMapState>((set) => ({
     set((s) => ({
       checkedPointIds: new Set(s.testPoints.map((p) => p.id)),
     })),
+  uncheckAllPoints: () => set({ checkedPointIds: new Set() }),
   bulkCheckPoints: (ids, checked) =>
     set((s) => {
       const next = new Set(s.checkedPointIds);
@@ -116,6 +124,45 @@ export const useSceneMapStore = create<SceneMapState>((set) => ({
       testPoints: s.testPoints.map((p) => (p.id === id ? { ...p, status: 'confirmed' } : p)),
       checkedPointIds: new Set([...s.checkedPointIds, id]),
     })),
+  batchConfirmPoints: async (ids, onProgress) => {
+    const reqId = useSceneMapStore.getState().selectedReqId;
+    if (!reqId) return;
+
+    // Filter only unconfirmed points
+    const unconfirmedIds = ids.filter((id) => {
+      const point = useSceneMapStore.getState().testPoints.find((p) => p.id === id);
+      return point && point.status !== 'confirmed';
+    });
+
+    if (unconfirmedIds.length === 0) return;
+
+    // Update status locally first for immediate feedback
+    set((s) => ({
+      testPoints: s.testPoints.map((p) =>
+        unconfirmedIds.includes(p.id) ? { ...p, status: 'confirmed' } : p,
+      ),
+      checkedPointIds: new Set([...s.checkedPointIds, ...unconfirmedIds]),
+    }));
+
+    // Call API to persist
+    try {
+      const updates = unconfirmedIds.map((id) => ({ id, status: 'confirmed' }));
+      await sceneMapApi.batchUpdate(reqId, updates);
+
+      // Report progress after API call completes
+      if (onProgress) {
+        onProgress(unconfirmedIds.length, unconfirmedIds.length);
+      }
+    } catch {
+      // Revert on error
+      set((s) => ({
+        testPoints: s.testPoints.map((p) =>
+          unconfirmedIds.includes(p.id) ? { ...p, status: 'pending' } : p,
+        ),
+      }));
+      throw new Error('批量确认失败');
+    }
+  },
   ignorePoint: (id) =>
     set((s) => ({
       testPoints: s.testPoints.map((p) =>

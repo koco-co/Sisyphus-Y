@@ -43,9 +43,7 @@ export function NotificationBell() {
   const fetchList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/notifications/?user_id=${DEMO_USER_ID}&page=1&page_size=20`,
-      );
+      const res = await fetch(`/api/notifications/?user_id=${DEMO_USER_ID}&page=1&page_size=20`);
       if (res.ok) {
         const data = (await res.json()) as { items: Notification[] };
         setNotifications(data.items ?? []);
@@ -150,7 +148,9 @@ export function NotificationBell() {
                   className={`flex items-start gap-3 border-b border-sy-border/50 px-4 py-3 last:border-0 ${n.is_read ? 'opacity-60' : ''}`}
                 >
                   <div className="mt-0.5 flex-1">
-                    <p className="text-[12.5px] font-medium leading-tight text-sy-text">{n.title}</p>
+                    <p className="text-[12.5px] font-medium leading-tight text-sy-text">
+                      {n.title}
+                    </p>
                     {n.content && (
                       <p className="mt-1 text-[11px] leading-snug text-sy-text-2">{n.content}</p>
                     )}

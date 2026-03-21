@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { Loader2, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { ThreeColLayout } from "@/components/layout/ThreeColLayout";
-import { AiConfigBanner } from "@/components/ui/AiConfigBanner";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { useAiConfig } from "@/hooks/useAiConfig";
-import { useSceneMap } from "@/hooks/useSceneMap";
-import { useWorkbench } from "@/hooks/useWorkbench";
-import { type Requirement, requirementsApi } from "@/lib/api";
-import type { WorkbenchTestCase } from "@/stores/workspace-store";
-import { useWorkspaceStore } from "@/stores/workspace-store";
-import { ContextPanel } from "./_components/ContextPanel";
-import { GeneratedCases } from "./_components/GeneratedCases";
-import { GeneratedCasesByPoint } from "./_components/GeneratedCasesByPoint";
-import { GenerationPanel } from "./_components/GenerationPanel";
-import { RequirementNav } from "./_components/RequirementNav";
-import TestPointGroupList from "./_components/TestPointGroupList";
-import WorkbenchStepBar from "./_components/WorkbenchStepBar";
-import { getWorkbenchRequirementId } from "./query";
+import { Loader2, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { ThreeColLayout } from '@/components/layout/ThreeColLayout';
+import { AiConfigBanner } from '@/components/ui/AiConfigBanner';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useAiConfig } from '@/hooks/useAiConfig';
+import { useSceneMap } from '@/hooks/useSceneMap';
+import { useWorkbench } from '@/hooks/useWorkbench';
+import { type Requirement, requirementsApi } from '@/lib/api';
+import type { WorkbenchTestCase } from '@/stores/workspace-store';
+import { useWorkspaceStore } from '@/stores/workspace-store';
+import { ContextPanel } from './_components/ContextPanel';
+import { GeneratedCases } from './_components/GeneratedCases';
+import { GeneratedCasesByPoint } from './_components/GeneratedCasesByPoint';
+import { GenerationPanel } from './_components/GenerationPanel';
+import { RequirementNav } from './_components/RequirementNav';
+import TestPointGroupList from './_components/TestPointGroupList';
+import WorkbenchStepBar from './_components/WorkbenchStepBar';
+import { getWorkbenchRequirementId } from './query';
 
 const SUB_NAV_HEIGHT = 41;
 
@@ -55,7 +55,7 @@ function WorkbenchPageContent() {
   const queryRequirementId = getWorkbenchRequirementId(searchParams);
   const hasConfiguredAiModel = Boolean(
     aiConfig.effectiveConfig?.llm_model?.trim() ||
-    aiConfig.modelConfigs.some((model) => model.is_enabled && model.model_id),
+      aiConfig.modelConfigs.some((model) => model.is_enabled && model.model_id),
   );
   const showAiConfigBanner = !aiConfig.loading && !hasConfiguredAiModel;
 
@@ -80,17 +80,14 @@ function WorkbenchPageContent() {
         if (cancelled) {
           return;
         }
-        const reqTitle = req.title || req.req_id || "";
+        const reqTitle = req.title || req.req_id || '';
         await Promise.all([
           wb.selectRequirement(queryRequirementId, reqTitle),
           sm.selectRequirement(queryRequirementId, reqTitle),
         ]);
         setViewStep(1);
       } catch (error) {
-        console.error(
-          "Failed to hydrate workbench requirement from URL:",
-          error,
-        );
+        console.error('Failed to hydrate workbench requirement from URL:', error);
       }
     })();
 
@@ -101,7 +98,7 @@ function WorkbenchPageContent() {
 
   const handleSelectRequirement = useCallback(
     async (req: Requirement) => {
-      const reqTitle = req.title || req.req_id || "";
+      const reqTitle = req.title || req.req_id || '';
       await Promise.all([
         wb.selectRequirement(req.id, reqTitle),
         sm.selectRequirement(req.id, reqTitle),
@@ -137,14 +134,9 @@ function WorkbenchPageContent() {
 
     // 自动确认未确认的测试点
     const pendingConfirmIds = sm.testPoints
-      .filter(
-        (point) =>
-          sm.checkedPointIds.has(point.id) && point.status !== "confirmed",
-      )
+      .filter((point) => sm.checkedPointIds.has(point.id) && point.status !== 'confirmed')
       .map((point) => point.id);
-    await Promise.all(
-      pendingConfirmIds.map((pointId) => sm.confirmPoint(pointId)),
-    );
+    await Promise.all(pendingConfirmIds.map((pointId) => sm.confirmPoint(pointId)));
 
     const { lastGeneratedPointIds } = store;
     const isFirstGenerate = lastGeneratedPointIds.size === 0;
@@ -217,15 +209,13 @@ function WorkbenchPageContent() {
         <>
           <div className="shrink-0 flex items-center justify-between border-b border-sy-border bg-sy-bg-1 px-4 py-2.5">
             <div>
-              <p className="text-[12px] font-semibold text-sy-text">
-                Step 2：生成用例
-              </p>
+              <p className="text-[12px] font-semibold text-sy-text">Step 2：生成用例</p>
               <p className="mt-0.5 text-[11px] text-sy-text-3">
-                {selectedRequirementTitle || "已进入当前需求的生成会话"}
+                {selectedRequirementTitle || '已进入当前需求的生成会话'}
                 {pointIdsToGenerate.length > 0 && (
                   <span className="ml-2 text-sy-accent">
-                    {isAppendModeRef.current ? "追加" : "首次"}生成{" "}
-                    {pointIdsToGenerate.length} 个测试点
+                    {isAppendModeRef.current ? '追加' : '首次'}生成 {pointIdsToGenerate.length}{' '}
+                    个测试点
                   </span>
                 )}
               </p>
@@ -251,16 +241,14 @@ function WorkbenchPageContent() {
           <div className="border-b border-sy-border bg-sy-bg-1 px-4 py-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-[13px] font-semibold text-sy-text">
-                  Step 1：确认测试点
-                </p>
+                <p className="text-[13px] font-semibold text-sy-text">Step 1：确认测试点</p>
                 <p className="mt-1 text-[12px] text-sy-text-2">
-                  {selectedRequirementTitle || "已选需求"}
+                  {selectedRequirementTitle || '已选需求'}
                 </p>
                 <p className="mt-1 text-[11px] text-sy-text-3">
                   {store.lastGeneratedPointIds.size > 0
-                    ? "可继续勾选新测试点，点「追加生成」只生成新增部分。"
-                    : "勾选至少 1 个测试点后，才能进入 Step 2 生成用例。"}
+                    ? '可继续勾选新测试点，点「追加生成」只生成新增部分。'
+                    : '勾选至少 1 个测试点后，才能进入 Step 2 生成用例。'}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -275,7 +263,7 @@ function WorkbenchPageContent() {
                   ) : (
                     <Sparkles className="h-3.5 w-3.5" />
                   )}
-                  {sm.sse.isStreaming ? "生成中..." : "AI 生成测试点"}
+                  {sm.sse.isStreaming ? '生成中...' : 'AI 生成测试点'}
                 </button>
               </div>
             </div>
@@ -292,9 +280,9 @@ function WorkbenchPageContent() {
                   group_name: groupName,
                   title,
                   description: null,
-                  source: "pending",
-                  status: "pending",
-                  priority: "medium",
+                  source: 'pending',
+                  status: 'pending',
+                  priority: 'medium',
                   estimated_cases: 0,
                 })
               }

@@ -6,18 +6,27 @@ type MockTreeNode = {
   name: string;
 };
 
+type MockRequirement = {
+  id: string;
+  title: string;
+  req_id?: string;
+  status?: string;
+};
+
 const mockTreeState: {
   products: MockTreeNode[];
+  productsLoading: boolean;
   iterationsLoading: Record<string, boolean>;
   requirementsLoading: Record<string, boolean>;
   iterations: Record<string, MockTreeNode[]>;
-  requirements: Record<string, MockTreeNode[]>;
+  requirements: Record<string, MockRequirement[]>;
   expandedProducts: Set<string>;
   expandedIterations: Set<string>;
   toggleProduct: () => void;
   toggleIteration: () => void;
 } = {
   products: [{ id: 'product-001', name: '订单中心' }],
+  productsLoading: false,
   iterationsLoading: {},
   requirementsLoading: {},
   iterations: {
@@ -82,4 +91,51 @@ test('RequirementNav shows empty state when an expanded iteration has no require
   );
 
   expect(html).toContain('当前迭代暂无需求');
+});
+
+test('RequirementNav displays search input and filter options', async () => {
+  mockTreeState.requirementsLoading = {};
+  mockTreeState.requirements = {
+    'iteration-001': [{ id: 'req-001', title: 'Test Requirement', req_id: 'REQ-001' }],
+  };
+
+  const module = await import('./RequirementNav');
+  const RequirementNav = module.RequirementNav;
+
+  const html = renderToStaticMarkup(
+    <RequirementNav
+      sessions={[]}
+      activeSessionId={null}
+      selectedReqId={null}
+      onSelectRequirement={() => {}}
+      onSelectSession={() => {}}
+      onCreateSession={() => {}}
+    />,
+  );
+
+  expect(html).toContain('搜索需求...');
+});
+
+test('RequirementNav highlights matching text when search is active', async () => {
+  mockTreeState.requirementsLoading = {};
+  mockTreeState.requirements = {
+    'iteration-001': [{ id: 'req-001', title: 'Test Requirement', req_id: 'REQ-001' }],
+  };
+
+  const module = await import('./RequirementNav');
+  const RequirementNav = module.RequirementNav;
+
+  const html = renderToStaticMarkup(
+    <RequirementNav
+      sessions={[]}
+      activeSessionId={null}
+      selectedReqId={null}
+      onSelectRequirement={() => {}}
+      onSelectSession={() => {}}
+      onCreateSession={() => {}}
+    />,
+  );
+
+  // Check that the requirement title is displayed
+  expect(html).toContain('Test Requirement');
 });

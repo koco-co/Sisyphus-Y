@@ -4,12 +4,18 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
+  Filter,
   FolderOpen,
   MessageSquare,
   Plus,
   RefreshCw,
+  Search,
   Sparkles,
+  X,
 } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+
+import { useDebounce } from '@/hooks/useDebounce';
 import { useRequirementTree } from '@/hooks/useRequirementTree';
 import type { Requirement } from '@/lib/api';
 import type { GenSession } from '@/stores/workspace-store';
@@ -29,6 +35,31 @@ function statusDot(status: string) {
   return 'bg-text3/40';
 }
 
+/**
+ * Highlights matching text in a string with a mark element.
+ */
+function highlightMatch(text: string, query: string): React.ReactNode {
+  if (!query) return text;
+
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const index = lowerText.indexOf(lowerQuery);
+
+  if (index === -1) return text;
+
+  const before = text.slice(0, index);
+  const match = text.slice(index, index + query.length);
+  const after = text.slice(index + query.length);
+
+  return (
+    <>
+      {before}
+      <mark className="bg-sy-accent/30 text-inherit rounded px-0.5">{match}</mark>
+      {after}
+    </>
+  );
+}
+
 export function RequirementNav({
   sessions,
   activeSessionId,
@@ -38,6 +69,65 @@ export function RequirementNav({
   onCreateSession,
 }: RequirementNavProps) {
   const tree = useRequirementTree();
+  const [searchInput, setSearchInput] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [hideEmptyIterations, setHideEmptyIterations] = useState(false);
+
+  // Debounce search input by 300ms
+  const debouncedSearch = useDebounce(searchInput, 300);
+
+  // Check if a requirement matches the search query
+  const matchesSearch = useCallback(
+    (req: Requirement): boolean => {
+      if (!debouncedSearch) return true;
+      const query = debouncedSearch.toLowerCase();
+      return (
+        req.title.toLowerCase().includes(query) ||
+        (req.req_id?.toLowerCase().includes(query) ?? false)
+      );
+    },
+    [debouncedSearch],
+  );
+
+  // Filter and compute visibility for products/iterations
+  const filteredTree = useMemo(() => {
+    return tree.products
+      .map((product) => {
+        const productIterations = tree.iterations[product.id] ?? [];
+        const filteredIterations = productIterations
+          .map((iter) => {
+            const iterReqs = tree.requirements[iter.id] ?? [];
+            const filteredReqs = iterReqs.filter(matchesSearch);
+            const isEmpty = iterReqs.length === 0;
+
+            return {
+              ...iter,
+              requirements: iterReqs,
+              filteredRequirements: filteredReqs,
+              isEmpty,
+              shouldHide:
+                (hideEmptyIterations && isEmpty) || (debouncedSearch && filteredReqs.length === 0),
+            };
+          })
+          .filter((iter) => !iter.shouldHide);
+
+        return {
+          ...product,
+          iterations: filteredIterations,
+          hasVisibleIterations: filteredIterations.length > 0,
+        };
+      })
+      .filter((product) => product.hasVisibleIterations || !debouncedSearch);
+  }, [
+    tree.products,
+    tree.iterations,
+    tree.requirements,
+    matchesSearch,
+    hideEmptyIterations,
+    debouncedSearch,
+  ]);
+
+  const hasActiveFilters = hideEmptyIterations || !!debouncedSearch;
 
   return (
     <div className="flex flex-col h-full">
@@ -47,79 +137,137 @@ export function RequirementNav({
         <h3 className="text-[13px] font-semibold text-text">生成工作台</h3>
       </div>
 
-      {/* Requirement tree */}
-      <div className="flex-1 overflow-y-auto p-2">
-        {tree.products.length === 0 && (
-          <div className="text-center py-8 text-[12px] text-text3">暂无子产品数据</div>
-        )}
-        {tree.products.map((product) => (
-          <div key={product.id}>
+      {/* Search and Filter */}
+      <div className="px-3 py-2 border-b border-border">
+        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-bg2 border border-border">
+          <Search className="w-3.5 h-3.5 text-text3 flex-shrink-0" />
+          <input
+            type="text"
+            placeholder="搜索需求..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="flex-1 bg-transparent text-[12px] text-text placeholder:text-text3 outline-none min-w-0"
+          />
+          {searchInput && (
             <button
               type="button"
-              onClick={() => tree.toggleProduct(product.id)}
-              className="w-full flex items-center gap-1.5 px-2.5 py-2 rounded-md text-[13px] text-text hover:bg-bg2 transition-colors"
+              onClick={() => setSearchInput('')}
+              className="text-text3 hover:text-text2 transition-colors"
             >
-              {tree.expandedProducts.has(product.id) ? (
-                <ChevronDown className="w-3.5 h-3.5 text-text3 shrink-0" />
-              ) : (
-                <ChevronRight className="w-3.5 h-3.5 text-text3 shrink-0" />
-              )}
-              <FolderOpen className="w-3.5 h-3.5 text-sy-accent shrink-0" />
-              <span className="truncate">{product.name}</span>
+              <X className="w-3 h-3" />
             </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            className={`p-0.5 rounded transition-colors ${hasActiveFilters ? 'text-sy-accent' : 'text-text3 hover:text-text2'}`}
+            title="筛选"
+          >
+            <Filter className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
-            {tree.expandedProducts.has(product.id) &&
-              (tree.iterationsLoading[product.id] ? (
-                <div className="pl-8 py-1 text-[11px] text-text3">迭代加载中...</div>
-              ) : (tree.iterations[product.id] || []).length === 0 ? (
-                <div className="pl-8 py-1 text-[11px] text-text3">当前产品暂无迭代</div>
-              ) : (
-                (tree.iterations[product.id] || []).map((iter) => (
-                  <div key={iter.id} className="pl-4">
-                    <button
-                      type="button"
-                      onClick={() => tree.toggleIteration(product.id, iter.id)}
-                      className="w-full flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[12px] text-text2 hover:bg-bg2 transition-colors"
-                    >
-                      {tree.expandedIterations.has(iter.id) ? (
-                        <ChevronDown className="w-3 h-3 text-text3 shrink-0" />
-                      ) : (
-                        <ChevronRight className="w-3 h-3 text-text3 shrink-0" />
-                      )}
-                      <RefreshCw className="w-3 h-3 shrink-0" />
-                      <span className="truncate">{iter.name}</span>
-                    </button>
-
-                    {tree.expandedIterations.has(iter.id) &&
-                      (tree.requirementsLoading[iter.id] ? (
-                        <div className="pl-8 py-1 text-[11px] text-text3">需求加载中...</div>
-                      ) : (tree.requirements[iter.id] || []).length === 0 ? (
-                        <div className="pl-8 py-1 text-[11px] text-text3">当前迭代暂无需求</div>
-                      ) : (
-                        (tree.requirements[iter.id] || []).map((req) => (
-                          <button
-                            type="button"
-                            key={req.id}
-                            onClick={() => onSelectRequirement(req)}
-                            className={`w-full flex items-center gap-1.5 pl-8 pr-2.5 py-1.5 rounded-md text-[12px] transition-colors ${
-                              selectedReqId === req.id
-                                ? 'bg-sy-accent/10 text-sy-accent'
-                                : 'text-text2 hover:bg-bg2'
-                            }`}
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(req.status ?? '')}`}
-                            />
-                            <FileText className="w-3 h-3 shrink-0" />
-                            <span className="truncate">{req.title || req.req_id}</span>
-                          </button>
-                        ))
-                      ))}
-                  </div>
-                ))
-              ))}
+        {/* Filter options */}
+        {showFilters && (
+          <div className="mt-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hideEmptyIterations}
+                onChange={(e) => setHideEmptyIterations(e.target.checked)}
+                className="w-3.5 h-3.5 rounded border-border text-sy-accent focus:ring-sy-accent/50"
+              />
+              <span className="text-[11px] text-text2">仅显示有需求的迭代</span>
+            </label>
           </div>
-        ))}
+        )}
+      </div>
+
+      {/* Requirement tree */}
+      <div className="flex-1 overflow-y-auto p-2">
+        {tree.productsLoading ? (
+          <div className="text-center py-4 text-[12px] text-text3">加载中...</div>
+        ) : filteredTree.length === 0 ? (
+          <div className="text-center py-8 text-[12px] text-text3">
+            {debouncedSearch ? '未找到匹配的需求' : '暂无子产品数据'}
+          </div>
+        ) : (
+          filteredTree.map((product) => (
+            <div key={product.id}>
+              <button
+                type="button"
+                onClick={() => tree.toggleProduct(product.id)}
+                className="w-full flex items-center gap-1.5 px-2.5 py-2 rounded-md text-[13px] text-text hover:bg-bg2 transition-colors"
+              >
+                {tree.expandedProducts.has(product.id) ? (
+                  <ChevronDown className="w-3.5 h-3.5 text-text3 shrink-0" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5 text-text3 shrink-0" />
+                )}
+                <FolderOpen className="w-3.5 h-3.5 text-sy-accent shrink-0" />
+                <span className="truncate">{product.name}</span>
+              </button>
+
+              {tree.expandedProducts.has(product.id) &&
+                (tree.iterationsLoading[product.id] ? (
+                  <div className="pl-8 py-1 text-[11px] text-text3">迭代加载中...</div>
+                ) : (
+                  product.iterations.map((iter) => (
+                    <div key={iter.id} className="pl-4">
+                      <button
+                        type="button"
+                        onClick={() => tree.toggleIteration(product.id, iter.id)}
+                        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[12px] text-text2 hover:bg-bg2 transition-colors"
+                      >
+                        {tree.expandedIterations.has(iter.id) ? (
+                          <ChevronDown className="w-3 h-3 text-text3 shrink-0" />
+                        ) : (
+                          <ChevronRight className="w-3 h-3 text-text3 shrink-0" />
+                        )}
+                        <RefreshCw className="w-3 h-3 shrink-0" />
+                        <span className="truncate flex-1 text-left">
+                          {highlightMatch(iter.name, debouncedSearch)}
+                        </span>
+                        {!iter.isEmpty && (
+                          <span className="text-[10px] text-text3 font-mono flex-shrink-0">
+                            {iter.requirements.length}
+                          </span>
+                        )}
+                      </button>
+
+                      {tree.expandedIterations.has(iter.id) &&
+                        (tree.requirementsLoading[iter.id] ? (
+                          <div className="pl-8 py-1 text-[11px] text-text3">需求加载中...</div>
+                        ) : iter.filteredRequirements.length === 0 ? (
+                          <div className="pl-8 py-1 text-[11px] text-text3">当前迭代暂无需求</div>
+                        ) : (
+                          iter.filteredRequirements.map((req) => (
+                            <button
+                              type="button"
+                              key={req.id}
+                              onClick={() => onSelectRequirement(req)}
+                              className={`w-full flex items-center gap-1.5 pl-8 pr-2.5 py-1.5 rounded-md text-[12px] transition-colors ${
+                                selectedReqId === req.id
+                                  ? 'bg-sy-accent/10 text-sy-accent'
+                                  : 'text-text2 hover:bg-bg2'
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(req.status ?? '')}`}
+                              />
+                              <FileText className="w-3 h-3 shrink-0" />
+                              <span className="truncate">
+                                {highlightMatch(req.title || (req.req_id ?? ''), debouncedSearch)}
+                              </span>
+                            </button>
+                          ))
+                        ))}
+                    </div>
+                  ))
+                ))}
+            </div>
+          ))
+        )}
       </div>
 
       {/* Session list */}

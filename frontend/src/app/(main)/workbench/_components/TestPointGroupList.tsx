@@ -1,7 +1,8 @@
 'use client';
 
-import { ChevronDown, ChevronRight, Minus, Plus, Sparkles } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Loader2, Minus, Plus, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import { useSceneMap } from '@/hooks/useSceneMap';
@@ -16,6 +17,12 @@ interface TestPointGroupListProps {
   onBulkToggle: (ids: string[], checked: boolean) => void;
   onAdd: (groupName: string, title: string) => void;
   onStartGenerate: () => void;
+  onBatchConfirm?: (
+    ids: string[],
+    onProgress: (current: number, total: number) => void,
+  ) => Promise<void>;
+  onCheckAll?: () => void;
+  onUncheckAll?: () => void;
 }
 
 function sceneTypeToBadgeVariant(
@@ -247,11 +254,18 @@ export default function TestPointGroupList({
   onBulkToggle,
   onAdd,
   onStartGenerate,
+  onBatchConfirm,
+  onCheckAll,
+  onUncheckAll,
 }: TestPointGroupListProps) {
   const sm = useSceneMap();
 
   // Only load points for the given requirementId — sm.testPoints is already filtered by store
   const testPoints = requirementId ? sm.testPoints : [];
+
+  // Batch confirm state
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [confirmProgress, setConfirmProgress] = useState({ current: 0, total: 0 });
 
   // Group by group_name
   const grouped = testPoints.reduce<Record<string, TestPointItem[]>>((acc, tp) => {
@@ -263,6 +277,46 @@ export default function TestPointGroupList({
     return acc;
   }, {});
   const groupNames = Object.keys(grouped);
+
+  // All select checkbox state
+  const totalCount = testPoints.length;
+  const checkedCount = checkedPointIds.size;
+  const allChecked = totalCount > 0 && checkedCount === totalCount;
+  const someChecked = checkedCount > 0 && !allChecked;
+  const canBatchConfirm = checkedCount >= 2 && onBatchConfirm;
+
+  // Count unconfirmed points among checked
+  const unconfirmedCount = testPoints.filter(
+    (p) => checkedPointIds.has(p.id) && p.status !== 'confirmed',
+  ).length;
+
+  const handleAllToggle = useCallback(() => {
+    if (allChecked) {
+      onUncheckAll?.();
+    } else {
+      onCheckAll?.();
+    }
+  }, [allChecked, onCheckAll, onUncheckAll]);
+
+  const handleBatchConfirm = useCallback(async () => {
+    if (!onBatchConfirm) return;
+
+    const idsToConfirm = [...checkedPointIds];
+    setIsConfirming(true);
+    setConfirmProgress({ current: 0, total: idsToConfirm.length });
+
+    try {
+      await onBatchConfirm(idsToConfirm, (current, total) => {
+        setConfirmProgress({ current, total });
+      });
+      toast.success(`已成功确认 ${idsToConfirm.length} 个测试点`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '批量确认失败');
+    } finally {
+      setIsConfirming(false);
+      setConfirmProgress({ current: 0, total: 0 });
+    }
+  }, [checkedPointIds, onBatchConfirm]);
 
   if (sm.testPointsLoading) {
     return (
@@ -284,6 +338,54 @@ export default function TestPointGroupList({
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header with select all and batch confirm */}
+      <div className="flex-shrink-0 flex items-center justify-between px-4 py-2.5 border-b border-sy-border bg-sy-bg-1">
+        <div className="flex items-center gap-2">
+          {/* Select all checkbox */}
+          <button
+            type="button"
+            onClick={handleAllToggle}
+            className={`w-4 h-4 flex-shrink-0 rounded border transition-colors flex items-center justify-center ${
+              allChecked
+                ? 'bg-sy-accent border-sy-accent'
+                : someChecked
+                  ? 'bg-sy-bg-3 border-sy-accent'
+                  : 'border-sy-border-2 bg-transparent hover:border-sy-accent/50'
+            }`}
+            aria-label={allChecked ? '取消全选' : '全选'}
+          >
+            {allChecked ? (
+              <Check className="w-3 h-3 text-black" />
+            ) : someChecked ? (
+              <Minus className="w-3 h-3 text-sy-accent" />
+            ) : null}
+          </button>
+          <span className="text-[12px] text-sy-text-2">
+            已选 {checkedCount}/{totalCount}
+          </span>
+        </div>
+
+        {/* Batch confirm button */}
+        <button
+          type="button"
+          onClick={handleBatchConfirm}
+          disabled={!canBatchConfirm || isConfirming}
+          className="inline-flex items-center gap-1.5 rounded-md border border-sy-border bg-sy-bg-2 px-2.5 py-1 text-[11px] font-medium text-sy-text transition-colors hover:border-sy-accent/30 hover:text-sy-accent disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isConfirming ? (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin" />
+              正在确认 {confirmProgress.current}/{confirmProgress.total}...
+            </>
+          ) : (
+            <>
+              <Check className="w-3 h-3" />
+              批量确认{unconfirmedCount > 0 ? ` (${unconfirmedCount})` : ''}
+            </>
+          )}
+        </button>
+      </div>
+
       {/* Scrollable group list */}
       <div className="flex-1 overflow-y-auto p-3 space-y-1">
         {groupNames.map((name) => (
