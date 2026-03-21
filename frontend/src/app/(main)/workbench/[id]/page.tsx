@@ -8,6 +8,7 @@ import { AiStreamStatus, ChatBubble, ThinkingStream } from '@/components/ui';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import { apiClient } from '@/lib/api-client';
 import { useStreamStore } from '@/stores/stream-store';
+import { SmartNextCard } from '@/components/workflow/SmartNextCard';
 import { CasePreviewCard, type CaseStep } from './_components/CasePreviewCard';
 
 interface Message {
@@ -40,6 +41,7 @@ export default function WorkbenchPage() {
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [mode, setMode] = useState('test_point_driven');
+  const [streamDone, setStreamDone] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -79,6 +81,7 @@ export default function WorkbenchPage() {
     if (!input.trim() || isStreaming || !sessionId) return;
     const msg = input.trim();
     setInput('');
+    setStreamDone(false);
     setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: msg }]);
     await streamSSE(`/generation/sessions/${sessionId}/chat`, { message: msg });
     const latestContent = useStreamStore.getState().contentText;
@@ -90,6 +93,7 @@ export default function WorkbenchPage() {
       resetStream();
     }
     queryClient.invalidateQueries({ queryKey: ['workbench-cases', id] });
+    setStreamDone(true);
   }
 
   return (
@@ -181,6 +185,14 @@ export default function WorkbenchPage() {
               <ChatBubble sender="ai" content={contentText} isStreaming={isStreaming} filterJson />
             )}
           </div>
+          <SmartNextCard
+            show={streamDone && !isStreaming}
+            title="用例生成完成"
+            description="已生成用例，可前往用例库查看完整列表或导出"
+            ctaLabel="前往用例库"
+            ctaHref="/testcases"
+            onClose={() => setStreamDone(false)}
+          />
           <div className="border-t border-border p-3 flex gap-2">
             <input
               value={input}

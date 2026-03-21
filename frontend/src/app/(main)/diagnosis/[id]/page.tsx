@@ -6,6 +6,7 @@ import { AiStreamStatus, ChatBubble, ProgressSteps, StatusPill, ThinkingStream }
 import { useSSEStream } from '@/hooks/useSSEStream';
 import { apiClient } from '@/lib/api-client';
 import { useStreamStore } from '@/stores/stream-store';
+import { SmartNextCard } from '@/components/workflow/SmartNextCard';
 
 interface Risk {
   id: string;
@@ -45,6 +46,7 @@ export default function DiagnosisPage() {
   const { thinkingText, contentText, isStreaming, reset: resetStream } = useStreamStore();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
+  const [streamDone, setStreamDone] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
 
   const { data: report } = useQuery({
@@ -102,13 +104,16 @@ export default function DiagnosisPage() {
   }, [contentText, messages.length, thinkingText]);
 
   async function runDiagnosis() {
+    setStreamDone(false);
     await streamSSE(`/diagnosis/${id}/run`, {});
+    setStreamDone(true);
   }
 
   async function sendMessage() {
     if (!input.trim() || isStreaming) return;
     const msg = input.trim();
     setInput('');
+    setStreamDone(false);
     setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: msg }]);
     await streamSSE(`/diagnosis/${id}/chat`, { message: msg, round_num: messages.length + 1 });
     const latestContent = useStreamStore.getState().contentText;
@@ -119,6 +124,7 @@ export default function DiagnosisPage() {
       ]);
       resetStream();
     }
+    setStreamDone(true);
   }
 
   const steps = [
@@ -209,6 +215,14 @@ export default function DiagnosisPage() {
               <ChatBubble sender="ai" content={contentText} isStreaming={isStreaming} />
             )}
           </div>
+          <SmartNextCard
+            show={streamDone && !isStreaming}
+            title="AI 分析完成"
+            description="下一步：确认 AI 识别的测试点，再进入工作台生成用例"
+            ctaLabel="前往确认测试点"
+            ctaHref={`/analysis/scene-map/${id}`}
+            onClose={() => setStreamDone(false)}
+          />
           <div className="border-t border-border p-3 flex gap-2">
             <input
               value={input}
