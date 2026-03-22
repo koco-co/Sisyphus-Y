@@ -540,3 +540,17 @@ export const collaborationApi = {
   getSharedReview: (token: string) =>
     api.get<SharedReviewPayload>(`/collaboration/shared-reviews/${token}`),
 };
+
+export const testcasesApi = {
+  // 工作台采纳/拒绝：直接更新状态，不走 review 流程
+  adoptCase: (caseId: string) =>
+    api.post<{ updated: number }>('/testcases/batch-status', {
+      case_ids: [caseId],
+      status: 'approved',
+    }),
+  rejectCase: (caseId: string) =>
+    api.post<{ updated: number }>('/testcases/batch-status', {
+      case_ids: [caseId],
+      status: 'rejected',
+    }),
+};

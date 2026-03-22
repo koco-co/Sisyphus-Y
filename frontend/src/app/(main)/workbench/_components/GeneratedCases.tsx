@@ -1,9 +1,10 @@
 'use client';
 
 import { ClipboardList } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { CaseCard } from '@/components/workspace/CaseCard';
+import { testcasesApi } from '@/lib/api';
 import type { WorkbenchTestCase } from '@/stores/workspace-store';
 import { CaseFilters } from './CaseFilters';
 import { CaseSkeleton } from './CaseSkeleton';
@@ -30,6 +31,28 @@ export function GeneratedCases({
   onTypeChange,
   onExport,
 }: GeneratedCasesProps) {
+  const [feedbacks, setFeedbacks] = useState<Record<string, 'up' | 'down'>>({});
+
+  // CaseCard passes display case_id (e.g. "IMP-xxx"); look up UUID for API call
+  const handleFeedback = useCallback(async (displayCaseId: string, value: 'up' | 'down') => {
+    const tc = testCases.find((t) => t.case_id === displayCaseId);
+    if (!tc) return;
+    setFeedbacks((prev) => ({ ...prev, [displayCaseId]: value }));
+    try {
+      if (value === 'up') {
+        await testcasesApi.adoptCase(tc.id);
+      } else {
+        await testcasesApi.rejectCase(tc.id);
+      }
+    } catch {
+      setFeedbacks((prev) => {
+        const next = { ...prev };
+        delete next[displayCaseId];
+        return next;
+      });
+    }
+  }, [testCases]);
+
   const filtered = useMemo(() => {
     let result = testCases;
     if (priorityFilter) {
@@ -81,6 +104,8 @@ export function GeneratedCases({
               precondition={tc.precondition}
               steps={tc.steps}
               aiScore={tc.ai_score}
+              feedback={feedbacks[tc.case_id]}
+              onFeedback={handleFeedback}
             />
           ))
         ) : isStreaming ? (

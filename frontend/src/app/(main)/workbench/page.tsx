@@ -170,15 +170,20 @@ function WorkbenchPageContent() {
    * - 追加：appendTestCases
    */
   const handleGenerationComplete = useCallback(
-    (cases: WorkbenchTestCase[]) => {
+    async (cases: WorkbenchTestCase[]) => {
       if (isAppendModeRef.current) {
         store.appendTestCases(cases);
       } else {
         store.setTestCases(cases);
       }
       setStep2Completed(true);
+      // Reload from DB so test cases have real UUIDs for adopt/reject API calls
+      if (wb.selectedReqId) {
+        await wb.loadTestCases(wb.selectedReqId);
+      }
     },
-    [store],
+    // biome-ignore lint/correctness/useExhaustiveDependencies: wb is stable
+    [store, wb.selectedReqId, wb.loadTestCases],
   );
 
   // ── Left column ──

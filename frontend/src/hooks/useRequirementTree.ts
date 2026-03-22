@@ -74,6 +74,27 @@ export function useRequirementTree() {
       .finally(() => setProductsLoading(false));
   }, []);
 
+  // Hydrate iterations for products already expanded in localStorage
+  useEffect(() => {
+    if (products.length === 0) return;
+    products
+      .filter((p) => expandedProducts.has(p.id) && !iterations[p.id])
+      .forEach((product) => {
+        setIterationsLoading((prev) => ({ ...prev, [product.id]: true }));
+        productsApi
+          .listIterations(product.id)
+          .then((data) =>
+            setIterations((p) => ({ ...p, [product.id]: Array.isArray(data) ? data : [] })),
+          )
+          .catch(() => setIterations((p) => ({ ...p, [product.id]: [] })))
+          .finally(() =>
+            setIterationsLoading((prev) => ({ ...prev, [product.id]: false })),
+          );
+      });
+    // Only run when products load; expandedProducts/iterations intentionally excluded
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products]);
+
   const toggleProduct = useCallback(
     async (productId: string) => {
       setExpandedProducts((prev) => {
@@ -124,6 +145,35 @@ export function useRequirementTree() {
     },
     [folders],
   );
+
+  // Hydrate requirements for iterations already expanded in localStorage
+  // Must be placed after loadFolders declaration to avoid TDZ error
+  useEffect(() => {
+    if (Object.keys(iterations).length === 0) return;
+    const expandedIterationIds = [...expandedIterations];
+    expandedIterationIds.forEach((iterationId) => {
+      if (requirements[iterationId]) return;
+      for (const [productId, iters] of Object.entries(iterations)) {
+        const iter = iters.find((i) => i.id === iterationId);
+        if (iter) {
+          setRequirementsLoading((prev) => ({ ...prev, [iterationId]: true }));
+          productsApi
+            .listRequirements(productId, iterationId)
+            .then((data) =>
+              setRequirements((p) => ({ ...p, [iterationId]: Array.isArray(data) ? data : [] })),
+            )
+            .catch(() => setRequirements((p) => ({ ...p, [iterationId]: [] })))
+            .finally(() =>
+              setRequirementsLoading((prev) => ({ ...prev, [iterationId]: false })),
+            );
+          loadFolders(productId, iterationId);
+          break;
+        }
+      }
+    });
+    // Only run when iterations load; expandedIterations/requirements intentionally excluded
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [iterations, loadFolders]);
 
   const toggleIteration = useCallback(
     async (productId: string, iterationId: string) => {
