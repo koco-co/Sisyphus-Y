@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FolderDialog } from '@/components/ui/FolderDialog';
 import { FolderItem } from '@/components/folders/FolderItem';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -93,6 +94,13 @@ export function RequirementNav({
   const [showFilters, setShowFilters] = useState(false);
   const [hideEmptyIterations, setHideEmptyIterations] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    open: boolean;
+    folderId: string;
+    iterationId: string;
+    productId: string;
+  }>({ open: false, folderId: '', iterationId: '', productId: '' });
 
   const [folderDialog, setFolderDialog] = useState<{
     open: boolean;
@@ -190,22 +198,24 @@ export function RequirementNav({
   );
 
   const handleDeleteFolder = useCallback(
-    async (folderId: string, iterationId: string, productId: string) => {
-      if (!window.confirm('确定要删除此文件夹吗？文件夹内的需求将被移至「未分类」。')) {
-        return;
-      }
-      try {
-        setLoading(true);
-        await deleteFolder(productId, iterationId, folderId);
-      } catch (error) {
-        console.error('Failed to delete folder:', error);
-        alert('删除文件夹失败');
-      } finally {
-        setLoading(false);
-      }
+    (folderId: string, iterationId: string, productId: string) => {
+      setDeleteConfirm({ open: true, folderId, iterationId, productId });
     },
-    [deleteFolder],
+    [],
   );
+
+  const handleDeleteConfirm = useCallback(async () => {
+    const { folderId, iterationId, productId } = deleteConfirm;
+    setDeleteConfirm((prev) => ({ ...prev, open: false }));
+    try {
+      setLoading(true);
+      await deleteFolder(productId, iterationId, folderId);
+    } catch (error) {
+      console.error('Failed to delete folder:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [deleteConfirm, deleteFolder]);
 
   const handleFolderSubmit = useCallback(
     async (name: string) => {
@@ -513,6 +523,17 @@ export function RequirementNav({
           )}
         </div>
       )}
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="删除文件夹"
+        description="确定要删除此文件夹吗？文件夹内的需求将被移至「未分类」。"
+        confirmText="删除"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirm((prev) => ({ ...prev, open: false }))}
+      />
 
       {/* Folder Dialog */}
       <FolderDialog

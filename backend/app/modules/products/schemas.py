@@ -3,7 +3,6 @@ from datetime import date
 
 from app.shared.base_schema import BaseResponse, BaseSchema
 
-
 # ── Requirement Folder schemas ──────────────────────────────────────
 
 class ReqFolderCreate(BaseSchema):

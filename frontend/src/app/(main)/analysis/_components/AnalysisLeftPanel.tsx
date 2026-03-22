@@ -5,6 +5,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { ChevronDown, ChevronRight, FileText, Filter, FolderOpen, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FolderDialog } from '@/components/ui/FolderDialog';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TableSkeleton } from '@/components/ui/TableSkeleton';
@@ -46,6 +47,13 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
   const isDragging = useRef(false);
   const startX = useRef(0);
   const startWidth = useRef(0);
+
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    open: boolean;
+    folderId: string;
+    iterationId: string;
+    productId: string;
+  }>({ open: false, folderId: '', iterationId: '', productId: '' });
 
   const [folderDialog, setFolderDialog] = useState<{
     open: boolean;
@@ -198,22 +206,24 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
   );
 
   const handleDeleteFolder = useCallback(
-    async (folderId: string, iterationId: string, productId: string) => {
-      if (!window.confirm('确定要删除此文件夹吗？文件夹内的需求将被移至「未分类」。')) {
-        return;
-      }
-      try {
-        setLoading(true);
-        await deleteFolder(productId, iterationId, folderId);
-      } catch (error) {
-        console.error('Failed to delete folder:', error);
-        alert('删除文件夹失败');
-      } finally {
-        setLoading(false);
-      }
+    (folderId: string, iterationId: string, productId: string) => {
+      setDeleteConfirm({ open: true, folderId, iterationId, productId });
     },
-    [deleteFolder],
+    [],
   );
+
+  const handleDeleteConfirm = useCallback(async () => {
+    const { folderId, iterationId, productId } = deleteConfirm;
+    setDeleteConfirm((prev) => ({ ...prev, open: false }));
+    try {
+      setLoading(true);
+      await deleteFolder(productId, iterationId, folderId);
+    } catch (error) {
+      console.error('Failed to delete folder:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [deleteConfirm, deleteFolder]);
 
   const handleFolderSubmit = useCallback(
     async (name: string) => {
@@ -534,6 +544,17 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
         aria-label="拖拽调整宽度"
         className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-sy-accent transition-colors p-0 border-0 bg-transparent"
         onMouseDown={handleMouseDown}
+      />
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="删除文件夹"
+        description="确定要删除此文件夹吗？文件夹内的需求将被移至「未分类」。"
+        confirmText="删除"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirm((prev) => ({ ...prev, open: false }))}
       />
 
       {/* Folder Dialog */}
