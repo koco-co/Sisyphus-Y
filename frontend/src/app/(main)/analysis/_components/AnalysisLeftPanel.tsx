@@ -1,12 +1,14 @@
 'use client';
 
-import { ChevronDown, ChevronRight, FileText, Filter, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, Filter, FolderOpen, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { FolderDialog } from '@/components/ui/FolderDialog';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TableSkeleton } from '@/components/ui/TableSkeleton';
+import { FolderItem } from '@/components/folders/FolderItem';
 import { useRequirementTree } from '@/hooks/useRequirementTree';
-import type { Requirement } from '@/lib/api';
+import type { Folder, Requirement } from '@/lib/api';
 
 const PRIORITY_OPTIONS = ['P0', 'P1', 'P2', 'P3'] as const;
 const STATUS_OPTIONS = [
@@ -42,6 +44,18 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
   const startX = useRef(0);
   const startWidth = useRef(0);
 
+  const [folderDialog, setFolderDialog] = useState<{
+    open: boolean;
+    mode: 'create' | 'rename';
+    parentId: string | null;
+    folderId?: string;
+    initialValue?: string;
+    iterationId?: string;
+    productId?: string;
+  }>({ open: false, mode: 'create', parentId: null });
+
+  const [loading, setLoading] = useState(false);
+
   const hasActiveFilters = priorityFilter.size > 0 || statusFilter.size > 0;
 
   const togglePriority = useCallback((p: string) => {
@@ -71,8 +85,15 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
     expandedIterations,
     requirements,
     requirementsLoading,
+    folders,
+    foldersLoading,
+    expandedFolders,
     toggleProduct,
     toggleIteration,
+    toggleFolder,
+    createFolder,
+    updateFolder,
+    deleteFolder,
   } = useRequirementTree();
 
   const handleMouseDown = useCallback(
@@ -120,6 +141,144 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
       return true;
     },
     [searchQuery, priorityFilter, statusFilter],
+  );
+
+  // Folder operation handlers
+  const handleCreateFolder = useCallback(
+    (parentId: string | null, iterationId: string, productId: string) => {
+      setFolderDialog({
+        open: true,
+        mode: 'create',
+        parentId,
+        iterationId,
+        productId,
+      });
+    },
+    [],
+  );
+
+  const handleRenameFolder = useCallback(
+    (folderId: string, currentName: string, iterationId: string, productId: string) => {
+      setFolderDialog({
+        open: true,
+        mode: 'rename',
+        folderId,
+        initialValue: currentName,
+        iterationId,
+        productId,
+        parentId: null,
+      });
+    },
+    [],
+  );
+
+  const handleDeleteFolder = useCallback(
+    async (folderId: string, iterationId: string, productId: string) => {
+      if (!window.confirm('确定要删除此文件夹吗？文件夹内的需求将被移至「未分类」。')) {
+        return;
+      }
+      try {
+        setLoading(true);
+        await deleteFolder(productId, iterationId, folderId);
+      } catch (error) {
+        console.error('Failed to delete folder:', error);
+        alert('删除文件夹失败');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [deleteFolder],
+  );
+
+  const handleFolderSubmit = useCallback(
+    async (name: string) => {
+      const { mode, parentId, folderId, iterationId, productId } = folderDialog;
+      if (!iterationId || !productId) return;
+
+      try {
+        setLoading(true);
+        if (mode === 'create') {
+          await createFolder(productId, iterationId, { name, parentId });
+        } else if (mode === 'rename' && folderId) {
+          await updateFolder(productId, iterationId, folderId, { name });
+        }
+        setFolderDialog({ open: false, mode: 'create', parentId: null });
+      } catch (error) {
+        console.error('Failed to save folder:', error);
+        alert(mode === 'create' ? '创建文件夹失败' : '重命名文件夹失败');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [folderDialog, createFolder, updateFolder],
+  );
+
+  // Render requirement item
+  const renderRequirementItem = useCallback(
+    (req: Requirement) => {
+      const isSelected = req.id === selectedReqId;
+      const status =
+        (req as Requirement & { analysis_status?: string }).analysis_status ?? 'pending';
+      const highRiskCount =
+        (req as Requirement & { unconfirmed_high_risk_count?: number })
+          .unconfirmed_high_risk_count ?? 0;
+
+      return (
+        <button
+          key={req.id}
+          type="button"
+          onClick={() => onSelectRequirement(req.id)}
+          className={`w-full flex items-center gap-2 px-5 py-2 text-left transition-colors ${
+            isSelected
+              ? 'bg-sy-bg-2 border-r-2 border-sy-accent'
+              : 'hover:bg-sy-bg-2/60'
+          }`}
+        >
+          <span className="flex-1 text-[12px] text-sy-text truncate min-w-0">
+            {req.title.length > 30 ? `${req.title.slice(0, 30)}...` : req.title}
+          </span>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <StatusBadge variant={getStatusVariant(status)}>
+              {getStatusLabel(status)}
+            </StatusBadge>
+            {highRiskCount > 0 && (
+              <span className="bg-sy-danger text-white text-[10px] font-mono rounded-full px-1.5 py-0.5 leading-none">
+                {highRiskCount}
+              </span>
+            )}
+          </div>
+        </button>
+      );
+    },
+    [selectedReqId, onSelectRequirement],
+  );
+
+  // Render folder tree recursively
+  const renderFolder = useCallback(
+    (folder: Folder, level: number, iterationId: string, productId: string): React.ReactNode => {
+      const isExpanded = expandedFolders.has(folder.id);
+      const iterReqs = requirements[iterationId] ?? [];
+      const folderReqs = iterReqs.filter((r) => (r as Requirement & { folder_id?: string }).folder_id === folder.id);
+
+      return (
+        <FolderItem
+          key={folder.id}
+          folder={folder}
+          level={level}
+          expanded={isExpanded}
+          onToggle={() => toggleFolder(folder.id)}
+          onCreateChild={(parentId) => handleCreateFolder(parentId, iterationId, productId)}
+          onRename={(fid, name) => handleRenameFolder(fid, name, iterationId, productId)}
+          onDelete={(fid) => handleDeleteFolder(fid, iterationId, productId)}
+        >
+          {/* Recursively render child folders */}
+          {folder.children.map((child) => renderFolder(child, level + 1, iterationId, productId))}
+          {/* Render requirements in this folder */}
+          {isExpanded && folderReqs.filter(matchesSearch).map((req) => renderRequirementItem(req))}
+        </FolderItem>
+      );
+    },
+    [expandedFolders, requirements, toggleFolder, handleCreateFolder, handleRenameFolder, handleDeleteFolder, matchesSearch, renderRequirementItem],
   );
 
   return (
@@ -239,6 +398,12 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                         const isIterExpanded = expandedIterations.has(iteration.id);
                         const iterReqs = requirements[iteration.id] ?? [];
                         const isReqLoading = requirementsLoading[iteration.id];
+                        const isFolderLoading = foldersLoading[iteration.id];
+                        const iterFolders = folders[iteration.id] ?? [];
+                        const unclassifiedReqs = iterReqs.filter(
+                          (r) => !(r as Requirement & { folder_id?: string }).folder_id,
+                        );
+                        const filteredUnclassifiedReqs = unclassifiedReqs.filter(matchesSearch);
                         const filteredReqs = iterReqs.filter(matchesSearch);
 
                         // If searching and no matches, hide this iteration
@@ -247,79 +412,66 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                         return (
                           <div key={iteration.id}>
                             {/* Iteration header */}
-                            <button
-                              type="button"
-                              onClick={() => toggleIteration(product.id, iteration.id)}
-                              className="w-full flex items-center gap-1.5 px-4 py-1.5 text-left hover:bg-sy-bg-2 transition-colors"
-                            >
-                              {isIterExpanded ? (
-                                <ChevronDown className="w-3 h-3 text-sy-text-3 flex-shrink-0" />
-                              ) : (
-                                <ChevronRight className="w-3 h-3 text-sy-text-3 flex-shrink-0" />
-                              )}
-                              <span className="text-[11.5px] text-sy-text-2 truncate flex-1">
-                                {iteration.name}
-                              </span>
-                              {iterReqs.length > 0 && (
-                                <span className="text-[10px] text-sy-text-3 font-mono flex-shrink-0">
-                                  {iterReqs.length}
+                            <div className="w-full flex items-center gap-1.5 px-4 py-1.5 hover:bg-sy-bg-2 transition-colors group">
+                              <button
+                                type="button"
+                                onClick={() => toggleIteration(product.id, iteration.id)}
+                                className="flex items-center gap-1.5 flex-1 min-w-0"
+                              >
+                                {isIterExpanded ? (
+                                  <ChevronDown className="w-3 h-3 text-sy-text-3 flex-shrink-0" />
+                                ) : (
+                                  <ChevronRight className="w-3 h-3 text-sy-text-3 flex-shrink-0" />
+                                )}
+                                <span className="text-[11.5px] text-sy-text-2 truncate flex-1">
+                                  {iteration.name}
                                 </span>
+                                {iterReqs.length > 0 && (
+                                  <span className="text-[10px] text-sy-text-3 font-mono flex-shrink-0">
+                                    {iterReqs.length}
+                                  </span>
+                                )}
+                              </button>
+                              {isIterExpanded && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCreateFolder(null, iteration.id, product.id)}
+                                  className="p-0.5 text-sy-text-3 hover:text-sy-accent opacity-0 group-hover:opacity-100 transition-all"
+                                  title="新建文件夹"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
                               )}
-                            </button>
+                            </div>
 
-                            {/* Requirements */}
+                            {/* Folders and Requirements */}
                             {isIterExpanded && (
                               <div>
-                                {isReqLoading ? (
+                                {(isReqLoading || isFolderLoading) ? (
                                   <div className="px-2">
                                     <TableSkeleton rows={4} cols={2} />
                                   </div>
-                                ) : filteredReqs.length === 0 ? (
-                                  <div className="px-8 py-2">
-                                    <span className="text-[11px] text-sy-text-3">暂无需求</span>
-                                  </div>
                                 ) : (
-                                  filteredReqs.map((req) => {
-                                    const isSelected = req.id === selectedReqId;
-                                    const status =
-                                      (req as Requirement & { analysis_status?: string })
-                                        .analysis_status ?? 'pending';
-                                    const highRiskCount =
-                                      (
-                                        req as Requirement & {
-                                          unconfirmed_high_risk_count?: number;
-                                        }
-                                      ).unconfirmed_high_risk_count ?? 0;
-
-                                    return (
-                                      <button
-                                        key={req.id}
-                                        type="button"
-                                        onClick={() => onSelectRequirement(req.id)}
-                                        className={`w-full flex items-center gap-2 px-5 py-2 text-left transition-colors ${
-                                          isSelected
-                                            ? 'bg-sy-bg-2 border-r-2 border-sy-accent'
-                                            : 'hover:bg-sy-bg-2/60'
-                                        }`}
-                                      >
-                                        <span className="flex-1 text-[12px] text-sy-text truncate min-w-0">
-                                          {req.title.length > 30
-                                            ? `${req.title.slice(0, 30)}...`
-                                            : req.title}
-                                        </span>
-                                        <div className="flex items-center gap-1 flex-shrink-0">
-                                          <StatusBadge variant={getStatusVariant(status)}>
-                                            {getStatusLabel(status)}
-                                          </StatusBadge>
-                                          {highRiskCount > 0 && (
-                                            <span className="bg-sy-danger text-white text-[10px] font-mono rounded-full px-1.5 py-0.5 leading-none">
-                                              {highRiskCount}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </button>
-                                    );
-                                  })
+                                  <>
+                                    {/* Render folder tree */}
+                                    {iterFolders.map((folder) =>
+                                      renderFolder(folder, 0, iteration.id, product.id),
+                                    )}
+                                    {/* Render unclassified requirements */}
+                                    {filteredUnclassifiedReqs.length > 0 && (
+                                      <div className="border-t border-sy-border/50 mt-1">
+                                        {filteredUnclassifiedReqs.map((req) =>
+                                          renderRequirementItem(req),
+                                        )}
+                                      </div>
+                                    )}
+                                    {/* Show empty state if no folders and no unclassified requirements */}
+                                    {iterFolders.length === 0 && filteredUnclassifiedReqs.length === 0 && (
+                                      <div className="px-8 py-2">
+                                        <span className="text-[11px] text-sy-text-3">暂无需求</span>
+                                      </div>
+                                    )}
+                                  </>
                                 )}
                               </div>
                             )}
@@ -341,6 +493,16 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
         aria-label="拖拽调整宽度"
         className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-sy-accent transition-colors p-0 border-0 bg-transparent"
         onMouseDown={handleMouseDown}
+      />
+
+      {/* Folder Dialog */}
+      <FolderDialog
+        open={folderDialog.open}
+        onClose={() => setFolderDialog({ open: false, mode: 'create', parentId: null })}
+        onSubmit={handleFolderSubmit}
+        initialValue={folderDialog.initialValue ?? ''}
+        title={folderDialog.mode === 'create' ? '新建文件夹' : '重命名文件夹'}
+        loading={loading}
       />
     </div>
   );
