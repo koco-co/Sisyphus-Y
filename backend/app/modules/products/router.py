@@ -6,6 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, File, Form, UploadFile, status
 
 from app.core.dependencies import AsyncSessionDep
 from app.modules.products.schemas import (
+    FolderReorderRequest,
     IterationCreate,
     IterationResponse,
     IterationUpdate,
@@ -14,12 +15,20 @@ from app.modules.products.schemas import (
     ProductUpdate,
     PublishVersionRequest,
     PublishVersionResponse,
+    ReqFolderCreate,
+    ReqFolderResponse,
+    ReqFolderUpdate,
     RequirementCreate,
     RequirementDetailResponse,
     RequirementResponse,
     RequirementUpdate,
 )
-from app.modules.products.service import IterationService, ProductService, RequirementService
+from app.modules.products.service import (
+    IterationService,
+    ProductService,
+    RequirementFolderService,
+    RequirementService,
+)
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -85,6 +94,98 @@ async def update_iteration(
 async def delete_iteration(iteration_id: uuid.UUID, session: AsyncSessionDep) -> None:
     service = IterationService(session)
     await service.soft_delete_iteration(iteration_id)
+
+
+# ── Requirement Folder endpoints ───────────────────────────────────
+
+
+@router.get("/{product_id}/iterations/{iteration_id}/folders/tree")
+async def get_folder_tree(iteration_id: uuid.UUID, session: AsyncSessionDep) -> list[dict]:
+    """返回迭代下的文件夹树（含 requirement_count）。"""
+    svc = RequirementFolderService(session)
+    return await svc.get_tree(iteration_id)
+
+
+@router.post(
+    "/{product_id}/iterations/{iteration_id}/folders",
+    response_model=ReqFolderResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_folder(
+    iteration_id: uuid.UUID, data: ReqFolderCreate, session: AsyncSessionDep
+) -> ReqFolderResponse:
+    data.iteration_id = iteration_id
+    svc = RequirementFolderService(session)
+    folder = await svc.create_folder(data)
+    count = await svc.get_requirement_count(folder.id)
+    return ReqFolderResponse(
+        id=folder.id,
+        iteration_id=folder.iteration_id,
+        parent_id=folder.parent_id,
+        name=folder.name,
+        sort_order=folder.sort_order,
+        level=folder.level,
+        is_system=folder.is_system,
+        requirement_count=count,
+        created_at=folder.created_at,
+        updated_at=folder.updated_at,
+    )
+
+
+@router.patch("/folders/{folder_id}", response_model=ReqFolderResponse)
+async def update_folder(
+    folder_id: uuid.UUID, data: ReqFolderUpdate, session: AsyncSessionDep
+) -> ReqFolderResponse:
+    svc = RequirementFolderService(session)
+    folder = await svc.update_folder(folder_id, data)
+    count = await svc.get_requirement_count(folder.id)
+    return ReqFolderResponse(
+        id=folder.id,
+        iteration_id=folder.iteration_id,
+        parent_id=folder.parent_id,
+        name=folder.name,
+        sort_order=folder.sort_order,
+        level=folder.level,
+        is_system=folder.is_system,
+        requirement_count=count,
+        created_at=folder.created_at,
+        updated_at=folder.updated_at,
+    )
+
+
+@router.delete("/folders/{folder_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_folder(folder_id: uuid.UUID, session: AsyncSessionDep) -> None:
+    svc = RequirementFolderService(session)
+    await svc.delete_folder(folder_id)
+
+
+@router.patch("/folders/reorder", response_model=list[ReqFolderResponse])
+async def reorder_folders(
+    data: FolderReorderRequest, session: AsyncSessionDep
+) -> list[ReqFolderResponse]:
+    """批量更新文件夹排序和父级关系（拖拽排序用）。"""
+    svc = RequirementFolderService(session)
+    items = [item.model_dump() for item in data.items]
+    folders = await svc.reorder_folders(items)
+
+    result = []
+    for folder in folders:
+        count = await svc.get_requirement_count(folder.id)
+        result.append(
+            ReqFolderResponse(
+                id=folder.id,
+                iteration_id=folder.iteration_id,
+                parent_id=folder.parent_id,
+                name=folder.name,
+                sort_order=folder.sort_order,
+                level=folder.level,
+                is_system=folder.is_system,
+                requirement_count=count,
+                created_at=folder.created_at,
+                updated_at=folder.updated_at,
+            )
+        )
+    return result
 
 
 # ── Requirement endpoints ──────────────────────────────────────────

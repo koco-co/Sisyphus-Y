@@ -341,3 +341,28 @@ class RequirementFolderService:
 
         folder.deleted_at = datetime.now(UTC)
         await self.session.commit()
+
+    async def reorder_folders(self, items: list[dict]) -> list[RequirementFolder]:
+        """批量更新文件夹排序和父级关系。"""
+        updated_folders = []
+        for item in items:
+            folder = await self.session.get(RequirementFolder, item["id"])
+            if folder and folder.deleted_at is None:
+                folder.sort_order = item["sort_order"]
+                if "parent_id" in item:
+                    # 更新父级和层级
+                    new_parent_id = item["parent_id"]
+                    if new_parent_id:
+                        parent = await self.session.get(RequirementFolder, new_parent_id)
+                        if parent and parent.deleted_at is None:
+                            folder.parent_id = new_parent_id
+                            folder.level = min(parent.level + 1, 5)  # 最大 5 层
+                    else:
+                        folder.parent_id = None
+                        folder.level = 1
+                updated_folders.append(folder)
+
+        await self.session.commit()
+        for folder in updated_folders:
+            await self.session.refresh(folder)
+        return updated_folders
