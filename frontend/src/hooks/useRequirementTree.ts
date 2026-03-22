@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { type Iteration, type Product, productsApi, type Requirement } from '@/lib/api';
+import { type Folder, foldersApi, type Iteration, type Product, productsApi, type Requirement } from '@/lib/api';
 
 export function useRequirementTree() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -12,6 +12,9 @@ export function useRequirementTree() {
   const [requirementsLoading, setRequirementsLoading] = useState<Record<string, boolean>>({});
   const [selectedReqId, setSelectedReqId] = useState<string | null>(null);
   const [selectedReqTitle, setSelectedReqTitle] = useState('');
+  const [folders, setFolders] = useState<Record<string, Folder[]>>({});
+  const [foldersLoading, setFoldersLoading] = useState<Record<string, boolean>>({});
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setProductsLoading(true);
@@ -55,6 +58,24 @@ export function useRequirementTree() {
     [iterations],
   );
 
+  const loadFolders = useCallback(
+    async (productId: string, iterationId: string) => {
+      if (folders[iterationId]) return; // 已加载
+
+      setFoldersLoading((prev) => ({ ...prev, [iterationId]: true }));
+      try {
+        const data = await foldersApi.getTree(productId, iterationId);
+        setFolders((prev) => ({ ...prev, [iterationId]: Array.isArray(data) ? data : [] }));
+      } catch (error) {
+        console.error('Failed to load folders:', error);
+        setFolders((prev) => ({ ...prev, [iterationId]: [] }));
+      } finally {
+        setFoldersLoading((prev) => ({ ...prev, [iterationId]: false }));
+      }
+    },
+    [folders],
+  );
+
   const toggleIteration = useCallback(
     async (productId: string, iterationId: string) => {
       setExpandedIterations((prev) => {
@@ -81,11 +102,65 @@ export function useRequirementTree() {
                 })),
               );
           }
+          // 加载文件夹
+          loadFolders(productId, iterationId);
         }
         return next;
       });
     },
-    [requirements],
+    [requirements, loadFolders],
+  );
+
+  const toggleFolder = useCallback((folderId: string) => {
+    setExpandedFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(folderId)) {
+        next.delete(folderId);
+      } else {
+        next.add(folderId);
+      }
+      return next;
+    });
+  }, []);
+
+  const createFolder = useCallback(
+    async (productId: string, iterationId: string, data: { name: string; parentId: string | null }) => {
+      const folder = await foldersApi.create(productId, iterationId, {
+        iteration_id: iterationId,
+        name: data.name,
+        parent_id: data.parentId,
+      });
+      // 刷新文件夹列表
+      const updated = await foldersApi.getTree(productId, iterationId);
+      setFolders((prev) => ({ ...prev, [iterationId]: updated }));
+      return folder;
+    },
+    [],
+  );
+
+  const updateFolder = useCallback(
+    async (productId: string, iterationId: string, folderId: string, data: { name?: string }) => {
+      const folder = await foldersApi.update(folderId, data);
+      // 刷新文件夹列表
+      const updated = await foldersApi.getTree(productId, iterationId);
+      setFolders((prev) => ({ ...prev, [iterationId]: updated }));
+      return folder;
+    },
+    [],
+  );
+
+  const deleteFolder = useCallback(
+    async (productId: string, iterationId: string, folderId: string) => {
+      await foldersApi.delete(folderId);
+      // 刷新文件夹列表和需求列表（需求可能被移至未分类）
+      const [updatedFolders, updatedReqs] = await Promise.all([
+        foldersApi.getTree(productId, iterationId),
+        productsApi.listRequirements(productId, iterationId),
+      ]);
+      setFolders((prev) => ({ ...prev, [iterationId]: updatedFolders }));
+      setRequirements((prev) => ({ ...prev, [iterationId]: updatedReqs }));
+    },
+    [],
   );
 
   const selectRequirement = useCallback((req: Requirement) => {
@@ -104,8 +179,16 @@ export function useRequirementTree() {
     requirementsLoading,
     selectedReqId,
     selectedReqTitle,
+    folders,
+    foldersLoading,
+    expandedFolders,
     toggleProduct,
     toggleIteration,
+    toggleFolder,
+    loadFolders,
+    createFolder,
+    updateFolder,
+    deleteFolder,
     selectRequirement,
   };
 }
