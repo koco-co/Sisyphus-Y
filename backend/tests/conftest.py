@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.database import get_async_session
@@ -21,7 +22,19 @@ async_session_test = async_sessionmaker(engine_test, class_=AsyncSession, expire
 
 @pytest.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
-    """提供独立的异步数据库会话（每次测试自动回滚）。"""
+    """提供独立的异步数据库会话（每次测试后回滚，自动创建表）。"""
+    # 只导入需要的模型来避免 JSONB 问题
+    from app.modules.products.models import Product, Iteration, RequirementFolder
+
+    # 创建干净的 metadata 只包含测试需要的表
+    metadata = MetaData()
+    for model_cls in [Product, Iteration, RequirementFolder]:
+        table = model_cls.__table__
+        metadata._add_table(table.name, table.schema, table)  # type: ignore[reportAttributeAccessIssue]
+
+    async with engine_test.begin() as conn:
+        await conn.run_sync(metadata.create_all)
+
     async with async_session_test() as session:
         yield session
         await session.rollback()
