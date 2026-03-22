@@ -2,13 +2,14 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.products.models import (
     Iteration,
     Product,
     Requirement,
+    RequirementFolder,
     RequirementVersion,
 )
 from app.modules.products.schemas import (
@@ -16,6 +17,8 @@ from app.modules.products.schemas import (
     IterationUpdate,
     ProductCreate,
     ProductUpdate,
+    ReqFolderCreate,
+    ReqFolderUpdate,
     RequirementCreate,
     RequirementUpdate,
 )
@@ -64,6 +67,19 @@ class IterationService:
     async def create_iteration(self, data: IterationCreate) -> Iteration:
         iteration = Iteration(**data.model_dump())
         self.session.add(iteration)
+        await self.session.flush()  # 获取 iteration.id
+
+        # 自动创建「未分类」系统文件夹
+        uncategorized = RequirementFolder(
+            iteration_id=iteration.id,
+            parent_id=None,
+            name="未分类",
+            sort_order=0,
+            level=1,
+            is_system=True,
+        )
+        self.session.add(uncategorized)
+
         await self.session.commit()
         await self.session.refresh(iteration)
         return iteration
@@ -218,4 +234,110 @@ class RequirementService:
         if not requirement or requirement.deleted_at is not None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Requirement not found")
         requirement.deleted_at = datetime.now(UTC)
+        await self.session.commit()
+
+
+class RequirementFolderService:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
+    async def get_requirement_count(self, folder_id: UUID) -> int:
+        result = await self.session.execute(
+            select(func.count())
+            .select_from(Requirement)
+            .where(
+                Requirement.folder_id == folder_id,
+                Requirement.deleted_at.is_(None),
+            )
+        )
+        return result.scalar_one()
+
+    async def list_by_iteration(self, iteration_id: UUID) -> list[RequirementFolder]:
+        result = await self.session.execute(
+            select(RequirementFolder)
+            .where(
+                RequirementFolder.iteration_id == iteration_id,
+                RequirementFolder.deleted_at.is_(None),
+            )
+            .order_by(RequirementFolder.sort_order, RequirementFolder.name)
+        )
+        return list(result.scalars().all())
+
+    async def get_tree(self, iteration_id: UUID) -> list[dict]:
+        """Return folders as a nested tree with requirement_count."""
+        folders = await self.list_by_iteration(iteration_id)
+
+        folder_map: dict[str, dict] = {}
+        for f in folders:
+            count = await self.get_requirement_count(f.id)
+            folder_map[str(f.id)] = {
+                "id": str(f.id),
+                "name": f.name,
+                "parent_id": str(f.parent_id) if f.parent_id else None,
+                "sort_order": f.sort_order,
+                "level": f.level,
+                "is_system": f.is_system,
+                "requirement_count": count,
+                "children": [],
+            }
+
+        roots: list[dict] = []
+        for node in folder_map.values():
+            if node["parent_id"] and node["parent_id"] in folder_map:
+                folder_map[node["parent_id"]]["children"].append(node)
+            else:
+                roots.append(node)
+
+        return roots
+
+    async def create_folder(self, data: ReqFolderCreate) -> RequirementFolder:
+        level = 1
+        if data.parent_id:
+            parent = await self.session.get(RequirementFolder, data.parent_id)
+            if parent and parent.deleted_at is None:
+                level = parent.level + 1
+
+        folder = RequirementFolder(
+            iteration_id=data.iteration_id,
+            parent_id=data.parent_id,
+            name=data.name,
+            sort_order=data.sort_order,
+            level=level,
+        )
+        self.session.add(folder)
+        await self.session.commit()
+        await self.session.refresh(folder)
+        return folder
+
+    async def update_folder(self, folder_id: UUID, data: ReqFolderUpdate) -> RequirementFolder:
+        folder = await self.session.get(RequirementFolder, folder_id)
+        if not folder or folder.deleted_at is not None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found")
+        for key, value in data.model_dump(exclude_unset=True).items():
+            setattr(folder, key, value)
+        await self.session.commit()
+        await self.session.refresh(folder)
+        return folder
+
+    async def delete_folder(self, folder_id: UUID) -> None:
+        """软删除文件夹，将文件夹内需求的 folder_id 重置为 None（移到迭代根目录）。"""
+        folder = await self.session.get(RequirementFolder, folder_id)
+        if not folder or folder.deleted_at is not None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found")
+
+        # 系统文件夹不可删除
+        if folder.is_system:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="系统文件夹不可删除")
+
+        # 将该文件夹内的需求移至根层（folder_id = None）
+        reqs = await self.session.execute(
+            select(Requirement).where(
+                Requirement.folder_id == folder_id,
+                Requirement.deleted_at.is_(None),
+            )
+        )
+        for req in reqs.scalars().all():
+            req.folder_id = None
+
+        folder.deleted_at = datetime.now(UTC)
         await self.session.commit()
