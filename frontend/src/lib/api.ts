@@ -119,6 +119,34 @@ export interface RequirementVersion {
   created_at: string;
 }
 
+// Folder types
+export interface Folder {
+  id: string;
+  iteration_id: string;
+  parent_id: string | null;
+  name: string;
+  sort_order: number;
+  level: number;
+  is_system: boolean;
+  requirement_count: number;
+  children: Folder[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FolderCreatePayload {
+  iteration_id: string;
+  parent_id?: string | null;
+  name: string;
+  sort_order?: number;
+}
+
+export interface FolderUpdatePayload {
+  name?: string;
+  parent_id?: string | null;
+  sort_order?: number;
+}
+
 // Diagnosis
 export interface DiagnosisReport {
   id: string;
@@ -364,6 +392,16 @@ export const productsApi = {
   listIterations: (productId: string) => api.get<Iteration[]>(`/products/${productId}/iterations`),
   listRequirements: (productId: string, iterationId: string) =>
     api.get<Requirement[]>(`/products/${productId}/iterations/${iterationId}/requirements`),
+};
+
+export const foldersApi = {
+  getTree: (productId: string, iterationId: string) =>
+    api.get<Folder[]>(`/products/${productId}/iterations/${iterationId}/folders/tree`),
+  create: (productId: string, iterationId: string, data: FolderCreatePayload) =>
+    api.post<Folder>(`/products/${productId}/iterations/${iterationId}/folders`, data),
+  update: (folderId: string, data: FolderUpdatePayload) =>
+    api.patch<Folder>(`/products/folders/${folderId}`, data),
+  delete: (folderId: string) => api.delete<void>(`/products/folders/${folderId}`),
 };
 
 export const requirementsApi = {
