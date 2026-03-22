@@ -24,7 +24,7 @@ async_session_test = async_sessionmaker(engine_test, class_=AsyncSession, expire
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """提供独立的异步数据库会话（每次测试后回滚，自动创建表）。"""
     # 只导入需要的模型来避免 JSONB 问题
-    from app.modules.products.models import Product, Iteration, RequirementFolder
+    from app.modules.products.models import Product, RequirementFolder, Iteration
 
     # 创建干净的 metadata 只包含测试需要的表
     metadata = MetaData()
