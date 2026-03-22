@@ -163,6 +163,20 @@ export function useRequirementTree() {
     [],
   );
 
+  const reorderFolders = useCallback(
+    async (
+      productId: string,
+      iterationId: string,
+      items: { id: string; sort_order: number; parent_id: string | null }[],
+    ) => {
+      await foldersApi.reorder({ items });
+      // 刷新文件夹列表
+      const updated = await foldersApi.getTree(productId, iterationId);
+      setFolders((prev) => ({ ...prev, [iterationId]: updated }));
+    },
+    [],
+  );
+
   const selectRequirement = useCallback((req: Requirement) => {
     setSelectedReqId(req.id);
     setSelectedReqTitle(req.title);
@@ -189,6 +203,7 @@ export function useRequirementTree() {
     createFolder,
     updateFolder,
     deleteFolder,
+    reorderFolders,
     selectRequirement,
   };
 }

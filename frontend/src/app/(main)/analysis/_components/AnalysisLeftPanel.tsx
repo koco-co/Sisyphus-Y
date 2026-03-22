@@ -1,13 +1,16 @@
 'use client';
 
+import { DndContext, closestCenter, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ChevronDown, ChevronRight, FileText, Filter, FolderOpen, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FolderDialog } from '@/components/ui/FolderDialog';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TableSkeleton } from '@/components/ui/TableSkeleton';
-import { FolderItem } from '@/components/folders/FolderItem';
+import { DraggableFolderItem } from '@/components/folders/DraggableFolderItem';
 import { useRequirementTree } from '@/hooks/useRequirementTree';
+import { useFolderDnd, type DragItemData } from '@/hooks/useFolderDnd';
 import type { Folder, Requirement } from '@/lib/api';
 
 const PRIORITY_OPTIONS = ['P0', 'P1', 'P2', 'P3'] as const;
@@ -94,7 +97,29 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
     createFolder,
     updateFolder,
     deleteFolder,
+    reorderFolders,
   } = useRequirementTree();
+
+  // 当前选中迭代的文件夹（用于拖拽）
+  const [currentIterationId, setCurrentIterationId] = useState<string | null>(null);
+  const currentFolders = currentIterationId ? (folders[currentIterationId] ?? []) : [];
+
+  const folderDnd = useFolderDnd({
+    folders: currentFolders,
+    onReorder: async (items) => {
+      // 找到对应的 productId
+      let productId = '';
+      for (const [pid, iters] of Object.entries(iterations)) {
+        if (iters.some((iter) => iter.id === currentIterationId)) {
+          productId = pid;
+          break;
+        }
+      }
+      if (productId && currentIterationId) {
+        await reorderFolders(productId, currentIterationId, items);
+      }
+    },
+  });
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -261,7 +286,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
       const folderReqs = iterReqs.filter((r) => (r as Requirement & { folder_id?: string }).folder_id === folder.id);
 
       return (
-        <FolderItem
+        <DraggableFolderItem
           key={folder.id}
           folder={folder}
           level={level}
@@ -275,7 +300,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
           {folder.children.map((child) => renderFolder(child, level + 1, iterationId, productId))}
           {/* Render requirements in this folder */}
           {isExpanded && folderReqs.filter(matchesSearch).map((req) => renderRequirementItem(req))}
-        </FolderItem>
+        </DraggableFolderItem>
       );
     },
     [expandedFolders, requirements, toggleFolder, handleCreateFolder, handleRenameFolder, handleDeleteFolder, matchesSearch, renderRequirementItem],
@@ -452,11 +477,27 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                                     <TableSkeleton rows={4} cols={2} />
                                   </div>
                                 ) : (
-                                  <>
-                                    {/* Render folder tree */}
-                                    {iterFolders.map((folder) =>
-                                      renderFolder(folder, 0, iteration.id, product.id),
-                                    )}
+                                  <DndContext
+                                    key={iteration.id}
+                                    sensors={folderDnd.sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragStart={(event) => {
+                                      setCurrentIterationId(iteration.id);
+                                      folderDnd.handleDragStart(event);
+                                    }}
+                                    onDragOver={folderDnd.handleDragOver}
+                                    onDragEnd={(event) => folderDnd.handleDragEnd(event)}
+                                    onDragCancel={folderDnd.handleDragCancel}
+                                  >
+                                    <SortableContext
+                                      items={iterFolders.map((f) => f.id)}
+                                      strategy={verticalListSortingStrategy}
+                                    >
+                                      {/* Render folder tree */}
+                                      {iterFolders.map((folder) =>
+                                        renderFolder(folder, 0, iteration.id, product.id),
+                                      )}
+                                    </SortableContext>
                                     {/* Render unclassified requirements */}
                                     {filteredUnclassifiedReqs.length > 0 && (
                                       <div className="border-t border-sy-border/50 mt-1">
@@ -471,7 +512,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                                         <span className="text-[11px] text-sy-text-3">暂无需求</span>
                                       </div>
                                     )}
-                                  </>
+                                  </DndContext>
                                 )}
                               </div>
                             )}

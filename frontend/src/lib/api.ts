@@ -147,6 +147,16 @@ export interface FolderUpdatePayload {
   sort_order?: number;
 }
 
+export interface FolderReorderItem {
+  id: string;
+  sort_order: number;
+  parent_id?: string | null;
+}
+
+export interface FolderReorderPayload {
+  items: FolderReorderItem[];
+}
+
 // Diagnosis
 export interface DiagnosisReport {
   id: string;
@@ -402,6 +412,8 @@ export const foldersApi = {
   update: (folderId: string, data: FolderUpdatePayload) =>
     api.patch<Folder>(`/products/folders/${folderId}`, data),
   delete: (folderId: string) => api.delete<void>(`/products/folders/${folderId}`),
+  reorder: (data: FolderReorderPayload) =>
+    api.patch<Folder[]>(`/products/folders/reorder`, data),
 };
 
 export const requirementsApi = {
