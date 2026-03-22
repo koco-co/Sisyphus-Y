@@ -6,6 +6,7 @@ import {
   FileText,
   Filter,
   FolderOpen,
+  FolderX,
   MessageSquare,
   Plus,
   RefreshCw,
@@ -232,7 +233,6 @@ export function RequirementNav({
         setFolderDialog({ open: false, mode: 'create', parentId: null });
       } catch (error) {
         console.error('Failed to save folder:', error);
-        alert(mode === 'create' ? '创建文件夹失败' : '重命名文件夹失败');
       } finally {
         setLoading(false);
       }
@@ -278,6 +278,7 @@ export function RequirementNav({
         (r) => (r as Requirement & { folder_id?: string }).folder_id === folder.id,
       );
       const filteredFolderReqs = folderReqs.filter(matchesSearch);
+      const hasContent = folder.children.length > 0 || folderReqs.length > 0;
 
       return (
         <FolderItem
@@ -294,6 +295,16 @@ export function RequirementNav({
           {folder.children.map((child) => renderFolder(child, level + 1, iterationId, productId))}
           {/* Render requirements in this folder */}
           {isExpanded && filteredFolderReqs.map((req) => renderRequirementItem(req, iterationId))}
+          {/* Empty folder hint */}
+          {isExpanded && !hasContent && (
+            <div
+              className="flex items-center gap-1.5 py-2 text-text3"
+              style={{ paddingLeft: `${20 + (level + 1) * 12}px` }}
+            >
+              <FolderX className="w-3 h-3" />
+              <span className="text-[11px]">暂无内容</span>
+            </div>
+          )}
         </FolderItem>
       );
     },
@@ -449,9 +460,17 @@ export function RequirementNav({
                                 {iterFolders.map((folder) =>
                                   renderFolder(folder, 0, iter.id, product.id),
                                 )}
-                                {/* Render unclassified requirements */}
+                                {/* 未分类需求 */}
                                 {filteredUnclassifiedReqs.length > 0 && (
-                                  <div className="border-t border-sy-border/50 mt-1">
+                                  <div className={iterFolders.length > 0 ? 'border-t border-sy-border/50 mt-1' : ''}>
+                                    {iterFolders.length > 0 && (
+                                      <div className="flex items-center gap-1.5 pl-8 pr-2 py-1">
+                                        <FolderX className="w-3 h-3 text-text3" />
+                                        <span className="text-[10px] text-text3 uppercase tracking-wider">
+                                          未分类
+                                        </span>
+                                      </div>
+                                    )}
                                     {filteredUnclassifiedReqs.map((req) =>
                                       renderRequirementItem(req, iter.id),
                                     )}

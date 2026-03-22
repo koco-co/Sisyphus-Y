@@ -92,8 +92,19 @@ export interface Requirement {
   status?: string;
   priority?: string;
   content?: string;
+  folder_id?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface RequirementUpdatePayload {
+  title?: string;
+  content?: string;
+  priority?: string;
+  status?: string;
+  folder_id?: string | null;
+  frontmatter?: Record<string, unknown>;
+  content_ast?: Record<string, unknown>;
 }
 
 export interface RequirementDetail extends Requirement {
@@ -418,7 +429,7 @@ export const foldersApi = {
 
 export const requirementsApi = {
   get: (reqId: string) => api.get<RequirementDetail>(`/products/requirements/${reqId}`),
-  update: (reqId: string, data: Partial<RequirementDetail>) =>
+  update: (reqId: string, data: RequirementUpdatePayload) =>
     api.patch<RequirementDetail>(`/products/requirements/${reqId}`, data),
   delete: (reqId: string) => api.delete<void>(`/products/requirements/${reqId}`),
 };

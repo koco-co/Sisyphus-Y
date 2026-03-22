@@ -1,20 +1,69 @@
-import { useCallback, useEffect, useState } from 'react';
-import { type Folder, foldersApi, type Iteration, type Product, productsApi, type Requirement } from '@/lib/api';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  type Folder,
+  foldersApi,
+  type Iteration,
+  type Product,
+  productsApi,
+  requirementsApi,
+  type Requirement,
+} from '@/lib/api';
+
+const STORAGE_KEY = 'req-tree-expanded';
+
+function readStorage(): { products: string[]; iterations: string[]; folders: string[] } {
+  if (typeof window === 'undefined') return { products: [], iterations: [], folders: [] };
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { products: [], iterations: [], folders: [] };
+    return JSON.parse(raw);
+  } catch {
+    return { products: [], iterations: [], folders: [] };
+  }
+}
+
+function writeStorage(products: Set<string>, iterations: Set<string>, folders: Set<string>) {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        products: [...products],
+        iterations: [...iterations],
+        folders: [...folders],
+      }),
+    );
+  } catch {
+    // ignore
+  }
+}
 
 export function useRequirementTree() {
+  const stored = useRef(readStorage());
+
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
-  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(
+    () => new Set(stored.current.products),
+  );
   const [iterations, setIterations] = useState<Record<string, Iteration[]>>({});
   const [iterationsLoading, setIterationsLoading] = useState<Record<string, boolean>>({});
-  const [expandedIterations, setExpandedIterations] = useState<Set<string>>(new Set());
+  const [expandedIterations, setExpandedIterations] = useState<Set<string>>(
+    () => new Set(stored.current.iterations),
+  );
   const [requirements, setRequirements] = useState<Record<string, Requirement[]>>({});
   const [requirementsLoading, setRequirementsLoading] = useState<Record<string, boolean>>({});
   const [selectedReqId, setSelectedReqId] = useState<string | null>(null);
   const [selectedReqTitle, setSelectedReqTitle] = useState('');
   const [folders, setFolders] = useState<Record<string, Folder[]>>({});
   const [foldersLoading, setFoldersLoading] = useState<Record<string, boolean>>({});
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
+    () => new Set(stored.current.folders),
+  );
+
+  // Persist expanded state to localStorage whenever it changes
+  useEffect(() => {
+    writeStorage(expandedProducts, expandedIterations, expandedFolders);
+  }, [expandedProducts, expandedIterations, expandedFolders]);
 
   useEffect(() => {
     setProductsLoading(true);
@@ -123,8 +172,19 @@ export function useRequirementTree() {
     });
   }, []);
 
+  const expandFolder = useCallback((folderId: string) => {
+    setExpandedFolders((prev) => {
+      if (prev.has(folderId)) return prev;
+      return new Set([...prev, folderId]);
+    });
+  }, []);
+
   const createFolder = useCallback(
-    async (productId: string, iterationId: string, data: { name: string; parentId: string | null }) => {
+    async (
+      productId: string,
+      iterationId: string,
+      data: { name: string; parentId: string | null },
+    ) => {
       const folder = await foldersApi.create(productId, iterationId, {
         iteration_id: iterationId,
         name: data.name,
@@ -133,13 +193,22 @@ export function useRequirementTree() {
       // 刷新文件夹列表
       const updated = await foldersApi.getTree(productId, iterationId);
       setFolders((prev) => ({ ...prev, [iterationId]: updated }));
+      // 自动展开父文件夹
+      if (data.parentId) {
+        setExpandedFolders((prev) => new Set([...prev, data.parentId as string]));
+      }
       return folder;
     },
     [],
   );
 
   const updateFolder = useCallback(
-    async (productId: string, iterationId: string, folderId: string, data: { name?: string }) => {
+    async (
+      productId: string,
+      iterationId: string,
+      folderId: string,
+      data: { name?: string },
+    ) => {
       const folder = await foldersApi.update(folderId, data);
       // 刷新文件夹列表
       const updated = await foldersApi.getTree(productId, iterationId);
@@ -177,6 +246,21 @@ export function useRequirementTree() {
     [],
   );
 
+  const moveRequirementToFolder = useCallback(
+    async (
+      reqId: string,
+      folderId: string | null,
+      productId: string,
+      iterationId: string,
+    ) => {
+      await requirementsApi.update(reqId, { folder_id: folderId });
+      // 刷新需求列表以反映新归属
+      const updated = await productsApi.listRequirements(productId, iterationId);
+      setRequirements((prev) => ({ ...prev, [iterationId]: updated }));
+    },
+    [],
+  );
+
   const selectRequirement = useCallback((req: Requirement) => {
     setSelectedReqId(req.id);
     setSelectedReqTitle(req.title);
@@ -199,11 +283,13 @@ export function useRequirementTree() {
     toggleProduct,
     toggleIteration,
     toggleFolder,
+    expandFolder,
     loadFolders,
     createFolder,
     updateFolder,
     deleteFolder,
     reorderFolders,
+    moveRequirementToFolder,
     selectRequirement,
   };
 }

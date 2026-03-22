@@ -2,11 +2,12 @@
 
 import { DndContext, closestCenter, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { ChevronDown, ChevronRight, FileText, Filter, FolderOpen, Plus, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, Filter, FolderOpen, FolderX, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FolderDialog } from '@/components/ui/FolderDialog';
+import { MoveFolderDialog } from '@/components/ui/MoveFolderDialog';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import { DraggableFolderItem } from '@/components/folders/DraggableFolderItem';
@@ -38,6 +39,15 @@ function getStatusLabel(status: string): string {
   return '未分析';
 }
 
+interface ReqContextMenu {
+  open: boolean;
+  x: number;
+  y: number;
+  req: Requirement | null;
+  iterationId: string;
+  productId: string;
+}
+
 export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: AnalysisLeftPanelProps) {
   const [panelWidth, setPanelWidth] = useState(260);
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,6 +74,22 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
     iterationId?: string;
     productId?: string;
   }>({ open: false, mode: 'create', parentId: null });
+
+  const [moveFolderDialog, setMoveFolderDialog] = useState<{
+    open: boolean;
+    req: Requirement | null;
+    iterationId: string;
+    productId: string;
+  }>({ open: false, req: null, iterationId: '', productId: '' });
+
+  const [reqContextMenu, setReqContextMenu] = useState<ReqContextMenu>({
+    open: false,
+    x: 0,
+    y: 0,
+    req: null,
+    iterationId: '',
+    productId: '',
+  });
 
   const [loading, setLoading] = useState(false);
 
@@ -106,6 +132,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
     updateFolder,
     deleteFolder,
     reorderFolders,
+    moveRequirementToFolder,
   } = useRequirementTree();
 
   // 当前选中迭代的文件夹（用于拖拽）
@@ -115,7 +142,6 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
   const folderDnd = useFolderDnd({
     folders: currentFolders,
     onReorder: async (items) => {
-      // 找到对应的 productId
       let productId = '';
       for (const [pid, iters] of Object.entries(iterations)) {
         if (iters.some((iter) => iter.id === currentIterationId)) {
@@ -158,6 +184,15 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, []);
+
+  // 关闭需求右键菜单
+  useEffect(() => {
+    if (!reqContextMenu.open) return;
+    const close = () => setReqContextMenu((prev) => ({ ...prev, open: false }));
+    window.addEventListener('click', close);
+    window.addEventListener('keydown', (e) => e.key === 'Escape' && close());
+    return () => window.removeEventListener('click', close);
+  }, [reqContextMenu.open]);
 
   const matchesSearch = useCallback(
     (req: Requirement) => {
@@ -240,7 +275,6 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
         setFolderDialog({ open: false, mode: 'create', parentId: null });
       } catch (error) {
         console.error('Failed to save folder:', error);
-        alert(mode === 'create' ? '创建文件夹失败' : '重命名文件夹失败');
       } finally {
         setLoading(false);
       }
@@ -248,21 +282,56 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
     [folderDialog, createFolder, updateFolder],
   );
 
+  const handleMoveToFolder = useCallback(
+    async (folderId: string | null) => {
+      const { req, iterationId, productId } = moveFolderDialog;
+      if (!req) return;
+      setMoveFolderDialog((prev) => ({ ...prev, open: false }));
+      try {
+        setLoading(true);
+        await moveRequirementToFolder(req.id, folderId, productId, iterationId);
+      } catch (error) {
+        console.error('Failed to move requirement:', error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [moveFolderDialog, moveRequirementToFolder],
+  );
+
   // Render requirement item
   const renderRequirementItem = useCallback(
-    (req: Requirement) => {
+    (req: Requirement, iterationId: string, productId: string) => {
       const isSelected = req.id === selectedReqId;
       const status =
         (req as Requirement & { analysis_status?: string }).analysis_status ?? 'pending';
       const highRiskCount =
         (req as Requirement & { unconfirmed_high_risk_count?: number })
           .unconfirmed_high_risk_count ?? 0;
+      const currentFolderId = (req as Requirement & { folder_id?: string }).folder_id;
 
       return (
         <button
           key={req.id}
           type="button"
           onClick={() => onSelectRequirement(req.id)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // 限制菜单不超出面板右边缘
+            const panelEl = e.currentTarget.closest('[data-panel]') as HTMLElement | null;
+            const panelRight = panelEl ? panelEl.getBoundingClientRect().right : window.innerWidth;
+            const menuWidth = 140;
+            const x = Math.min(e.clientX, panelRight - menuWidth - 4);
+            setReqContextMenu({
+              open: true,
+              x,
+              y: e.clientY,
+              req,
+              iterationId,
+              productId,
+            });
+          }}
           className={`w-full flex items-center gap-2 px-5 py-2 text-left transition-colors ${
             isSelected
               ? 'bg-sy-bg-2 border-r-2 border-sy-accent'
@@ -294,6 +363,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
       const isExpanded = expandedFolders.has(folder.id);
       const iterReqs = requirements[iterationId] ?? [];
       const folderReqs = iterReqs.filter((r) => (r as Requirement & { folder_id?: string }).folder_id === folder.id);
+      const hasContent = folder.children.length > 0 || folderReqs.length > 0;
 
       return (
         <DraggableFolderItem
@@ -309,7 +379,19 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
           {/* Recursively render child folders */}
           {folder.children.map((child) => renderFolder(child, level + 1, iterationId, productId))}
           {/* Render requirements in this folder */}
-          {isExpanded && folderReqs.filter(matchesSearch).map((req) => renderRequirementItem(req))}
+          {isExpanded && folderReqs.filter(matchesSearch).map((req) =>
+            renderRequirementItem(req, iterationId, productId),
+          )}
+          {/* Empty folder hint */}
+          {isExpanded && !hasContent && (
+            <div
+              className="flex items-center gap-1.5 py-2 text-sy-text-3"
+              style={{ paddingLeft: `${20 + (level + 1) * 12}px` }}
+            >
+              <FolderX className="w-3 h-3" />
+              <span className="text-[11px]">暂无内容，可将需求右键移入</span>
+            </div>
+          )}
         </DraggableFolderItem>
       );
     },
@@ -318,6 +400,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
 
   return (
     <div
+      data-panel
       className="relative flex-shrink-0 flex flex-col bg-sy-bg-1 border-r border-sy-border overflow-hidden"
       style={{ width: panelWidth, height: '100%' }}
     >
@@ -441,7 +524,6 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                         const filteredUnclassifiedReqs = unclassifiedReqs.filter(matchesSearch);
                         const filteredReqs = iterReqs.filter(matchesSearch);
 
-                        // If searching and no matches, hide this iteration
                         if (searchQuery && filteredReqs.length === 0) return null;
 
                         return (
@@ -503,20 +585,28 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                                       items={iterFolders.map((f) => f.id)}
                                       strategy={verticalListSortingStrategy}
                                     >
-                                      {/* Render folder tree */}
                                       {iterFolders.map((folder) =>
                                         renderFolder(folder, 0, iteration.id, product.id),
                                       )}
                                     </SortableContext>
-                                    {/* Render unclassified requirements */}
+
+                                    {/* 未分类需求区域 */}
                                     {filteredUnclassifiedReqs.length > 0 && (
-                                      <div className="border-t border-sy-border/50 mt-1">
+                                      <div className={iterFolders.length > 0 ? 'border-t border-sy-border/50 mt-1' : ''}>
+                                        {iterFolders.length > 0 && (
+                                          <div className="flex items-center gap-1.5 px-5 py-1">
+                                            <FolderX className="w-3 h-3 text-sy-text-3" />
+                                            <span className="text-[10px] text-sy-text-3 uppercase tracking-wider">
+                                              未分类
+                                            </span>
+                                          </div>
+                                        )}
                                         {filteredUnclassifiedReqs.map((req) =>
-                                          renderRequirementItem(req),
+                                          renderRequirementItem(req, iteration.id, product.id),
                                         )}
                                       </div>
                                     )}
-                                    {/* Show empty state if no folders and no unclassified requirements */}
+
                                     {iterFolders.length === 0 && filteredUnclassifiedReqs.length === 0 && (
                                       <div className="px-8 py-2">
                                         <span className="text-[11px] text-sy-text-3">暂无需求</span>
@@ -546,6 +636,37 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
         onMouseDown={handleMouseDown}
       />
 
+      {/* 需求右键菜单 */}
+      {reqContextMenu.open && (
+        <div
+          className="fixed z-50 bg-sy-bg-1 border border-sy-border rounded-lg shadow-xl py-1 w-36"
+          style={{ top: reqContextMenu.y, left: reqContextMenu.x }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-sy-text-2 hover:bg-sy-bg-2 transition-colors"
+            onClick={() => {
+              const iterationId = reqContextMenu.iterationId;
+              const productId = reqContextMenu.productId;
+              const currentFolderId = reqContextMenu.req
+                ? (reqContextMenu.req as Requirement & { folder_id?: string }).folder_id
+                : null;
+              setMoveFolderDialog({
+                open: true,
+                req: reqContextMenu.req,
+                iterationId,
+                productId,
+              });
+              setReqContextMenu((prev) => ({ ...prev, open: false }));
+            }}
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            移入文件夹
+          </button>
+        </div>
+      )}
+
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
         open={deleteConfirm.open}
@@ -565,6 +686,19 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
         initialValue={folderDialog.initialValue ?? ''}
         title={folderDialog.mode === 'create' ? '新建文件夹' : '重命名文件夹'}
         loading={loading}
+      />
+
+      {/* Move to Folder Dialog */}
+      <MoveFolderDialog
+        open={moveFolderDialog.open}
+        folders={moveFolderDialog.iterationId ? (folders[moveFolderDialog.iterationId] ?? []) : []}
+        currentFolderId={
+          moveFolderDialog.req
+            ? (moveFolderDialog.req as Requirement & { folder_id?: string }).folder_id
+            : null
+        }
+        onConfirm={handleMoveToFolder}
+        onCancel={() => setMoveFolderDialog((prev) => ({ ...prev, open: false }))}
       />
     </div>
   );
