@@ -15,9 +15,11 @@ import {
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
+import { FolderDialog } from '@/components/ui/FolderDialog';
+import { FolderItem } from '@/components/folders/FolderItem';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useRequirementTree } from '@/hooks/useRequirementTree';
-import type { Requirement } from '@/lib/api';
+import type { Folder, Requirement } from '@/lib/api';
 import type { GenSession } from '@/stores/workspace-store';
 
 interface RequirementNavProps {
@@ -68,10 +70,39 @@ export function RequirementNav({
   onSelectSession,
   onCreateSession,
 }: RequirementNavProps) {
-  const tree = useRequirementTree();
+  const {
+    products,
+    productsLoading,
+    expandedProducts,
+    iterations,
+    iterationsLoading,
+    expandedIterations,
+    requirements,
+    requirementsLoading,
+    folders,
+    foldersLoading,
+    expandedFolders,
+    toggleProduct,
+    toggleIteration,
+    toggleFolder,
+    createFolder,
+    updateFolder,
+    deleteFolder,
+  } = useRequirementTree();
   const [searchInput, setSearchInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [hideEmptyIterations, setHideEmptyIterations] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [folderDialog, setFolderDialog] = useState<{
+    open: boolean;
+    mode: 'create' | 'rename';
+    parentId: string | null;
+    folderId?: string;
+    initialValue?: string;
+    iterationId?: string;
+    productId?: string;
+  }>({ open: false, mode: 'create', parentId: null });
 
   // Debounce search input by 300ms
   const debouncedSearch = useDebounce(searchInput, 300);
@@ -91,12 +122,12 @@ export function RequirementNav({
 
   // Filter and compute visibility for products/iterations
   const filteredTree = useMemo(() => {
-    return tree.products
+    return products
       .map((product) => {
-        const productIterations = tree.iterations[product.id] ?? [];
+        const productIterations = iterations[product.id] ?? [];
         const filteredIterations = productIterations
           .map((iter) => {
-            const iterReqs = tree.requirements[iter.id] ?? [];
+            const iterReqs = requirements[iter.id] ?? [];
             const filteredReqs = iterReqs.filter(matchesSearch);
             const isEmpty = iterReqs.length === 0;
 
@@ -119,15 +150,154 @@ export function RequirementNav({
       })
       .filter((product) => product.hasVisibleIterations || !debouncedSearch);
   }, [
-    tree.products,
-    tree.iterations,
-    tree.requirements,
+    products,
+    iterations,
+    requirements,
     matchesSearch,
     hideEmptyIterations,
     debouncedSearch,
   ]);
 
   const hasActiveFilters = hideEmptyIterations || !!debouncedSearch;
+
+  // Folder operation handlers
+  const handleCreateFolder = useCallback(
+    (parentId: string | null, iterationId: string, productId: string) => {
+      setFolderDialog({
+        open: true,
+        mode: 'create',
+        parentId,
+        iterationId,
+        productId,
+      });
+    },
+    [],
+  );
+
+  const handleRenameFolder = useCallback(
+    (folderId: string, currentName: string, iterationId: string, productId: string) => {
+      setFolderDialog({
+        open: true,
+        mode: 'rename',
+        folderId,
+        initialValue: currentName,
+        iterationId,
+        productId,
+        parentId: null,
+      });
+    },
+    [],
+  );
+
+  const handleDeleteFolder = useCallback(
+    async (folderId: string, iterationId: string, productId: string) => {
+      if (!window.confirm('确定要删除此文件夹吗？文件夹内的需求将被移至「未分类」。')) {
+        return;
+      }
+      try {
+        setLoading(true);
+        await deleteFolder(productId, iterationId, folderId);
+      } catch (error) {
+        console.error('Failed to delete folder:', error);
+        alert('删除文件夹失败');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [deleteFolder],
+  );
+
+  const handleFolderSubmit = useCallback(
+    async (name: string) => {
+      const { mode, parentId, folderId, iterationId, productId } = folderDialog;
+      if (!iterationId || !productId) return;
+
+      try {
+        setLoading(true);
+        if (mode === 'create') {
+          await createFolder(productId, iterationId, { name, parentId });
+        } else if (mode === 'rename' && folderId) {
+          await updateFolder(productId, iterationId, folderId, { name });
+        }
+        setFolderDialog({ open: false, mode: 'create', parentId: null });
+      } catch (error) {
+        console.error('Failed to save folder:', error);
+        alert(mode === 'create' ? '创建文件夹失败' : '重命名文件夹失败');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [folderDialog, createFolder, updateFolder],
+  );
+
+  // Render requirement item
+  const renderRequirementItem = useCallback(
+    (req: Requirement, iterationId: string) => {
+      const isSelected = req.id === selectedReqId;
+
+      return (
+        <button
+          type="button"
+          key={req.id}
+          onClick={() => onSelectRequirement(req)}
+          className={`w-full flex items-center gap-1.5 pl-8 pr-2.5 py-1.5 rounded-md text-[12px] transition-colors ${
+            isSelected
+              ? 'bg-sy-accent/10 text-sy-accent'
+              : 'text-text2 hover:bg-bg2'
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(req.status ?? '')}`}
+          />
+          <FileText className="w-3 h-3 shrink-0" />
+          <span className="truncate">
+            {highlightMatch(req.title || (req.req_id ?? ''), debouncedSearch)}
+          </span>
+        </button>
+      );
+    },
+    [selectedReqId, onSelectRequirement, debouncedSearch],
+  );
+
+  // Render folder tree recursively
+  const renderFolder = useCallback(
+    (folder: Folder, level: number, iterationId: string, productId: string): React.ReactNode => {
+      const isExpanded = expandedFolders.has(folder.id);
+      const iterReqs = requirements[iterationId] ?? [];
+      const folderReqs = iterReqs.filter(
+        (r) => (r as Requirement & { folder_id?: string }).folder_id === folder.id,
+      );
+      const filteredFolderReqs = folderReqs.filter(matchesSearch);
+
+      return (
+        <FolderItem
+          key={folder.id}
+          folder={folder}
+          level={level}
+          expanded={isExpanded}
+          onToggle={() => toggleFolder(folder.id)}
+          onCreateChild={(parentId) => handleCreateFolder(parentId, iterationId, productId)}
+          onRename={(fid, name) => handleRenameFolder(fid, name, iterationId, productId)}
+          onDelete={(fid) => handleDeleteFolder(fid, iterationId, productId)}
+        >
+          {/* Recursively render child folders */}
+          {folder.children.map((child) => renderFolder(child, level + 1, iterationId, productId))}
+          {/* Render requirements in this folder */}
+          {isExpanded && filteredFolderReqs.map((req) => renderRequirementItem(req, iterationId))}
+        </FolderItem>
+      );
+    },
+    [
+      expandedFolders,
+      requirements,
+      toggleFolder,
+      handleCreateFolder,
+      handleRenameFolder,
+      handleDeleteFolder,
+      matchesSearch,
+      renderRequirementItem,
+    ],
+  );
 
   return (
     <div className="flex flex-col h-full">
@@ -185,7 +355,7 @@ export function RequirementNav({
 
       {/* Requirement tree */}
       <div className="flex-1 overflow-y-auto p-2">
-        {tree.productsLoading ? (
+        {productsLoading ? (
           <div className="text-center py-4 text-[12px] text-text3">加载中...</div>
         ) : filteredTree.length === 0 ? (
           <div className="text-center py-8 text-[12px] text-text3">
@@ -196,10 +366,10 @@ export function RequirementNav({
             <div key={product.id}>
               <button
                 type="button"
-                onClick={() => tree.toggleProduct(product.id)}
+                onClick={() => toggleProduct(product.id)}
                 className="w-full flex items-center gap-1.5 px-2.5 py-2 rounded-md text-[13px] text-text hover:bg-bg2 transition-colors"
               >
-                {tree.expandedProducts.has(product.id) ? (
+                {expandedProducts.has(product.id) ? (
                   <ChevronDown className="w-3.5 h-3.5 text-text3 shrink-0" />
                 ) : (
                   <ChevronRight className="w-3.5 h-3.5 text-text3 shrink-0" />
@@ -208,62 +378,86 @@ export function RequirementNav({
                 <span className="truncate">{product.name}</span>
               </button>
 
-              {tree.expandedProducts.has(product.id) &&
-                (tree.iterationsLoading[product.id] ? (
+              {expandedProducts.has(product.id) &&
+                (iterationsLoading[product.id] ? (
                   <div className="pl-8 py-1 text-[11px] text-text3">迭代加载中...</div>
                 ) : (
-                  product.iterations.map((iter) => (
-                    <div key={iter.id} className="pl-4">
-                      <button
-                        type="button"
-                        onClick={() => tree.toggleIteration(product.id, iter.id)}
-                        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[12px] text-text2 hover:bg-bg2 transition-colors"
-                      >
-                        {tree.expandedIterations.has(iter.id) ? (
-                          <ChevronDown className="w-3 h-3 text-text3 shrink-0" />
-                        ) : (
-                          <ChevronRight className="w-3 h-3 text-text3 shrink-0" />
-                        )}
-                        <RefreshCw className="w-3 h-3 shrink-0" />
-                        <span className="truncate flex-1 text-left">
-                          {highlightMatch(iter.name, debouncedSearch)}
-                        </span>
-                        {!iter.isEmpty && (
-                          <span className="text-[10px] text-text3 font-mono flex-shrink-0">
-                            {iter.requirements.length}
-                          </span>
-                        )}
-                      </button>
+                  product.iterations.map((iter) => {
+                    const iterFolders = folders[iter.id] ?? [];
+                    const iterReqs = requirements[iter.id] ?? [];
+                    const isFolderLoading = foldersLoading[iter.id];
+                    const isReqLoading = requirementsLoading[iter.id];
+                    const unclassifiedReqs = iterReqs.filter(
+                      (r) => !(r as Requirement & { folder_id?: string }).folder_id,
+                    );
+                    const filteredUnclassifiedReqs = unclassifiedReqs.filter(matchesSearch);
 
-                      {tree.expandedIterations.has(iter.id) &&
-                        (tree.requirementsLoading[iter.id] ? (
-                          <div className="pl-8 py-1 text-[11px] text-text3">需求加载中...</div>
-                        ) : iter.filteredRequirements.length === 0 ? (
-                          <div className="pl-8 py-1 text-[11px] text-text3">当前迭代暂无需求</div>
-                        ) : (
-                          iter.filteredRequirements.map((req) => (
+                    return (
+                      <div key={iter.id} className="pl-4">
+                        {/* Iteration header with create folder button */}
+                        <div className="w-full flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[12px] text-text2 hover:bg-bg2 transition-colors group">
+                          <button
+                            type="button"
+                            onClick={() => toggleIteration(product.id, iter.id)}
+                            className="flex items-center gap-1.5 flex-1 min-w-0"
+                          >
+                            {expandedIterations.has(iter.id) ? (
+                              <ChevronDown className="w-3 h-3 text-text3 shrink-0" />
+                            ) : (
+                              <ChevronRight className="w-3 h-3 text-text3 shrink-0" />
+                            )}
+                            <RefreshCw className="w-3 h-3 shrink-0" />
+                            <span className="truncate flex-1 text-left">
+                              {highlightMatch(iter.name, debouncedSearch)}
+                            </span>
+                            {!iter.isEmpty && (
+                              <span className="text-[10px] text-text3 font-mono flex-shrink-0">
+                                {iter.requirements.length}
+                              </span>
+                            )}
+                          </button>
+                          {expandedIterations.has(iter.id) && (
                             <button
                               type="button"
-                              key={req.id}
-                              onClick={() => onSelectRequirement(req)}
-                              className={`w-full flex items-center gap-1.5 pl-8 pr-2.5 py-1.5 rounded-md text-[12px] transition-colors ${
-                                selectedReqId === req.id
-                                  ? 'bg-sy-accent/10 text-sy-accent'
-                                  : 'text-text2 hover:bg-bg2'
-                              }`}
+                              onClick={() => handleCreateFolder(null, iter.id, product.id)}
+                              className="p-0.5 text-text3 hover:text-sy-accent opacity-0 group-hover:opacity-100 transition-all"
+                              title="新建文件夹"
                             >
-                              <span
-                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(req.status ?? '')}`}
-                              />
-                              <FileText className="w-3 h-3 shrink-0" />
-                              <span className="truncate">
-                                {highlightMatch(req.title || (req.req_id ?? ''), debouncedSearch)}
-                              </span>
+                              <Plus className="w-3 h-3" />
                             </button>
-                          ))
-                        ))}
-                    </div>
-                  ))
+                          )}
+                        </div>
+
+                        {/* Folders and Requirements */}
+                        {expandedIterations.has(iter.id) && (
+                          <div>
+                            {(isReqLoading || isFolderLoading) ? (
+                              <div className="pl-4 py-1 text-[11px] text-text3">加载中...</div>
+                            ) : (
+                              <>
+                                {/* Render folder tree */}
+                                {iterFolders.map((folder) =>
+                                  renderFolder(folder, 0, iter.id, product.id),
+                                )}
+                                {/* Render unclassified requirements */}
+                                {filteredUnclassifiedReqs.length > 0 && (
+                                  <div className="border-t border-sy-border/50 mt-1">
+                                    {filteredUnclassifiedReqs.map((req) =>
+                                      renderRequirementItem(req, iter.id),
+                                    )}
+                                  </div>
+                                )}
+                                {/* Show empty state if no folders and no unclassified requirements */}
+                                {iterFolders.length === 0 && filteredUnclassifiedReqs.length === 0 && (
+                                  <div className="pl-8 py-1 text-[11px] text-text3">当前迭代暂无需求</div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                 ))}
             </div>
           ))
@@ -319,6 +513,16 @@ export function RequirementNav({
           )}
         </div>
       )}
+
+      {/* Folder Dialog */}
+      <FolderDialog
+        open={folderDialog.open}
+        onClose={() => setFolderDialog({ open: false, mode: 'create', parentId: null })}
+        onSubmit={handleFolderSubmit}
+        initialValue={folderDialog.initialValue ?? ''}
+        title={folderDialog.mode === 'create' ? '新建文件夹' : '重命名文件夹'}
+        loading={loading}
+      />
     </div>
   );
 }
