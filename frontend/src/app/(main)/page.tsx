@@ -296,7 +296,7 @@ export default function DashboardPage() {
               </div>
               <div className="card" style={{ borderLeft: '3px solid var(--blue)' }}>
                 <div className="stat-val">{loading ? '—' : formatCount(stats.testcase_count)}</div>
-                <div className="stat-label">用例总数</div>
+                <div className="stat-label">本迭代用例数</div>
                 <div className="stat-delta" style={{ color: getDeltaColor(stats.testcase_delta) }}>
                   {stats.previous_iteration_name
                     ? getDeltaText(stats.testcase_delta)

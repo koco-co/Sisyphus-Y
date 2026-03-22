@@ -31,7 +31,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     ...options,
   });
   if (!res.ok) {
-    const detail = await res.text().catch(() => res.statusText);
+    const text = await res.text().catch(() => res.statusText);
+    let detail = text;
+    try {
+      const parsed = JSON.parse(text);
+      if (typeof parsed.detail === 'string') detail = parsed.detail;
+      else if (typeof parsed.message === 'string') detail = parsed.message;
+    } catch {
+      // not JSON, use raw text
+    }
     throw new ApiError(res.status, detail);
   }
   if (res.status === 204) return undefined as unknown as T;

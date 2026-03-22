@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuthSession } from '@/hooks/useAuthSession';
-import { authApi, getApiErrorMessage } from '@/lib/api';
+import { ApiError, authApi, getApiErrorMessage } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,13 +16,23 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      setError('请输入用户名和密码');
-      return;
+    setUsernameError('');
+    setPasswordError('');
+    let hasFieldError = false;
+    if (!username.trim()) {
+      setUsernameError('请输入用户名');
+      hasFieldError = true;
     }
+    if (!password.trim()) {
+      setPasswordError('请输入密码');
+      hasFieldError = true;
+    }
+    if (hasFieldError) return;
     setError('');
     setLoading(true);
     try {
@@ -40,7 +50,11 @@ export default function LoginPage() {
       );
       router.push('/');
     } catch (error) {
-      setError(getApiErrorMessage(error, '登录失败，请检查用户名和密码'));
+      if (error instanceof ApiError && error.status === 401) {
+        setError('用户名或密码错误，请重试');
+      } else {
+        setError(getApiErrorMessage(error, '登录失败，请稍后重试'));
+      }
     } finally {
       setLoading(false);
     }
@@ -51,7 +65,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-2xl font-bold text-sy-accent tracking-wide">Sisyphus</h1>
+          <h1 className="font-display text-2xl font-bold text-sy-accent tracking-wide">Sisyphus-Y</h1>
           <p className="text-text3 text-[13px] mt-2">AI 驱动的智能测试用例平台</p>
         </div>
 
@@ -77,11 +91,14 @@ export default function LoginPage() {
                 id="login-username"
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => { setUsername(e.target.value); setUsernameError(''); }}
                 placeholder="请输入用户名"
-                className="input w-full"
+                className={`input w-full${usernameError ? ' border-sy-danger/60' : ''}`}
                 autoComplete="username"
               />
+              {usernameError && (
+                <p className="mt-1 text-[11.5px] text-sy-danger">{usernameError}</p>
+              )}
             </div>
 
             <div>
@@ -96,9 +113,9 @@ export default function LoginPage() {
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setPasswordError(''); }}
                   placeholder="请输入密码"
-                  className="input w-full pr-10"
+                  className={`input w-full pr-10${passwordError ? ' border-sy-danger/60' : ''}`}
                   autoComplete="current-password"
                 />
                 <button
@@ -110,6 +127,9 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {passwordError && (
+                <p className="mt-1 text-[11.5px] text-sy-danger">{passwordError}</p>
+              )}
             </div>
 
             <div className="flex items-center justify-between">
@@ -158,7 +178,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-[11px] text-text3/50 mt-6">Sisyphus Case Platform · v0.2</p>
+        <p className="text-center text-[11px] text-text3/50 mt-6">Sisyphus-Y · v2.0</p>
       </div>
     </div>
   );
