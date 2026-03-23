@@ -82,7 +82,19 @@ class TestChatStreamContext:
         test_points_result = MagicMock()
         test_points_result.scalars.return_value = scalars_result
 
-        session.execute = AsyncMock(side_effect=[map_result, test_points_result])
+        # Mock: diagnosis report query → returns None (no report)
+        no_report_result = MagicMock()
+        no_report_result.scalar_one_or_none.return_value = None
+
+        # Mock: RAG test points query → returns empty list
+        rag_tp_scalars = MagicMock()
+        rag_tp_scalars.all.return_value = []
+        rag_tp_result = MagicMock()
+        rag_tp_result.scalars.return_value = rag_tp_scalars
+
+        session.execute = AsyncMock(
+            side_effect=[map_result, test_points_result, no_report_result, rag_tp_result]
+        )
 
         service = GenerationService(session)
 

@@ -14,6 +14,8 @@ interface GenerationPanelProps {
   requirementId: string | null;
   testPointIds: string[];
   onComplete: (cases: WorkbenchTestCase[]) => void;
+  feedbacks?: Record<string, 'up' | 'down'>;
+  onFeedback?: (displayCaseId: string, value: 'up' | 'down') => void;
 }
 
 function mapStreamingCasesToWorkbench(
@@ -37,7 +39,13 @@ function mapStreamingCasesToWorkbench(
   }));
 }
 
-export function GenerationPanel({ requirementId, testPointIds, onComplete }: GenerationPanelProps) {
+export function GenerationPanel({
+  requirementId,
+  testPointIds,
+  onComplete,
+  feedbacks,
+  onFeedback,
+}: GenerationPanelProps) {
   const sse = useSSE();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
@@ -185,21 +193,26 @@ export function GenerationPanel({ requirementId, testPointIds, onComplete }: Gen
         )}
 
         {/* 已渲染的用例卡片 */}
-        {sse.cases.map((c) => (
-          <CaseCard
-            key={c._idx}
-            caseId={`#${c._idx + 1}`}
-            title={c.title}
-            priority={(c.priority as 'P0' | 'P1' | 'P2' | 'P3') ?? 'P1'}
-            type={c.case_type}
-            precondition={c.precondition}
-            steps={(c.steps ?? []).map((s, i) => ({
-              no: s.step_num ?? i + 1,
-              action: s.action,
-              expected_result: s.expected_result,
-            }))}
-          />
-        ))}
+        {sse.cases.map((c) => {
+          const displayId = `#${c._idx + 1}`;
+          return (
+            <CaseCard
+              key={c._idx}
+              caseId={displayId}
+              title={c.title}
+              priority={(c.priority as 'P0' | 'P1' | 'P2' | 'P3') ?? 'P1'}
+              type={c.case_type}
+              precondition={c.precondition}
+              steps={(c.steps ?? []).map((s, i) => ({
+                no: s.step_num ?? i + 1,
+                action: s.action,
+                expected_result: s.expected_result,
+              }))}
+              feedback={isCompleted ? feedbacks?.[displayId] : undefined}
+              onFeedback={isCompleted ? onFeedback : undefined}
+            />
+          );
+        })}
 
         {/* 流式光标 */}
         {sse.isStreaming && sse.cases.length === 0 && !sse.thinking && (

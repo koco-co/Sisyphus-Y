@@ -2,6 +2,7 @@
 
 import { ClipboardList, Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
+import { CaseCard } from '@/components/workspace/CaseCard';
 import type { TestPointItem } from '@/stores/scene-map-store';
 import type { WorkbenchTestCase } from '@/stores/workspace-store';
 
@@ -9,12 +10,16 @@ interface GeneratedCasesByPointProps {
   testCases: WorkbenchTestCase[];
   testPoints: TestPointItem[];
   isStreaming: boolean;
+  feedbacks?: Record<string, 'up' | 'down'>;
+  onFeedback?: (displayCaseId: string, value: 'up' | 'down') => void;
 }
 
 export function GeneratedCasesByPoint({
   testCases,
   testPoints,
   isStreaming,
+  feedbacks,
+  onFeedback,
 }: GeneratedCasesByPointProps) {
   const grouped = useMemo(() => {
     const map = new Map<string, WorkbenchTestCase[]>();
@@ -77,15 +82,18 @@ export function GeneratedCasesByPoint({
             {/* 用例列表 */}
             <div className="divide-y divide-sy-border/50">
               {cases.map((tc) => (
-                <div key={tc.id} className="px-3 py-2 hover:bg-sy-bg-2 transition-colors">
-                  <p className="text-[12px] text-sy-text font-medium leading-snug">{tc.title}</p>
-                  <p className="text-[11px] text-sy-text-3 mt-0.5">
-                    {tc.steps.length} 个步骤
-                    {tc.priority && (
-                      <span className="ml-2 font-mono text-sy-warn">{tc.priority}</span>
-                    )}
-                  </p>
-                </div>
+                <CaseCard
+                  key={tc.id}
+                  caseId={tc.case_id}
+                  title={tc.title}
+                  priority={tc.priority}
+                  type={tc.case_type}
+                  status={tc.status}
+                  precondition={tc.precondition}
+                  steps={tc.steps}
+                  feedback={feedbacks?.[tc.case_id]}
+                  onFeedback={onFeedback}
+                />
               ))}
             </div>
           </div>

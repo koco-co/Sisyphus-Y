@@ -9,15 +9,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.parser import parse_test_points
-from app.ai.prompts import assemble_prompt
+from app.ai.prompts import DEFAULT_TEAM_STANDARD, assemble_prompt
 from app.ai.sse_collector import SSECollector
 from app.ai.stream_adapter import get_thinking_stream_with_fallback
 from app.core.database import get_async_session_context
 from app.modules.products.models import Requirement
 from app.modules.scene_map.models import SceneMap, TestPoint
 from app.modules.scene_map.schemas import BatchPointUpdate, ReorderItem, TestPointCreate, TestPointUpdate
-
-_SCENE_MAP_MODEL = "glm-4-flash"
 
 
 class SceneMapService:
@@ -285,15 +283,34 @@ class SceneMapService:
             f"请按照正常流程、异常场景、边界值、并发场景、权限安全分组，"
             f"每个测试点包含：分组名、标题、描述、优先级(P0/P1/P2)、预计用例数。"
         )
-        task_instruction = "根据需求文档提取完整的测试点列表，按场景类型分组，输出 JSON 数组。"
-        system = assemble_prompt("scene_map", task_instruction)
-        messages = [{"role": "user", "content": user_content}]
-        return await get_thinking_stream_with_fallback(
-            messages,
-            system=system,
-            provider="zhipu",
-            model=_SCENE_MAP_MODEL,
+
+        # Inject diagnosis risks if available
+        from app.modules.diagnosis.models import DiagnosisReport, DiagnosisRisk
+
+        report_q = (
+            select(DiagnosisReport)
+            .where(
+                DiagnosisReport.requirement_id == requirement_id,
+                DiagnosisReport.deleted_at.is_(None),
+            )
+            .order_by(DiagnosisReport.created_at.desc())
+            .limit(1)
         )
+        report = (await self.session.execute(report_q)).scalar_one_or_none()
+        if report:
+            risk_q = select(DiagnosisRisk).where(
+                DiagnosisRisk.report_id == report.id,
+                DiagnosisRisk.deleted_at.is_(None),
+            )
+            risks = list((await self.session.execute(risk_q)).scalars().all())
+            if risks:
+                risk_lines = [f"- [{r.level}] {r.title}: {r.description}" for r in risks]
+                user_content += "\n\n需求诊断已识别以下风险点（请确保测试点覆盖这些风险）：\n" + "\n".join(risk_lines)
+
+        task_instruction = "根据需求文档提取完整的测试点列表，按场景类型分组，输出 JSON 数组。"
+        system = assemble_prompt("scene_map", task_instruction, team_standard=DEFAULT_TEAM_STANDARD)
+        messages = [{"role": "user", "content": user_content}]
+        return await get_thinking_stream_with_fallback(messages, system=system)
 
     async def generate_stream_with_persistence(self, requirement_id: UUID) -> SSECollector:
         """Generate scene map stream; auto-persist parsed test points on completion."""
