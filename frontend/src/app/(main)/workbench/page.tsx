@@ -8,6 +8,7 @@ import { ThreeColLayout } from '@/components/layout/ThreeColLayout';
 import { AiConfigBanner } from '@/components/ui/AiConfigBanner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useAiConfig } from '@/hooks/useAiConfig';
+import { useCaseFeedback } from '@/hooks/useCaseFeedback';
 import { useSceneMap } from '@/hooks/useSceneMap';
 import { useWorkbench } from '@/hooks/useWorkbench';
 import { type Requirement, requirementsApi } from '@/lib/api';
@@ -38,6 +39,8 @@ function WorkbenchPageContent() {
   const aiConfig = useAiConfig();
   const searchParams = useSearchParams();
   const store = useWorkspaceStore();
+
+  const { feedbacks, handleFeedback } = useCaseFeedback(wb.testCases);
 
   const hasSelectedRequirement = Boolean(wb.selectedReqId);
   const selectedRequirementTitle = wb.selectedReqTitle || sm.selectedReqTitle;
@@ -238,6 +241,8 @@ function WorkbenchPageContent() {
               requirementId={wb.selectedReqId}
               testPointIds={pointIdsToGenerate}
               onComplete={handleGenerationComplete}
+              feedbacks={feedbacks}
+              onFeedback={handleFeedback}
             />
           </div>
         </>
@@ -331,6 +336,8 @@ function WorkbenchPageContent() {
         testCases={wb.testCases}
         testPoints={sm.testPoints}
         isStreaming={false}
+        feedbacks={feedbacks}
+        onFeedback={handleFeedback}
       />
     ) : (
       <GeneratedCases

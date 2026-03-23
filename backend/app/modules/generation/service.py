@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.parser import parse_test_cases
-from app.ai.prompts import assemble_prompt
+from app.ai.prompts import DEFAULT_TEAM_STANDARD, assemble_prompt
 from app.ai.sse_collector import SSECollector
 from app.ai.stream_adapter import get_thinking_stream_with_fallback
 from app.core.database import get_async_session_context
@@ -69,6 +69,21 @@ async def _save_and_parse_response(
         if not parsed:
             return
 
+        # Build title → UUID lookup for test point matching
+        tp_title_map: dict[str, UUID] = {}
+        map_q = select(SceneMap).where(
+            SceneMap.requirement_id == requirement_id,
+            SceneMap.deleted_at.is_(None),
+        )
+        scene_map = (await new_session.execute(map_q)).scalar_one_or_none()
+        if scene_map:
+            tp_q = select(TestPoint).where(
+                TestPoint.scene_map_id == scene_map.id,
+                TestPoint.deleted_at.is_(None),
+            )
+            for tp in (await new_session.execute(tp_q)).scalars().all():
+                tp_title_map[tp.title] = tp.id
+
         tc_svc = TestCaseService(new_session)
         saved_case_ids: list[UUID] = []
         for case in parsed:
@@ -85,6 +100,23 @@ async def _save_and_parse_response(
                 valid_types = {"functional", "boundary", "exception", "performance", "security", "compatibility"}
                 case_type = case_type_raw if case_type_raw in valid_types else "functional"
 
+                # Match test point: exact title match, then keyword overlap fallback
+                scene_node_id: UUID | None = None
+                tp_title = case.get("test_point_title", "")
+                if tp_title and tp_title in tp_title_map:
+                    scene_node_id = tp_title_map[tp_title]
+                elif tp_title_map:
+                    case_title = case.get("title", "")
+                    best_match: str | None = None
+                    best_overlap = 0
+                    for title in tp_title_map:
+                        overlap = sum(1 for w in title if w in case_title)
+                        if overlap > best_overlap:
+                            best_overlap = overlap
+                            best_match = title
+                    if best_match and best_overlap >= 2:
+                        scene_node_id = tp_title_map[best_match]
+
                 data = TestCaseCreate(
                     requirement_id=requirement_id,
                     generation_session_id=session_id,
@@ -93,6 +125,7 @@ async def _save_and_parse_response(
                     case_type=case_type,  # type: ignore[arg-type]
                     precondition=case.get("precondition", ""),
                     source="ai_generated",
+                    scene_node_id=scene_node_id,
                     steps=steps,
                 )
                 tc = await tc_svc.create_case(data)
@@ -287,7 +320,12 @@ class GenerationService:
         context_parts = []
         if req:
             context_parts.append(f"需求标题：{req.title}")
-            content = json.dumps(req.content_ast, ensure_ascii=False) if req.content_ast else ""
+            content = ""
+            if req.content_ast:
+                if isinstance(req.content_ast, dict):
+                    content = req.content_ast.get("raw_text", "")
+                if not content:
+                    content = json.dumps(req.content_ast, ensure_ascii=False)
             if content:
                 context_parts.append(f"需求内容：{content}")
 
@@ -306,8 +344,37 @@ class GenerationService:
             tp_result = await self.session.execute(tp_q)
             test_points = [tp for tp in tp_result.scalars().all() if tp.status == "confirmed"]
             if test_points:
-                tp_text = "\n".join(f"- [{tp.group_name}] {tp.title} (优先级: {tp.priority})" for tp in test_points)
+                tp_lines = []
+                for tp in test_points:
+                    line = f"- [{tp.group_name}] {tp.title} (优先级: {tp.priority})"
+                    if tp.description:
+                        line += f"\n  描述: {tp.description}"
+                    tp_lines.append(line)
+                tp_text = "\n".join(tp_lines)
                 context_parts.append(f"已确认测试点：\n{tp_text}")
+
+        # Inject diagnosis risks if available
+        from app.modules.diagnosis.models import DiagnosisReport, DiagnosisRisk
+
+        report_q = (
+            select(DiagnosisReport)
+            .where(
+                DiagnosisReport.requirement_id == gen_session.requirement_id,
+                DiagnosisReport.deleted_at.is_(None),
+            )
+            .order_by(DiagnosisReport.created_at.desc())
+            .limit(1)
+        )
+        report = (await self.session.execute(report_q)).scalar_one_or_none()
+        if report:
+            risk_q = select(DiagnosisRisk).where(
+                DiagnosisRisk.report_id == report.id,
+                DiagnosisRisk.deleted_at.is_(None),
+            )
+            risks = list((await self.session.execute(risk_q)).scalars().all())
+            if risks:
+                risk_lines = [f"- [{r.level}] {r.title}: {r.description}" for r in risks]
+                context_parts.append("需求诊断风险点（请在生成用例时覆盖）：\n" + "\n".join(risk_lines))
 
         # Build chat history (excluding latest user message, which will be appended below)
         history: list[dict[str, str]] = []
@@ -337,22 +404,44 @@ class GenerationService:
                 }
             )
 
-        # RAG: retrieve similar historical cases as few-shot reference
+        # RAG: build semantic-rich query from req title + test point titles
         from app.engine.rag.retriever import retrieve_cases_as_context
 
-        rag_context = await retrieve_cases_as_context(
-            user_message,
-            top_k=5,
-            score_threshold=0.72,
-        )
+        rag_query_parts: list[str] = []
+        if req:
+            rag_query_parts.append(req.title)
+        if scene_map:
+            tp_q_for_rag = (
+                select(TestPoint)
+                .where(
+                    TestPoint.scene_map_id == scene_map.id,
+                    TestPoint.deleted_at.is_(None),
+                    TestPoint.status == "confirmed",
+                )
+                .limit(5)
+            )
+            tp_titles = [tp.title for tp in (await self.session.execute(tp_q_for_rag)).scalars().all()]
+            rag_query_parts.extend(tp_titles)
+        rag_query = " ".join(rag_query_parts) if rag_query_parts else user_message
+        rag_context = await retrieve_cases_as_context(rag_query, top_k=5, score_threshold=0.72)
 
         # Select prompt module based on session mode
         if gen_session.mode == "test_point_driven":
             task_instruction = "根据已确认的测试点，生成高质量、可执行的测试用例，输出 JSON 数组。"
-            system = assemble_prompt("generation", task_instruction, rag_context=rag_context)
+            system = assemble_prompt(
+                "generation",
+                task_instruction,
+                rag_context=rag_context,
+                team_standard=DEFAULT_TEAM_STANDARD,
+            )
         else:
             task_instruction = "与用户协作完成测试用例设计，根据对话上下文生成或调整用例。"
-            system = assemble_prompt("exploratory", task_instruction, rag_context=rag_context)
+            system = assemble_prompt(
+                "exploratory",
+                task_instruction,
+                rag_context=rag_context,
+                team_standard=DEFAULT_TEAM_STANDARD,
+            )
         return await get_thinking_stream_with_fallback(history, system=system)
 
     # ── SSE stream with auto-persistence ──────────────────────────────
