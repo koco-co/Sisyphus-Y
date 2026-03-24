@@ -10,11 +10,10 @@ interface CaseFiltersProps {
 const PRIORITIES = ['P0', 'P1', 'P2', 'P3'].map((p) => ({ value: p, label: p }));
 const TYPES = [
   { value: 'functional', label: '功能' },
-  { value: 'normal', label: '正常' },
   { value: 'exception', label: '异常' },
   { value: 'boundary', label: '边界' },
-  { value: 'concurrent', label: '并发' },
-  { value: 'permission', label: '权限' },
+  { value: 'performance', label: '性能' },
+  { value: 'security', label: '安全' },
 ];
 
 function ToggleGroup({

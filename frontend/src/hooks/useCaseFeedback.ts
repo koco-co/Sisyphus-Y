@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { testcasesApi } from '@/lib/api';
-import type { WorkbenchTestCase } from '@/stores/workspace-store';
+import { useWorkspaceStore, type WorkbenchTestCase } from '@/stores/workspace-store';
 
 export function useCaseFeedback(testCases: WorkbenchTestCase[]) {
   const [feedbacks, setFeedbacks] = useState<Record<string, 'up' | 'down'>>({});
@@ -19,6 +19,8 @@ export function useCaseFeedback(testCases: WorkbenchTestCase[]) {
         } else {
           await testcasesApi.rejectCase(tc.id);
         }
+        const newStatus = value === 'up' ? 'approved' : 'rejected';
+        useWorkspaceStore.getState().updateCaseStatus(tc.id, newStatus);
       } catch {
         setFeedbacks((prev) => {
           const { [displayCaseId]: _, ...rest } = prev;

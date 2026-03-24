@@ -97,25 +97,29 @@ async def _save_and_parse_response(
                     for i, step in enumerate(case.get("steps", []))
                 ]
                 case_type_raw = case.get("case_type", "functional")
-                valid_types = {"functional", "boundary", "exception", "performance", "security", "compatibility"}
-                case_type = case_type_raw if case_type_raw in valid_types else "functional"
+                valid_types = {
+                    "functional",
+                    "boundary",
+                    "exception",
+                    "performance",
+                    "security",
+                    "compatibility",
+                }
+                case_type = (
+                    case_type_raw if case_type_raw in valid_types else "functional"
+                )
 
-                # Match test point: exact title match, then keyword overlap fallback
+                # Match test point: exact title match, then substring fallback
                 scene_node_id: UUID | None = None
                 tp_title = case.get("test_point_title", "")
                 if tp_title and tp_title in tp_title_map:
                     scene_node_id = tp_title_map[tp_title]
                 elif tp_title_map:
                     case_title = case.get("title", "")
-                    best_match: str | None = None
-                    best_overlap = 0
-                    for title in tp_title_map:
-                        overlap = sum(1 for w in title if w in case_title)
-                        if overlap > best_overlap:
-                            best_overlap = overlap
-                            best_match = title
-                    if best_match and best_overlap >= 2:
-                        scene_node_id = tp_title_map[best_match]
+                    for title, tp_id in tp_title_map.items():
+                        if len(title) >= 4 and title in case_title:
+                            scene_node_id = tp_id
+                            break
 
                 data = TestCaseCreate(
                     requirement_id=requirement_id,
@@ -131,7 +135,9 @@ async def _save_and_parse_response(
                 tc = await tc_svc.create_case(data)
                 saved_case_ids.append(tc.id)
             except Exception:
-                logger.warning("Failed to save parsed test case: %s", case.get("title", ""))
+                logger.warning(
+                    "Failed to save parsed test case: %s", case.get("title", "")
+                )
 
         # TASK-162: backfill actual_cases_count on test points
         if saved_case_ids:
@@ -142,7 +148,9 @@ class GenerationService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def create_session(self, requirement_id: UUID, mode: str = "test_point_driven") -> GenerationSession:
+    async def create_session(
+        self, requirement_id: UUID, mode: str = "test_point_driven"
+    ) -> GenerationSession:
         gen_session = GenerationSession(
             requirement_id=requirement_id,
             mode=mode,
@@ -162,7 +170,9 @@ class GenerationService:
         result = await self.session.execute(q)
         return result.scalar_one_or_none()
 
-    async def get_or_create_session(self, requirement_id: UUID, mode: str = "test_point_driven") -> GenerationSession:
+    async def get_or_create_session(
+        self, requirement_id: UUID, mode: str = "test_point_driven"
+    ) -> GenerationSession:
         """Return the latest active session for a requirement, or create one."""
         q = (
             select(GenerationSession)
@@ -194,7 +204,11 @@ class GenerationService:
         return list(result.scalars().all())
 
     async def save_message(
-        self, session_id: UUID, role: str, content: str, thinking_content: str | None = None
+        self,
+        session_id: UUID,
+        role: str,
+        content: str,
+        thinking_content: str | None = None,
     ) -> GenerationMessage:
         msg = GenerationMessage(
             session_id=session_id,
@@ -241,7 +255,10 @@ class GenerationService:
                 next_user_msgs = [
                     m
                     for m in messages
-                    if m.role == "user" and m.created_at and msg_created and m.created_at > msg_created
+                    if m.role == "user"
+                    and m.created_at
+                    and msg_created
+                    and m.created_at > msg_created
                 ]
                 cutoff = next_user_msgs[0].created_at if next_user_msgs else None
 
@@ -262,14 +279,18 @@ class GenerationService:
                             "case_id": c.case_id,
                             "title": c.title,
                             "priority": c.priority,
-                            "case_type": c.case_type if c.case_type != "functional" else "normal",
+                            "case_type": (
+                                c.case_type if c.case_type != "functional" else "normal"
+                            ),
                             "status": c.status,
                             "precondition": c.precondition,
                             "steps": [
                                 {
                                     "no": s.get("step_num", s.get("step", i + 1)),
                                     "action": s.get("action", ""),
-                                    "expected_result": s.get("expected_result", s.get("expected", "")),
+                                    "expected_result": s.get(
+                                        "expected_result", s.get("expected", "")
+                                    ),
                                 }
                                 for i, s in enumerate(c.steps or [])
                             ],
@@ -310,7 +331,9 @@ class GenerationService:
 
         return test_case
 
-    async def chat_stream(self, session_id: UUID, user_message: str) -> AsyncIterator[str]:
+    async def chat_stream(
+        self, session_id: UUID, user_message: str
+    ) -> AsyncIterator[str]:
         gen_session = await self.get_session(session_id)
         if not gen_session:
             raise ValueError("Session not found")
@@ -342,7 +365,9 @@ class GenerationService:
                 TestPoint.deleted_at.is_(None),
             )
             tp_result = await self.session.execute(tp_q)
-            test_points = [tp for tp in tp_result.scalars().all() if tp.status == "confirmed"]
+            test_points = [
+                tp for tp in tp_result.scalars().all() if tp.status == "confirmed"
+            ]
             if test_points:
                 tp_lines = []
                 for tp in test_points:
@@ -373,8 +398,12 @@ class GenerationService:
             )
             risks = list((await self.session.execute(risk_q)).scalars().all())
             if risks:
-                risk_lines = [f"- [{r.level}] {r.title}: {r.description}" for r in risks]
-                context_parts.append("需求诊断风险点（请在生成用例时覆盖）：\n" + "\n".join(risk_lines))
+                risk_lines = [
+                    f"- [{r.level}] {r.title}: {r.description}" for r in risks
+                ]
+                context_parts.append(
+                    "需求诊断风险点（请在生成用例时覆盖）：\n" + "\n".join(risk_lines)
+                )
 
         # Build chat history (excluding latest user message, which will be appended below)
         history: list[dict[str, str]] = []
@@ -405,7 +434,10 @@ class GenerationService:
             )
 
         # RAG: build semantic-rich query from req title + test point titles
-        from app.engine.rag.retriever import retrieve_cases_as_context
+        from app.engine.rag.retriever import (
+            retrieve_as_context,
+            retrieve_cases_as_context,
+        )
 
         rag_query_parts: list[str] = []
         if req:
@@ -420,14 +452,36 @@ class GenerationService:
                 )
                 .limit(5)
             )
-            tp_titles = [tp.title for tp in (await self.session.execute(tp_q_for_rag)).scalars().all()]
+            tp_titles = [
+                tp.title
+                for tp in (await self.session.execute(tp_q_for_rag)).scalars().all()
+            ]
             rag_query_parts.extend(tp_titles)
         rag_query = " ".join(rag_query_parts) if rag_query_parts else user_message
-        rag_context = await retrieve_cases_as_context(rag_query, top_k=5, score_threshold=0.72)
+
+        # Retrieve both historical test cases and knowledge base documents
+        rag_cases = await retrieve_cases_as_context(
+            rag_query, top_k=5, score_threshold=0.55
+        )
+        rag_knowledge = await retrieve_as_context(
+            rag_query, top_k=3, score_threshold=0.55
+        )
+        rag_parts = [p for p in (rag_cases, rag_knowledge) if p]
+        rag_context = "\n\n".join(rag_parts) if rag_parts else None
 
         # Select prompt module based on session mode
         if gen_session.mode == "test_point_driven":
-            task_instruction = "根据已确认的测试点，生成高质量、可执行的测试用例，输出 JSON 数组。"
+            task_instruction = (
+                "根据已确认的测试点生成高质量、可执行的测试用例。"
+                "只返回纯 JSON 数组，以 [ 开头、以 ] 结尾，"
+                "不得输出解释文字、Markdown 或 ```json 标记。"
+                "test_point_title 必须与已确认测试点标题完全一致。"
+                "第一步必须是进入目标页面。"
+                "异常用例每条只允许包含一个逆向条件。"
+                "所有输入步骤必须包含具体测试数据（如用户名、数值、文件名）。"
+                "预期结果中禁止使用「操作成功」「显示正常」等模糊断言，"
+                "必须写出可验证的具体状态或数据变化。"
+            )
             system = assemble_prompt(
                 "generation",
                 task_instruction,
@@ -435,7 +489,9 @@ class GenerationService:
                 team_standard=DEFAULT_TEAM_STANDARD,
             )
         else:
-            task_instruction = "与用户协作完成测试用例设计，根据对话上下文生成或调整用例。"
+            task_instruction = (
+                "与用户协作完成测试用例设计，根据对话上下文生成或调整用例。"
+            )
             system = assemble_prompt(
                 "exploratory",
                 task_instruction,
@@ -446,7 +502,9 @@ class GenerationService:
 
     # ── SSE stream with auto-persistence ──────────────────────────────
 
-    async def chat_and_persist_stream(self, session_id: UUID, user_message: str) -> SSECollector:
+    async def chat_and_persist_stream(
+        self, session_id: UUID, user_message: str
+    ) -> SSECollector:
         """Chat with AI and auto-persist response + parsed test cases on completion."""
         gen_session = await self.get_session(session_id)
         if not gen_session:
@@ -461,7 +519,9 @@ class GenerationService:
 
         return SSECollector(stream, on_complete=on_complete)
 
-    async def chat_by_requirement_and_persist_stream(self, requirement_id: UUID, user_message: str) -> SSECollector:
+    async def chat_by_requirement_and_persist_stream(
+        self, requirement_id: UUID, user_message: str
+    ) -> SSECollector:
         """Chat by requirement with auto-persistence; creates session if needed."""
         gen_session = await self.get_or_create_session(requirement_id)
         sid = gen_session.id
@@ -496,9 +556,13 @@ class GenerationService:
         if not req:
             raise ValueError("Requirement not found")
 
-        req_content = json.dumps(req.content_ast, ensure_ascii=False) if req.content_ast else ""
+        req_content = (
+            json.dumps(req.content_ast, ensure_ascii=False) if req.content_ast else ""
+        )
 
-        gen_session = await self.get_or_create_session(requirement_id, mode="template_driven")
+        gen_session = await self.get_or_create_session(
+            requirement_id, mode="template_driven"
+        )
         sid = gen_session.id
 
         stream = await template_driven_stream(

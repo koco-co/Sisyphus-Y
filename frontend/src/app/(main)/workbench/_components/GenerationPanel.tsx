@@ -6,48 +6,29 @@ import { toast } from 'sonner';
 import { ThinkingStream } from '@/components/ui/ThinkingStream';
 import { CaseCard } from '@/components/workspace/CaseCard';
 import { StreamCursor } from '@/components/workspace/StreamCursor';
-import { type SSEStreamingCase, useSSE } from '@/hooks/useSSE';
+import { useSSE } from '@/hooks/useSSE';
 import { api } from '@/lib/api';
 import type { WorkbenchTestCase } from '@/stores/workspace-store';
 
 interface GenerationPanelProps {
   requirementId: string | null;
   testPointIds: string[];
-  onComplete: (cases: WorkbenchTestCase[]) => void;
+  testCases?: WorkbenchTestCase[];
+  onComplete: () => void;
   feedbacks?: Record<string, 'up' | 'down'>;
   onFeedback?: (displayCaseId: string, value: 'up' | 'down') => void;
 }
 
-function mapStreamingCasesToWorkbench(
-  cases: SSEStreamingCase[],
-  sessionId: string,
-): WorkbenchTestCase[] {
-  return cases.map((c, idx) => ({
-    id: `${sessionId}-streaming-${idx}`,
-    case_id: `#${c._idx + 1}`,
-    title: c.title,
-    priority: (c.priority as 'P0' | 'P1' | 'P2' | 'P3') ?? 'P1',
-    case_type: c.case_type ?? 'functional',
-    status: 'draft',
-    precondition: c.precondition,
-    source: 'ai',
-    steps: (c.steps ?? []).map((s, i) => ({
-      no: s.step_num ?? i + 1,
-      action: s.action,
-      expected_result: s.expected_result,
-    })),
-  }));
-}
 
 export function GenerationPanel({
   requirementId,
   testPointIds,
+  testCases,
   onComplete,
   feedbacks,
   onFeedback,
 }: GenerationPanelProps) {
   const sse = useSSE();
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -66,8 +47,6 @@ export function GenerationPanel({
         requirement_id: requirementId,
         mode: 'test_point_driven',
       });
-
-      setSessionId(sessionData.id);
 
       const pointIdsText = testPointIds.join(', ');
       const message = `请根据以下测试点 ID 生成测试用例：${pointIdsText}`;
@@ -93,17 +72,15 @@ export function GenerationPanel({
 
   // 流结束后调用 onComplete 回调
   useEffect(() => {
-    if (isCompleted && sse.cases.length > 0 && sessionId) {
-      const cases = mapStreamingCasesToWorkbench(sse.cases, sessionId);
-      onCompleteRef.current(cases);
+    if (isCompleted) {
+      onCompleteRef.current();
     }
-  }, [isCompleted, sse.cases, sessionId]);
+  }, [isCompleted]);
 
   const handleRetry = useCallback(() => {
     setHasStarted(false);
     setIsCompleted(false);
     setIsStarting(false);
-    setSessionId(null);
     startGeneration();
   }, [startGeneration]);
 
@@ -192,27 +169,42 @@ export function GenerationPanel({
           <ThinkingStream text={sse.thinking} isStreaming={sse.isStreaming && !sse.content} />
         )}
 
-        {/* 已渲染的用例卡片 */}
-        {sse.cases.map((c) => {
-          const displayId = `#${c._idx + 1}`;
-          return (
-            <CaseCard
-              key={c._idx}
-              caseId={displayId}
-              title={c.title}
-              priority={(c.priority as 'P0' | 'P1' | 'P2' | 'P3') ?? 'P1'}
-              type={c.case_type}
-              precondition={c.precondition}
-              steps={(c.steps ?? []).map((s, i) => ({
-                no: s.step_num ?? i + 1,
-                action: s.action,
-                expected_result: s.expected_result,
-              }))}
-              feedback={isCompleted ? feedbacks?.[displayId] : undefined}
-              onFeedback={isCompleted ? onFeedback : undefined}
-            />
-          );
-        })}
+        {/* 完成后：渲染来自 store 的真实用例（带真实 case_id，采纳按钮有效） */}
+        {isCompleted && testCases && testCases.length > 0
+          ? testCases.map((tc) => (
+              <CaseCard
+                key={tc.id}
+                caseId={tc.case_id}
+                title={tc.title}
+                priority={tc.priority}
+                type={tc.case_type}
+                precondition={tc.precondition}
+                steps={tc.steps}
+                feedback={feedbacks?.[tc.case_id]}
+                onFeedback={onFeedback}
+              />
+            ))
+          : /* 流式阶段：渲染 SSE 临时用例（fake ID，不显示采纳按钮） */
+            sse.cases.map((c) => {
+              const displayId = `#${c._idx + 1}`;
+              return (
+                <CaseCard
+                  key={c._idx}
+                  caseId={displayId}
+                  title={c.title}
+                  priority={(c.priority as 'P0' | 'P1' | 'P2' | 'P3') ?? 'P1'}
+                  type={c.case_type}
+                  precondition={c.precondition}
+                  steps={(c.steps ?? []).map((s, i) => ({
+                    no: s.step_num ?? i + 1,
+                    action: s.action,
+                    expected_result: s.expected_result,
+                  }))}
+                  feedback={undefined}
+                  onFeedback={undefined}
+                />
+              );
+            })}
 
         {/* 流式光标 */}
         {sse.isStreaming && sse.cases.length === 0 && !sse.thinking && (

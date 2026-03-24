@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-import { useSSE } from '@/hooks/useSSE';
-import { API_BASE, api } from '@/lib/api';
+import { useCallback } from "react";
+import { useSSE } from "@/hooks/useSSE";
+import { API_BASE, api } from "@/lib/api";
 import {
   type GenSession,
   useWorkspaceStore,
   type WorkbenchMessage,
   type WorkbenchTestCase,
-} from '@/stores/workspace-store';
+} from "@/stores/workspace-store";
 
 export function useWorkbench() {
   const store = useWorkspaceStore();
@@ -17,7 +17,9 @@ export function useWorkbench() {
   const loadSessions = useCallback(
     async (reqId: string) => {
       try {
-        const data = await api.get<GenSession[]>(`/generation/sessions/by-requirement/${reqId}`);
+        const data = await api.get<GenSession[]>(
+          `/generation/sessions/by-requirement/${reqId}`,
+        );
         store.setSessions(Array.isArray(data) ? data : []);
       } catch {
         store.setSessions([]);
@@ -29,10 +31,19 @@ export function useWorkbench() {
   const loadTestCases = useCallback(
     async (reqId: string) => {
       try {
-        const data = await api.get<{ items: WorkbenchTestCase[] }>(
+        const data = await api.get<{ items: Record<string, unknown>[] }>(
           `/testcases/?requirement_id=${reqId}`,
         );
-        store.setTestCases(data.items ?? []);
+        const items = (data.items ?? []).map((tc: Record<string, unknown>) => ({
+          ...tc,
+          test_point_id: tc.scene_node_id ?? tc.test_point_id,
+          steps: ((tc.steps as Array<Record<string, unknown>>) ?? []).map((s) => ({
+            no: s.step ?? s.no,
+            action: s.action,
+            expected_result: s.expected ?? s.expected_result ?? "",
+          })),
+        }));
+        store.setTestCases(items as WorkbenchTestCase[]);
       } catch {
         store.setTestCases([]);
       }
@@ -67,15 +78,15 @@ export function useWorkbench() {
   const createSession = useCallback(async () => {
     if (!store.selectedReqId) return;
     try {
-      const data = await api.post<GenSession>('/generation/sessions', {
+      const data = await api.post<GenSession>("/generation/sessions", {
         requirement_id: store.selectedReqId,
         mode: store.selectedMode,
       });
       store.addSession(data);
       store.setActiveSessionId(data.id);
       store.setMessages([]);
-    } catch (e) {
-      console.error('Failed to create session:', e);
+    } catch (_e) {
+      // error handled by UI
     }
   }, [store]);
 
@@ -92,24 +103,29 @@ export function useWorkbench() {
       if (!text.trim() || !store.activeSessionId || sse.isStreaming) return;
 
       const userMsg: WorkbenchMessage = {
-        id: `user-${Date.now()}`,
-        role: 'user',
+        id: crypto.randomUUID(),
+        role: "user",
         content: text.trim(),
         created_at: new Date().toISOString(),
       };
       store.addMessage(userMsg);
 
-      const fullText = await sse.startStream(`/generation/sessions/${store.activeSessionId}/chat`, {
-        body: { message: text.trim() },
-      });
+      const fullText = await sse.startStream(
+        `/generation/sessions/${store.activeSessionId}/chat`,
+        {
+          body: { message: text.trim() },
+        },
+      );
 
       if (fullText) {
         await loadMessages(store.activeSessionId);
       } else {
         store.addMessage({
-          id: `err-${Date.now()}`,
-          role: 'assistant',
-          content: sse.error ? `⚠️ ${sse.error}` : '⚠️ AI 未返回有效内容，请检查模型配置后重试。',
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: sse.error
+            ? `⚠️ ${sse.error}`
+            : "⚠️ AI 未返回有效内容，请检查模型配置后重试。",
           created_at: new Date().toISOString(),
         });
       }
@@ -126,13 +142,13 @@ export function useWorkbench() {
   }, [sse]);
 
   const exportCases = useCallback(
-    async (format: 'excel' | 'json') => {
+    async (format: "excel" | "json") => {
       if (!store.selectedReqId) return;
       try {
         const url = `${API_BASE}/export/${format}?requirement_id=${store.selectedReqId}`;
-        window.open(url, '_blank');
-      } catch (e) {
-        console.error('Export failed:', e);
+        window.open(url, "_blank");
+      } catch (_e) {
+        // export failed silently
       }
     },
     [store.selectedReqId],
