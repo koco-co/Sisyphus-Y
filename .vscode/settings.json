@@ -68,9 +68,11 @@
     "loglevel",
     "loguru",
     "Lucidchart",
+    "lucide",
     "marimo",
     "minioadmin",
     "mkdocs",
+    "moonshotai",
     "mypy",
     "noqa",
     "nosetests",
@@ -80,6 +82,7 @@
     "Ollama",
     "ondelete",
     "onupdate",
+    "openrouter",
     "paddleocr",
     "paddlepaddle",
     "passlib",
@@ -118,6 +121,8 @@
     "scrapy",
     "sdist",
     "sessionmaker",
+    "shadcn",
+    "siliconflow",
     "SMALLINT",
     "sparksql",
     "splitlines",
@@ -148,6 +153,7 @@
     "xmind",
     "xmindparser",
     "zhipu",
-    "zhipuai"
+    "zhipuai",
+    "Zustand"
   ]
 }

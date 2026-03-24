@@ -3,12 +3,17 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.modules.products.models import Product, RequirementFolder
 from app.modules.products.schemas import IterationCreate, IterationUpdate
+from app.modules.products.service import IterationService
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
@@ -35,7 +40,42 @@ def _make_service(session: AsyncMock):
     return IterationService(session)
 
 
-# ── Tests ────────────────────────────────────────────────────────────
+# ── Integration Tests (with real DB) ───────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_create_iteration_auto_creates_uncategorized_folder(db_session: AsyncSession):
+    """新建迭代时应自动创建「未分类」系统文件夹"""
+    # 先创建产品（使用唯一 slug 避免测试间冲突）
+    unique_slug = f"test-product-{uuid.uuid4().hex[:8]}"
+    product = Product(name="测试产品", slug=unique_slug)
+    db_session.add(product)
+    await db_session.commit()
+
+    service = IterationService(db_session)
+    data = IterationCreate(
+        product_id=product.id,
+        name="v1.0",
+    )
+    iteration = await service.create_iteration(data)
+
+    # 验证自动创建了文件夹
+    result = await db_session.execute(
+        select(RequirementFolder).where(
+            RequirementFolder.iteration_id == iteration.id,
+            RequirementFolder.is_system == True,  # noqa: E712
+        )
+    )
+    folder = result.scalar_one_or_none()
+
+    assert folder is not None, "应该自动创建系统文件夹"
+    assert folder.name == "未分类"
+    assert folder.is_system == True  # noqa: E712
+    assert folder.level == 1
+    assert folder.parent_id is None
+
+
+# ── Mock-based Unit Tests ─────────────────────────────────────────────────────
 
 
 class TestCreateIteration:
@@ -43,6 +83,7 @@ class TestCreateIteration:
         session = AsyncMock()
         iter_mock = _make_iteration()
         session.add = MagicMock()
+        session.flush = AsyncMock()
         session.commit = AsyncMock()
         session.refresh = AsyncMock()
 
@@ -51,7 +92,9 @@ class TestCreateIteration:
         with patch("app.modules.products.service.Iteration", return_value=iter_mock):
             result = await svc.create_iteration(IterationCreate(product_id=iter_mock.product_id, name="Sprint-1"))
 
-        session.add.assert_called_once_with(iter_mock)
+        # 现在会调用 add 两次：一次 iteration，一次 uncategorized folder
+        assert session.add.call_count == 2
+        session.flush.assert_awaited_once()
         session.commit.assert_awaited_once()
         session.refresh.assert_awaited_once_with(iter_mock)
         assert result == iter_mock
@@ -60,6 +103,7 @@ class TestCreateIteration:
         session = AsyncMock()
         iter_mock = _make_iteration()
         session.add = MagicMock()
+        session.flush = AsyncMock()
         session.commit = AsyncMock()
         session.refresh = AsyncMock()
 
@@ -70,8 +114,8 @@ class TestCreateIteration:
                 IterationCreate(
                     product_id=iter_mock.product_id,
                     name="Sprint-2",
-                    start_date="2024-01-01",
-                    end_date="2024-01-14",
+                    start_date=date(2024, 1, 1),
+                    end_date=date(2024, 1, 14),
                 )
             )
 

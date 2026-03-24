@@ -15,6 +15,8 @@ class TestChatDrivenBuild:
         assert "数据导入" in result
         assert "CSV 批量导入" in result
         assert "对话引导策略" in result
+        assert "只返回纯 JSON 数组" in result
+        assert "异常用例只能包含一个逆向条件" in result
 
     def test_build_task_with_existing_cases(self):
         from app.engine.case_gen.chat_driven import build_task_instruction
@@ -63,8 +65,14 @@ class TestChatDrivenGenerate:
                 "app.engine.case_gen.chat_driven.get_thinking_stream_with_fallback",
                 return_value=fake_stream(),
             ),
-            patch("app.engine.case_gen.chat_driven.assemble_prompt", return_value="system"),
-            patch("app.engine.case_gen.chat_driven.retrieve_as_context", new_callable=AsyncMock, return_value=None),
+            patch(
+                "app.engine.case_gen.chat_driven.assemble_prompt", return_value="system"
+            ),
+            patch(
+                "app.engine.case_gen.chat_driven.retrieve_as_context",
+                new_callable=AsyncMock,
+                return_value=None,
+            ),
             patch(
                 "app.engine.case_gen.chat_driven.generate_cases_structured",
                 new_callable=AsyncMock,
@@ -96,8 +104,14 @@ class TestChatDrivenGenerate:
                 "app.engine.case_gen.chat_driven.get_thinking_stream_with_fallback",
                 return_value=fake_stream(),
             ),
-            patch("app.engine.case_gen.chat_driven.assemble_prompt", return_value="system"),
-            patch("app.engine.case_gen.chat_driven.retrieve_as_context", new_callable=AsyncMock, return_value=None),
+            patch(
+                "app.engine.case_gen.chat_driven.assemble_prompt", return_value="system"
+            ),
+            patch(
+                "app.engine.case_gen.chat_driven.retrieve_as_context",
+                new_callable=AsyncMock,
+                return_value=None,
+            ),
             patch(
                 "app.engine.case_gen.chat_driven.generate_cases_structured",
                 new_callable=AsyncMock,

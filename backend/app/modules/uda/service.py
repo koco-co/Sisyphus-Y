@@ -82,10 +82,10 @@ class UdaService:
             ) from exc
 
         # Plain-text files or parse failures get lowest confidence
+        confidence: float = 0.2
+        confidence_reason: str = "纯文本文件缺少结构信息，自动拆分效果有限"
         if ext in ("txt", "text") or content_ast is None:
             sections: list[dict] = []
-            confidence = 0.2
-            confidence_reason = "纯文本文件缺少结构信息，自动拆分效果有限"
         else:
             sections = content_ast.get("sections") or []
 
@@ -96,11 +96,20 @@ class UdaService:
             body: str = (section.get("body") or "").strip()
             if not heading and not body:
                 continue
+            # 若无标题，取 body 首行作为 title（常见于 MD 首行是需求标题但无 # 前缀）
+            if not heading and body:
+                first_line = body.splitlines()[0].strip()
+                remaining = "\n".join(body.splitlines()[1:]).strip()
+                title = first_line[:100] if first_line else "未命名章节"
+                content = remaining
+            else:
+                title = heading
+                content = body
             items.append(
                 RequirementItem(
                     temp_id=f"item-{idx}",
-                    title=heading or "未命名章节",
-                    content=body,
+                    title=title,
+                    content=content,
                     level=1,
                 )
             )

@@ -227,3 +227,6 @@ docker/data/
 .compose-project-name
 docs/信永中和/
 backend/data/
+
+# 历史清洗数据（大文件，不跟踪）
+清洗后数据/

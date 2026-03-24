@@ -260,17 +260,81 @@ class DiagnosisService:
         return risks
 
     def _extract_risk_items(self, ai_content: str) -> list[dict[str, str]]:
-        match = re.search(r"\[.*\]", ai_content, re.DOTALL)
-        if match:
-            try:
-                data = json.loads(match.group())
-                if not isinstance(data, list):
-                    logger.warning("AI 响应 JSON 格式异常，期望数组，实际为 %s", type(data).__name__)
-                else:
-                    return [item for item in data if isinstance(item, dict)]
-            except (json.JSONDecodeError, TypeError) as e:
-                logger.debug("AI 响应 JSON 解析失败，尝试 Markdown 表格回退: %s", e)
+        """从 AI 响应中提取风险项列表。
 
+        支持三种格式（按优先级）：
+        1. JSON 代码块内的对象格式：{"overall_health_score": N, "dimensions": [...]}
+        2. JSON 代码块内的数组格式：[{"title": ..., "level"/"risk_level": ...}]
+        3. Markdown 表格行（兜底回退）
+        """
+
+        def _items_from_parsed(data: object) -> list[dict[str, str]] | None:
+            """从已解析的 JSON 数据中提取标准化风险项列表。"""
+            if isinstance(data, dict):
+                dims = data.get("dimensions")
+                if isinstance(dims, list):
+                    result = []
+                    for dim in dims:
+                        if not isinstance(dim, dict) or not dim.get("title"):
+                            continue
+                        result.append(
+                            {
+                                "title": str(dim.get("title", "")),
+                                "description": str(dim.get("description", "")),
+                                # AI 可能返回 risk_level（维度格式）或 level（风险项格式）
+                                "level": str(dim.get("level") or dim.get("risk_level") or "medium"),
+                            }
+                        )
+                    return result
+            if isinstance(data, list):
+                result = []
+                for item in data:
+                    if not isinstance(item, dict) or not item.get("title"):
+                        continue
+                    result.append(
+                        {
+                            "title": str(item.get("title", "")),
+                            "description": str(item.get("description", "")),
+                            "level": str(item.get("level") or item.get("risk_level") or "medium"),
+                        }
+                    )
+                return result
+            return None
+
+        # 1. 优先从 ```json ... ``` 代码块中提取（非贪婪匹配）
+        code_match = re.search(r"```json\s*([\s\S]*?)```", ai_content)
+        if code_match:
+            try:
+                data = json.loads(code_match.group(1).strip())
+                result = _items_from_parsed(data)
+                if result is not None:
+                    return result
+            except (json.JSONDecodeError, TypeError) as e:
+                logger.debug("JSON 代码块解析失败: %s", e)
+
+        # 2. 尝试匹配裸 JSON 对象（贪婪，取最外层 {...}）
+        obj_match = re.search(r"\{[\s\S]*\}", ai_content)
+        if obj_match:
+            try:
+                data = json.loads(obj_match.group())
+                result = _items_from_parsed(data)
+                if result is not None:
+                    return result
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        # 3. 尝试匹配裸 JSON 数组
+        arr_match = re.search(r"\[[\s\S]*\]", ai_content)
+        if arr_match:
+            try:
+                data = json.loads(arr_match.group())
+                result = _items_from_parsed(data)
+                if result is not None:
+                    return result
+            except (json.JSONDecodeError, TypeError) as e:
+                logger.debug("JSON 数组解析失败，尝试 Markdown 表格回退: %s", e)
+
+        # 4. Markdown 表格兜底
         markdown_items: list[dict[str, str]] = []
         for raw_line in ai_content.splitlines():
             line = raw_line.strip()

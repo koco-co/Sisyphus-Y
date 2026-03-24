@@ -62,6 +62,8 @@ async def _invoke(provider: str, messages: list[dict], *, model: str | None = No
         return await _invoke_dashscope(messages, model=model)
     if provider == "openrouter":
         return await _invoke_openrouter(messages, model=model)
+    if provider == "siliconflow":
+        return await _invoke_siliconflow(messages, model=model)
     return await _invoke_openai(messages, model=model)
 
 
@@ -150,6 +152,29 @@ async def _invoke_openrouter(messages: list[dict], model: str | None = None) -> 
         Any,
         await client.chat.completions.create(
             model=model or settings.openrouter_model,
+            messages=cast(Any, messages),
+        ),
+    )
+    return LLMResult(
+        content=response.choices[0].message.content or "",
+        usage=_extract_usage(response.usage),
+    )
+
+
+async def _invoke_siliconflow(messages: list[dict], model: str | None = None) -> LLMResult:
+    """硅基流动调用 — OpenAI 兼容接口。"""
+    import httpx
+    from openai import AsyncOpenAI
+
+    client = AsyncOpenAI(
+        api_key=settings.siliconflow_api_key,
+        base_url=settings.siliconflow_base_url,
+        http_client=httpx.AsyncClient(proxy=None, trust_env=False),
+    )
+    response = cast(
+        Any,
+        await client.chat.completions.create(
+            model=model or settings.siliconflow_model,
             messages=cast(Any, messages),
         ),
     )

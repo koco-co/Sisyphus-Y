@@ -35,7 +35,6 @@ _MODULE_NAMES = [
     "recycle",
     "ai_config",
     "notification",
-    "test_plan",
     "tasks",
     "files",
 ]
@@ -50,7 +49,9 @@ def _collect_routers() -> list:
             mod = importlib.import_module(module_path)
             routers.append(mod.router)
         except Exception:
-            logger.warning("Failed to load router from %s — skipping", module_path, exc_info=True)
+            logger.warning(
+                "Failed to load router from %s — skipping", module_path, exc_info=True
+            )
     return routers
 
 

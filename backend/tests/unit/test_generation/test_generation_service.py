@@ -93,7 +93,12 @@ class TestChatStreamContext:
         rag_tp_result.scalars.return_value = rag_tp_scalars
 
         session.execute = AsyncMock(
-            side_effect=[map_result, test_points_result, no_report_result, rag_tp_result]
+            side_effect=[
+                map_result,
+                test_points_result,
+                no_report_result,
+                rag_tp_result,
+            ]
         )
 
         service = GenerationService(session)
@@ -108,13 +113,21 @@ class TestChatStreamContext:
 
         with (
             patch.object(service, "get_session", AsyncMock(return_value=gen_session)),
-            patch.object(service, "list_messages", AsyncMock(return_value=[first_turn_message])),
+            patch.object(
+                service, "list_messages", AsyncMock(return_value=[first_turn_message])
+            ),
             patch(
                 "app.modules.generation.service.get_thinking_stream_with_fallback",
                 AsyncMock(return_value=_fake_stream()),
             ) as stream_mock,
-            patch("app.modules.generation.service.assemble_prompt", return_value="system prompt"),
-            patch("app.engine.rag.retriever.retrieve_cases_as_context", AsyncMock(return_value="")),
+            patch(
+                "app.modules.generation.service.assemble_prompt",
+                return_value="system prompt",
+            ),
+            patch(
+                "app.engine.rag.retriever.retrieve_cases_as_context",
+                AsyncMock(return_value=""),
+            ),
         ):
             await service.chat_stream(session_id, "请生成测试用例")
 
@@ -123,3 +136,72 @@ class TestChatStreamContext:
 
         assert "自动保存成功" in injected_content
         assert "保存失败仅草稿" not in injected_content
+
+    async def test_chat_stream_uses_hard_generation_instruction(self):
+        """测试点驱动生成应把强约束任务指令传给 generation prompt。"""
+        from app.modules.generation.service import GenerationService
+
+        session_id = uuid.uuid4()
+        requirement_id = uuid.uuid4()
+
+        gen_session = MagicMock()
+        gen_session.requirement_id = requirement_id
+        gen_session.mode = "test_point_driven"
+
+        requirement = MagicMock()
+        requirement.title = "任务草稿自动保存"
+        requirement.content_ast = {"summary": "自动保存草稿"}
+
+        session = AsyncMock()
+        session.get = AsyncMock(return_value=requirement)
+
+        map_result = MagicMock()
+        map_result.scalar_one_or_none.return_value = None
+
+        no_report_result = MagicMock()
+        no_report_result.scalar_one_or_none.return_value = None
+
+        rag_tp_scalars = MagicMock()
+        rag_tp_scalars.all.return_value = []
+        rag_tp_result = MagicMock()
+        rag_tp_result.scalars.return_value = rag_tp_scalars
+
+        session.execute = AsyncMock(
+            side_effect=[map_result, no_report_result, rag_tp_result]
+        )
+
+        service = GenerationService(session)
+
+        first_turn_message = MagicMock()
+        first_turn_message.role = "user"
+        first_turn_message.content = "请生成测试用例"
+
+        async def _fake_stream():
+            if False:
+                yield "noop"
+
+        with (
+            patch.object(service, "get_session", AsyncMock(return_value=gen_session)),
+            patch.object(
+                service, "list_messages", AsyncMock(return_value=[first_turn_message])
+            ),
+            patch(
+                "app.modules.generation.service.get_thinking_stream_with_fallback",
+                AsyncMock(return_value=_fake_stream()),
+            ),
+            patch(
+                "app.modules.generation.service.assemble_prompt",
+                return_value="system prompt",
+            ) as assemble_mock,
+            patch(
+                "app.engine.rag.retriever.retrieve_cases_as_context",
+                AsyncMock(return_value=""),
+            ),
+        ):
+            await service.chat_stream(session_id, "请生成测试用例")
+
+        task_instruction = assemble_mock.call_args.args[1]
+        assert assemble_mock.call_args.args[0] == "generation"
+        assert "只返回纯 JSON 数组" in task_instruction
+        assert "test_point_title 必须与已确认测试点标题完全一致" in task_instruction
+        assert "异常用例只能包含一个逆向条件" in task_instruction

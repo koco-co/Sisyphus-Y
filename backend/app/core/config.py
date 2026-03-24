@@ -54,6 +54,9 @@ class Settings(BaseSettings):
     dashscope_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     openrouter_api_key: str = ""
     openrouter_model: str = "openrouter/auto"
+    siliconflow_api_key: str = ""
+    siliconflow_model: str = "Pro/moonshotai/Kimi-K2.5"
+    siliconflow_base_url: str = "https://api.siliconflow.cn/v1"
     llm_fallback_provider: str = "zhipu"
     embedding_provider: str = ""  # 为空时跟随 llm_provider
     voyageai_api_key: str = ""

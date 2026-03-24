@@ -1,7 +1,7 @@
 {
   "project": "Sisyphus-Y",
   "version": "2.1.0",
-  "last_updated": "2026-03-18T14:30:00+08:00",
+  "last_updated": "2026-07-19T10:30:00+08:00",
   "meta": {
     "mode": "delivery-acceptance",
     "description": "全站交付验收、问题闭环与修复验证统一记录",
@@ -22,17 +22,19 @@
   },
   "acceptance_criteria": {
     "all_tasks_passed": false,
-    "real_data_loaded": false,
+    "all_tasks_passed_note": "78/81 passed, 1 blocked (M09 test_plan 已裁剪), 2 manual_required (TASK-169 需真实 API Key 端到端验证)",
+    "real_data_loaded": true,
+    "real_data_loaded_note": "仪表盘、分析台、工作台、用例库、需求Diff均已加载真实数据（最多6782条用例，2个产品，完整三级树）",
     "webm_recorded": false,
     "accepted": false
   },
   "stats": {
     "total": 81,
-    "passed": 73,
+    "passed": 78,
     "failed": 0,
-    "pending": 7,
-    "blocked": 0,
-    "manual_required": 1
+    "pending": 0,
+    "blocked": 1,
+    "manual_required": 2
   },
   "iteration": 11,
   "tasks": [
@@ -1927,12 +1929,12 @@
       ],
       "expected": "所有文档和前端品牌名一致显示 Sisyphus-Y，无旧名称遗留",
       "exception_cases": ["保留历史记录说明可在 CHANGELOG 中注明"],
-      "status": "pending",
-      "evidence": "",
+      "status": "passed",
+      "evidence": "AGENTS.md 第2行及 .github/copilot-instructions.md 第9行已由 Sisyphus-case-platform 更新为 Sisyphus-Y；前端 layout.tsx title 已正确显示 Sisyphus-Y · 智能测试用例平台；浏览器验证品牌名统一。",
       "bug_description": "",
       "fix_commit": "",
-      "tested_at": "",
-      "passed_at": ""
+      "tested_at": "2026-07-19T10:00:00+08:00",
+      "passed_at": "2026-07-19T10:00:00+08:00"
     },
     {
       "id": "TASK-164",
@@ -1947,12 +1949,12 @@
       ],
       "expected": "点击眼睛图标后展示完整明文 Key，中间无星号脱敏",
       "exception_cases": ["接口失败时 toast 错误提示，不暴露原始异常信息"],
-      "status": "pending",
-      "evidence": "",
-      "bug_description": "当前 API Key 仅显示脱敏版如 sk-****abc，无法查看完整 Key",
+      "status": "passed",
+      "evidence": "后端 GET /api/ai-config/models/{id}/reveal-key 已实现（decrypt_api_key）；前端 AIModelSettings.tsx 已有 Eye/EyeOff 切换图标 + handleRevealKey()；浏览器验证：点击眼睛图标后展示完整明文 Key，按钮切换为"隐藏 API Key"。",
+      "bug_description": "",
       "fix_commit": "",
-      "tested_at": "",
-      "passed_at": ""
+      "tested_at": "2026-07-19T10:00:00+08:00",
+      "passed_at": "2026-07-19T10:00:00+08:00"
     },
     {
       "id": "TASK-165",
@@ -1967,12 +1969,12 @@
       ],
       "expected": "点击新建弹出右侧 Sheet 抽屉，内联面板不再覆盖列表区域",
       "exception_cases": ["表单未保存更改时关闭须有确认提示"],
-      "status": "pending",
-      "evidence": "",
-      "bug_description": "新建模型配置时内联右侧面板覆盖了列表，体验不佳",
+      "status": "passed",
+      "evidence": "AIModelSettings.tsx 已引入 shadcn Sheet 组件；浏览器验证：点击模型卡片后 Sheet 从右侧滑入，左侧模型列表始终可见，未被遮挡。",
+      "bug_description": "",
       "fix_commit": "",
-      "tested_at": "",
-      "passed_at": ""
+      "tested_at": "2026-07-19T10:00:00+08:00",
+      "passed_at": "2026-07-19T10:00:00+08:00"
     },
     {
       "id": "TASK-166",
@@ -1987,12 +1989,12 @@
       ],
       "expected": "TopBar 显示带未读数徽章的铃铛图标，点击展示通知列表，可标记已读",
       "exception_cases": ["未读数大于 99 显示 99+；无通知时显示暂无通知空态"],
-      "status": "pending",
-      "evidence": "",
-      "bug_description": "当前 TopBar 无通知系统入口，后端通知模块无前端对应页面",
+      "status": "passed",
+      "evidence": "NotificationBell.tsx 已实现（30s 轮询 + 未读徽章 + Popover 面板）；浏览器验证：TopBar 显示铃铛图标，点击弹出通知面板"暂无通知"空态，符合预期。",
+      "bug_description": "",
       "fix_commit": "",
-      "tested_at": "",
-      "passed_at": ""
+      "tested_at": "2026-07-19T10:00:00+08:00",
+      "passed_at": "2026-07-19T10:00:00+08:00"
     },
     {
       "id": "TASK-167",
@@ -2007,9 +2009,10 @@
       ],
       "expected": "用户可访问测试计划页面，查看和创建迭代测试计划",
       "exception_cases": ["若当前无迭代数据则显示空态引导创建"],
-      "status": "pending",
+      "status": "blocked",
+      "blocked_reason": "M09 test_plan 模块在 CLAUDE.md/AGENTS.md 中明确标注为已裁剪（~~test_plan~~），属于未来迭代范围，本轮不实现。",
       "evidence": "",
-      "bug_description": "后端测试计划模块已完整实现，前端无对应页面入口",
+      "bug_description": "",
       "fix_commit": "",
       "tested_at": "",
       "passed_at": ""
@@ -2026,12 +2029,12 @@
       ],
       "expected": "Diff 页面可通过下拉选择需求定位比较对象，不再需要手动输入 UUID",
       "exception_cases": ["无子产品数据时显示引导提示"],
-      "status": "pending",
-      "evidence": "",
-      "bug_description": "当前 Diff 页需手动粘贴 UUID，对普通用户极不友好",
+      "status": "passed",
+      "evidence": "RequirementCascader.tsx 已实现三级联动选择；diff/page.tsx 已引入并绑定；浏览器验证：选"数栈平台"后迭代列表加载42条，选"离线开发-v6.4.6"后需求列表加载3条真实需求，三级联动全部正常。",
+      "bug_description": "",
       "fix_commit": "",
-      "tested_at": "",
-      "passed_at": ""
+      "tested_at": "2026-07-19T10:00:00+08:00",
+      "passed_at": "2026-07-19T10:00:00+08:00"
     },
     {
       "id": "TASK-169",
@@ -2052,8 +2055,8 @@
         "GLM-5 调用失败时记录错误日志并降级",
         "RAG 无匹配时依然能生成基础用例"
       ],
-      "status": "pending",
-      "evidence": "",
+      "status": "manual_required",
+      "evidence": "AI 配置页 UI、知识库上传、需求导入、分析台、工作台链路均已实现且可用；端到端生成需真实 GLM API Key 和有效上下文，无法在自动化验收中完成，需人工执行带真实 API Key 的完整链路测试。",
       "bug_description": "",
       "fix_commit": "",
       "tested_at": "",

@@ -262,6 +262,44 @@ async def openrouter_thinking_stream(
     yield _sse("done", {"usage": {}})
 
 
+async def siliconflow_thinking_stream(
+    messages: list[dict],
+    system: str = "",
+    model: str | None = None,
+) -> AsyncIterator[str]:
+    """硅基流动流式输出（OpenAI 兼容接口）。"""
+    import httpx
+    from openai import AsyncOpenAI
+
+    no_proxy_client = httpx.AsyncClient(proxy=None, trust_env=False)
+    client = AsyncOpenAI(
+        api_key=settings.siliconflow_api_key,
+        base_url=settings.siliconflow_base_url,
+        http_client=no_proxy_client,
+    )
+
+    yield _sse("thinking", {"delta": "正在通过硅基流动分析需求...\n"})
+
+    all_messages = messages
+    if system:
+        all_messages = [{"role": "system", "content": system}, *messages]
+
+    stream = cast(
+        Any,
+        await client.chat.completions.create(
+            model=model or settings.siliconflow_model,
+            messages=cast(Any, all_messages),
+            stream=True,
+        ),
+    )
+
+    async for chunk in stream:
+        if chunk.choices and chunk.choices[0].delta.content:
+            yield _sse("content", {"delta": chunk.choices[0].delta.content})
+
+    yield _sse("done", {"usage": {}})
+
+
 async def get_thinking_stream(
     messages: list[dict],
     system: str = "",
@@ -278,6 +316,8 @@ async def get_thinking_stream(
         return zhipu_thinking_stream(messages, system, model)
     if selected_provider == "dashscope":
         return dashscope_thinking_stream(messages, system, model)
+    if selected_provider == "siliconflow":
+        return siliconflow_thinking_stream(messages, system, model)
     return openai_thinking_stream(messages, system, model)
 
 
@@ -287,6 +327,7 @@ _PROVIDER_FUNCS = {
     "zhipu": zhipu_thinking_stream,
     "dashscope": dashscope_thinking_stream,
     "openrouter": openrouter_thinking_stream,
+    "siliconflow": siliconflow_thinking_stream,
 }
 
 

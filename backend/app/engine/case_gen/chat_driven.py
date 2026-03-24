@@ -42,11 +42,12 @@ _TASK_TEMPLATE = """\
 5. **引导补充**：主动询问是否需要补充边界值/异常/并发/权限场景
 
 ## 输出规范
-- 用自然语言与用户对话，保持友好专业的语气
-- 生成用例时，在回复中嵌入 JSON 数组格式的用例
+- 信息不足时，用自然语言只追问一个关键问题，不要同时追问多个问题
+- 一旦决定生成或修改用例，只返回纯 JSON 数组，不得混入解释文字、Markdown、```json 标记或分隔符
 - 每条用例包含：title、priority（P0/P1/P2）、case_type（normal/exception/boundary/concurrent/permission）、\
 precondition、steps（含 step_num / action / expected_result）
-- 如果用户要求修改已有用例，输出修改后的完整用例"""
+- 第一步必须是进入目标页面；异常用例只能包含一个逆向条件；所有输入步骤必须包含具体测试数据
+- 如果用户要求修改已有用例，输出修改后的完整用例，禁止只返回差异说明"""
 
 _CONTEXT_TEMPLATE = """\
 需求标题：{title}
@@ -64,11 +65,16 @@ def build_task_instruction(
     existing_cases: list[dict] | None = None,
 ) -> str:
     """组装 task instruction，包含需求上下文和已有用例摘要。"""
-    context = _CONTEXT_TEMPLATE.format(title=requirement_title, content=requirement_content)
+    context = _CONTEXT_TEMPLATE.format(
+        title=requirement_title, content=requirement_content
+    )
     task = _TASK_TEMPLATE.format(context=context)
 
     if existing_cases:
-        lines = [f"- [{c.get('priority', 'P1')}] {c.get('title', '')}" for c in existing_cases]
+        lines = [
+            f"- [{c.get('priority', 'P1')}] {c.get('title', '')}"
+            for c in existing_cases
+        ]
         task += _EXISTING_CASES_SECTION.format(cases_summary="\n".join(lines))
 
     return task
@@ -164,14 +170,21 @@ async def chat_driven_generate(
     """
     if rag_context is None:
         try:
-            rag_context = await retrieve_as_context(requirement_content, top_k=5, score_threshold=0.72)
+            rag_context = await retrieve_as_context(
+                requirement_content, top_k=5, score_threshold=0.72
+            )
         except Exception:
             logger.warning("RAG 检索失败，跳过知识库注入")
             rag_context = None
 
-    task_instruction = build_task_instruction(requirement_title, requirement_content, existing_cases)
+    task_instruction = build_task_instruction(
+        requirement_title, requirement_content, existing_cases
+    )
     system = assemble_prompt("exploratory", task_instruction, rag_context=rag_context)
-    messages_with_sys = [{"role": "system", "content": system}, *build_messages(history, current_message)]
+    messages_with_sys = [
+        {"role": "system", "content": system},
+        *build_messages(history, current_message),
+    ]
 
     stream = await chat_driven_stream(
         requirement_title,

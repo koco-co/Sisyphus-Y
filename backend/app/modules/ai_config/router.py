@@ -194,9 +194,9 @@ async def get_providers() -> dict:
                 "default_base_url": "https://api.siliconflow.cn/v1",
                 "models": [
                     {
-                        "id": "moonshotai/Kimi-K2-Instruct",
-                        "name": "Kimi K2 Instruct",
-                        "description": "月之暗面最新旗舰模型，中文能力强",
+                        "id": "Pro/moonshotai/Kimi-K2.5",
+                        "name": "Kimi K2.5 Pro",
+                        "description": "月之暗面高质量推理模型，适合复杂测试用例生成",
                         "recommended": True,
                     },
                     {

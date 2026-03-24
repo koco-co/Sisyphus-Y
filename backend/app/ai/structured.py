@@ -31,7 +31,9 @@ class TestStep(BaseModel):
 class TestCase(BaseModel):
     title: str
     priority: str = Field(pattern="^P[0-2]$")
-    case_type: str = Field(pattern="^(normal|exception|boundary|concurrent|permission)$")
+    case_type: str = Field(
+        pattern="^(normal|exception|boundary|concurrent|permission)$"
+    )
     precondition: str
     steps: list[TestStep]
     keywords: list[str] = Field(default_factory=list)
@@ -68,6 +70,15 @@ def _build_llm(*, provider: str | None = None) -> Any:
             model=settings.dashscope_model,
             api_key=settings.dashscope_api_key,
             base_url=settings.dashscope_base_url,
+            temperature=0.3,
+            http_client=no_proxy,
+            http_async_client=no_proxy_async,
+        )
+    if selected == "siliconflow":
+        return ChatOpenAI(
+            model=settings.siliconflow_model,
+            api_key=settings.siliconflow_api_key,
+            base_url=settings.siliconflow_base_url,
             temperature=0.3,
             http_client=no_proxy,
             http_async_client=no_proxy_async,
@@ -124,10 +135,17 @@ async def generate_cases_structured(
         try:
             llm = _build_llm(provider=provider_name)
             response = await llm.ainvoke(messages)
-            raw_text = response.content if hasattr(response, "content") else str(response)
+            raw_text = (
+                response.content if hasattr(response, "content") else str(response)
+            )
             raw_cases = parse_test_cases(raw_text)
             cases = _validate_cases(raw_cases)
-            logger.info("结构化输出成功 (provider=%s): %d 条用例（原始 %d 条）", provider_name, len(cases), len(raw_cases))
+            logger.info(
+                "结构化输出成功 (provider=%s): %d 条用例（原始 %d 条）",
+                provider_name,
+                len(cases),
+                len(raw_cases),
+            )
             return cases
         except Exception as e:
             logger.warning("结构化输出 provider=%s 失败: %s", provider_name, e)

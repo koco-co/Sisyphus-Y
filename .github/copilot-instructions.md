@@ -6,7 +6,7 @@ Always respond to me in Simplified Chinese (简体中文). This applies to code 
 
 ## 项目概述
 
-**Sisyphus-case-platform**（代号 Sisyphus-Y）是 AI 驱动的企业级功能测试用例自动生成平台，面向数据中台场景。
+**Sisyphus-Y** 是 AI 驱动的企业级功能测试用例自动生成平台，面向数据中台场景。
 
 核心理念：显式拆分「测什么」（M04 测试点/场景地图）和「怎么测」（M05 用例步骤），通过评审节点前置拦截方向错误，构建 需求录入 → 需求分析 → 测试点确认 → 用例生成 → 执行回流 的完整测试生命周期。
 
@@ -181,21 +181,22 @@ docker compose -f docker/docker-compose.yml logs -f
 
 ```ts
 // 禁止在任何组件中硬编码色值，统一通过 class 引用
+// 实际定义在 globals.css 的 @theme inline 块中（非 tailwind.config.ts）
 colors: {
-  'sy-bg':       '#0d0f12',   // 最底层页面背景
-  'sy-bg-1':     '#131619',   // 侧边栏/顶栏/一级卡片
-  'sy-bg-2':     '#1a1e24',   // 输入框/hover/二级卡片
-  'sy-bg-3':     '#212730',   // 标签/徽章/三级容器
-  'sy-border':   '#2a313d',
-  'sy-border-2': '#353d4a',
-  'sy-text':     '#e2e8f0',   // 主文字
-  'sy-text-2':   '#94a3b8',   // 次要文字
-  'sy-text-3':   '#566577',   // 辅助文字/占位符
-  'sy-accent':   '#00d9a3',   // 品牌色
-  'sy-accent-2': '#00b386',   // 品牌色 hover
-  'sy-warn':     '#f59e0b',
-  'sy-danger':   '#f43f5e',
-  'sy-info':     '#3b82f6',
+  'sy-bg':       '#f9fafb',   // 最底层页面背景（浅灰）
+  'sy-bg-1':     '#ffffff',   // 顶栏/一级卡片（白）
+  'sy-bg-2':     '#f3f4f6',   // 输入框/hover/二级卡片
+  'sy-bg-3':     '#e5e7eb',   // 标签/徽章/三级容器
+  'sy-border':   '#e5e7eb',
+  'sy-border-2': '#d1d5db',
+  'sy-text':     '#111827',   // 主文字
+  'sy-text-2':   '#374151',   // 次要文字
+  'sy-text-3':   '#6b7280',   // 辅助文字/占位符
+  'sy-accent':   '#22d3ee',   // 品牌色（cyan-400）
+  'sy-accent-2': '#06b6d4',   // 品牌色 hover（cyan-500）
+  'sy-warn':     '#fbbf24',   // amber-400
+  'sy-danger':   '#f87171',   // red-400
+  'sy-info':     '#60a5fa',   // blue-400
   'sy-purple':   '#a855f7',
 },
 fontFamily: {
@@ -209,7 +210,9 @@ keyframes: {
 animation: { blink: 'blink 0.8s infinite' },
 ```
 
-**硬编码报错示例**：`style={{ color: '#00d9a3' }}` / `className="text-[#00d9a3]"` → 改为 `className="text-sy-accent"`。
+**主题**：仅亮色模式（`defaultTheme="light" enableSystem={false}`），无 ThemeToggle。
+
+**硬编码报错示例**：`style={{ color: '#22d3ee' }}` / `className="text-[#22d3ee]"` → 改为 `className="text-sy-accent"`。
 
 ### 布局架构
 
@@ -232,6 +235,7 @@ animation: { blink: 'blink 0.8s infinite' },
 | `FormDialog`     | `components/ui/FormDialog.tsx`          | 可复用模态表单对话框                                       |
 | `FormField`      | `components/ui/FormField.tsx`           | 表单字段包装器（label + error）                            |
 | `TableSkeleton`  | `components/ui/TableSkeleton.tsx`       | 表格骨架屏加载动画                                         |
+| `PriorityRadioGroup` | `components/ui/PriorityRadioGroup.tsx` | 优先级胶囊选择器（P0–P3，带彩色圆点）                     |
 
 ### 场景节点颜色编码
 

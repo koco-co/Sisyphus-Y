@@ -1,6 +1,6 @@
 ## 项目概述
 
-**Sisyphus-case-platform**（代号 Sisyphus-Y）是 AI 驱动的企业级功能测试用例自动生成平台，面向数据中台场景。
+**Sisyphus-Y** 是 AI 驱动的企业级功能测试用例自动生成平台，面向数据中台场景。
 
 核心理念：显式拆分「测什么」（M04 测试点/场景地图）和「怎么测」（M05 用例步骤），通过评审节点前置拦截方向错误，构建 需求录入 → 需求分析 → 测试点确认 → 用例生成 → 执行回流 的完整测试生命周期。
 
@@ -63,29 +63,29 @@
 
 ## 模块对照表
 
-| 编号 | 后端 `modules/`  | 前端 `(main)/`                            | 职责                     |
-| ---- | ---------------- | ----------------------------------------- | ------------------------ |
-| M00  | `products/`      | `products/` `iterations/` `requirements/` | 子产品/迭代/需求三级管理 |
-| M01  | `uda/`           | —                                         | 文档解析引擎，UDA 层     |
-| M02  | `import_clean/`  | —                                         | 历史数据导入清洗         |
-| M03  | `diagnosis/`     | `analysis/diagnosis/`                     | 需求分析（原健康诊断）   |
-| M04  | `scene_map/`     | `analysis/scene-map/`                     | 测试点分析 & 场景地图    |
-| M05  | `generation/`    | `workbench/`                              | 对话式用例生成工作台     |
-| M06  | `testcases/`     | `testcases/`                              | 用例管理中心             |
-| M07  | `diff/`          | `diff/`                                   | 需求 Diff & 变更影响     |
-| M08  | `coverage/`      | `analysis/coverage/`                      | 需求覆盖度矩阵           |
-| M09  | ~~`test_plan/`~~ | —                                         | ~~迭代测试计划（已裁剪）~~ |
-| M10  | `templates/`     | —                                         | 用例模板库               |
-| M11  | `knowledge/`     | `knowledge/`                              | 知识库管理（RAG）        |
-| M12  | `export/`        | —                                         | 用例导出与集成           |
-| M13  | `execution/`     | —                                         | 执行结果回流             |
-| M14  | `analytics/`     | —（已合并至仪表盘）                       | 质量分析（合并至 M19）   |
-| M16  | `notification/`  | —                                         | 通知系统                 |
-| M17  | `search/`        | —                                         | 全局搜索                 |
-| M18  | ~~`collaboration/`~~ | —                                    | ~~协作功能（已裁剪）~~   |
-| M19  | `dashboard/`     | `(main)/`                                 | 首页仪表盘（含质量分析） |
-| M20  | `audit/`         | —                                         | 操作审计日志             |
-| M21  | `recycle/`       | —                                         | 回收站（软删除）         |
+| 编号 | 后端 `modules/`      | 前端 `(main)/`                            | 职责                       |
+| ---- | -------------------- | ----------------------------------------- | -------------------------- |
+| M00  | `products/`          | `products/` `iterations/` `requirements/` | 子产品/迭代/需求三级管理   |
+| M01  | `uda/`               | —                                         | 文档解析引擎，UDA 层       |
+| M02  | `import_clean/`      | —                                         | 历史数据导入清洗           |
+| M03  | `diagnosis/`         | `analysis/diagnosis/`                     | 需求分析（原健康诊断）     |
+| M04  | `scene_map/`         | `analysis/scene-map/`                     | 测试点分析 & 场景地图      |
+| M05  | `generation/`        | `workbench/`                              | 对话式用例生成工作台       |
+| M06  | `testcases/`         | `testcases/`                              | 用例管理中心               |
+| M07  | `diff/`              | `diff/`                                   | 需求 Diff & 变更影响       |
+| M08  | `coverage/`          | `analysis/coverage/`                      | 需求覆盖度矩阵             |
+| M09  | ~~`test_plan/`~~     | —                                         | ~~迭代测试计划（已裁剪）~~ |
+| M10  | `templates/`         | —                                         | 用例模板库                 |
+| M11  | `knowledge/`         | `knowledge/`                              | 知识库管理（RAG）          |
+| M12  | `export/`            | —                                         | 用例导出与集成             |
+| M13  | `execution/`         | —                                         | 执行结果回流               |
+| M14  | `analytics/`         | —（已合并至仪表盘）                       | 质量分析（合并至 M19）     |
+| M16  | `notification/`      | —                                         | 通知系统                   |
+| M17  | `search/`            | —                                         | 全局搜索                   |
+| M18  | ~~`collaboration/`~~ | —                                         | ~~协作功能（已裁剪）~~     |
+| M19  | `dashboard/`         | `(main)/`                                 | 首页仪表盘（含质量分析）   |
+| M20  | `audit/`             | —                                         | 操作审计日志               |
+| M21  | `recycle/`           | —                                         | 回收站（软删除）           |
 
 ---
 
@@ -194,21 +194,22 @@ docker compose -f docker/docker-compose.yml logs -f
 
 ```ts
 // 禁止在任何组件中硬编码色值，统一通过 class 引用
+// 实际定义在 globals.css 的 @theme inline 块中（非 tailwind.config.ts）
 colors: {
-  'sy-bg':       '#0d0f12',   // 最底层页面背景
-  'sy-bg-1':     '#131619',   // 侧边栏/顶栏/一级卡片
-  'sy-bg-2':     '#1a1e24',   // 输入框/hover/二级卡片
-  'sy-bg-3':     '#212730',   // 标签/徽章/三级容器
-  'sy-border':   '#2a313d',
-  'sy-border-2': '#353d4a',
-  'sy-text':     '#e2e8f0',   // 主文字
-  'sy-text-2':   '#94a3b8',   // 次要文字
-  'sy-text-3':   '#566577',   // 辅助文字/占位符
-  'sy-accent':   '#00d9a3',   // 品牌色
-  'sy-accent-2': '#00b386',   // 品牌色 hover
-  'sy-warn':     '#f59e0b',
-  'sy-danger':   '#f43f5e',
-  'sy-info':     '#3b82f6',
+  'sy-bg':       '#f9fafb',   // 最底层页面背景（浅灰）
+  'sy-bg-1':     '#ffffff',   // 顶栏/一级卡片（白）
+  'sy-bg-2':     '#f3f4f6',   // 输入框/hover/二级卡片
+  'sy-bg-3':     '#e5e7eb',   // 标签/徽章/三级容器
+  'sy-border':   '#e5e7eb',
+  'sy-border-2': '#d1d5db',
+  'sy-text':     '#111827',   // 主文字
+  'sy-text-2':   '#374151',   // 次要文字
+  'sy-text-3':   '#6b7280',   // 辅助文字/占位符
+  'sy-accent':   '#22d3ee',   // 品牌色（cyan-400）
+  'sy-accent-2': '#06b6d4',   // 品牌色 hover（cyan-500）
+  'sy-warn':     '#fbbf24',   // amber-400
+  'sy-danger':   '#f87171',   // red-400
+  'sy-info':     '#60a5fa',   // blue-400
   'sy-purple':   '#a855f7',
 },
 fontFamily: {
@@ -222,7 +223,9 @@ keyframes: {
 animation: { blink: 'blink 0.8s infinite' },
 ```
 
-**硬编码报错示例**：`style={{ color: '#00d9a3' }}` / `className="text-[#00d9a3]"` → 改为 `className="text-sy-accent"`。
+**主题**：仅亮色模式（`defaultTheme="light" enableSystem={false}`），无 ThemeToggle。
+
+**硬编码报错示例**：`style={{ color: '#22d3ee' }}` / `className="text-[#22d3ee]"` → 改为 `className="text-sy-accent"`。
 
 ### 布局架构
 
@@ -242,9 +245,10 @@ animation: { blink: 'blink 0.8s infinite' },
 | `CaseCard`       | `components/workspace/CaseCard.tsx`     | steps 数组逐条渲染，**绝对禁止 JSON.stringify**            |
 | `StreamCursor`   | `components/workspace/StreamCursor.tsx` | `w-0.5 h-3.5 bg-sy-warn animate-blink`                     |
 | `ThreeColLayout` | `components/layout/ThreeColLayout.tsx`  | 三栏固定高布局，各列独立滚动                               |
-| `FormDialog`     | `components/ui/FormDialog.tsx`              | 可复用模态表单对话框                                        |
-| `FormField`      | `components/ui/FormField.tsx`               | 表单字段包装器（label + error）                             |
-| `TableSkeleton`  | `components/ui/TableSkeleton.tsx`           | 表格骨架屏加载动画                                          |
+| `FormDialog`     | `components/ui/FormDialog.tsx`          | 可复用模态表单对话框                                       |
+| `FormField`      | `components/ui/FormField.tsx`           | 表单字段包装器（label + error）                            |
+| `TableSkeleton`  | `components/ui/TableSkeleton.tsx`       | 表格骨架屏加载动画                                         |
+| `PriorityRadioGroup` | `components/ui/PriorityRadioGroup.tsx` | 优先级胶囊选择器（P0–P3，带彩色圆点）                     |
 
 ### 场景节点颜色编码
 
@@ -336,17 +340,17 @@ QDRANT_URL=http://localhost:6333
 
 9 个顶级菜单项，由顶部水平导航栏承载：
 
-| 菜单项   | 路由            | 子Tab/说明                                       |
-| -------- | --------------- | ------------------------------------------------ |
-| 仪表盘   | `/`             | 项目概览 + 质量分析 双Tab                         |
-| 分析台   | `/analysis`     | 需求列表 / AI分析 / 场景地图 / 覆盖追踪 四子Tab   |
-| 工作台   | `/workbench`    | 确认测试点 + 生成用例                             |
-| 需求Diff | `/diff`         | 文本对比 + 变更摘要 双Tab                         |
-| 用例库   | `/testcases`    | 3级目录树 + 用例列表 + 导入/导出                  |
-| 模板库   | `/templates`    | 用例结构模板 + Prompt模板 双Tab                   |
-| 知识库   | `/knowledge`    | 4分类：企业规范/业务知识/历史用例/技术参考         |
-| 回收站   | `/recycle`      | 30天自动清理 + 到期倒计时                         |
-| 设置     | `/settings`     | AI配置 + Prompt管理 + 测试标准 + 操作日志          |
+| 菜单项   | 路由         | 子Tab/说明                                      |
+| -------- | ------------ | ----------------------------------------------- |
+| 仪表盘   | `/`          | 项目概览 + 质量分析 双Tab                       |
+| 分析台   | `/analysis`  | 需求列表 / AI分析 / 场景地图 / 覆盖追踪 四子Tab |
+| 工作台   | `/workbench` | 确认测试点 + 生成用例                           |
+| 需求Diff | `/diff`      | 文本对比 + 变更摘要 双Tab                       |
+| 用例库   | `/testcases` | 3级目录树 + 用例列表 + 导入/导出                |
+| 模板库   | `/templates` | 用例结构模板 + Prompt模板 双Tab                 |
+| 知识库   | `/knowledge` | 4分类：企业规范/业务知识/历史用例/技术参考      |
+| 回收站   | `/recycle`   | 30天自动清理 + 到期倒计时                       |
+| 设置     | `/settings`  | AI配置 + Prompt管理 + 测试标准 + 操作日志       |
 
 ---
 

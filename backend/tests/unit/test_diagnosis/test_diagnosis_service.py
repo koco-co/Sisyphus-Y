@@ -54,6 +54,60 @@ class TestPersistAiResponse:
         assert report.overall_score == 40.0
 
 
+class TestExtractRiskItems:
+    def _make_service(self):
+        session = AsyncMock()
+        return DiagnosisService(session)
+
+    def test_extracts_dimensions_from_json_code_block(self):
+        """JSON 代码块中的 dimensions 格式应被正确解析（BUG-002 修复）。"""
+        service = self._make_service()
+        ai_content = """以下是分析结果：
+
+```json
+{
+  "overall_health_score": 72,
+  "dimensions": [
+    {"title": "接口安全", "description": "缺少鉴权", "risk_level": "high", "suggestion": "加 JWT"},
+    {"title": "边界覆盖", "description": "未定义上限", "risk_level": "medium", "suggestion": "明确范围"}
+  ]
+}
+```
+"""
+        items = service._extract_risk_items(ai_content)
+        assert len(items) == 2
+        assert items[0]["title"] == "接口安全"
+        assert items[0]["level"] == "high"
+        assert items[1]["title"] == "边界覆盖"
+        assert items[1]["level"] == "medium"
+
+    def test_extracts_dimensions_from_bare_json_object(self):
+        """无代码块包裹的 JSON 对象也应能提取。"""
+        service = self._make_service()
+        ai_content = '{"overall_health_score": 60, "dimensions": [{"title": "缺失场景", "description": "无异常流", "risk_level": "high", "suggestion": "补充"}]}'
+        items = service._extract_risk_items(ai_content)
+        assert len(items) == 1
+        assert items[0]["title"] == "缺失场景"
+        assert items[0]["level"] == "high"
+
+    def test_extracts_json_array_format(self):
+        """纯数组格式（risk_level 字段别名）应被正确提取。"""
+        service = self._make_service()
+        ai_content = '[{"title": "并发未定义", "description": "TPS 上限未说明", "risk_level": "medium"}]'
+        items = service._extract_risk_items(ai_content)
+        assert len(items) == 1
+        assert items[0]["title"] == "并发未定义"
+        assert items[0]["level"] == "medium"
+
+    def test_filters_items_without_title(self):
+        """无 title 字段的项应被过滤。"""
+        service = self._make_service()
+        ai_content = '{"dimensions": [{"description": "无标题项", "risk_level": "low"}, {"title": "有标题", "risk_level": "high"}]}'
+        items = service._extract_risk_items(ai_content)
+        assert len(items) == 1
+        assert items[0]["title"] == "有标题"
+
+
 class TestCompleteReport:
     async def test_complete_report_preserves_existing_risk_counts_by_default(self):
         """仅更新 summary/status 时不应把既有风险计数重置为 0。"""
