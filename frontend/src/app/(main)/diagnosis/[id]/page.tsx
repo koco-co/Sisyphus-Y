@@ -2,11 +2,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { AiStreamStatus, ChatBubble, ProgressSteps, StatusPill, ThinkingStream } from '@/components/ui';
+import {
+  AiStreamStatus,
+  ChatBubble,
+  ProgressSteps,
+  StatusPill,
+  ThinkingStream,
+} from '@/components/ui';
+import { SmartNextCard } from '@/components/workflow/SmartNextCard';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import { apiClient } from '@/lib/api-client';
 import { useStreamStore } from '@/stores/stream-store';
-import { SmartNextCard } from '@/components/workflow/SmartNextCard';
 
 interface Risk {
   id: string;
@@ -61,7 +67,12 @@ export default function DiagnosisPage() {
       apiClient<{
         id: string;
         status: string;
-        test_points: { id: string; title: string; group_name: string; priority: string }[];
+        test_points: {
+          id: string;
+          title: string;
+          group_name: string;
+          priority: string;
+        }[];
       }>(`/scene-map/${id}`),
     retry: false,
   });
@@ -114,13 +125,16 @@ export default function DiagnosisPage() {
     const msg = input.trim();
     setInput('');
     setStreamDone(false);
-    setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: msg }]);
-    await streamSSE(`/diagnosis/${id}/chat`, { message: msg, round_num: messages.length + 1 });
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'user', content: msg }]);
+    await streamSSE(`/diagnosis/${id}/chat`, {
+      message: msg,
+      round_num: messages.length + 1,
+    });
     const latestContent = useStreamStore.getState().contentText;
     if (latestContent) {
       setMessages((prev) => [
         ...prev,
-        { id: (Date.now() + 1).toString(), role: 'ai', content: latestContent },
+        { id: crypto.randomUUID(), role: 'ai', content: latestContent },
       ]);
       resetStream();
     }
@@ -128,8 +142,14 @@ export default function DiagnosisPage() {
   }
 
   const steps = [
-    { label: '需求分析', status: report ? ('done' as const) : ('active' as const) },
-    { label: '风险识别', status: report?.risks?.length ? ('done' as const) : ('pending' as const) },
+    {
+      label: '需求分析',
+      status: report ? ('done' as const) : ('active' as const),
+    },
+    {
+      label: '风险识别',
+      status: report?.risks?.length ? ('done' as const) : ('pending' as const),
+    },
     {
       label: '测试点建议',
       status: sceneMap?.test_points?.length ? ('done' as const) : ('pending' as const),

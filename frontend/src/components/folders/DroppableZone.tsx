@@ -21,11 +21,7 @@ export function DroppableZone({ id, type, children, className }: DroppableZonePr
   return (
     <div
       ref={setNodeRef}
-      className={cn(
-        'transition-colors',
-        isOver && 'bg-sy-accent/10',
-        className
-      )}
+      className={cn('transition-colors', isOver && 'bg-sy-accent/10', className)}
     >
       {children}
       {isOver && (
@@ -48,7 +44,7 @@ export function DropIndicator({ position, visible }: DropIndicatorProps) {
     <div
       className={cn(
         'absolute left-0 right-0 h-0.5 bg-sy-accent pointer-events-none',
-        position === 'before' ? 'top-0' : 'bottom-0'
+        position === 'before' ? 'top-0' : 'bottom-0',
       )}
     />
   );

@@ -19,7 +19,6 @@ interface GenerationPanelProps {
   onFeedback?: (displayCaseId: string, value: 'up' | 'down') => void;
 }
 
-
 export function GenerationPanel({
   requirementId,
   testPointIds,

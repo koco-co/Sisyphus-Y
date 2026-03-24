@@ -3,6 +3,7 @@
 import { ArrowDown, ArrowUp, Loader2, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { CustomSelect } from '@/components/ui/CustomSelect';
+import { PriorityRadioGroup } from '@/components/ui/PriorityRadioGroup';
 import type { TestCaseDetail, TestCaseStep } from './types';
 
 interface CaseEditFormProps {
@@ -20,7 +21,6 @@ interface CaseEditFormProps {
   onCancel: () => void;
 }
 
-const priorityOptions = ['P0', 'P1', 'P2', 'P3'];
 const statusOptions = [
   { value: 'draft', label: '草稿' },
   { value: 'review', label: '待审' },
@@ -120,7 +120,6 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
     'w-full px-3 py-2 text-[12.5px] bg-bg2 border border-border rounded-md text-text placeholder:text-text3 outline-none focus:border-sy-accent transition-colors';
   const labelClass = 'block text-[11.5px] font-semibold text-text3 uppercase tracking-wider mb-1.5';
   const titleId = 'testcase-edit-title';
-  const priorityId = 'testcase-edit-priority';
   const statusId = 'testcase-edit-status';
   const caseTypeId = 'testcase-edit-type';
   const preconditionId = 'testcase-edit-precondition';
@@ -164,18 +163,14 @@ export function CaseEditForm({ testCase, open, onSave, onCancel }: CaseEditFormP
             />
           </div>
 
-          {/* Row: Priority + Status + Type */}
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className={labelClass} htmlFor={priorityId}>
-                优先级
-              </label>
-              <CustomSelect
-                value={priority}
-                onChange={(value) => setPriority(value)}
-                options={priorityOptions.map((p) => ({ value: p, label: p }))}
-              />
-            </div>
+          {/* Row: Priority */}
+          <div>
+            <p className={labelClass}>优先级</p>
+            <PriorityRadioGroup value={priority} onChange={setPriority} />
+          </div>
+
+          {/* Row: Status + Type */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass} htmlFor={statusId}>
                 状态

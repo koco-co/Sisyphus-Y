@@ -52,14 +52,26 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 export const api = {
   get: <T>(path: string) => request<T>(path, { method: 'GET' }),
   post: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
   put: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      method: 'PUT',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
   patch: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      method: 'PATCH',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
   deleteWithBody: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: 'DELETE', body: body ? JSON.stringify(body) : undefined }),
+    request<T>(path, {
+      method: 'DELETE',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
 };
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
@@ -379,41 +391,6 @@ export interface PromptConfigItem {
   created_at: string | null;
 }
 
-// Collaboration / Review
-export interface SharedReviewPayload {
-  id: string;
-  entity_type: string;
-  entity_id: string;
-  entity_snapshot?: {
-    test_points?: TestPoint[];
-    requirement_title?: string;
-    reviewer_names?: string[];
-    req_id?: string;
-    [key: string]: unknown;
-  };
-  review: {
-    title: string;
-    status: string;
-    description?: string;
-    reviewer_ids?: string[];
-    created_at: string;
-    [key: string]: unknown;
-  };
-  decisions: ReviewDecisionRecord[];
-  status: string;
-  created_at: string;
-  expires_at?: string;
-}
-
-export interface ReviewDecisionRecord {
-  id: string;
-  decision: string;
-  comment?: string;
-  created_at: string;
-}
-
-export type ReviewDecision = ReviewDecisionRecord | 'approved' | 'rejected' | 'needs_changes';
-
 // ─── Module APIs ─────────────────────────────────────────────────────────────
 
 export const productsApi = {
@@ -431,8 +408,7 @@ export const foldersApi = {
   update: (folderId: string, data: FolderUpdatePayload) =>
     api.patch<Folder>(`/products/folders/${folderId}`, data),
   delete: (folderId: string) => api.delete<void>(`/products/folders/${folderId}`),
-  reorder: (data: FolderReorderPayload) =>
-    api.patch<Folder[]>(`/products/folders/reorder`, data),
+  reorder: (data: FolderReorderPayload) => api.patch<Folder[]>(`/products/folders/reorder`, data),
 };
 
 export const requirementsApi = {
@@ -455,7 +431,9 @@ export const sceneMapApi = {
   confirmAll: (reqId: string) => api.post<void>(`/scene-map/${reqId}/confirm`),
   deletePoint: (pointId: string) => api.delete<void>(`/scene-map/test-points/${pointId}`),
   batchUpdate: (reqId: string, updates: { id: string; status?: string }[]) =>
-    api.post<TestPoint[]>(`/scene-map/${reqId}/test-points/batch-update`, { updates }),
+    api.post<TestPoint[]>(`/scene-map/${reqId}/test-points/batch-update`, {
+      updates,
+    }),
 };
 
 export const recycleApi = {
@@ -466,11 +444,17 @@ export const recycleApi = {
     return api.get<RecycleItemResponse>(`/recycle/?${qs.toString()}`);
   },
   restore: (entityType: string, id: string) =>
-    api.post<{ ok: boolean }>('/recycle/restore', { entity_type: entityType, entity_id: id }),
+    api.post<{ ok: boolean }>('/recycle/restore', {
+      entity_type: entityType,
+      entity_id: id,
+    }),
   batchRestore: (items: { entity_type: string; id: string }[]) =>
     api.post<{ restored: number }>('/recycle/batch-restore', { items }),
   permanentDelete: (entityType: string, id: string) =>
-    api.deleteWithBody<void>('/recycle/permanent', { entity_type: entityType, entity_id: id }),
+    api.deleteWithBody<void>('/recycle/permanent', {
+      entity_type: entityType,
+      entity_id: id,
+    }),
   cleanup: (retentionDays = 30) =>
     api.post<{ deleted: number; retention_days: number }>(
       `/recycle/cleanup?retention_days=${retentionDays}`,
@@ -479,7 +463,11 @@ export const recycleApi = {
 
 export const searchApi = {
   search: (query: string, types?: string[], page = 1, pageSize = 20) => {
-    const qs = new URLSearchParams({ q: query, page: String(page), page_size: String(pageSize) });
+    const qs = new URLSearchParams({
+      q: query,
+      page: String(page),
+      page_size: String(pageSize),
+    });
     if (types?.length) qs.set('types', types.join(','));
     return api.get<{ items: SearchResultItem[]; total: number }>(`/search?${qs.toString()}`);
   },
@@ -489,13 +477,22 @@ export const authApi = {
   login: (data: { username: string; password: string }) =>
     api.post<{
       access_token: string;
-      user: { id: string; username: string; email: string; role?: string; full_name?: string };
+      user: {
+        id: string;
+        username: string;
+        email: string;
+        role?: string;
+        full_name?: string;
+      };
     }>('/auth/login', data),
   register: (data: { username: string; email: string; password: string }) =>
-    api.post<{ id: string; username: string; email: string; role?: string; full_name?: string }>(
-      '/auth/register',
-      data,
-    ),
+    api.post<{
+      id: string;
+      username: string;
+      email: string;
+      role?: string;
+      full_name?: string;
+    }>('/auth/register', data),
 };
 
 export const aiConfigApi = {
@@ -534,11 +531,6 @@ export const templatesApi = {
   ) => api.patch<TemplateDetailResponse>(`/templates/${id}`, data),
   delete: (id: string) => api.delete<void>(`/templates/${id}`),
   listPrompts: () => api.get<PromptConfigItem[]>('/ai-config/prompts'),
-};
-
-export const collaborationApi = {
-  getSharedReview: (token: string) =>
-    api.get<SharedReviewPayload>(`/collaboration/shared-reviews/${token}`),
 };
 
 export const testcasesApi = {

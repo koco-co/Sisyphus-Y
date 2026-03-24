@@ -74,8 +74,8 @@ export function useSceneMap() {
       try {
         await sceneMapApi.confirmPoint(pointId);
         store.confirmPoint(pointId);
-      } catch (e) {
-        console.error('Failed to confirm point:', e);
+      } catch (_e) {
+        // silently ignore
       }
     },
     [store],
@@ -90,8 +90,8 @@ export function useSceneMap() {
           body: JSON.stringify({ status: 'ignored' }),
         });
         store.ignorePoint(pointId);
-      } catch (e) {
-        console.error('Failed to ignore point:', e);
+      } catch (_e) {
+        // silently ignore
       }
     },
     [store],
@@ -102,8 +102,8 @@ export function useSceneMap() {
       try {
         await sceneMapApi.deletePoint(pointId);
         store.removePoint(pointId);
-      } catch (e) {
-        console.error('Failed to delete point:', e);
+      } catch (_e) {
+        // silently ignore
       }
     },
     [store],
@@ -118,8 +118,8 @@ export function useSceneMap() {
           body: JSON.stringify(updates),
         });
         store.updatePoint(pointId, updates);
-      } catch (e) {
-        console.error('Failed to update point:', e);
+      } catch (_e) {
+        // silently ignore
       }
     },
     [store],
@@ -143,8 +143,8 @@ export function useSceneMap() {
             source: normalizeSource(point.source),
           });
         }
-      } catch (e) {
-        console.error('Failed to add point:', e);
+      } catch (_e) {
+        // silently ignore
       }
     },
     [store],
@@ -158,8 +158,8 @@ export function useSceneMap() {
       store.checkAllPoints();
       store.setTestPoints(store.testPoints.map((tp) => ({ ...tp, status: 'confirmed' })));
       store.lockMap();
-    } catch (e) {
-      console.error('Failed to confirm all:', e);
+    } catch (_e) {
+      // silently ignore
     }
   }, [store]);
 
@@ -173,8 +173,8 @@ export function useSceneMap() {
       for (const p of missingPoints) {
         store.confirmPoint(p.id);
       }
-    } catch (e) {
-      console.error('Failed to batch confirm missing points:', e);
+    } catch (_e) {
+      // silently ignore
     }
   }, [store]);
 

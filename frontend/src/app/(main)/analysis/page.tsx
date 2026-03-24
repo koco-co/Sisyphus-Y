@@ -35,7 +35,7 @@ function AnalysisPageInner() {
   };
 
   return (
-    <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 49px)' }}>
+    <div className="flex flex-col overflow-hidden" style={{ height: '100vh' }}>
       {showAiConfigBanner && <AiConfigBanner />}
       <div className="flex flex-1 overflow-hidden">
         <AnalysisLeftPanel

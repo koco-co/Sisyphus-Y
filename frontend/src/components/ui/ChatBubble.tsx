@@ -68,7 +68,7 @@ export function ChatBubble({
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/\{check\} (.+)/g, `<span style="color:var(--accent)">${CHECK_SVG} $1</span>`)
+      .replace(/\{check\} (.+)/g, `<span style="color:#00d9a3">${CHECK_SVG} $1</span>`)
       .replace(/### (.+)/g, '<h3 style="font-size:13px;font-weight:700;margin:8px 0 4px">$1</h3>')
       .replace(/## (.+)/g, '<h2 style="font-size:14px;font-weight:700;margin:10px 0 4px">$1</h2>')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -91,10 +91,10 @@ export function ChatBubble({
     const { prose } = extractNaturalLanguage(rawContent, isStreaming ?? false);
 
     if (!prose && isStreaming) {
-      return '<span style="color:var(--text3)">正在生成测试用例...</span>';
+      return '<span style="color:#566577">正在生成测试用例...</span>';
     }
     if (!prose) {
-      return `<span style="color:var(--accent)">${CHECK_SVG} 测试用例已生成，请查看右侧面板</span>`;
+      return `<span style="color:#00d9a3">${CHECK_SVG} 测试用例已生成，请查看右侧面板</span>`;
     }
     return renderMarkdown(prose);
   }

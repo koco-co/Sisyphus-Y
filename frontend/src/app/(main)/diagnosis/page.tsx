@@ -41,7 +41,7 @@ function statusBadge(status: ReqStatus) {
   const cfg = map[status];
   return (
     <span
-      className={`flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full border font-mono text-[10px] ${cfg.cls}`}
+      className={`shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full border font-mono text-[10px] ${cfg.cls}`}
     >
       {cfg.label}
     </span>
@@ -118,11 +118,11 @@ export default function DiagnosisPage() {
   // ── Left panel ─────────────────────────────────────────────────────────────
   const leftPanel = (
     <div
-      className="flex-shrink-0 flex flex-col border-r border-border overflow-hidden bg-bg1"
+      className="shrink-0 flex flex-col border-r border-border overflow-hidden bg-bg1"
       style={{ width: 280 }}
     >
       {/* Header */}
-      <div className="px-3.5 py-2.5 border-b border-border flex items-center gap-2 flex-shrink-0">
+      <div className="px-3.5 py-2.5 border-b border-border flex items-center gap-2 shrink-0">
         <Activity className="w-3.5 h-3.5 text-sy-accent" />
         <span className="text-[12px] font-semibold text-text2">AI 分析</span>
       </div>
@@ -141,11 +141,11 @@ export default function DiagnosisPage() {
               className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-bg2 transition-colors text-text text-[12.5px]"
             >
               {tree.expandedProducts.has(product.id) ? (
-                <ChevronDown className="w-3.5 h-3.5 text-text3 flex-shrink-0" />
+                <ChevronDown className="w-3.5 h-3.5 text-text3 shrink-0" />
               ) : (
-                <ChevronRight className="w-3.5 h-3.5 text-text3 flex-shrink-0" />
+                <ChevronRight className="w-3.5 h-3.5 text-text3 shrink-0" />
               )}
-              <FolderOpen className="w-3.5 h-3.5 text-sy-accent flex-shrink-0" />
+              <FolderOpen className="w-3.5 h-3.5 text-sy-accent shrink-0" />
               <span className="truncate flex-1 text-left">{product.name}</span>
             </button>
 
@@ -163,11 +163,11 @@ export default function DiagnosisPage() {
                       className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-bg2 transition-colors text-text3 text-[12px]"
                     >
                       {tree.expandedIterations.has(iter.id) ? (
-                        <ChevronDown className="w-3 h-3 flex-shrink-0" />
+                        <ChevronDown className="w-3 h-3 shrink-0" />
                       ) : (
-                        <ChevronRight className="w-3 h-3 flex-shrink-0" />
+                        <ChevronRight className="w-3 h-3 shrink-0" />
                       )}
-                      <IterationCw className="w-3 h-3 flex-shrink-0" />
+                      <IterationCw className="w-3 h-3 shrink-0" />
                       <span className="truncate flex-1 text-left">{iter.name}</span>
                     </button>
 
@@ -191,7 +191,7 @@ export default function DiagnosisPage() {
                                   : 'text-text3 hover:bg-bg2 hover:text-text2'
                               }`}
                             >
-                              <FileText className="w-3 h-3 flex-shrink-0" />
+                              <FileText className="w-3 h-3 shrink-0" />
                               <span className="truncate flex-1 text-left">
                                 {req.title || req.req_id}
                               </span>
@@ -225,16 +225,16 @@ export default function DiagnosisPage() {
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Top bar */}
       <div
-        className="flex-shrink-0 flex items-center gap-3 px-5 border-b border-border bg-bg1"
+        className="shrink-0 flex items-center gap-3 px-5 border-b border-border bg-bg1"
         style={{ height: 48 }}
       >
-        <FileText className="w-4 h-4 text-sy-accent flex-shrink-0" />
+        <FileText className="w-4 h-4 text-sy-accent shrink-0" />
         <span className="text-[13px] font-semibold text-text truncate flex-1">
           {tree.selectedReqTitle}
         </span>
 
         {/* 进入工作台 button */}
-        <div className="relative group flex-shrink-0">
+        <div className="relative group shrink-0">
           <Link
             href={`/workbench?reqId=${tree.selectedReqId}`}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${
@@ -261,7 +261,7 @@ export default function DiagnosisPage() {
       </div>
 
       {/* Tab nav */}
-      <div className="flex-shrink-0 flex border-b border-border bg-bg1 px-1">
+      <div className="shrink-0 flex border-b border-border bg-bg1 px-1">
         {tabLabels.map(({ key, label }) => (
           <button
             key={key}
@@ -313,7 +313,7 @@ export default function DiagnosisPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {showAiConfigBanner && <AiConfigBanner />}
-      <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 49px)' }}>
+      <div className="flex overflow-hidden" style={{ height: '100vh' }}>
         {leftPanel}
         {rightPanel}
       </div>

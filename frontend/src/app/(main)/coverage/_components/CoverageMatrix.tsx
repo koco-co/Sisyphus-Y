@@ -15,8 +15,7 @@ interface CoverageMatrixProps {
   iterations: IterationCoverage[];
 }
 
-const rateColor = (rate: number) =>
-  rate >= 80 ? 'var(--accent)' : rate >= 50 ? 'var(--amber)' : 'var(--red)';
+const rateColor = (rate: number) => (rate >= 80 ? '#00d9a3' : rate >= 50 ? '#f59e0b' : '#f43f5e');
 
 const rateFillClass = (rate: number) => (rate >= 80 ? '' : rate >= 50 ? 'amber' : 'red');
 
@@ -28,9 +27,18 @@ function StatusIcon({ rate }: { rate: number }) {
 
 function CoverageCellBadge({ status }: { status: 'full' | 'partial' | 'none' }) {
   const config = {
-    full: { label: '全覆盖', cls: 'bg-sy-accent/10 border-sy-accent/30 text-sy-accent' },
-    partial: { label: '部分', cls: 'bg-sy-warn/10 border-sy-warn/30 text-sy-warn' },
-    none: { label: '未覆盖', cls: 'bg-sy-danger/10 border-sy-danger/30 text-sy-danger' },
+    full: {
+      label: '全覆盖',
+      cls: 'bg-sy-accent/10 border-sy-accent/30 text-sy-accent',
+    },
+    partial: {
+      label: '部分',
+      cls: 'bg-sy-warn/10 border-sy-warn/30 text-sy-warn',
+    },
+    none: {
+      label: '未覆盖',
+      cls: 'bg-sy-danger/10 border-sy-danger/30 text-sy-danger',
+    },
   };
   const c = config[status];
   return (

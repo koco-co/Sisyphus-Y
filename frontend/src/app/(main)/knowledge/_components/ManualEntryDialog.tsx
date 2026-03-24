@@ -113,10 +113,7 @@ export default function ManualEntryDialog({ open, onClose, onSuccess }: ManualEn
       />
 
       {/* Dialog */}
-      <div
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[520px] max-w-[92vw] bg-bg1 rounded-lg border border-border shadow-lg"
-        style={{ boxShadow: 'var(--shadow-lg)' }}
-      >
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[520px] max-w-[92vw] bg-bg1 rounded-lg border border-border shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border">
           <div className="flex items-center gap-2">

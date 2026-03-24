@@ -49,7 +49,10 @@ export default function DocTable({
   onPreviewChunks,
   onVersionUploaded,
 }: DocTableProps) {
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [confirmVersion, setConfirmVersion] = useState<UploadVersionState | null>(null);
   const [uploadingVersionId, setUploadingVersionId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -117,11 +120,11 @@ export default function DocTable({
         <Loader2
           size={24}
           style={{
-            color: 'var(--accent)',
+            color: '#00d9a3',
             animation: 'spin 1s linear infinite',
           }}
         />
-        <p style={{ fontSize: 12, color: 'var(--text3)', marginTop: 8 }}>加载文档列表...</p>
+        <p style={{ fontSize: 12, color: '#566577', marginTop: 8 }}>加载文档列表...</p>
       </div>
     );
   }
@@ -166,11 +169,11 @@ export default function DocTable({
                 <tr key={doc.id}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <FileText size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                      <FileText size={14} style={{ color: '#00d9a3', flexShrink: 0 }} />
                       <span
                         style={{
                           fontWeight: 500,
-                          color: 'var(--text)',
+                          color: '#e2e8f0',
                           maxWidth: 200,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -186,9 +189,9 @@ export default function DocTable({
                             fontSize: 10,
                             padding: '1px 5px',
                             borderRadius: 4,
-                            background: 'var(--bg3)',
-                            border: '1px solid var(--border2)',
-                            color: 'var(--text2)',
+                            background: '#212730',
+                            border: '1px solid #353d4a',
+                            color: '#94a3b8',
                             flexShrink: 0,
                           }}
                         >
@@ -203,7 +206,7 @@ export default function DocTable({
                     </span>
                   </td>
                   <td>
-                    <span className="font-mono" style={{ fontSize: 11, color: 'var(--text3)' }}>
+                    <span className="font-mono" style={{ fontSize: 11, color: '#566577' }}>
                       v{doc.version ?? 1}
                     </span>
                   </td>
@@ -226,12 +229,18 @@ export default function DocTable({
                     </span>
                   </td>
                   <td>
-                    <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+                    <span style={{ fontSize: 11, color: '#566577' }}>
                       {doc.uploaded_at?.slice(0, 10)}
                     </span>
                   </td>
                   <td style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: 4,
+                        justifyContent: 'flex-end',
+                      }}
+                    >
                       {/* 查看分块 */}
                       {onPreviewChunks && (
                         <button

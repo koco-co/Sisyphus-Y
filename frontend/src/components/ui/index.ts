@@ -3,6 +3,7 @@ export { ChatBubble } from './ChatBubble';
 export { ConfirmDialog } from './ConfirmDialog';
 export { EmptyState } from './EmptyState';
 export { Pagination } from './Pagination';
+export { PriorityRadioGroup } from './PriorityRadioGroup';
 export { ProgressBar } from './ProgressBar';
 export { ProgressSteps } from './ProgressSteps';
 export { SearchInput } from './SearchInput';

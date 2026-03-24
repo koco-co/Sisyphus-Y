@@ -384,8 +384,8 @@ export default function TemplatesPage() {
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, prompts.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, prompts.length, promptsLoading]);
 
   // Filter prompts by search
   const filteredPrompts = useMemo(() => {

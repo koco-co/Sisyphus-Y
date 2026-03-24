@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { RequirementDetailTab } from '../RequirementDetailTab';
 
 // Mock useRequirement hook
@@ -8,8 +8,12 @@ vi.mock('@/hooks/useRequirement', () => ({
     requirement: {
       id: 'test-req-id',
       title: '测试需求',
-      content: '# 标题\n\n- 列表项1\n- 列表项2\n\n![图片](https://example.com/img.png)\n\n[链接](https://example.com)\n\n`代码`',
-      content_ast: { raw_text: '# 标题\n\n- 列表项1\n- 列表项2\n\n![图片](https://example.com/img.png)\n\n[链接](https://example.com)\n\n`代码`' },
+      content:
+        '# 标题\n\n- 列表项1\n- 列表项2\n\n![图片](https://example.com/img.png)\n\n[链接](https://example.com)\n\n`代码`',
+      content_ast: {
+        raw_text:
+          '# 标题\n\n- 列表项1\n- 列表项2\n\n![图片](https://example.com/img.png)\n\n[链接](https://example.com)\n\n`代码`',
+      },
     },
     requirementLoading: false,
     updateContent: vi.fn(),

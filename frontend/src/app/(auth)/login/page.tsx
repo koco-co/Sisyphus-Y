@@ -65,7 +65,9 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-2xl font-bold text-sy-accent tracking-wide">Sisyphus-Y</h1>
+          <h1 className="font-display text-2xl font-bold text-sy-accent tracking-wide">
+            Sisyphus-Y
+          </h1>
           <p className="text-text3 text-[13px] mt-2">AI 驱动的智能测试用例平台</p>
         </div>
 
@@ -91,7 +93,10 @@ export default function LoginPage() {
                 id="login-username"
                 type="text"
                 value={username}
-                onChange={(e) => { setUsername(e.target.value); setUsernameError(''); }}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setUsernameError('');
+                }}
                 placeholder="请输入用户名"
                 className={`input w-full${usernameError ? ' border-sy-danger/60' : ''}`}
                 autoComplete="username"
@@ -113,7 +118,10 @@ export default function LoginPage() {
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); setPasswordError(''); }}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError('');
+                  }}
                   placeholder="请输入密码"
                   className={`input w-full pr-10${passwordError ? ' border-sy-danger/60' : ''}`}
                   autoComplete="current-password"

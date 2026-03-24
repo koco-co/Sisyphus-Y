@@ -3,10 +3,9 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
-
-import { FolderItem } from './FolderItem';
-import type { Folder } from '@/lib/api';
 import type { DragItemData } from '@/hooks/useFolderDnd';
+import type { Folder } from '@/lib/api';
+import { FolderItem } from './FolderItem';
 
 interface DraggableFolderItemProps {
   folder: Folder;
@@ -31,14 +30,7 @@ export function DraggableFolderItem({
   onDelete,
   children,
 }: DraggableFolderItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: folder.id,
     data: {
       id: folder.id,
@@ -54,7 +46,7 @@ export function DraggableFolderItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const indentStyle = { paddingLeft: `${12 + level * 12}px` };
+  const indentStyle = { paddingLeft: `${24 + level * 12}px` };
 
   return (
     <div ref={setNodeRef} style={style} className="relative">
@@ -83,9 +75,7 @@ export function DraggableFolderItem({
       </FolderItem>
 
       {/* 拖拽时的指示线 */}
-      {isDragging && (
-        <div className="absolute left-0 right-0 top-0 h-0.5 bg-sy-accent" />
-      )}
+      {isDragging && <div className="absolute left-0 right-0 top-0 h-0.5 bg-sy-accent" />}
     </div>
   );
 }

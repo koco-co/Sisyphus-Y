@@ -334,7 +334,7 @@ function SortableFolderLevel({
 }) {
   const padLeft = 8 + depth * 14;
   const isRootCreateHere = inlineCreate?.parentId === parentId && depth === inlineCreate?.depth;
-  const showCreateInput = isRootCreateHere;
+  const showCreateInput = isRootCreateHere && parentId !== null;
   const internalCreateRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -610,7 +610,11 @@ export function FolderTree({
   const handleDeleteClick = (node: FolderNode) => {
     setContextMenu(null);
     if (node.case_count > 0) {
-      setDeleteConfirm({ folderId: node.id, folderName: node.name, caseCount: node.case_count });
+      setDeleteConfirm({
+        folderId: node.id,
+        folderName: node.name,
+        caseCount: node.case_count,
+      });
     } else {
       performDelete(node.id);
     }
@@ -634,7 +638,12 @@ export function FolderTree({
   // Context menu handlers
   const handleContextMenu = (e: React.MouseEvent, node: FolderNode) => {
     e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY, folderId: node.id, folderName: node.name });
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      folderId: node.id,
+      folderName: node.name,
+    });
   };
 
   // Move folder handler

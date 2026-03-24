@@ -45,8 +45,7 @@ export function DiscardedRecordsModal({ open, onClose }: DiscardedRecordsModalPr
     try {
       const data = await api.get<DiscardedRecord[]>('/import-clean/discarded?limit=200');
       setRecords(data ?? []);
-    } catch (e) {
-      console.error('Failed to fetch discarded records:', e);
+    } catch (_e) {
       setRecords([]);
     } finally {
       setLoading(false);

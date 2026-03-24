@@ -6,12 +6,12 @@ import { api } from '@/lib/api';
 
 interface AuditEntry {
   id: string;
-  user_name: string;
+  user_id: string | null;
   action: string;
-  object_type: string;
-  object_name: string;
+  entity_type: string;
+  entity_id: string | null;
+  ip_address?: string | null;
   created_at: string;
-  details?: string;
 }
 
 interface AuditLogResponse {
@@ -34,15 +34,21 @@ const actionLabels: Record<string, string> = {
   review: '审核',
 };
 
-const objectTypeLabels: Record<string, string> = {
-  requirement: '需求',
-  testcase: '用例',
-  template: '模板',
+const entityTypeLabels: Record<string, string> = {
+  products: '产品',
+  requirements: '需求',
+  testcases: '用例',
+  templates: '模板',
   knowledge: '知识库',
-  product: '产品',
-  iteration: '迭代',
+  iterations: '迭代',
+  generation: '用例生成',
+  diagnosis: '需求分析',
+  scene_map: '场景地图',
+  diff: '需求Diff',
+  audit: '审计日志',
+  export: '导出',
+  execution: '执行回流',
   ai_config: 'AI 配置',
-  prompt: 'Prompt',
 };
 
 export function AuditLogs() {
@@ -62,55 +68,31 @@ export function AuditLogs() {
       const data = await api.get<AuditLogResponse>(`/audit?${params.toString()}`);
       setLogs(data.items);
     } catch {
-      // Fallback demo data
+      // Fallback demo data (uses actual backend field names)
       setLogs([
         {
           id: '1',
-          user_name: '张工',
-          action: 'generate',
-          object_type: 'testcase',
-          object_name: '数据导入模块 — 14 条用例',
+          user_id: null,
+          action: 'create',
+          entity_type: 'generation',
+          entity_id: null,
           created_at: new Date(Date.now() - 28 * 60000).toISOString(),
         },
         {
           id: '2',
-          user_name: '李工',
+          user_id: null,
           action: 'update',
-          object_type: 'requirement',
-          object_name: '实时流处理 — 窗口函数',
+          entity_type: 'requirements',
+          entity_id: null,
           created_at: new Date(Date.now() - 62 * 60000).toISOString(),
         },
         {
           id: '3',
-          user_name: '王工',
-          action: 'confirm',
-          object_type: 'testcase',
-          object_name: '标签管理场景地图 — 8 个测试点',
-          created_at: new Date(Date.now() - 105 * 60000).toISOString(),
-        },
-        {
-          id: '4',
-          user_name: '张工',
+          user_id: null,
           action: 'create',
-          object_type: 'knowledge',
-          object_name: '测试规范 v2.1.pdf',
+          entity_type: 'knowledge',
+          entity_id: null,
           created_at: new Date(Date.now() - 180 * 60000).toISOString(),
-        },
-        {
-          id: '5',
-          user_name: '赵工',
-          action: 'export',
-          object_type: 'testcase',
-          object_name: 'Sprint 24-W04 测试报告',
-          created_at: new Date(Date.now() - 360 * 60000).toISOString(),
-        },
-        {
-          id: '6',
-          user_name: '王工',
-          action: 'update',
-          object_type: 'ai_config',
-          object_name: '切换主模型为 GLM-5',
-          created_at: new Date(Date.now() - 24 * 3600000).toISOString(),
         },
       ]);
     } finally {
@@ -125,9 +107,10 @@ export function AuditLogs() {
   const filtered = logs.filter((log) => {
     if (!search.trim()) return true;
     const keyword = search.trim().toLowerCase();
+    const entityLabel = entityTypeLabels[log.entity_type] ?? log.entity_type;
     return (
-      log.user_name.toLowerCase().includes(keyword) ||
-      log.object_name.toLowerCase().includes(keyword) ||
+      entityLabel.toLowerCase().includes(keyword) ||
+      (log.entity_id ?? '').toLowerCase().includes(keyword) ||
       (actionLabels[log.action] ?? log.action).includes(keyword)
     );
   });
@@ -184,7 +167,7 @@ export function AuditLogs() {
                 <th className="w-20">操作人</th>
                 <th className="w-24">操作</th>
                 <th className="w-24">对象类型</th>
-                <th>对象名称</th>
+                <th>实体 ID</th>
               </tr>
             </thead>
             <tbody>
@@ -205,16 +188,20 @@ export function AuditLogs() {
                         minute: '2-digit',
                       })}
                     </td>
-                    <td className="text-text2">{log.user_name}</td>
+                    <td className="text-text2 font-mono text-[11px]">
+                      {log.user_id ? `${log.user_id.slice(0, 8)}…` : '系统'}
+                    </td>
                     <td>
                       <span className="pill pill-blue text-[10px]">
                         {actionLabels[log.action] ?? log.action}
                       </span>
                     </td>
                     <td className="text-text3 text-[12px]">
-                      {objectTypeLabels[log.object_type] ?? log.object_type}
+                      {entityTypeLabels[log.entity_type] ?? log.entity_type}
                     </td>
-                    <td className="text-text truncate max-w-[300px]">{log.object_name}</td>
+                    <td className="text-text truncate max-w-[300px] font-mono text-[11px]">
+                      {log.entity_id ? `${log.entity_id.slice(0, 8)}…` : '—'}
+                    </td>
                   </tr>
                 ))
               )}

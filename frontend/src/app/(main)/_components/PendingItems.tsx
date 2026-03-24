@@ -43,9 +43,9 @@ const TYPE_CONFIG: Record<
 };
 
 const PRIORITY_COLOR: Record<string, string> = {
-  high: 'var(--red)',
-  medium: 'var(--amber)',
-  low: 'var(--text3)',
+  high: '#f43f5e',
+  medium: '#f59e0b',
+  low: '#566577',
 };
 
 interface PendingItemsProps {
@@ -57,13 +57,13 @@ export default function PendingItems({ items }: PendingItemsProps) {
     return (
       <div>
         <div className="sec-header" style={{ marginBottom: 12 }}>
-          <AlertTriangle size={14} style={{ color: 'var(--amber)' }} />
+          <AlertTriangle size={14} style={{ color: '#f59e0b' }} />
           <span style={{ fontSize: 13, fontWeight: 600 }}>待处理事项</span>
         </div>
         <div className="card">
           <div className="empty-state" style={{ padding: 24 }}>
-            <CheckCircle2 size={36} style={{ color: 'var(--accent)' }} />
-            <p style={{ fontWeight: 500, color: 'var(--accent)' }}>所有事项已处理完毕</p>
+            <CheckCircle2 size={36} style={{ color: '#00d9a3' }} />
+            <p style={{ fontWeight: 500, color: '#00d9a3' }}>所有事项已处理完毕</p>
           </div>
         </div>
       </div>
@@ -73,7 +73,7 @@ export default function PendingItems({ items }: PendingItemsProps) {
   return (
     <div>
       <div className="sec-header" style={{ marginBottom: 12 }}>
-        <AlertTriangle size={14} style={{ color: 'var(--amber)' }} />
+        <AlertTriangle size={14} style={{ color: '#f59e0b' }} />
         <span style={{ fontSize: 13, fontWeight: 600 }}>待处理事项</span>
         <span className="pill pill-amber" style={{ marginLeft: 4 }}>
           {items.length}
@@ -95,7 +95,7 @@ export default function PendingItems({ items }: PendingItemsProps) {
                 alignItems: 'center',
                 gap: 12,
                 padding: '12px 16px',
-                borderLeft: `3px solid ${PRIORITY_COLOR[item.priority] || 'var(--border)'}`,
+                borderLeft: `3px solid ${PRIORITY_COLOR[item.priority] || '#2a313d'}`,
               }}
             >
               <div
@@ -103,12 +103,12 @@ export default function PendingItems({ items }: PendingItemsProps) {
                   width: 32,
                   height: 32,
                   borderRadius: 8,
-                  background: 'var(--bg2)',
+                  background: '#1a1e24',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  color: PRIORITY_COLOR[item.priority] || 'var(--text3)',
+                  color: PRIORITY_COLOR[item.priority] || '#566577',
                 }}
               >
                 <Icon size={16} />
@@ -127,7 +127,7 @@ export default function PendingItems({ items }: PendingItemsProps) {
                     style={{
                       fontSize: 12.5,
                       fontWeight: 500,
-                      color: 'var(--text)',
+                      color: '#e2e8f0',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -137,12 +137,12 @@ export default function PendingItems({ items }: PendingItemsProps) {
                   </span>
                   <span className={cfg.pillClass}>{cfg.label}</span>
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text3)' }}>
+                <div style={{ fontSize: 11, color: '#566577' }}>
                   {item.product_name} · {item.description}
                 </div>
               </div>
 
-              <ArrowRight size={14} style={{ color: 'var(--text3)', flexShrink: 0 }} />
+              <ArrowRight size={14} style={{ color: '#566577', flexShrink: 0 }} />
             </Link>
           );
         })}

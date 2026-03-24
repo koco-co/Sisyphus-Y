@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface FolderDialogProps {
   open: boolean;
@@ -38,41 +38,40 @@ export function FolderDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-sy-bg-1 border border-sy-border rounded-lg shadow-xl w-[320px]">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-sy-border">
-          <h3 className="text-[13px] font-semibold text-sy-text">{title}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
+      <div className="bg-bg1 border border-border rounded-xl shadow-xl w-[340px]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h3 className="text-sm font-semibold text-text">{title}</h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-sy-text-3 hover:text-sy-text transition-colors"
+            className="text-text3 hover:text-text2 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
         <form onSubmit={handleSubmit}>
-          <div className="px-4 py-3">
+          <div className="px-6 py-5">
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="文件夹名称"
-              className="w-full px-3 py-2 bg-sy-bg-2 border border-sy-border rounded-md text-[12px] text-sy-text placeholder:text-sy-text-3 outline-none focus:border-sy-accent transition-colors"
-              autoFocus
+              className="w-full px-3 py-2 bg-bg3 border border-border rounded-lg text-[12.5px] text-text placeholder:text-text3 outline-none focus:border-accent focus:ring-0 transition-colors"
             />
           </div>
-          <div className="flex justify-end gap-2 px-4 py-3 border-t border-sy-border">
+          <div className="flex justify-end gap-2 px-6 pb-5">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-[12px] text-sy-text-2 hover:text-sy-text transition-colors"
+              className="px-4 py-2 rounded-lg text-[12.5px] font-medium border border-border bg-bg2 text-text2 hover:bg-bg3 transition-colors"
             >
               取消
             </button>
             <button
               type="submit"
               disabled={!name.trim() || loading}
-              className="px-3 py-1.5 text-[12px] font-medium bg-sy-accent text-sy-bg rounded-md hover:bg-sy-accent-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-lg text-[12.5px] font-medium bg-accent text-bg hover:bg-accent2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? '处理中...' : '确定'}
             </button>

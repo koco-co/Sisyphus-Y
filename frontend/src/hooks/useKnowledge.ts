@@ -49,8 +49,7 @@ export function useKnowledge() {
       if (searchQuery) params.set('q', searchQuery);
       const data = await api.get<PaginatedDocs>(`/knowledge/?${params}`);
       setDocuments(data.items || [], data.total || 0);
-    } catch (e) {
-      console.error('Failed to fetch documents:', e);
+    } catch (_e) {
       setError('加载文档列表失败');
     } finally {
       setLoading(false);
@@ -87,8 +86,7 @@ export function useKnowledge() {
 
         await fetchDocuments();
         return true;
-      } catch (e) {
-        console.error('Upload failed:', e);
+      } catch (_e) {
         setError('文件上传失败');
         return false;
       } finally {
@@ -104,8 +102,7 @@ export function useKnowledge() {
       try {
         await api.delete(`/knowledge/${id}`);
         removeDocument(id);
-      } catch (e) {
-        console.error('Delete failed:', e);
+      } catch (_e) {
         setError('删除文档失败');
       }
     },
@@ -119,8 +116,7 @@ export function useKnowledge() {
         updateDocumentStatus(id, 'processing');
         await api.post(`/knowledge/${id}/reindex`);
         await fetchDocuments();
-      } catch (e) {
-        console.error('Reindex failed:', e);
+      } catch (_e) {
         updateDocumentStatus(id, 'failed');
         setError('重建索引失败');
       }
@@ -140,8 +136,7 @@ export function useKnowledge() {
           top_k: 5,
         });
         setRagResults(results);
-      } catch (e) {
-        console.error('RAG search failed:', e);
+      } catch (_e) {
         setError('检索失败');
       } finally {
         setRagSearching(false);

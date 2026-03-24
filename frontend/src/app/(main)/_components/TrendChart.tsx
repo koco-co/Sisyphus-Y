@@ -30,7 +30,7 @@ export default function TrendChart({ data, loading = false }: TrendChartProps) {
           <div
             key={w}
             className="h-4 rounded animate-pulse"
-            style={{ width: `${w}%`, background: 'var(--bg2)' }}
+            style={{ width: `${w}%`, background: '#1a1e24' }}
           />
         ))}
       </div>
@@ -40,9 +40,7 @@ export default function TrendChart({ data, loading = false }: TrendChartProps) {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-[200px]">
-        <p className="text-sm text-center" style={{ color: 'var(--text3)' }}>
-          暂无迭代数据
-        </p>
+        <p className="text-sm text-center text-sy-text-3">暂无迭代数据</p>
       </div>
     );
   }
@@ -50,13 +48,13 @@ export default function TrendChart({ data, loading = false }: TrendChartProps) {
   return (
     <ResponsiveContainer width="100%" height={240}>
       <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-        <XAxis dataKey="iteration_name" tick={{ fill: 'var(--text2)', fontSize: 11 }} />
-        <YAxis tick={{ fill: 'var(--text2)', fontSize: 11 }} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#2a313d" />
+        <XAxis dataKey="iteration_name" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+        <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} />
         <Tooltip
           contentStyle={{
-            background: 'var(--bg1)',
-            border: '1px solid var(--border)',
+            background: '#131619',
+            border: '1px solid #2a313d',
             borderRadius: 6,
             fontSize: 12,
           }}
@@ -65,18 +63,12 @@ export default function TrendChart({ data, loading = false }: TrendChartProps) {
         <Line
           dataKey="testcase_count"
           name="用例总量"
-          stroke="var(--accent)"
+          stroke="#00d9a3"
           dot={false}
           strokeWidth={2}
         />
-        <Line dataKey="p0_count" name="P0 数量" stroke="var(--red)" dot={false} strokeWidth={2} />
-        <Line
-          dataKey="coverage_rate"
-          name="覆盖率%"
-          stroke="var(--blue)"
-          dot={false}
-          strokeWidth={2}
-        />
+        <Line dataKey="p0_count" name="P0 数量" stroke="#f43f5e" dot={false} strokeWidth={2} />
+        <Line dataKey="coverage_rate" name="覆盖率%" stroke="#3b82f6" dot={false} strokeWidth={2} />
       </LineChart>
     </ResponsiveContainer>
   );

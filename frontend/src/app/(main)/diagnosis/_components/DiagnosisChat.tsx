@@ -1,6 +1,7 @@
 'use client';
 
 import { Activity, Loader2 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 import { StreamCursor } from '@/components/workspace/StreamCursor';
 import type { ChatMessage } from '@/lib/api';
@@ -27,72 +28,179 @@ interface DiagnosisJsonResult {
   [key: string]: unknown;
 }
 
-function renderDiagnosisJson(json: DiagnosisJsonResult): string {
-  const riskLabels: Record<string, string> = {
-    high: '<span style="color:var(--red);font-weight:600">高风险</span>',
-    medium: '<span style="color:var(--amber);font-weight:600">中风险</span>',
-    low: '<span style="color:var(--blue);font-weight:600">低风险</span>',
-  };
+const riskConfig: Record<string, { label: string; className: string }> = {
+  high: { label: '高风险', className: 'text-sy-danger font-semibold' },
+  medium: { label: '中风险', className: 'text-sy-warn font-semibold' },
+  low: { label: '低风险', className: 'text-sy-info font-semibold' },
+};
 
-  let html = '';
-  if (json.overall_health_score !== undefined) {
-    const score = json.overall_health_score;
-    const scoreColor = score >= 70 ? 'var(--accent)' : score >= 50 ? 'var(--amber)' : 'var(--red)';
-    html += `<div style="margin-bottom:12px;padding:8px 12px;background:var(--bg2);border-radius:8px;display:flex;align-items:center;gap:8px">
-      <span style="font-size:11px;color:var(--text3)">总体健康评分</span>
-      <span style="font-size:20px;font-weight:700;color:${scoreColor}">${score}</span>
-      <span style="font-size:11px;color:var(--text3)">/100</span>
-    </div>`;
-  }
-
-  if (Array.isArray(json.dimensions)) {
-    html += '<div style="display:flex;flex-direction:column;gap:8px">';
-    for (const dim of json.dimensions) {
-      const label = riskLabels[dim.risk_level] || dim.risk_level;
-      html += `<div style="padding:10px 12px;border-radius:6px;background:var(--bg2)">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-          <span style="font-size:12.5px;font-weight:600;color:var(--text)">${dim.title}</span>
-          ${label}
-        </div>
-        <p style="font-size:12px;color:var(--text2);margin:0 0 4px 0">${dim.description}</p>
-        <p style="font-size:11.5px;color:var(--text3);margin:0"><strong>建议：</strong>${dim.suggestion}</p>
-      </div>`;
-    }
-    html += '</div>';
-  }
+function RenderDiagnosisJson({ json }: { json: DiagnosisJsonResult }) {
   return (
-    html ||
-    `<pre style="font-size:11px;color:var(--text2);white-space:pre-wrap">${JSON.stringify(json, null, 2)}</pre>`
+    <>
+      {json.overall_health_score !== undefined && (
+        <div className="mb-3 p-2 px-3 bg-sy-bg-2 rounded-lg flex items-center gap-2">
+          <span className="text-[11px] text-sy-text-3">总体健康评分</span>
+          <span
+            className={`text-[20px] font-bold font-mono ${
+              json.overall_health_score >= 70
+                ? 'text-sy-accent'
+                : json.overall_health_score >= 50
+                  ? 'text-sy-warn'
+                  : 'text-sy-danger'
+            }`}
+          >
+            {json.overall_health_score}
+          </span>
+          <span className="text-[11px] text-sy-text-3">/100</span>
+        </div>
+      )}
+      {Array.isArray(json.dimensions) && (
+        <div className="flex flex-col gap-2">
+          {json.dimensions.map((dim) => {
+            const risk = riskConfig[dim.risk_level] ?? {
+              label: dim.risk_level,
+              className: 'text-sy-text-2',
+            };
+            return (
+              <div key={dim.title} className="p-2.5 px-3 rounded-md bg-sy-bg-2">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-[12.5px] font-semibold text-sy-text">{dim.title}</span>
+                  <span className={`text-[11px] ${risk.className}`}>{risk.label}</span>
+                </div>
+                <p className="text-[12px] text-sy-text-2 mb-1">{dim.description}</p>
+                <p className="text-[11.5px] text-sy-text-3">
+                  <strong>建议：</strong>
+                  {dim.suggestion}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {json.overall_health_score === undefined && !Array.isArray(json.dimensions) && (
+        <pre className="text-[11px] text-sy-text-2 whitespace-pre-wrap">
+          {JSON.stringify(json, null, 2)}
+        </pre>
+      )}
+    </>
   );
 }
 
-function renderMarkdown(text: string): string {
-  // Handle ```json ... ``` code blocks — parse and render diagnosis reports
+function renderTextSegments(text: string): ReactNode[] {
+  const segments: ReactNode[] = [];
+  let idx = 0;
+
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line.startsWith('### ')) {
+      segments.push(
+        <h3 key={idx++} className="text-[13px] font-semibold text-sy-text mt-2 mb-1">
+          {applyInlineFormatting(line.slice(4))}
+        </h3>,
+      );
+    } else if (line.startsWith('## ')) {
+      segments.push(
+        <h2 key={idx++} className="text-[14px] font-bold text-sy-text mt-2 mb-1">
+          {applyInlineFormatting(line.slice(3))}
+        </h2>,
+      );
+    } else if (line.startsWith('- ')) {
+      const listItems: ReactNode[] = [];
+      while (i < lines.length && lines[i].startsWith('- ')) {
+        listItems.push(<li key={idx++}>{applyInlineFormatting(lines[i].slice(2))}</li>);
+        i++;
+      }
+      i--;
+      segments.push(
+        <ul key={idx++} className="list-disc pl-4 space-y-0.5">
+          {listItems}
+        </ul>,
+      );
+    } else if (line.trim() === '') {
+      segments.push(<br key={idx++} />);
+    } else {
+      segments.push(
+        <p key={idx++} className="mb-1">
+          {applyInlineFormatting(line)}
+        </p>,
+      );
+    }
+  }
+  return segments;
+}
+
+function applyInlineFormatting(text: string): ReactNode {
+  const parts: ReactNode[] = [];
+  let remaining = text;
+  let idx = 0;
+
+  while (remaining.length > 0) {
+    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+    const codeMatch = remaining.match(/`([^`]+)`/);
+
+    let firstMatch: { index: number; length: number; node: ReactNode } | null = null;
+
+    if (boldMatch?.index !== undefined) {
+      firstMatch = {
+        index: boldMatch.index,
+        length: boldMatch[0].length,
+        node: (
+          <strong key={idx++} className="font-semibold">
+            {boldMatch[1]}
+          </strong>
+        ),
+      };
+    }
+
+    if (codeMatch?.index !== undefined && (!firstMatch || codeMatch.index < firstMatch.index)) {
+      firstMatch = {
+        index: codeMatch.index,
+        length: codeMatch[0].length,
+        node: (
+          <code key={idx++} className="px-1 py-0.5 bg-sy-bg-3 rounded text-[11px] font-mono">
+            {codeMatch[1]}
+          </code>
+        ),
+      };
+    }
+
+    if (!firstMatch) {
+      parts.push(remaining);
+      break;
+    }
+
+    if (firstMatch.index > 0) {
+      parts.push(remaining.slice(0, firstMatch.index));
+    }
+    parts.push(firstMatch.node);
+    remaining = remaining.slice(firstMatch.index + firstMatch.length);
+  }
+
+  return parts.length === 1 ? parts[0] : parts;
+}
+
+function RenderMarkdown({ text }: { text: string }): ReactNode {
   const jsonBlockMatch = text.match(/```json\s*([\s\S]*?)```/);
   if (jsonBlockMatch) {
     try {
       const parsed: DiagnosisJsonResult = JSON.parse(jsonBlockMatch[1]);
-      if (parsed.dimensions || parsed.overall_health_score !== undefined) {
-        const before = text.substring(0, text.indexOf('```json')).trim();
-        const after = text.substring(text.indexOf('```', text.indexOf('```json') + 7) + 3).trim();
-        const beforeHtml = before ? `<p>${before.replace(/\n/g, '<br/>')}</p>` : '';
-        const afterHtml = after ? `<p>${after.replace(/\n/g, '<br/>')}</p>` : '';
-        return `${beforeHtml}${renderDiagnosisJson(parsed)}${afterHtml}`;
-      }
+      const before = text.substring(0, text.indexOf('```json')).trim();
+      const after = text.substring(text.indexOf('```', text.indexOf('```json') + 7) + 3).trim();
+      return (
+        <>
+          {before && <div>{renderTextSegments(before)}</div>}
+          <RenderDiagnosisJson json={parsed} />
+          {after && <div>{renderTextSegments(after)}</div>}
+        </>
+      );
     } catch {
       // fall through to normal markdown
     }
   }
 
-  return text
-    .replace(/### (.+)/g, '<h3>$1</h3>')
-    .replace(/## (.+)/g, '<h2>$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>[\s\S]*<\/li>)/g, '<ul>$1</ul>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br/>');
+  return <>{renderTextSegments(text)}</>;
 }
 
 export function DiagnosisChat({
@@ -144,7 +252,7 @@ export function DiagnosisChat({
               className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold ${
                 msg.role === 'user'
                   ? 'bg-bg3 border border-border text-text2'
-                  : 'bg-[linear-gradient(135deg,var(--accent-d),rgba(59,130,246,0.15))] border border-sy-accent/30 text-sy-accent'
+                  : 'bg-[linear-gradient(135deg,rgba(0,217,163,0.1),rgba(59,130,246,0.15))] border border-sy-accent/30 text-sy-accent'
               }`}
             >
               {msg.role === 'user' ? 'U' : 'AI'}
@@ -155,13 +263,9 @@ export function DiagnosisChat({
                   {msg.content}
                 </div>
               ) : (
-                <div
-                  className="rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed bg-sy-accent/4 border border-sy-accent/20 text-text chat-bubble ai-bubble markdown-body"
-                  // biome-ignore lint/security/noDangerouslySetInnerHtml: renderMarkdown sanitizes AI content
-                  dangerouslySetInnerHTML={{
-                    __html: renderMarkdown(msg.content),
-                  }}
-                />
+                <div className="rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed bg-sy-accent/4 border border-sy-accent/20 text-sy-text chat-bubble ai-bubble">
+                  <RenderMarkdown text={msg.content} />
+                </div>
               )}
               {msg.created_at && (
                 <div className="text-[10px] text-text3 mt-1 font-mono">
@@ -192,17 +296,13 @@ export function DiagnosisChat({
         {/* Streaming content */}
         {isStreaming && streamContent && (
           <div className="flex gap-2.5 mb-3.5">
-            <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold bg-[linear-gradient(135deg,var(--accent-d),rgba(59,130,246,0.15))] border border-sy-accent/30 text-sy-accent">
+            <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold bg-[linear-gradient(135deg,rgba(0,217,163,0.1),rgba(59,130,246,0.15))] border border-sy-accent/30 text-sy-accent">
               AI
             </div>
             <div>
-              <div
-                className="rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed bg-sy-accent/4 border border-sy-accent/20 text-text chat-bubble ai-bubble markdown-body"
-                // biome-ignore lint/security/noDangerouslySetInnerHtml: renderMarkdown sanitizes AI content
-                dangerouslySetInnerHTML={{
-                  __html: renderMarkdown(streamContent),
-                }}
-              />
+              <div className="rounded-lg px-3 py-2.5 max-w-[480px] text-[12.5px] leading-relaxed bg-sy-accent/4 border border-sy-accent/20 text-sy-text chat-bubble ai-bubble">
+                <RenderMarkdown text={streamContent} />
+              </div>
               <StreamCursor />
             </div>
           </div>
@@ -211,7 +311,7 @@ export function DiagnosisChat({
         {/* Loading indicator */}
         {isStreaming && !streamContent && !streamThinking && (
           <div className="flex gap-2.5 mb-3.5">
-            <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold bg-[linear-gradient(135deg,var(--accent-d),rgba(59,130,246,0.15))] border border-sy-accent/30 text-sy-accent">
+            <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold bg-[linear-gradient(135deg,rgba(0,217,163,0.1),rgba(59,130,246,0.15))] border border-sy-accent/30 text-sy-accent">
               AI
             </div>
             <div className="rounded-lg px-3 py-2.5 bg-sy-accent/4 border border-sy-accent/20 flex items-center gap-2">

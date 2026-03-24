@@ -63,7 +63,7 @@ export function MoveFolderDialog({
   return (
     <dialog
       ref={dialogRef}
-      className="p-0 rounded-xl bg-sy-bg-1 border border-sy-border shadow-2xl backdrop:bg-black/60 w-72 max-h-[70vh] outline-none"
+      className="p-0 rounded-xl bg-bg1 border border-border shadow-xl backdrop:backdrop-blur-sm backdrop:bg-black/40 w-72 max-h-[70vh] outline-none"
     >
       <div className="flex flex-col max-h-[70vh]">
         {/* Header */}
@@ -111,18 +111,18 @@ export function MoveFolderDialog({
         </div>
 
         {/* Actions */}
-        <div className="px-4 py-3 border-t border-sy-border flex justify-end gap-2 flex-shrink-0">
+        <div className="px-4 py-3 border-t border-border flex justify-end gap-2 flex-shrink-0">
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-1.5 text-[12px] rounded-lg text-sy-text-2 hover:bg-sy-bg-2 transition-colors"
+            className="px-4 py-2 text-[12px] rounded-lg border border-border bg-bg2 text-text2 hover:bg-bg3 transition-colors"
           >
             取消
           </button>
           <button
             type="button"
             onClick={() => onConfirm(selected)}
-            className="px-3 py-1.5 text-[12px] rounded-lg bg-sy-accent text-sy-bg font-medium hover:bg-sy-accent-2 transition-colors"
+            className="px-4 py-2 text-[12px] rounded-lg bg-accent text-bg font-medium hover:bg-accent2 transition-colors"
           >
             确认移动
           </button>

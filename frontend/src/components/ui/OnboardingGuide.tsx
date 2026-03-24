@@ -14,7 +14,7 @@ const STEPS = [
     id: 'requirement',
     label: '录入需求',
     desc: '通过文字输入或上传 .docx/.pdf 文档，将需求录入系统。支持 OCR 解析图片中的文字内容。',
-    href: '/requirements',
+    href: '/analysis',
   },
   {
     id: 'diagnosis',

@@ -15,10 +15,9 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-
+import { FolderItem } from '@/components/folders/FolderItem';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FolderDialog } from '@/components/ui/FolderDialog';
-import { FolderItem } from '@/components/folders/FolderItem';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useRequirementTree } from '@/hooks/useRequirementTree';
 import type { Folder, Requirement } from '@/lib/api';
@@ -158,14 +157,7 @@ export function RequirementNav({
         };
       })
       .filter((product) => product.hasVisibleIterations || !debouncedSearch);
-  }, [
-    products,
-    iterations,
-    requirements,
-    matchesSearch,
-    hideEmptyIterations,
-    debouncedSearch,
-  ]);
+  }, [products, iterations, requirements, matchesSearch, hideEmptyIterations, debouncedSearch]);
 
   const hasActiveFilters = hideEmptyIterations || !!debouncedSearch;
 
@@ -211,8 +203,8 @@ export function RequirementNav({
     try {
       setLoading(true);
       await deleteFolder(productId, iterationId, folderId);
-    } catch (error) {
-      console.error('Failed to delete folder:', error);
+    } catch (_error) {
+      // silently ignore
     } finally {
       setLoading(false);
     }
@@ -231,8 +223,8 @@ export function RequirementNav({
           await updateFolder(productId, iterationId, folderId, { name });
         }
         setFolderDialog({ open: false, mode: 'create', parentId: null });
-      } catch (error) {
-        console.error('Failed to save folder:', error);
+      } catch (_error) {
+        // silently ignore
       } finally {
         setLoading(false);
       }
@@ -242,7 +234,7 @@ export function RequirementNav({
 
   // Render requirement item
   const renderRequirementItem = useCallback(
-    (req: Requirement, iterationId: string) => {
+    (req: Requirement, _iterationId: string) => {
       const isSelected = req.id === selectedReqId;
 
       return (
@@ -251,14 +243,10 @@ export function RequirementNav({
           key={req.id}
           onClick={() => onSelectRequirement(req)}
           className={`w-full flex items-center gap-1.5 pl-8 pr-2.5 py-1.5 rounded-md text-[12px] transition-colors ${
-            isSelected
-              ? 'bg-sy-accent/10 text-sy-accent'
-              : 'text-text2 hover:bg-bg2'
+            isSelected ? 'bg-sy-accent/10 text-sy-accent' : 'text-text2 hover:bg-bg2'
           }`}
         >
-          <span
-            className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(req.status ?? '')}`}
-          />
+          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(req.status ?? '')}`} />
           <FileText className="w-3 h-3 shrink-0" />
           <span className="truncate">
             {highlightMatch(req.title || (req.req_id ?? ''), debouncedSearch)}
@@ -452,7 +440,7 @@ export function RequirementNav({
                         {/* Folders and Requirements */}
                         {expandedIterations.has(iter.id) && (
                           <div>
-                            {(isReqLoading || isFolderLoading) ? (
+                            {isReqLoading || isFolderLoading ? (
                               <div className="pl-4 py-1 text-[11px] text-text3">加载中...</div>
                             ) : (
                               <>
@@ -462,7 +450,13 @@ export function RequirementNav({
                                 )}
                                 {/* 未分类需求 */}
                                 {filteredUnclassifiedReqs.length > 0 && (
-                                  <div className={iterFolders.length > 0 ? 'border-t border-sy-border/50 mt-1' : ''}>
+                                  <div
+                                    className={
+                                      iterFolders.length > 0
+                                        ? 'border-t border-sy-border/50 mt-1'
+                                        : ''
+                                    }
+                                  >
                                     {iterFolders.length > 0 && (
                                       <div className="flex items-center gap-1.5 pl-8 pr-2 py-1">
                                         <FolderX className="w-3 h-3 text-text3" />
@@ -477,9 +471,12 @@ export function RequirementNav({
                                   </div>
                                 )}
                                 {/* Show empty state if no folders and no unclassified requirements */}
-                                {iterFolders.length === 0 && filteredUnclassifiedReqs.length === 0 && (
-                                  <div className="pl-8 py-1 text-[11px] text-text3">当前迭代暂无需求</div>
-                                )}
+                                {iterFolders.length === 0 &&
+                                  filteredUnclassifiedReqs.length === 0 && (
+                                    <div className="pl-8 py-1 text-[11px] text-text3">
+                                      当前迭代暂无需求
+                                    </div>
+                                  )}
                               </>
                             )}
                           </div>

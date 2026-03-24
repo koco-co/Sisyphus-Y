@@ -17,50 +17,6 @@ import { apiClient } from '@/lib/api-client';
 import type { Iteration, Product, Requirement } from '@/types/api';
 import { UploadRequirementDialog } from './_components/UploadRequirementDialog';
 
-/* ── Static fallback data ── */
-const fallbackRequirements = [
-  {
-    id: 'REQ-001',
-    title: '用户数据源接入管理',
-    status: 'draft',
-    priority: 'P1',
-    testPoints: 5,
-    cases: 12,
-  },
-  {
-    id: 'REQ-002',
-    title: '数据同步调度引擎',
-    status: 'reviewed',
-    priority: 'P0',
-    testPoints: 8,
-    cases: 24,
-  },
-  {
-    id: 'REQ-003',
-    title: '实时数据流处理',
-    status: 'draft',
-    priority: 'P1',
-    testPoints: 3,
-    cases: 0,
-  },
-  {
-    id: 'REQ-004',
-    title: '数据质量检测规则',
-    status: 'diagnosed',
-    priority: 'P2',
-    testPoints: 6,
-    cases: 18,
-  },
-  {
-    id: 'REQ-005',
-    title: '元数据自动采集',
-    status: 'draft',
-    priority: 'P1',
-    testPoints: 4,
-    cases: 8,
-  },
-];
-
 const statusMap: Record<string, { label: string; cls: string }> = {
   draft: { label: '草稿', cls: 'pill-gray' },
   reviewed: { label: '已评审', cls: 'pill-green' },
@@ -109,7 +65,7 @@ export default function RequirementsPage() {
   });
 
   const displayReqs = requirements ?? [];
-  const useStatic = !selectedProductId || (!reqLoading && displayReqs.length === 0 && !reqError);
+  const isEmpty = !selectedProductId || (!reqLoading && displayReqs.length === 0 && !reqError);
 
   return (
     <>
@@ -197,10 +153,10 @@ export default function RequirementsPage() {
                 style={{
                   background:
                     r.status === 'reviewed'
-                      ? 'var(--accent)'
+                      ? '#00d9a3'
                       : r.status === 'diagnosed'
-                        ? 'var(--blue)'
-                        : 'var(--text3)',
+                        ? '#3b82f6'
+                        : '#566577',
                 }}
               />
               <span style={{ flex: 1, fontSize: 12 }}>{r.title}</span>
@@ -218,10 +174,7 @@ export default function RequirementsPage() {
               {iterations?.find((i) => i.id === selectedIterationId)?.name ?? '迭代'}
             </div>
             <h1>需求卡片</h1>
-            <div className="sub">
-              {useStatic ? fallbackRequirements.length : displayReqs.length} 条需求 ·
-              选择需求查看详情
-            </div>
+            <div className="sub">{displayReqs.length} 条需求 · 选择需求查看详情</div>
           </div>
           <div className="spacer" />
           <button type="button" className="btn btn-primary" onClick={() => setDialogOpen(true)}>
@@ -234,22 +187,40 @@ export default function RequirementsPage() {
             <Loader2 size={24} className="spin" />
           </div>
         ) : reqError ? (
-          <div className="card" style={{ color: 'var(--red)', padding: 24 }}>
+          <div className="card" style={{ color: '#f43f5e', padding: 24 }}>
             加载需求失败: {String(reqError)}
+          </div>
+        ) : isEmpty ? (
+          <div
+            className="card"
+            style={{
+              minHeight: 200,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#566577',
+            }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <FileText size={36} style={{ margin: '0 auto 8px' }} />
+              <div>暂无需求</div>
+              <div style={{ fontSize: 11.5, marginTop: 4 }}>点击「新建需求」按钮开始录入</div>
+            </div>
           </div>
         ) : (
           <div className="grid-3">
-            {(useStatic ? fallbackRequirements : displayReqs).map((r) => {
-              const isReal = 'id' in r && 'req_id' in r;
-              const reqId = isReal
-                ? (r as Requirement).req_id
-                : (r as (typeof fallbackRequirements)[0]).id;
+            {displayReqs.map((r) => {
+              const _isReal = 'id' in r && 'req_id' in r;
+              const reqId = (r as Requirement).req_id;
               const title = r.title;
               const st = r.status;
-              const statusInfo = statusMap[st] ?? { label: st, cls: 'pill-gray' };
-              const cardKey = isReal ? (r as Requirement).id : reqId;
+              const statusInfo = statusMap[st] ?? {
+                label: st,
+                cls: 'pill-gray',
+              };
+              const cardKey = (r as Requirement).id;
               const handleOpen = () => {
-                if (isReal) router.push(`/workbench?reqId=${(r as Requirement).id}`);
+                router.push(`/workbench?reqId=${(r as Requirement).id}`);
               };
 
               return (
@@ -259,7 +230,6 @@ export default function RequirementsPage() {
                   className="card card-hover"
                   style={{ cursor: 'pointer' }}
                   onClick={handleOpen}
-                  disabled={!isReal}
                 >
                   <div
                     style={{
@@ -269,13 +239,20 @@ export default function RequirementsPage() {
                       marginBottom: 10,
                     }}
                   >
-                    <span className="mono" style={{ fontSize: 11, color: 'var(--accent)' }}>
+                    <span className="mono" style={{ fontSize: 11, color: '#00d9a3' }}>
                       {reqId}
                     </span>
                     <span className={`pill ${statusInfo.cls}`}>{statusInfo.label}</span>
                   </div>
                   <div style={{ fontWeight: 600, fontSize: 13.5, marginBottom: 8 }}>{title}</div>
-                  <div style={{ display: 'flex', gap: 12, fontSize: 11.5, color: 'var(--text3)' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 12,
+                      fontSize: 11.5,
+                      color: '#566577',
+                    }}
+                  >
                     <span>
                       <Target size={12} /> 测试点
                     </span>
@@ -295,7 +272,7 @@ export default function RequirementsPage() {
         <div style={{ marginTop: 32 }}>
           <div className="sec-header">
             <span className="sec-title">需求详情预览</span>
-            <span style={{ fontSize: 11.5, color: 'var(--text3)' }}>选择需求查看完整内容</span>
+            <span style={{ fontSize: 11.5, color: '#566577' }}>选择需求查看完整内容</span>
           </div>
           <div
             className="card"
@@ -304,7 +281,7 @@ export default function RequirementsPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--text3)',
+              color: '#566577',
             }}
           >
             <div style={{ textAlign: 'center' }}>

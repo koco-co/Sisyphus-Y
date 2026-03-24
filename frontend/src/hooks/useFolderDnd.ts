@@ -1,21 +1,15 @@
 'use client';
 
-import { useCallback, useState } from 'react';
 import {
-  DndContext,
-  DragEndEvent,
-  DragOverEvent,
-  DragStartEvent,
+  type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
-  closestCenter,
 } from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { arrayMove } from '@dnd-kit/sortable';
+import { useCallback, useState } from 'react';
 
 import type { Folder } from '@/lib/api';
 
@@ -27,7 +21,9 @@ export type DragItemData = {
 
 interface UseFolderDndOptions {
   folders: Folder[];
-  onReorder: (items: { id: string; sort_order: number; parent_id: string | null }[]) => Promise<void>;
+  onReorder: (
+    items: { id: string; sort_order: number; parent_id: string | null }[],
+  ) => Promise<void>;
   onMoveRequirement?: (reqId: string, folderId: string | null) => Promise<void>;
 }
 
@@ -54,7 +50,7 @@ export function useFolderDnd({
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -124,7 +120,7 @@ export function useFolderDnd({
         await onMoveRequirement(activeData.id, null);
       }
     },
-    [folders, onReorder, onMoveRequirement]
+    [folders, onReorder, onMoveRequirement],
   );
 
   const handleDragCancel = useCallback(() => {

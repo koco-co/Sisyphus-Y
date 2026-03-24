@@ -51,7 +51,10 @@ function LeftColumn() {
 
       <div className="p-3 space-y-3 flex-1 overflow-y-auto">
         {/* Three-level cascading requirement selector */}
-        <RequirementCascader value={requirementId ?? null} onChange={(id) => setRequirementId(id)} />
+        <RequirementCascader
+          value={requirementId ?? null}
+          onChange={(id) => setRequirementId(id)}
+        />
 
         {/* Version selector */}
         <VersionSelector />

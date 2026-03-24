@@ -33,7 +33,7 @@ export default function RAGBanner() {
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          color: 'var(--blue)',
+          color: '#3b82f6',
         }}
       >
         <Brain size={18} />
@@ -44,7 +44,7 @@ export default function RAGBanner() {
           style={{
             fontSize: 13,
             fontWeight: 600,
-            color: 'var(--blue)',
+            color: '#3b82f6',
             marginBottom: 4,
             display: 'flex',
             alignItems: 'center',
@@ -54,10 +54,10 @@ export default function RAGBanner() {
           <Sparkles size={13} />
           RAG 知识增强引擎
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.7 }}>
+        <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7 }}>
           上传测试规范、检查清单、领域文档等知识文件，系统将自动进行向量化处理。在
-          <span style={{ color: 'var(--accent)', fontWeight: 500 }}>用例生成</span>和
-          <span style={{ color: 'var(--accent)', fontWeight: 500 }}>需求分析</span>
+          <span style={{ color: '#00d9a3', fontWeight: 500 }}>用例生成</span>和
+          <span style={{ color: '#00d9a3', fontWeight: 500 }}>需求分析</span>
           时，AI 引擎会检索相关知识片段作为上下文，显著提升生成质量与准确度。
         </div>
         <div
@@ -66,7 +66,7 @@ export default function RAGBanner() {
             gap: 16,
             marginTop: 8,
             fontSize: 11,
-            color: 'var(--text3)',
+            color: '#566577',
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -86,7 +86,7 @@ export default function RAGBanner() {
           background: 'transparent',
           border: 'none',
           cursor: 'pointer',
-          color: 'var(--text3)',
+          color: '#566577',
           padding: 4,
           flexShrink: 0,
         }}

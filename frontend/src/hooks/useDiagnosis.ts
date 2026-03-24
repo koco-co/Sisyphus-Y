@@ -54,8 +54,7 @@ export function useDiagnosis(reqId: string | null) {
         } else {
           setStep('scan');
         }
-      } catch (e) {
-        console.error('Failed to load diagnosis:', e);
+      } catch (_e) {
         setStep('scan');
       } finally {
         setLoading(false);
@@ -71,7 +70,7 @@ export function useDiagnosis(reqId: string | null) {
       setMessages((prev) => [
         ...prev,
         {
-          id: `user-${Date.now()}`,
+          id: crypto.randomUUID(),
           role: 'user',
           content: userMsg,
           created_at: new Date().toISOString(),
@@ -87,7 +86,7 @@ export function useDiagnosis(reqId: string | null) {
           setMessages((prev) => [
             ...prev,
             {
-              id: `ai-${Date.now()}`,
+              id: crypto.randomUUID(),
               role: 'assistant',
               content: fullText || '分析完成',
               created_at: new Date().toISOString(),
@@ -98,7 +97,7 @@ export function useDiagnosis(reqId: string | null) {
           setMessages((prev) => [
             ...prev,
             {
-              id: `err-${Date.now()}`,
+              id: crypto.randomUUID(),
               role: 'assistant',
               content: `错误: ${err.message}`,
               created_at: new Date().toISOString(),
@@ -123,7 +122,7 @@ export function useDiagnosis(reqId: string | null) {
         setMessages((prev) => [
           ...prev,
           {
-            id: `scan-${Date.now()}`,
+            id: crypto.randomUUID(),
             role: 'assistant',
             content: fullText || '广度扫描完成，请查看风险清单',
             created_at: new Date().toISOString(),
@@ -165,8 +164,8 @@ export function useDiagnosis(reqId: string | null) {
           /* scene map may not exist */
         }
       }
-    } catch (e) {
-      console.error(e);
+    } catch (_e) {
+      // error handled by UI
     } finally {
       setRunning(false);
     }

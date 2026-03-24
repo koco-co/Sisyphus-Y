@@ -194,9 +194,10 @@ export default function TestCasesPage() {
   // ── 拉取全量统计 ──
   const fetchStats = useCallback(async () => {
     try {
-      const data = await api.get<{ total: number; by_status: { status: string; count: number }[] }>(
-        '/testcases/stats',
-      );
+      const data = await api.get<{
+        total: number;
+        by_status: { status: string; count: number }[];
+      }>('/testcases/stats');
       const byStatus = data.by_status ?? [];
       const approved = byStatus
         .filter((s) => s.status === 'approved' || s.status === 'active')
@@ -238,8 +239,7 @@ export default function TestCasesPage() {
       const items = sortCases((data.items ?? []).map(normalizeCase), sortField, sortDirection);
       setCases(items);
       setTotal(data.total ?? 0);
-    } catch (e) {
-      console.error('Failed to fetch test cases:', e);
+    } catch (_e) {
       setCases([]);
       setTotal(0);
     } finally {
@@ -258,7 +258,13 @@ export default function TestCasesPage() {
   };
 
   const handleClearFilters = () => {
-    setFilters({ priority: '', status: '', caseType: '', source: '', cleanStatus: '' });
+    setFilters({
+      priority: '',
+      status: '',
+      caseType: '',
+      source: '',
+      cleanStatus: '',
+    });
     setPage(1);
   };
 
@@ -309,19 +315,14 @@ export default function TestCasesPage() {
     steps: TestCaseStep[];
   }) => {
     if (!editingCase) return;
-    try {
-      await api.put(`/testcases/${editingCase.id}`, {
-        ...data,
-        steps: toApiSteps(data.steps),
-      });
-      setEditFormOpen(false);
-      setEditingCase(null);
-      await fetchCases();
-      setFolderRefreshKey((k) => k + 1); // 目录树重新加载
-    } catch (e) {
-      console.error('Failed to save test case:', e);
-      throw e; // 让 CaseEditForm 显示错误提示
-    }
+    await api.put(`/testcases/${editingCase.id}`, {
+      ...data,
+      steps: toApiSteps(data.steps),
+    });
+    setEditFormOpen(false);
+    setEditingCase(null);
+    await fetchCases();
+    setFolderRefreshKey((k) => k + 1); // 目录树重新加载
   };
 
   const handleDelete = async (ids: string[]) => {
@@ -335,8 +336,8 @@ export default function TestCasesPage() {
       setDeleteTarget(null);
       setDrawerOpen(false);
       await Promise.all([fetchCases(), fetchStats()]);
-    } catch (e) {
-      console.error('Failed to delete:', e);
+    } catch (_e) {
+      // silently ignore
     }
   };
 
@@ -348,8 +349,8 @@ export default function TestCasesPage() {
       });
       setSelectedIds(new Set());
       await Promise.all([fetchCases(), fetchStats()]);
-    } catch (e) {
-      console.error('Failed to batch update:', e);
+    } catch (_e) {
+      // silently ignore
     }
   };
 
@@ -393,8 +394,8 @@ export default function TestCasesPage() {
       a.download = 'testcases-export.csv';
       a.click();
       URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error('Failed to export:', e);
+    } catch (_e) {
+      // silently ignore
     }
   };
 
@@ -492,7 +493,11 @@ export default function TestCasesPage() {
             {/* 左侧目录树 */}
             <div
               className="w-[220px] shrink-0 bg-sy-bg-1 border border-sy-border rounded-[10px] overflow-hidden flex flex-col"
-              style={{ maxHeight: 'calc(100vh - 260px)', position: 'sticky', top: '12px' }}
+              style={{
+                maxHeight: 'calc(100vh - 260px)',
+                position: 'sticky',
+                top: '12px',
+              }}
             >
               <FolderTree
                 selectedFolderId={selectedFolderId}
@@ -623,11 +628,18 @@ export default function TestCasesPage() {
                     </p>
                   ) : (
                     cases.map((tc) => (
-                      <button
-                        type="button"
+                      <div
                         key={tc.id}
-                        className="cursor-pointer bg-transparent border-0 p-0 text-left"
+                        role="button"
+                        tabIndex={0}
+                        className="cursor-pointer"
                         onClick={() => handleRowClick(tc)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleRowClick(tc);
+                          }
+                        }}
                       >
                         <CaseCard
                           caseId={tc.case_id}
@@ -639,7 +651,7 @@ export default function TestCasesPage() {
                           aiScore={tc.ai_score ?? undefined}
                           className="mb-0"
                         />
-                      </button>
+                      </div>
                     ))
                   )}
                 </div>

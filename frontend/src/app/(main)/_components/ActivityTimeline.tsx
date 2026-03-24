@@ -60,7 +60,7 @@ export default function ActivityTimeline({ activities, loading }: ActivityTimeli
   if (loading) {
     return (
       <div className="card" style={{ padding: 32, textAlign: 'center' }}>
-        <p style={{ fontSize: 12, color: 'var(--text3)' }}>加载中...</p>
+        <p style={{ fontSize: 12, color: '#566577' }}>加载中...</p>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default function ActivityTimeline({ activities, loading }: ActivityTimeli
   return (
     <div>
       <div className="sec-header" style={{ marginBottom: 12 }}>
-        <Clock size={14} style={{ color: 'var(--accent)' }} />
+        <Clock size={14} style={{ color: '#00d9a3' }} />
         <span style={{ fontSize: 13, fontWeight: 600 }}>最近活动</span>
       </div>
 
@@ -96,7 +96,7 @@ export default function ActivityTimeline({ activities, loading }: ActivityTimeli
                     alignItems: 'flex-start',
                     gap: 12,
                     padding: '12px 16px',
-                    borderBottom: isLast ? 'none' : '1px solid var(--border)',
+                    borderBottom: isLast ? 'none' : '1px solid #2a313d',
                     transition: 'background 0.1s',
                   }}
                 >
@@ -106,13 +106,13 @@ export default function ActivityTimeline({ activities, loading }: ActivityTimeli
                       width: 28,
                       height: 28,
                       borderRadius: '50%',
-                      background: 'var(--bg2)',
-                      border: '1px solid var(--border)',
+                      background: '#1a1e24',
+                      border: '1px solid #2a313d',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0,
-                      color: 'var(--text3)',
+                      color: '#566577',
                     }}
                   >
                     <Icon size={13} />
@@ -120,13 +120,19 @@ export default function ActivityTimeline({ activities, loading }: ActivityTimeli
 
                   {/* Content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12.5, color: 'var(--text)', marginBottom: 2 }}>
+                    <div
+                      style={{
+                        fontSize: 12.5,
+                        color: '#e2e8f0',
+                        marginBottom: 2,
+                      }}
+                    >
                       <span style={{ fontWeight: 500 }}>{activity.action}</span>
                     </div>
                     <div
                       style={{
                         fontSize: 11,
-                        color: 'var(--text3)',
+                        color: '#566577',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 6,
@@ -147,7 +153,7 @@ export default function ActivityTimeline({ activities, loading }: ActivityTimeli
                     className="mono"
                     style={{
                       fontSize: 10.5,
-                      color: 'var(--text3)',
+                      color: '#566577',
                       flexShrink: 0,
                       whiteSpace: 'nowrap',
                     }}

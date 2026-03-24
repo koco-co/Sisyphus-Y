@@ -30,8 +30,8 @@ export function useDiff() {
         version_to: versionTo,
       });
       store.setDiffResult(result);
-    } catch (e) {
-      console.error('computeDiff failed:', e);
+    } catch (_e) {
+      // silently ignore
     } finally {
       store.setComputing(false);
     }
@@ -43,8 +43,8 @@ export function useDiff() {
     try {
       const items = await api.get<DiffHistoryItem[]>(`/diff/${requirementId}/history`);
       store.setHistory(items);
-    } catch (e) {
-      console.error('loadHistory failed:', e);
+    } catch (_e) {
+      // silently ignore
     }
   }, [store]);
 
@@ -54,8 +54,8 @@ export function useDiff() {
     try {
       const result = await api.get<DiffResult | null>(`/diff/${requirementId}/latest`);
       if (result) store.setDiffResult(result);
-    } catch (e) {
-      console.error('loadLatest failed:', e);
+    } catch (_e) {
+      // silently ignore
     }
   }, [store]);
 
@@ -65,8 +65,8 @@ export function useDiff() {
     try {
       const data = await api.get<SuggestionResponse>(`/diff/${requirementId}/suggestions`);
       store.setSuggestions(data.suggestions);
-    } catch (e) {
-      console.error('loadSuggestions failed:', e);
+    } catch (_e) {
+      // silently ignore
     }
   }, [store]);
 
@@ -90,8 +90,7 @@ export function useDiff() {
         });
         store.setRegenerateProgress(100);
         return result;
-      } catch (e) {
-        console.error('regenerateCases failed:', e);
+      } catch (_e) {
         return null;
       } finally {
         clearInterval(progressInterval);

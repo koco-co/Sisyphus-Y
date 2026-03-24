@@ -23,10 +23,10 @@ interface QualityStats {
 // DSH-05: fallbackQuality removed — real API data only, null triggers loading state
 
 const priorityColors: Record<string, string> = {
-  P0: 'var(--red)',
-  P1: 'var(--amber)',
-  P2: 'var(--blue)',
-  P3: 'var(--text3)',
+  P0: '#f43f5e',
+  P1: '#f59e0b',
+  P2: '#3b82f6',
+  P3: '#566577',
 };
 
 const statusLabels: Record<string, string> = {
@@ -73,9 +73,9 @@ function getDeltaText(value: number, suffix = '', precision = 0) {
 }
 
 function getDeltaColor(value: number) {
-  if (value > 0) return 'var(--accent)';
-  if (value < 0) return 'var(--red)';
-  return 'var(--text3)';
+  if (value > 0) return '#00d9a3';
+  if (value < 0) return '#f43f5e';
+  return '#566577';
 }
 
 function BarChart({
@@ -101,7 +101,7 @@ function BarChart({
               className="h-full rounded transition-all"
               style={{
                 width: `${(value / max) * 100}%`,
-                backgroundColor: colors?.[key] ?? 'var(--accent)',
+                backgroundColor: colors?.[key] ?? '#00d9a3',
               }}
             />
           </div>
@@ -248,7 +248,8 @@ export default function DashboardPage() {
               className="card fade-in"
               style={{
                 marginBottom: 24,
-                background: 'linear-gradient(135deg, var(--accent-d), rgba(59, 130, 246, 0.06))',
+                background:
+                  'linear-gradient(135deg, rgba(0, 217, 163, 0.1), rgba(59, 130, 246, 0.06))',
                 borderColor: 'rgba(0, 217, 163, 0.2)',
               }}
             >
@@ -258,11 +259,11 @@ export default function DashboardPage() {
                     width: 40,
                     height: 40,
                     borderRadius: 10,
-                    background: 'var(--accent-d)',
+                    background: 'rgba(0, 217, 163, 0.1)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'var(--accent)',
+                    color: '#00d9a3',
                   }}
                 >
                   <Sparkles size={20} />
@@ -271,7 +272,7 @@ export default function DashboardPage() {
                   <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>
                     欢迎回到 Sisyphus-Y
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--text2)' }}>
+                  <div style={{ fontSize: 12, color: '#94a3b8' }}>
                     需求录入 → 需求分析 → 测试点确认 → 用例生成 → 执行回流，构建完整测试生命周期
                   </div>
                 </div>
@@ -280,7 +281,7 @@ export default function DashboardPage() {
 
             {/* ── Stat cards ── */}
             <div className="grid-4" style={{ marginBottom: 24 }}>
-              <div className="card" style={{ borderLeft: '3px solid var(--accent)' }}>
+              <div className="card" style={{ borderLeft: '3px solid #00d9a3' }}>
                 <div className="stat-val">
                   {loading ? '—' : formatCount(stats.requirement_count)}
                 </div>
@@ -294,7 +295,7 @@ export default function DashboardPage() {
                     : '首个迭代，无上一迭代'}
                 </div>
               </div>
-              <div className="card" style={{ borderLeft: '3px solid var(--blue)' }}>
+              <div className="card" style={{ borderLeft: '3px solid #3b82f6' }}>
                 <div className="stat-val">{loading ? '—' : formatCount(stats.testcase_count)}</div>
                 <div className="stat-label">本迭代用例数</div>
                 <div className="stat-delta" style={{ color: getDeltaColor(stats.testcase_delta) }}>
@@ -303,7 +304,7 @@ export default function DashboardPage() {
                     : '首个迭代，无上一迭代'}
                 </div>
               </div>
-              <div className="card" style={{ borderLeft: '3px solid var(--purple)' }}>
+              <div className="card" style={{ borderLeft: '3px solid #a855f7' }}>
                 <div className="stat-val">
                   {loading ? '—' : formatPercentage(stats.coverage_rate)}
                 </div>
@@ -317,7 +318,7 @@ export default function DashboardPage() {
               <div
                 className="card"
                 style={{
-                  borderLeft: `3px solid ${stats.selected_iteration_status === 'active' ? 'var(--accent)' : 'var(--blue)'}`,
+                  borderLeft: `3px solid ${stats.selected_iteration_status === 'active' ? '#00d9a3' : '#3b82f6'}`,
                 }}
               >
                 <div className="stat-val">
@@ -330,16 +331,13 @@ export default function DashboardPage() {
                 >
                   <span
                     style={{
-                      color:
-                        stats.selected_iteration_status === 'active'
-                          ? 'var(--accent)'
-                          : 'var(--blue)',
+                      color: stats.selected_iteration_status === 'active' ? '#00d9a3' : '#3b82f6',
                     }}
                   >
                     <FileText size={12} style={{ display: 'inline-block', marginRight: 4 }} />
                     {selectedIterationStatus}
                   </span>
-                  <span style={{ color: 'var(--text3)' }}>
+                  <span style={{ color: '#566577' }}>
                     {stats.previous_iteration_name
                       ? `对比 ${stats.previous_iteration_name}`
                       : '首个迭代，无上一迭代'}
@@ -350,9 +348,7 @@ export default function DashboardPage() {
 
             {/* ── Trend chart (DSH-02) ── */}
             <div className="card" style={{ marginBottom: 24 }}>
-              <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
-                近6迭代质量趋势
-              </div>
+              <div className="text-[13px] font-medium mb-4 text-sy-text">近6迭代质量趋势</div>
               <TrendChart data={trendData} loading={trendLoading} />
             </div>
 
@@ -377,27 +373,26 @@ export default function DashboardPage() {
               <>
                 {/* ── Quality stat cards ── */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="card" style={{ borderLeft: '3px solid var(--accent)' }}>
+                  <div className="card" style={{ borderLeft: '3px solid #00d9a3' }}>
                     <div className="stat-val">{quality?.total_cases ?? '—'}</div>
                     <div className="stat-label">用例总数</div>
                   </div>
-                  <div className="card" style={{ borderLeft: '3px solid var(--blue)' }}>
+                  <div className="card" style={{ borderLeft: '3px solid #3b82f6' }}>
                     <div
                       className="stat-val"
                       style={{
-                        color: qualityScore >= 80 ? 'var(--accent)' : 'var(--amber)',
+                        color: qualityScore >= 80 ? '#00d9a3' : '#f59e0b',
                       }}
                     >
                       {qualityScore.toFixed(1)}
                     </div>
                     <div className="stat-label">AI 平均质量评分</div>
                   </div>
-                  <div className="card" style={{ borderLeft: '3px solid var(--purple)' }}>
+                  <div className="card" style={{ borderLeft: '3px solid #a855f7' }}>
                     <div
                       className="stat-val"
                       style={{
-                        color:
-                          (quality?.coverage_rate ?? 0) >= 80 ? 'var(--accent)' : 'var(--amber)',
+                        color: (quality?.coverage_rate ?? 0) >= 80 ? '#00d9a3' : '#f59e0b',
                       }}
                     >
                       {quality ? `${quality.coverage_rate}%` : '—'}
@@ -409,30 +404,22 @@ export default function DashboardPage() {
                 {/* ── Charts grid ── */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="card">
-                    <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
-                      按优先级分布
-                    </div>
+                    <div className="text-[13px] font-medium mb-4 text-sy-text">按优先级分布</div>
                     {quality && <BarChart data={quality.by_priority} colors={priorityColors} />}
                   </div>
                   <div className="card">
-                    <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
-                      按用例类型分布
-                    </div>
+                    <div className="text-[13px] font-medium mb-4 text-sy-text">按用例类型分布</div>
                     {quality && <BarChart data={quality.by_type} labels={typeLabels} />}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="card">
-                    <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
-                      按审核状态分布
-                    </div>
+                    <div className="text-[13px] font-medium mb-4 text-sy-text">按审核状态分布</div>
                     {quality && <BarChart data={quality.by_status} labels={statusLabels} />}
                   </div>
                   {/* DSH-03: 来源分布替换为 SourcePieChart 环形图 */}
                   <div className="card">
-                    <div className="text-[13px] font-medium mb-4" style={{ color: 'var(--text)' }}>
-                      按来源分布
-                    </div>
+                    <div className="text-[13px] font-medium mb-4 text-sy-text">按来源分布</div>
                     <SourcePieChart
                       data={
                         quality?.by_source

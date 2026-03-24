@@ -209,8 +209,8 @@ export function ImportedCasesTab() {
       ]);
       setTotal(countRes.total);
       setRecords(listRes);
-    } catch (e) {
-      console.error(e);
+    } catch (_e) {
+      // silently ignore
     } finally {
       setLoading(false);
     }

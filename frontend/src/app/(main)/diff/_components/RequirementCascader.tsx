@@ -32,7 +32,7 @@ export function RequirementCascader({ value, onChange }: Props) {
     productsApi.listIterations(productId).then((res) => {
       setIterations(res as Iteration[]);
     });
-  }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [productId, onChange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setRequirements([]);
@@ -41,7 +41,7 @@ export function RequirementCascader({ value, onChange }: Props) {
     productsApi.listRequirements(productId, iterationId).then((res) => {
       setRequirements(res as Requirement[]);
     });
-  }, [iterationId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [iterationId, onChange, productId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="space-y-2">

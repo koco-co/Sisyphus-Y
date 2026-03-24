@@ -31,7 +31,7 @@ export function ProjectCard({
 }: ProjectCardProps) {
   const s = statusMap[status];
   return (
-    <Link href={`/requirements?product=${id}`}>
+    <Link href={`/analysis?product=${id}`}>
       <div className="bg-bg1 border border-border rounded-[10px] p-4 cursor-pointer hover:border-border2 hover:-translate-y-px transition-all">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -44,7 +44,11 @@ export function ProjectCard({
           {[
             { val: totalCases, label: '用例总数' },
             { val: `${coverage}%`, label: '覆盖率', color: 'text-sy-accent' },
-            { val: pending, label: '待处理', color: pending > 0 ? 'text-sy-warn' : undefined },
+            {
+              val: pending,
+              label: '待处理',
+              color: pending > 0 ? 'text-sy-warn' : undefined,
+            },
           ].map((stat) => (
             <div key={stat.label} className="text-center p-2 bg-bg2 rounded-md">
               <div className={`font-mono text-[18px] font-semibold ${stat.color ?? 'text-text'}`}>

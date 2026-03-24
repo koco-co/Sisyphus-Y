@@ -24,7 +24,7 @@ const mockResults: SearchResult[] = [
     title: '用户登录功能需求',
     type: 'requirement',
     description: 'REQ-001 · 用户登录认证流程',
-    url: '/requirements',
+    url: '/analysis',
   },
   {
     id: '2',
@@ -38,7 +38,7 @@ const mockResults: SearchResult[] = [
     title: '支付流程异常处理',
     type: 'requirement',
     description: 'REQ-015 · 支付异常回滚',
-    url: '/requirements',
+    url: '/analysis',
   },
   {
     id: '4',

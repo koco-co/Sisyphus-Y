@@ -5,13 +5,17 @@ import {
   type Iteration,
   type Product,
   productsApi,
-  requirementsApi,
   type Requirement,
+  requirementsApi,
 } from '@/lib/api';
 
 const STORAGE_KEY = 'req-tree-expanded';
 
-function readStorage(): { products: string[]; iterations: string[]; folders: string[] } {
+function readStorage(): {
+  products: string[];
+  iterations: string[];
+  folders: string[];
+} {
   if (typeof window === 'undefined') return { products: [], iterations: [], folders: [] };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -70,7 +74,7 @@ export function useRequirementTree() {
     productsApi
       .list()
       .then((data) => setProducts(Array.isArray(data) ? data : []))
-      .catch(console.error)
+      .catch(() => {})
       .finally(() => setProductsLoading(false));
   }, []);
 
@@ -84,16 +88,17 @@ export function useRequirementTree() {
         productsApi
           .listIterations(product.id)
           .then((data) =>
-            setIterations((p) => ({ ...p, [product.id]: Array.isArray(data) ? data : [] })),
+            setIterations((p) => ({
+              ...p,
+              [product.id]: Array.isArray(data) ? data : [],
+            })),
           )
           .catch(() => setIterations((p) => ({ ...p, [product.id]: [] })))
-          .finally(() =>
-            setIterationsLoading((prev) => ({ ...prev, [product.id]: false })),
-          );
+          .finally(() => setIterationsLoading((prev) => ({ ...prev, [product.id]: false })));
       });
     // Only run when products load; expandedProducts/iterations intentionally excluded
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products]);
+  }, [products, expandedProducts.has, iterations]);
 
   const toggleProduct = useCallback(
     async (productId: string) => {
@@ -108,10 +113,12 @@ export function useRequirementTree() {
             productsApi
               .listIterations(productId)
               .then((data) =>
-                setIterations((p) => ({ ...p, [productId]: Array.isArray(data) ? data : [] })),
+                setIterations((p) => ({
+                  ...p,
+                  [productId]: Array.isArray(data) ? data : [],
+                })),
               )
-              .catch((error) => {
-                console.error(error);
+              .catch(() => {
                 setIterations((p) => ({ ...p, [productId]: [] }));
               })
               .finally(() =>
@@ -135,9 +142,11 @@ export function useRequirementTree() {
       setFoldersLoading((prev) => ({ ...prev, [iterationId]: true }));
       try {
         const data = await foldersApi.getTree(productId, iterationId);
-        setFolders((prev) => ({ ...prev, [iterationId]: Array.isArray(data) ? data : [] }));
-      } catch (error) {
-        console.error('Failed to load folders:', error);
+        setFolders((prev) => ({
+          ...prev,
+          [iterationId]: Array.isArray(data) ? data : [],
+        }));
+      } catch (_error) {
         setFolders((prev) => ({ ...prev, [iterationId]: [] }));
       } finally {
         setFoldersLoading((prev) => ({ ...prev, [iterationId]: false }));
@@ -160,11 +169,17 @@ export function useRequirementTree() {
           productsApi
             .listRequirements(productId, iterationId)
             .then((data) =>
-              setRequirements((p) => ({ ...p, [iterationId]: Array.isArray(data) ? data : [] })),
+              setRequirements((p) => ({
+                ...p,
+                [iterationId]: Array.isArray(data) ? data : [],
+              })),
             )
             .catch(() => setRequirements((p) => ({ ...p, [iterationId]: [] })))
             .finally(() =>
-              setRequirementsLoading((prev) => ({ ...prev, [iterationId]: false })),
+              setRequirementsLoading((prev) => ({
+                ...prev,
+                [iterationId]: false,
+              })),
             );
           loadFolders(productId, iterationId);
           break;
@@ -173,7 +188,7 @@ export function useRequirementTree() {
     });
     // Only run when iterations load; expandedIterations/requirements intentionally excluded
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [iterations, loadFolders]);
+  }, [iterations, loadFolders, expandedIterations, requirements]);
 
   const toggleIteration = useCallback(
     async (productId: string, iterationId: string) => {
@@ -184,14 +199,19 @@ export function useRequirementTree() {
         } else {
           next.add(iterationId);
           if (!requirements[iterationId]) {
-            setRequirementsLoading((prev) => ({ ...prev, [iterationId]: true }));
+            setRequirementsLoading((prev) => ({
+              ...prev,
+              [iterationId]: true,
+            }));
             productsApi
               .listRequirements(productId, iterationId)
               .then((data) =>
-                setRequirements((p) => ({ ...p, [iterationId]: Array.isArray(data) ? data : [] })),
+                setRequirements((p) => ({
+                  ...p,
+                  [iterationId]: Array.isArray(data) ? data : [],
+                })),
               )
-              .catch((error) => {
-                console.error(error);
+              .catch(() => {
                 setRequirements((p) => ({ ...p, [iterationId]: [] }));
               })
               .finally(() =>
@@ -253,12 +273,7 @@ export function useRequirementTree() {
   );
 
   const updateFolder = useCallback(
-    async (
-      productId: string,
-      iterationId: string,
-      folderId: string,
-      data: { name?: string },
-    ) => {
+    async (productId: string, iterationId: string, folderId: string, data: { name?: string }) => {
       const folder = await foldersApi.update(folderId, data);
       // 刷新文件夹列表
       const updated = await foldersApi.getTree(productId, iterationId);
@@ -297,12 +312,7 @@ export function useRequirementTree() {
   );
 
   const moveRequirementToFolder = useCallback(
-    async (
-      reqId: string,
-      folderId: string | null,
-      productId: string,
-      iterationId: string,
-    ) => {
+    async (reqId: string, folderId: string | null, productId: string, iterationId: string) => {
       await requirementsApi.update(reqId, { folder_id: folderId });
       // 刷新需求列表以反映新归属
       const updated = await productsApi.listRequirements(productId, iterationId);

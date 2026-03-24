@@ -13,19 +13,16 @@ interface SourcePieChartProps {
 }
 
 const PIE_DATA_CONFIG = [
-  { key: 'ai_generated' as const, name: 'AI 生成', color: 'var(--accent)' },
-  { key: 'imported' as const, name: '历史导入', color: 'var(--blue)' },
-  { key: 'manual' as const, name: '手动创建', color: 'var(--purple)' },
+  { key: 'ai_generated' as const, name: 'AI 生成', color: '#00d9a3' },
+  { key: 'imported' as const, name: '历史导入', color: '#3b82f6' },
+  { key: 'manual' as const, name: '手动创建', color: '#a855f7' },
 ];
 
 export default function SourcePieChart({ data, loading = false }: SourcePieChartProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-4">
-        <div
-          className="w-40 h-40 rounded-full animate-pulse"
-          style={{ background: 'var(--bg2)' }}
-        />
+        <div className="w-40 h-40 rounded-full animate-pulse" style={{ background: '#1a1e24' }} />
       </div>
     );
   }
@@ -35,9 +32,7 @@ export default function SourcePieChart({ data, loading = false }: SourcePieChart
   if (isEmpty) {
     return (
       <div className="flex items-center justify-center h-[220px]">
-        <p className="text-sm text-center" style={{ color: 'var(--text3)' }}>
-          暂无数据
-        </p>
+        <p className="text-sm text-center text-sy-text-3">暂无数据</p>
       </div>
     );
   }
@@ -62,8 +57,8 @@ export default function SourcePieChart({ data, loading = false }: SourcePieChart
         <Tooltip
           formatter={(value) => [`${value} 条`, '']}
           contentStyle={{
-            background: 'var(--bg1)',
-            border: '1px solid var(--border)',
+            background: '#131619',
+            border: '1px solid #2a313d',
             borderRadius: 6,
             fontSize: 12,
           }}
@@ -75,8 +70,8 @@ export default function SourcePieChart({ data, loading = false }: SourcePieChart
         className="absolute flex flex-col items-center pointer-events-none"
         style={{ top: '50%', left: '50%', transform: 'translate(-50%, -68%)' }}
       >
-        <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>{total}</span>
-        <span style={{ fontSize: 10, color: 'var(--text3)' }}>总用例</span>
+        <span style={{ fontSize: 20, fontWeight: 700, color: '#e2e8f0' }}>{total}</span>
+        <span style={{ fontSize: 10, color: '#566577' }}>总用例</span>
       </div>
     </div>
   );

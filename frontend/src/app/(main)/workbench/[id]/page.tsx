@@ -28,9 +28,24 @@ interface GeneratedCase {
 }
 
 const modes: { key: string; label: string; icon: LucideIcon; desc: string }[] = [
-  { key: 'test_point_driven', label: '测试点驱动', icon: Target, desc: '基于确认的测试点逐个生成' },
-  { key: 'document', label: '文档驱动', icon: FileText, desc: '直接从需求文档生成' },
-  { key: 'dialogue', label: '对话式', icon: MessageSquare, desc: '通过对话逐步细化生成' },
+  {
+    key: 'test_point_driven',
+    label: '测试点驱动',
+    icon: Target,
+    desc: '基于确认的测试点逐个生成',
+  },
+  {
+    key: 'document',
+    label: '文档驱动',
+    icon: FileText,
+    desc: '直接从需求文档生成',
+  },
+  {
+    key: 'dialogue',
+    label: '对话式',
+    icon: MessageSquare,
+    desc: '通过对话逐步细化生成',
+  },
 ];
 
 export default function WorkbenchPage() {
@@ -67,7 +82,9 @@ export default function WorkbenchPage() {
 
   const acceptMutation = useMutation({
     mutationFn: (caseId: string) =>
-      apiClient(`/generation/sessions/${sessionId}/cases/${caseId}/accept`, { method: 'POST' }),
+      apiClient(`/generation/sessions/${sessionId}/cases/${caseId}/accept`, {
+        method: 'POST',
+      }),
     onSuccess: () => refetchCases(),
   });
 
@@ -82,13 +99,13 @@ export default function WorkbenchPage() {
     const msg = input.trim();
     setInput('');
     setStreamDone(false);
-    setMessages((prev) => [...prev, { id: Date.now().toString(), role: 'user', content: msg }]);
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'user', content: msg }]);
     await streamSSE(`/generation/sessions/${sessionId}/chat`, { message: msg });
     const latestContent = useStreamStore.getState().contentText;
     if (latestContent) {
       setMessages((prev) => [
         ...prev,
-        { id: (Date.now() + 1).toString(), role: 'ai', content: latestContent },
+        { id: crypto.randomUUID(), role: 'ai', content: latestContent },
       ]);
       resetStream();
     }

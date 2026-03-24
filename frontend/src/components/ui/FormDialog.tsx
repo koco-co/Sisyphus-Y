@@ -40,12 +40,12 @@ export function FormDialog({
   return (
     <dialog
       ref={dialogRef}
-      className="fixed inset-0 z-50 m-auto rounded-lg border border-border bg-bg1 p-0 shadow-lg backdrop:bg-black/50"
+      className="fixed inset-0 z-50 m-auto rounded-xl border border-border bg-bg1 p-0 shadow-xl backdrop:backdrop-blur-sm backdrop:bg-black/40"
       style={{ width }}
       onClose={onClose}
     >
-      <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border">
-        <h3 className="text-[14px] font-semibold text-text">{title}</h3>
+      <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
+        <h3 className="text-sm font-semibold text-text">{title}</h3>
         <button
           type="button"
           onClick={onClose}
@@ -55,14 +55,14 @@ export function FormDialog({
         </button>
       </div>
 
-      <div className="px-5 py-4">{children}</div>
+      <div className="px-6 py-5">{children}</div>
 
-      <div className="flex justify-end gap-2 px-5 pb-4">
+      <div className="flex justify-end gap-2 px-6 pb-5">
         <button
           type="button"
           onClick={onClose}
           disabled={loading}
-          className="px-3 py-1.5 rounded-md text-[12.5px] font-medium border border-border bg-bg2 text-text2 hover:bg-bg3 transition-colors disabled:opacity-50"
+          className="px-4 py-2 rounded-lg text-[12.5px] font-medium border border-border bg-bg2 text-text2 hover:bg-bg3 transition-colors disabled:opacity-50"
         >
           {cancelText}
         </button>
@@ -70,7 +70,7 @@ export function FormDialog({
           type="button"
           onClick={onSubmit}
           disabled={loading}
-          className="px-3 py-1.5 rounded-md text-[12.5px] font-medium bg-accent text-white hover:bg-accent2 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+          className="px-4 py-2 rounded-lg text-[12.5px] font-medium bg-accent text-bg hover:bg-accent2 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
         >
           {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           {submitText}

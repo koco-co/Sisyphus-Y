@@ -1,6 +1,18 @@
 'use client';
 
-import { Bot, Check, ChevronDown, Eye, EyeOff, Loader2, Plus, Save, Sparkles, Trash2, X } from 'lucide-react';
+import {
+  Bot,
+  Check,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  Loader2,
+  Plus,
+  Save,
+  Sparkles,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ConnectionTestButton } from '@/components/ui/ConnectionTestButton';
@@ -233,7 +245,15 @@ export function AIModelSettings() {
       setSelectedModelId(resolvedModel.id);
     }
     setDraft(buildDraftFromModel(resolvedModel));
-  }, [defaultProvider, editorMode, effectiveConfig, modelConfigs, providers, selectedModelId]);
+  }, [
+    defaultProvider,
+    editorMode,
+    effectiveConfig,
+    modelConfigs,
+    providers,
+    selectedModelId,
+    draft.provider,
+  ]);
 
   const handleSelectExisting = (model: ModelConfigRecord) => {
     setEditorMode('edit');
@@ -367,7 +387,9 @@ export function AIModelSettings() {
     }
     setRevealingKey(true);
     try {
-      const data = await api.get<{ api_key: string }>(`/ai-config/models/${selectedModelId}/reveal-key`);
+      const data = await api.get<{ api_key: string }>(
+        `/ai-config/models/${selectedModelId}/reveal-key`,
+      );
       setDraft((prev) => ({ ...prev, apiKey: data.api_key, apiKeyVisible: true }));
     } catch {
       toast.error('无法获取 API Key，请检查服务器配置');
@@ -479,10 +501,7 @@ export function AIModelSettings() {
 
         {/* Model Config Sheet Overlay */}
         {sheetOpen && (
-          <div
-            className="fixed inset-0 z-50 flex justify-end"
-            onClick={() => setSheetOpen(false)}
-          >
+          <div className="fixed inset-0 z-50 flex justify-end" onClick={() => setSheetOpen(false)}>
             <div
               className="relative flex h-full w-full max-w-[560px] flex-col overflow-y-auto border-l border-sy-border bg-sy-bg-1 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
@@ -491,7 +510,9 @@ export function AIModelSettings() {
               <div className="flex items-start justify-between gap-3 border-b border-sy-border px-6 py-4">
                 <div>
                   <p className="text-[14px] font-semibold text-sy-text">
-                    {editorMode === 'create' ? '新建模型配置' : selectedModel?.name || '编辑模型配置'}
+                    {editorMode === 'create'
+                      ? '新建模型配置'
+                      : selectedModel?.name || '编辑模型配置'}
                   </p>
                   <p className="mt-1 text-[11px] text-sy-text-3">
                     保存后配置出现在列表；设为默认时会同步更新全局生效模型。
@@ -516,237 +537,247 @@ export function AIModelSettings() {
 
               {/* Sheet Body (form) */}
               <div className="flex-1 px-6 py-5">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="model-config-name"
-                  className="mb-1 block text-[12px] text-sy-text-2"
-                >
-                  配置名称
-                </label>
-                <input
-                  id="model-config-name"
-                  type="text"
-                  value={draft.name}
-                  onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))}
-                  className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
-                  placeholder="例如：分析主模型"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="model-config-provider"
-                  className="mb-1 block text-[12px] text-sy-text-2"
-                >
-                  Provider
-                </label>
-                <div className="relative">
-                  <select
-                    id="model-config-provider"
-                    value={draft.provider}
-                    onChange={(event) => handleProviderChange(event.target.value)}
-                    disabled={loading || saving || providersLoading}
-                    className="w-full appearance-none rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 pr-9 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50 disabled:opacity-60"
-                  >
-                    {(providers.length > 0
-                      ? providers
-                      : [
-                          {
-                            id: draft.provider,
-                            name: draft.provider || DEFAULT_PROVIDER_ID,
-                            description: '',
-                            api_key_placeholder: '',
-                            models: [],
-                          },
-                        ]
-                    ).map((provider) => (
-                      <option key={provider.id} value={provider.id}>
-                        {provider.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-sy-text-3" />
-                </div>
-                {activeProvider?.description && (
-                  <p className="mt-1 text-[11px] text-sy-text-3">{activeProvider.description}</p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="model-config-model-id"
-                  className="mb-1 block text-[12px] text-sy-text-2"
-                >
-                  模型版本
-                </label>
-                {activeProvider?.models.length ? (
-                  <div className="relative">
-                    <select
-                      id="model-config-model-id"
-                      value={draft.modelId}
-                      onChange={(event) =>
-                        setDraft((prev) => ({ ...prev, modelId: event.target.value }))
-                      }
-                      className="w-full appearance-none rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 pr-9 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="model-config-name"
+                      className="mb-1 block text-[12px] text-sy-text-2"
                     >
-                      {activeProvider.models.map((model) => (
-                        <option key={model.id} value={model.id}>
-                          {model.name}
-                          {model.recommended ? ' · 推荐' : ''}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-sy-text-3" />
-                  </div>
-                ) : (
-                  <input
-                    id="model-config-model-id"
-                    type="text"
-                    value={draft.modelId}
-                    onChange={(event) =>
-                      setDraft((prev) => ({ ...prev, modelId: event.target.value }))
-                    }
-                    className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
-                    placeholder="例如：glm-5 / qwen-max"
-                  />
-                )}
-                {activeModelOption?.description && (
-                  <p className="mt-1 text-[11px] text-sy-text-3">{activeModelOption.description}</p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="model-config-purpose-tags"
-                  className="mb-1 block text-[12px] text-sy-text-2"
-                >
-                  用途标签
-                </label>
-                <input
-                  id="model-config-purpose-tags"
-                  type="text"
-                  value={draft.purposeTagsText}
-                  onChange={(event) =>
-                    setDraft((prev) => ({ ...prev, purposeTagsText: event.target.value }))
-                  }
-                  className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
-                  placeholder="例如：diagnosis, generation"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label
-                  htmlFor="model-config-api-key"
-                  className="mb-1 block text-[12px] text-sy-text-2"
-                >
-                  API Key
-                </label>
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
+                      配置名称
+                    </label>
                     <input
-                      id="model-config-api-key"
-                      type={draft.apiKeyVisible ? 'text' : 'password'}
-                      value={draft.apiKey}
+                      id="model-config-name"
+                      type="text"
+                      value={draft.name}
                       onChange={(event) =>
-                        setDraft((prev) => ({ ...prev, apiKey: event.target.value, apiKeyVisible: true }))
+                        setDraft((prev) => ({ ...prev, name: event.target.value }))
                       }
-                      className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
-                      placeholder={activeProvider?.api_key_placeholder || 'sk-xxxxxxxx'}
+                      className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                      placeholder="例如：分析主模型"
                     />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => void handleRevealKey()}
-                    disabled={revealingKey || (!selectedModelId && editorMode === 'edit')}
-                    title={draft.apiKeyVisible ? '隐藏 API Key' : '显示完整 API Key'}
-                    className="flex h-8 w-8 items-center justify-center rounded-md border border-sy-border bg-sy-bg-2 text-sy-text-3 transition-colors hover:border-sy-border-2 hover:text-sy-text disabled:opacity-40"
-                  >
-                    {revealingKey ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : draft.apiKeyVisible ? (
-                      <EyeOff className="h-3.5 w-3.5" />
-                    ) : (
-                      <Eye className="h-3.5 w-3.5" />
+
+                  <div>
+                    <label
+                      htmlFor="model-config-provider"
+                      className="mb-1 block text-[12px] text-sy-text-2"
+                    >
+                      Provider
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="model-config-provider"
+                        value={draft.provider}
+                        onChange={(event) => handleProviderChange(event.target.value)}
+                        disabled={loading || saving || providersLoading}
+                        className="w-full appearance-none rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 pr-9 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50 disabled:opacity-60"
+                      >
+                        {(providers.length > 0
+                          ? providers
+                          : [
+                              {
+                                id: draft.provider,
+                                name: draft.provider || DEFAULT_PROVIDER_ID,
+                                description: '',
+                                api_key_placeholder: '',
+                                models: [],
+                              },
+                            ]
+                        ).map((provider) => (
+                          <option key={provider.id} value={provider.id}>
+                            {provider.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-sy-text-3" />
+                    </div>
+                    {activeProvider?.description && (
+                      <p className="mt-1 text-[11px] text-sy-text-3">
+                        {activeProvider.description}
+                      </p>
                     )}
-                  </button>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="model-config-model-id"
+                      className="mb-1 block text-[12px] text-sy-text-2"
+                    >
+                      模型版本
+                    </label>
+                    {activeProvider?.models.length ? (
+                      <div className="relative">
+                        <select
+                          id="model-config-model-id"
+                          value={draft.modelId}
+                          onChange={(event) =>
+                            setDraft((prev) => ({ ...prev, modelId: event.target.value }))
+                          }
+                          className="w-full appearance-none rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 pr-9 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                        >
+                          {activeProvider.models.map((model) => (
+                            <option key={model.id} value={model.id}>
+                              {model.name}
+                              {model.recommended ? ' · 推荐' : ''}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-sy-text-3" />
+                      </div>
+                    ) : (
+                      <input
+                        id="model-config-model-id"
+                        type="text"
+                        value={draft.modelId}
+                        onChange={(event) =>
+                          setDraft((prev) => ({ ...prev, modelId: event.target.value }))
+                        }
+                        className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                        placeholder="例如：glm-5 / qwen-max"
+                      />
+                    )}
+                    {activeModelOption?.description && (
+                      <p className="mt-1 text-[11px] text-sy-text-3">
+                        {activeModelOption.description}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="model-config-purpose-tags"
+                      className="mb-1 block text-[12px] text-sy-text-2"
+                    >
+                      用途标签
+                    </label>
+                    <input
+                      id="model-config-purpose-tags"
+                      type="text"
+                      value={draft.purposeTagsText}
+                      onChange={(event) =>
+                        setDraft((prev) => ({ ...prev, purposeTagsText: event.target.value }))
+                      }
+                      className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                      placeholder="例如：diagnosis, generation"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label
+                      htmlFor="model-config-api-key"
+                      className="mb-1 block text-[12px] text-sy-text-2"
+                    >
+                      API Key
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          id="model-config-api-key"
+                          type={draft.apiKeyVisible ? 'text' : 'password'}
+                          value={draft.apiKey}
+                          onChange={(event) =>
+                            setDraft((prev) => ({
+                              ...prev,
+                              apiKey: event.target.value,
+                              apiKeyVisible: true,
+                            }))
+                          }
+                          className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                          placeholder={activeProvider?.api_key_placeholder || 'sk-xxxxxxxx'}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void handleRevealKey()}
+                        disabled={revealingKey || (!selectedModelId && editorMode === 'edit')}
+                        title={draft.apiKeyVisible ? '隐藏 API Key' : '显示完整 API Key'}
+                        className="flex h-8 w-8 items-center justify-center rounded-md border border-sy-border bg-sy-bg-2 text-sy-text-3 transition-colors hover:border-sy-border-2 hover:text-sy-text disabled:opacity-40"
+                      >
+                        {revealingKey ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : draft.apiKeyVisible ? (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                    </div>
+                    <p className="mt-1 text-[11px] text-sy-text-3">
+                      {draft.apiKeyMasked
+                        ? '保留遮罩值表示沿用已保存密钥；直接输入新值可替换。'
+                        : '只在需要替换或新增密钥时填写。'}
+                    </p>
+                  </div>
+
+                  {showBaseUrl && (
+                    <div className="md:col-span-2">
+                      <label
+                        htmlFor="model-config-base-url"
+                        className="mb-1 block text-[12px] text-sy-text-2"
+                      >
+                        Base URL
+                      </label>
+                      <input
+                        id="model-config-base-url"
+                        type="text"
+                        value={draft.baseUrl}
+                        onChange={(event) =>
+                          setDraft((prev) => ({ ...prev, baseUrl: event.target.value }))
+                        }
+                        className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                        placeholder={
+                          activeProvider?.default_base_url || 'https://your-api.example.com/v1'
+                        }
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label
+                      htmlFor="model-config-temperature"
+                      className="mb-1 block text-[12px] text-sy-text-2"
+                    >
+                      Temperature
+                    </label>
+                    <input
+                      id="model-config-temperature"
+                      type="number"
+                      min={0}
+                      max={2}
+                      step={0.1}
+                      value={draft.temperature}
+                      onChange={(event) =>
+                        setDraft((prev) => ({
+                          ...prev,
+                          temperature: Number(event.target.value) || 0,
+                        }))
+                      }
+                      className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="model-config-max-tokens"
+                      className="mb-1 block text-[12px] text-sy-text-2"
+                    >
+                      Max Tokens
+                    </label>
+                    <input
+                      id="model-config-max-tokens"
+                      type="number"
+                      min={256}
+                      step={256}
+                      value={draft.maxTokens}
+                      onChange={(event) =>
+                        setDraft((prev) => ({ ...prev, maxTokens: event.target.value }))
+                      }
+                      className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
+                      placeholder="例如：4096"
+                    />
+                  </div>
                 </div>
-                <p className="mt-1 text-[11px] text-sy-text-3">
-                  {draft.apiKeyMasked
-                    ? '保留遮罩值表示沿用已保存密钥；直接输入新值可替换。'
-                    : '只在需要替换或新增密钥时填写。'}
-                </p>
               </div>
-
-              {showBaseUrl && (
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor="model-config-base-url"
-                    className="mb-1 block text-[12px] text-sy-text-2"
-                  >
-                    Base URL
-                  </label>
-                  <input
-                    id="model-config-base-url"
-                    type="text"
-                    value={draft.baseUrl}
-                    onChange={(event) =>
-                      setDraft((prev) => ({ ...prev, baseUrl: event.target.value }))
-                    }
-                    className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
-                    placeholder={
-                      activeProvider?.default_base_url || 'https://your-api.example.com/v1'
-                    }
-                  />
-                </div>
-              )}
-
-              <div>
-                <label
-                  htmlFor="model-config-temperature"
-                  className="mb-1 block text-[12px] text-sy-text-2"
-                >
-                  Temperature
-                </label>
-                <input
-                  id="model-config-temperature"
-                  type="number"
-                  min={0}
-                  max={2}
-                  step={0.1}
-                  value={draft.temperature}
-                  onChange={(event) =>
-                    setDraft((prev) => ({
-                      ...prev,
-                      temperature: Number(event.target.value) || 0,
-                    }))
-                  }
-                  className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="model-config-max-tokens"
-                  className="mb-1 block text-[12px] text-sy-text-2"
-                >
-                  Max Tokens
-                </label>
-                <input
-                  id="model-config-max-tokens"
-                  type="number"
-                  min={256}
-                  step={256}
-                  value={draft.maxTokens}
-                  onChange={(event) =>
-                    setDraft((prev) => ({ ...prev, maxTokens: event.target.value }))
-                  }
-                  className="w-full rounded-md border border-sy-border bg-sy-bg-2 px-3 py-2 font-mono text-[12.5px] text-sy-text outline-none transition-colors focus:border-sy-accent/50"
-                  placeholder="例如：4096"
-                />
-              </div>
-            </div>
-          </div>
 
               {/* Sheet Footer */}
               <div className="border-t border-sy-border px-6 py-4">
@@ -776,7 +807,8 @@ export function AIModelSettings() {
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-[11px] text-sy-text-3">
-                    生效：<span className="text-sy-text-2">{effectiveConfig?.llm_model ?? '未设置'}</span>
+                    生效：
+                    <span className="text-sy-text-2">{effectiveConfig?.llm_model ?? '未设置'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {editorMode === 'edit' && selectedModelId && (
@@ -786,7 +818,11 @@ export function AIModelSettings() {
                         disabled={saving || deleting}
                         className="inline-flex items-center gap-1.5 rounded-md border border-sy-danger/30 bg-sy-danger/10 px-3 py-1.5 text-[12px] font-medium text-sy-danger transition-colors hover:bg-sy-danger/15 disabled:opacity-60"
                       >
-                        {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        {deleting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3.5 w-3.5" />
+                        )}
                         删除
                       </button>
                     )}
@@ -796,7 +832,13 @@ export function AIModelSettings() {
                       disabled={isSaveDisabled}
                       className="inline-flex items-center gap-1.5 rounded-md bg-sy-accent px-3 py-1.5 text-[12px] font-semibold text-black transition-colors hover:bg-sy-accent-2 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : saved ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
+                      {saving ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : saved ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <Save className="h-3.5 w-3.5" />
+                      )}
                       {saved ? '已保存' : saving ? '保存中...' : '保存配置'}
                     </button>
                   </div>

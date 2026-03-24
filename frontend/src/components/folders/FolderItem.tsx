@@ -1,9 +1,9 @@
 'use client';
 
-import { ChevronDown, ChevronRight, FolderOpen, Folder as FolderIcon, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Folder as FolderIcon, FolderOpen, Plus } from 'lucide-react';
 import { useState } from 'react';
-import type { Folder } from '@/lib/api';
 import { ContextMenu, useContextMenu } from '@/components/ui/ContextMenu';
+import type { Folder } from '@/lib/api';
 
 interface FolderItemProps {
   folder: Folder;
@@ -29,7 +29,7 @@ export function FolderItem({
   const [isHovered, setIsHovered] = useState(false);
   const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
 
-  const indentStyle = { paddingLeft: `${12 + level * 12}px` };
+  const indentStyle = { paddingLeft: `${24 + level * 12}px` };
   const canCreateChild = !folder.is_system && folder.level < 5;
 
   const contextMenuItems = [
@@ -67,9 +67,13 @@ export function FolderItem({
           <ChevronRight className="w-3 h-3 text-sy-text-3 flex-shrink-0" />
         )}
         {expanded ? (
-          <FolderOpen className={`w-3.5 h-3.5 flex-shrink-0 ${folder.is_system ? 'text-sy-text-3' : 'text-sy-accent'}`} />
+          <FolderOpen
+            className={`w-3.5 h-3.5 flex-shrink-0 ${folder.is_system ? 'text-sy-text-3' : 'text-sy-accent'}`}
+          />
         ) : (
-          <FolderIcon className={`w-3.5 h-3.5 flex-shrink-0 ${folder.is_system ? 'text-sy-text-3' : 'text-sy-accent'}`} />
+          <FolderIcon
+            className={`w-3.5 h-3.5 flex-shrink-0 ${folder.is_system ? 'text-sy-text-3' : 'text-sy-accent'}`}
+          />
         )}
         <span
           className={`flex-1 truncate text-[12px] ${folder.is_system ? 'text-sy-text-3 italic' : 'text-sy-text-2'}`}

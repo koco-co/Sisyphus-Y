@@ -156,10 +156,7 @@ export default function ChunkPreviewDrawer({
       />
 
       {/* Drawer */}
-      <div
-        className="fixed top-0 right-0 h-full w-[640px] max-w-[95vw] bg-bg1 border-l border-border z-50 flex flex-col shadow-lg"
-        style={{ boxShadow: 'var(--shadow-lg)' }}
-      >
+      <div className="fixed top-0 right-0 h-full w-[640px] max-w-[95vw] bg-bg1 border-l border-border z-50 flex flex-col shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">

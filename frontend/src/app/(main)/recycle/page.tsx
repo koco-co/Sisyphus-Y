@@ -125,7 +125,7 @@ export default function RecyclePage() {
     };
     void initPage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
+  }, [filter, loadItems]);
 
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();

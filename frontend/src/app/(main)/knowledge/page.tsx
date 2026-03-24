@@ -86,7 +86,7 @@ export default function KnowledgePage() {
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         {/* Header */}
         <div className="topbar">
-          <BookOpen size={20} style={{ color: 'var(--accent)' }} />
+          <BookOpen size={20} style={{ color: '#00d9a3' }} />
           <h1>知识库</h1>
           <span className="sub">Knowledge Base</span>
           <span className="pill pill-green" style={{ marginLeft: 4 }}>
@@ -140,7 +140,7 @@ export default function KnowledgePage() {
                 left: 10,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: 'var(--text3)',
+                color: '#566577',
               }}
             />
             <input
@@ -206,7 +206,7 @@ export default function KnowledgePage() {
               marginBottom: 16,
               border: '1px solid rgba(244, 63, 94, 0.28)',
               background: 'rgba(244, 63, 94, 0.08)',
-              color: 'var(--red)',
+              color: '#f43f5e',
             }}
           >
             {error}

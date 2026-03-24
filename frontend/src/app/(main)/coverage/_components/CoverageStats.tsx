@@ -13,7 +13,7 @@ function CoverageRing({ rate }: { rate: number }) {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (rate / 100) * circumference;
 
-  const rateColor = rate >= 80 ? 'var(--accent)' : rate >= 50 ? 'var(--amber)' : 'var(--red)';
+  const rateColor = rate >= 80 ? '#00d9a3' : rate >= 50 ? '#f59e0b' : '#f43f5e';
 
   return (
     <div className="relative flex items-center justify-center">
@@ -24,7 +24,7 @@ function CoverageRing({ rate }: { rate: number }) {
         role="img"
         aria-label={`覆盖率 ${rate}%`}
       >
-        <circle cx={70} cy={70} r={radius} stroke="var(--bg3)" strokeWidth={stroke} fill="none" />
+        <circle cx={70} cy={70} r={radius} stroke="#212730" strokeWidth={stroke} fill="none" />
         <circle
           cx={70}
           cy={70}

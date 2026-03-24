@@ -35,9 +35,7 @@ export function WorkflowStepper({ steps, className = '' }: WorkflowStepperProps)
               : 'text-sy-text-3';
 
         const lineClass =
-          idx < steps.length - 1 && steps[idx]?.status === 'done'
-            ? 'bg-sy-accent'
-            : 'bg-sy-border';
+          idx < steps.length - 1 && steps[idx]?.status === 'done' ? 'bg-sy-accent' : 'bg-sy-border';
 
         const dot = (
           <div
@@ -63,9 +61,7 @@ export function WorkflowStepper({ steps, className = '' }: WorkflowStepperProps)
             ) : (
               stepContent
             )}
-            {!isLast && (
-              <div className={`w-12 h-[2px] mt-3 mx-1 transition-colors ${lineClass}`} />
-            )}
+            {!isLast && <div className={`w-12 h-[2px] mt-3 mx-1 transition-colors ${lineClass}`} />}
           </div>
         );
       })}

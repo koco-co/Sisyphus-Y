@@ -188,7 +188,12 @@ function IterationsContent() {
 
   const handleCreate = () => {
     if (!validate()) return;
-    const payload: { name: string; product_id: string; start_date?: string; end_date?: string } = {
+    const payload: {
+      name: string;
+      product_id: string;
+      start_date?: string;
+      end_date?: string;
+    } = {
       name: formName.trim(),
       product_id: productId!,
     };
@@ -199,7 +204,12 @@ function IterationsContent() {
 
   const handleEdit = () => {
     if (!editItem || !validate()) return;
-    const payload: { id: string; name?: string; start_date?: string; end_date?: string } = {
+    const payload: {
+      id: string;
+      name?: string;
+      start_date?: string;
+      end_date?: string;
+    } = {
       id: editItem.id,
       name: formName.trim(),
     };
@@ -323,12 +333,15 @@ function IterationsContent() {
                 </thead>
                 <tbody>
                   {paginated.map((item) => {
-                    const s = STATUS_MAP[item.status] ?? { label: item.status, cls: 'pill-gray' };
+                    const s = STATUS_MAP[item.status] ?? {
+                      label: item.status,
+                      cls: 'pill-gray',
+                    };
                     return (
                       <tr
                         key={item.id}
                         className="cursor-pointer hover:bg-bg2 transition-colors"
-                        onClick={() => router.push(`/requirements?iterationId=${item.id}`)}
+                        onClick={() => router.push(`/analysis?iterationId=${item.id}`)}
                       >
                         <td>
                           <button
@@ -336,7 +349,7 @@ function IterationsContent() {
                             className="font-semibold text-sy-accent hover:text-sy-accent-2 transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();
-                              router.push(`/requirements?iterationId=${item.id}`);
+                              router.push(`/analysis?iterationId=${item.id}`);
                             }}
                           >
                             {item.name}

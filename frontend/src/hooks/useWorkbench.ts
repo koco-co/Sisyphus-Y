@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useCallback } from "react";
-import { useSSE } from "@/hooks/useSSE";
-import { API_BASE, api } from "@/lib/api";
+import { useCallback } from 'react';
+import { useSSE } from '@/hooks/useSSE';
+import { API_BASE, api } from '@/lib/api';
 import {
   type GenSession,
   useWorkspaceStore,
   type WorkbenchMessage,
   type WorkbenchTestCase,
-} from "@/stores/workspace-store";
+} from '@/stores/workspace-store';
 
 export function useWorkbench() {
   const store = useWorkspaceStore();
@@ -17,9 +17,7 @@ export function useWorkbench() {
   const loadSessions = useCallback(
     async (reqId: string) => {
       try {
-        const data = await api.get<GenSession[]>(
-          `/generation/sessions/by-requirement/${reqId}`,
-        );
+        const data = await api.get<GenSession[]>(`/generation/sessions/by-requirement/${reqId}`);
         store.setSessions(Array.isArray(data) ? data : []);
       } catch {
         store.setSessions([]);
@@ -40,7 +38,7 @@ export function useWorkbench() {
           steps: ((tc.steps as Array<Record<string, unknown>>) ?? []).map((s) => ({
             no: s.step ?? s.no,
             action: s.action,
-            expected_result: s.expected ?? s.expected_result ?? "",
+            expected_result: s.expected ?? s.expected_result ?? '',
           })),
         }));
         store.setTestCases(items as WorkbenchTestCase[]);
@@ -78,7 +76,7 @@ export function useWorkbench() {
   const createSession = useCallback(async () => {
     if (!store.selectedReqId) return;
     try {
-      const data = await api.post<GenSession>("/generation/sessions", {
+      const data = await api.post<GenSession>('/generation/sessions', {
         requirement_id: store.selectedReqId,
         mode: store.selectedMode,
       });
@@ -104,28 +102,23 @@ export function useWorkbench() {
 
       const userMsg: WorkbenchMessage = {
         id: crypto.randomUUID(),
-        role: "user",
+        role: 'user',
         content: text.trim(),
         created_at: new Date().toISOString(),
       };
       store.addMessage(userMsg);
 
-      const fullText = await sse.startStream(
-        `/generation/sessions/${store.activeSessionId}/chat`,
-        {
-          body: { message: text.trim() },
-        },
-      );
+      const fullText = await sse.startStream(`/generation/sessions/${store.activeSessionId}/chat`, {
+        body: { message: text.trim() },
+      });
 
       if (fullText) {
         await loadMessages(store.activeSessionId);
       } else {
         store.addMessage({
           id: crypto.randomUUID(),
-          role: "assistant",
-          content: sse.error
-            ? `⚠️ ${sse.error}`
-            : "⚠️ AI 未返回有效内容，请检查模型配置后重试。",
+          role: 'assistant',
+          content: sse.error ? `⚠️ ${sse.error}` : '⚠️ AI 未返回有效内容，请检查模型配置后重试。',
           created_at: new Date().toISOString(),
         });
       }
@@ -142,11 +135,11 @@ export function useWorkbench() {
   }, [sse]);
 
   const exportCases = useCallback(
-    async (format: "excel" | "json") => {
+    async (format: 'excel' | 'json') => {
       if (!store.selectedReqId) return;
       try {
         const url = `${API_BASE}/export/${format}?requirement_id=${store.selectedReqId}`;
-        window.open(url, "_blank");
+        window.open(url, '_blank');
       } catch (_e) {
         // export failed silently
       }

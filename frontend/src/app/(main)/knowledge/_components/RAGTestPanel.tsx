@@ -34,7 +34,7 @@ export default function RAGTestPanel({
         </span>
       </div>
 
-      <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 14 }}>
+      <p style={{ fontSize: 12, color: '#566577', marginBottom: 14 }}>
         输入查询文本，验证知识库的语义检索效果。返回最相关的知识片段及相似度评分。
       </p>
 
@@ -48,7 +48,7 @@ export default function RAGTestPanel({
               left: 10,
               top: '50%',
               transform: 'translateY(-50%)',
-              color: 'var(--text3)',
+              color: '#566577',
             }}
           />
           <input
@@ -81,8 +81,8 @@ export default function RAGTestPanel({
             <div
               key={result.id}
               style={{
-                background: 'var(--bg2)',
-                border: '1px solid var(--border)',
+                background: '#1a1e24',
+                border: '1px solid #2a313d',
                 borderRadius: 8,
                 padding: 14,
                 transition: 'border-color 0.15s',
@@ -102,8 +102,8 @@ export default function RAGTestPanel({
                   style={{
                     fontSize: 11,
                     fontWeight: 600,
-                    color: 'var(--accent)',
-                    background: 'var(--accent-d)',
+                    color: '#00d9a3',
+                    background: 'rgba(0, 217, 163, 0.1)',
                     padding: '2px 6px',
                     borderRadius: 4,
                   }}
@@ -127,7 +127,7 @@ export default function RAGTestPanel({
                     alignItems: 'center',
                     gap: 4,
                     fontSize: 11,
-                    color: 'var(--text3)',
+                    color: '#566577',
                   }}
                 >
                   <FileText size={11} />
@@ -141,8 +141,8 @@ export default function RAGTestPanel({
                 style={{
                   fontSize: 12,
                   lineHeight: 1.7,
-                  color: 'var(--text2)',
-                  borderLeft: '2px solid var(--accent)',
+                  color: '#94a3b8',
+                  borderLeft: '2px solid #00d9a3',
                   paddingLeft: 12,
                   maxHeight: 120,
                   overflow: 'hidden',
@@ -161,7 +161,7 @@ export default function RAGTestPanel({
           style={{
             textAlign: 'center',
             padding: 24,
-            color: 'var(--text3)',
+            color: '#566577',
             fontSize: 12,
           }}
         >
@@ -173,7 +173,7 @@ export default function RAGTestPanel({
 }
 
 function scoreColor(score: number): string {
-  if (score >= 0.8) return 'var(--accent)';
-  if (score >= 0.6) return 'var(--amber)';
-  return 'var(--red)';
+  if (score >= 0.8) return '#00d9a3';
+  if (score >= 0.6) return '#f59e0b';
+  return '#f43f5e';
 }

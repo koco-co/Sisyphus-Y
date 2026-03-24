@@ -1,18 +1,27 @@
 'use client';
 
-import { DndContext, closestCenter, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { closestCenter, DndContext } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { ChevronDown, ChevronRight, FileText, Filter, FolderOpen, FolderX, Plus, Search } from 'lucide-react';
-import Link from 'next/link';
+import {
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  Filter,
+  FolderOpen,
+  FolderX,
+  Plus,
+  Search,
+  Upload,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { UploadRequirementDialog } from '@/app/(main)/requirements/_components/UploadRequirementDialog';
+import { DraggableFolderItem } from '@/components/folders/DraggableFolderItem';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FolderDialog } from '@/components/ui/FolderDialog';
 import { MoveFolderDialog } from '@/components/ui/MoveFolderDialog';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TableSkeleton } from '@/components/ui/TableSkeleton';
-import { DraggableFolderItem } from '@/components/folders/DraggableFolderItem';
+import { useFolderDnd } from '@/hooks/useFolderDnd';
 import { useRequirementTree } from '@/hooks/useRequirementTree';
-import { useFolderDnd, type DragItemData } from '@/hooks/useFolderDnd';
 import type { Folder, Requirement } from '@/lib/api';
 
 const PRIORITY_OPTIONS = ['P0', 'P1', 'P2', 'P3'] as const;
@@ -25,18 +34,6 @@ const STATUS_OPTIONS = [
 interface AnalysisLeftPanelProps {
   selectedReqId: string | null;
   onSelectRequirement: (reqId: string) => void;
-}
-
-function getStatusVariant(status: string): 'gray' | 'warning' | 'success' | 'info' {
-  if (status === 'completed') return 'success';
-  if (status === 'processing') return 'warning';
-  return 'gray';
-}
-
-function getStatusLabel(status: string): string {
-  if (status === 'completed') return '已完成';
-  if (status === 'processing') return '分析中';
-  return '未分析';
 }
 
 interface ReqContextMenu {
@@ -92,6 +89,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
   });
 
   const [loading, setLoading] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
   const hasActiveFilters = priorityFilter.size > 0 || statusFilter.size > 0;
 
@@ -253,8 +251,8 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
     try {
       setLoading(true);
       await deleteFolder(productId, iterationId, folderId);
-    } catch (error) {
-      console.error('Failed to delete folder:', error);
+    } catch (_error) {
+      // silently ignore
     } finally {
       setLoading(false);
     }
@@ -273,8 +271,8 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
           await updateFolder(productId, iterationId, folderId, { name });
         }
         setFolderDialog({ open: false, mode: 'create', parentId: null });
-      } catch (error) {
-        console.error('Failed to save folder:', error);
+      } catch (_error) {
+        // silently ignore
       } finally {
         setLoading(false);
       }
@@ -290,8 +288,8 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
       try {
         setLoading(true);
         await moveRequirementToFolder(req.id, folderId, productId, iterationId);
-      } catch (error) {
-        console.error('Failed to move requirement:', error);
+      } catch (_error) {
+        // silently ignore
       } finally {
         setLoading(false);
       }
@@ -308,7 +306,12 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
       const highRiskCount =
         (req as Requirement & { unconfirmed_high_risk_count?: number })
           .unconfirmed_high_risk_count ?? 0;
-      const currentFolderId = (req as Requirement & { folder_id?: string }).folder_id;
+      const dotClass =
+        status === 'completed'
+          ? 'bg-sy-accent'
+          : status === 'processing'
+            ? 'bg-sy-warn'
+            : 'bg-sy-text-3/50';
 
       return (
         <button
@@ -318,7 +321,6 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
           onContextMenu={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            // 限制菜单不超出面板右边缘
             const panelEl = e.currentTarget.closest('[data-panel]') as HTMLElement | null;
             const panelRight = panelEl ? panelEl.getBoundingClientRect().right : window.innerWidth;
             const menuWidth = 140;
@@ -332,25 +334,17 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
               productId,
             });
           }}
-          className={`w-full flex items-center gap-2 px-5 py-2 text-left transition-colors ${
-            isSelected
-              ? 'bg-sy-bg-2 border-r-2 border-sy-accent'
-              : 'hover:bg-sy-bg-2/60'
+          className={`w-full flex items-center gap-2 pl-10 pr-3 py-1.5 text-left transition-colors ${
+            isSelected ? 'bg-sy-bg-2 border-r-2 border-sy-accent' : 'hover:bg-sy-bg-2/60'
           }`}
         >
-          <span className="flex-1 text-[12px] text-sy-text truncate min-w-0">
-            {req.title.length > 30 ? `${req.title.slice(0, 30)}...` : req.title}
-          </span>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <StatusBadge variant={getStatusVariant(status)}>
-              {getStatusLabel(status)}
-            </StatusBadge>
-            {highRiskCount > 0 && (
-              <span className="bg-sy-danger text-white text-[10px] font-mono rounded-full px-1.5 py-0.5 leading-none">
-                {highRiskCount}
-              </span>
-            )}
-          </div>
+          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotClass}`} />
+          <span className="flex-1 text-[11.5px] text-sy-text truncate min-w-0">{req.title}</span>
+          {highRiskCount > 0 && (
+            <span className="bg-sy-danger text-white text-[10px] font-mono rounded-full px-1.5 py-0.5 leading-none flex-shrink-0">
+              {highRiskCount}
+            </span>
+          )}
         </button>
       );
     },
@@ -362,7 +356,9 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
     (folder: Folder, level: number, iterationId: string, productId: string): React.ReactNode => {
       const isExpanded = expandedFolders.has(folder.id);
       const iterReqs = requirements[iterationId] ?? [];
-      const folderReqs = iterReqs.filter((r) => (r as Requirement & { folder_id?: string }).folder_id === folder.id);
+      const folderReqs = iterReqs.filter(
+        (r) => (r as Requirement & { folder_id?: string }).folder_id === folder.id,
+      );
       const hasContent = folder.children.length > 0 || folderReqs.length > 0;
 
       return (
@@ -379,14 +375,15 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
           {/* Recursively render child folders */}
           {folder.children.map((child) => renderFolder(child, level + 1, iterationId, productId))}
           {/* Render requirements in this folder */}
-          {isExpanded && folderReqs.filter(matchesSearch).map((req) =>
-            renderRequirementItem(req, iterationId, productId),
-          )}
+          {isExpanded &&
+            folderReqs
+              .filter(matchesSearch)
+              .map((req) => renderRequirementItem(req, iterationId, productId))}
           {/* Empty folder hint */}
           {isExpanded && !hasContent && (
             <div
-              className="flex items-center gap-1.5 py-2 text-sy-text-3"
-              style={{ paddingLeft: `${20 + (level + 1) * 12}px` }}
+              className="flex items-center gap-1.5 py-1.5 text-sy-text-3"
+              style={{ paddingLeft: `${36 + (level + 1) * 12}px` }}
             >
               <FolderX className="w-3 h-3" />
               <span className="text-[11px]">暂无内容，可将需求右键移入</span>
@@ -395,7 +392,16 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
         </DraggableFolderItem>
       );
     },
-    [expandedFolders, requirements, toggleFolder, handleCreateFolder, handleRenameFolder, handleDeleteFolder, matchesSearch, renderRequirementItem],
+    [
+      expandedFolders,
+      requirements,
+      toggleFolder,
+      handleCreateFolder,
+      handleRenameFolder,
+      handleDeleteFolder,
+      matchesSearch,
+      renderRequirementItem,
+    ],
   );
 
   return (
@@ -422,6 +428,14 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
             title="筛选"
           >
             <Filter className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setUploadDialogOpen(true)}
+            className="p-0.5 rounded transition-colors text-sy-text-3 hover:text-sy-accent"
+            title="新建需求"
+          >
+            <Plus className="w-3.5 h-3.5" />
           </button>
         </div>
         {showFilters && (
@@ -473,12 +487,14 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
             <p className="text-[11px] text-sy-text-3 opacity-70 mb-3">
               从录入或上传文档开始，AI 将自动分析潜在风险
             </p>
-            <Link
-              href="/requirements"
-              className="inline-flex items-center px-3 py-1.5 rounded-md text-[11.5px] font-medium bg-sy-accent/10 border border-sy-accent/30 text-sy-accent hover:bg-sy-accent/20 transition-colors"
+            <button
+              type="button"
+              onClick={() => setUploadDialogOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11.5px] font-medium bg-sy-accent/10 border border-sy-accent/30 text-sy-accent hover:bg-sy-accent/20 transition-colors"
             >
-              前往添加
-            </Link>
+              <Upload className="w-3.5 h-3.5" />
+              上传需求文档
+            </button>
           </div>
         ) : (
           products.map((product) => {
@@ -529,11 +545,11 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                         return (
                           <div key={iteration.id}>
                             {/* Iteration header */}
-                            <div className="w-full flex items-center gap-1.5 px-4 py-1.5 hover:bg-sy-bg-2 transition-colors group">
+                            <div className="w-full flex items-center gap-1.5 pl-6 pr-3 py-1.5 hover:bg-sy-bg-2 transition-colors group">
                               <button
                                 type="button"
                                 onClick={() => toggleIteration(product.id, iteration.id)}
-                                className="flex items-center gap-1.5 flex-1 min-w-0"
+                                className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
                               >
                                 {isIterExpanded ? (
                                   <ChevronDown className="w-3 h-3 text-sy-text-3 flex-shrink-0" />
@@ -564,7 +580,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                             {/* Folders and Requirements */}
                             {isIterExpanded && (
                               <div>
-                                {(isReqLoading || isFolderLoading) ? (
+                                {isReqLoading || isFolderLoading ? (
                                   <div className="px-2">
                                     <TableSkeleton rows={4} cols={2} />
                                   </div>
@@ -592,9 +608,15 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
 
                                     {/* 未分类需求区域 */}
                                     {filteredUnclassifiedReqs.length > 0 && (
-                                      <div className={iterFolders.length > 0 ? 'border-t border-sy-border/50 mt-1' : ''}>
+                                      <div
+                                        className={
+                                          iterFolders.length > 0
+                                            ? 'border-t border-sy-border/50 mt-1'
+                                            : ''
+                                        }
+                                      >
                                         {iterFolders.length > 0 && (
-                                          <div className="flex items-center gap-1.5 px-5 py-1">
+                                          <div className="flex items-center gap-1.5 pl-10 pr-3 py-1">
                                             <FolderX className="w-3 h-3 text-sy-text-3" />
                                             <span className="text-[10px] text-sy-text-3 uppercase tracking-wider">
                                               未分类
@@ -607,11 +629,14 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
                                       </div>
                                     )}
 
-                                    {iterFolders.length === 0 && filteredUnclassifiedReqs.length === 0 && (
-                                      <div className="px-8 py-2">
-                                        <span className="text-[11px] text-sy-text-3">暂无需求</span>
-                                      </div>
-                                    )}
+                                    {iterFolders.length === 0 &&
+                                      filteredUnclassifiedReqs.length === 0 && (
+                                        <div className="pl-10 pr-3 py-1.5">
+                                          <span className="text-[11px] text-sy-text-3">
+                                            暂无需求
+                                          </span>
+                                        </div>
+                                      )}
                                   </DndContext>
                                 )}
                               </div>
@@ -649,7 +674,7 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
             onClick={() => {
               const iterationId = reqContextMenu.iterationId;
               const productId = reqContextMenu.productId;
-              const currentFolderId = reqContextMenu.req
+              const _currentFolderId = reqContextMenu.req
                 ? (reqContextMenu.req as Requirement & { folder_id?: string }).folder_id
                 : null;
               setMoveFolderDialog({
@@ -699,6 +724,17 @@ export function AnalysisLeftPanel({ selectedReqId, onSelectRequirement }: Analys
         }
         onConfirm={handleMoveToFolder}
         onCancel={() => setMoveFolderDialog((prev) => ({ ...prev, open: false }))}
+      />
+
+      {/* Upload Requirement Dialog */}
+      <UploadRequirementDialog
+        open={uploadDialogOpen}
+        onClose={() => setUploadDialogOpen(false)}
+        productId={products[0]?.id}
+        iterationId={Object.values(iterations).flat()[0]?.id}
+        onSuccess={() => {
+          setUploadDialogOpen(false);
+        }}
       />
     </div>
   );

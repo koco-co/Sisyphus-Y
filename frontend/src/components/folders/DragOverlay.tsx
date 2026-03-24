@@ -1,7 +1,7 @@
 'use client';
 
 import { DragOverlay as DndDragOverlay, useDroppable } from '@dnd-kit/core';
-import { FolderOpen, Folder as FolderIcon, FileText } from 'lucide-react';
+import { FileText, FolderOpen } from 'lucide-react';
 import type { Folder, Requirement } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -19,15 +19,13 @@ export function DragOverlay({ activeItem }: DragOverlayProps) {
       <div
         className={cn(
           'flex items-center gap-1.5 px-3 py-1.5 rounded-md shadow-lg',
-          'bg-sy-bg-1 border border-sy-accent'
+          'bg-sy-bg-1 border border-sy-accent',
         )}
       >
         {type === 'folder' ? (
           <>
             <FolderOpen className="w-3.5 h-3.5 text-sy-accent" />
-            <span className="text-[12px] text-sy-text font-medium">
-              {(data as Folder).name}
-            </span>
+            <span className="text-[12px] text-sy-text font-medium">{(data as Folder).name}</span>
           </>
         ) : (
           <>
@@ -57,7 +55,7 @@ export function DropLineIndicator({ visible, position }: DropLineIndicatorProps)
         'absolute left-0 right-0 pointer-events-none z-50',
         position === 'inside' ? 'inset-0 border-2 border-sy-accent rounded' : 'h-0.5 bg-sy-accent',
         position === 'before' && 'top-0',
-        position === 'after' && 'bottom-0'
+        position === 'after' && 'bottom-0',
       )}
     />
   );
@@ -83,7 +81,7 @@ export function DroppableWrapper({ id, type, children, className }: DroppableWra
       className={cn(
         'relative transition-colors',
         isOver && type === 'folder' && 'bg-sy-accent/10',
-        className
+        className,
       )}
     >
       {children}

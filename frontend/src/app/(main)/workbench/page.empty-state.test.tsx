@@ -172,6 +172,6 @@ test('workbench empty state guides users to requirement entry and sample data', 
 
   expect(html).toContain('前往需求录入');
   expect(html).toContain('查看示例用例');
-  expect(html).toContain('href="/requirements"');
+  expect(html).toContain('href="/analysis"');
   expect(html).toContain('href="/testcases"');
 });

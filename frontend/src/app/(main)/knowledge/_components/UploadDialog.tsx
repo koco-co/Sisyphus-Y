@@ -125,7 +125,7 @@ export default function UploadDialog({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Upload size={16} style={{ color: 'var(--accent)' }} />
+            <Upload size={16} style={{ color: '#00d9a3' }} />
             <span style={{ fontSize: 15, fontWeight: 600 }}>上传知识文档</span>
           </div>
           <button
@@ -135,7 +135,7 @@ export default function UploadDialog({
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
-              color: 'var(--text3)',
+              color: '#566577',
               padding: 4,
             }}
           >
@@ -154,27 +154,34 @@ export default function UploadDialog({
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           style={{
-            border: `2px dashed ${dragOver ? 'var(--accent)' : 'var(--border2)'}`,
+            border: `2px dashed ${dragOver ? '#00d9a3' : '#353d4a'}`,
             borderRadius: 10,
             padding: '40px 24px',
             textAlign: 'center',
             cursor: 'pointer',
             transition: 'all 0.15s',
-            background: dragOver ? 'var(--accent-d)' : 'var(--bg2)',
+            background: dragOver ? 'rgba(0, 217, 163, 0.1)' : '#1a1e24',
             width: '100%',
           }}
         >
           <FileUp
             size={36}
             style={{
-              color: dragOver ? 'var(--accent)' : 'var(--text3)',
+              color: dragOver ? '#00d9a3' : '#566577',
               marginBottom: 12,
             }}
           />
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text2)', marginBottom: 4 }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: '#94a3b8',
+              marginBottom: 4,
+            }}
+          >
             {selectedFile ? selectedFile.name : '拖拽文件到此处，或点击选择'}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text3)' }}>
+          <div style={{ fontSize: 11, color: '#566577' }}>
             支持 {ACCEPTED_TYPES.join(' / ')}，最大 50MB
           </div>
 
@@ -206,7 +213,7 @@ export default function UploadDialog({
               border: '1px solid rgba(244, 63, 94, 0.2)',
               borderRadius: 6,
               fontSize: 12,
-              color: 'var(--red)',
+              color: '#f43f5e',
             }}
           >
             {error || uploadError}
@@ -226,9 +233,12 @@ export default function UploadDialog({
             >
               <Loader2
                 size={14}
-                style={{ color: 'var(--accent)', animation: 'spin 1s linear infinite' }}
+                style={{
+                  color: '#00d9a3',
+                  animation: 'spin 1s linear infinite',
+                }}
               />
-              <span style={{ fontSize: 12, color: 'var(--text2)' }}>上传中 {uploadProgress}%</span>
+              <span style={{ fontSize: 12, color: '#94a3b8' }}>上传中 {uploadProgress}%</span>
             </div>
             <div className="progress-bar">
               <div className="progress-fill" style={{ width: `${uploadProgress}%` }} />

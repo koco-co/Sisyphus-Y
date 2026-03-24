@@ -34,7 +34,7 @@ export default function SceneMapPage() {
   const selectedPoint = sm.testPoints.find((p) => p.id === sm.selectedPointId) ?? null;
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 49px)' }}>
+    <div className="flex flex-col" style={{ height: '100vh' }}>
       {/* Process Bar */}
       <ProcessBar currentStep={sm.currentStep} />
 
